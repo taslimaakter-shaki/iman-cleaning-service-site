@@ -82,11 +82,10 @@ img {
   width: 52px;
   height: 52px;
   border-radius: 16px;
-  background-image: url("./iman-logo-source.png");
+  background-image: url("./iman-logo-icon.png");
   background-repeat: no-repeat;
-  background-size: 112px auto;
-  background-position: center 2px;
-  filter: grayscale(1) contrast(1.15) brightness(0.58);
+  background-size: cover;
+  background-position: center;
 }
 
 .brand-mark {
