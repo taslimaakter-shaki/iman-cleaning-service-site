@@ -50,8 +50,7 @@ img {
 }
 
 .topbar {
-  position: sticky;
-  top: 18px;
+  position: static;
   z-index: 10;
   display: flex;
   align-items: center;
