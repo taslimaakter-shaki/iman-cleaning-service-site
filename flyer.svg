@@ -1,0 +1,193 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="2550" height="3300" viewBox="0 0 2550 3300" role="img" aria-labelledby="title desc">
+  <title id="title">Iman Cleaning Service LLC premium NYC flyer</title>
+  <desc id="desc">A premium vertical flyer for Iman Cleaning Service LLC featuring NYC professional cleaning services, a 20 dollar first cleaning discount, service lists, trust signals, contact information, and a QR booking placeholder.</desc>
+  <defs>
+    <linearGradient id="pageBg" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#f7f9fc"/>
+      <stop offset="100%" stop-color="#eef2f7"/>
+    </linearGradient>
+    <linearGradient id="heroBg" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#f9fbfe"/>
+      <stop offset="55%" stop-color="#eef3f9"/>
+      <stop offset="100%" stop-color="#dde7f1"/>
+    </linearGradient>
+    <linearGradient id="navyPanel" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#103252"/>
+      <stop offset="100%" stop-color="#0b233a"/>
+    </linearGradient>
+    <linearGradient id="goldPanel" x1="0" y1="0" x2="1" y2="0">
+      <stop offset="0%" stop-color="#e3b14b"/>
+      <stop offset="100%" stop-color="#f2d181"/>
+    </linearGradient>
+    <filter id="cardShadow" x="-20%" y="-20%" width="140%" height="140%">
+      <feDropShadow dx="0" dy="20" stdDeviation="28" flood-color="#0f2740" flood-opacity="0.14"/>
+    </filter>
+    <filter id="softShadow" x="-20%" y="-20%" width="140%" height="140%">
+      <feDropShadow dx="0" dy="10" stdDeviation="14" flood-color="#0f2740" flood-opacity="0.10"/>
+    </filter>
+  </defs>
+
+  <rect width="2550" height="3300" fill="url(#pageBg)"/>
+  <circle cx="2200" cy="220" r="220" fill="#e7edf5"/>
+  <circle cx="2080" cy="500" r="100" fill="#f0f4f9"/>
+  <circle cx="280" cy="3010" r="180" fill="#e7edf5"/>
+
+  <rect x="105" y="105" width="2340" height="3090" rx="52" fill="#ffffff" filter="url(#cardShadow)"/>
+  <rect x="155" y="155" width="2240" height="1185" rx="42" fill="url(#heroBg)"/>
+
+  <g opacity="0.7">
+    <rect x="1790" y="248" width="455" height="760" rx="26" fill="#dbe5ef"/>
+    <rect x="1715" y="312" width="130" height="696" fill="#edf2f7"/>
+    <rect x="1845" y="312" width="32" height="696" fill="#c7d2df"/>
+    <rect x="1925" y="312" width="32" height="696" fill="#c7d2df"/>
+    <rect x="2005" y="312" width="32" height="696" fill="#c7d2df"/>
+    <rect x="2085" y="312" width="32" height="696" fill="#c7d2df"/>
+    <rect x="2165" y="312" width="32" height="696" fill="#c7d2df"/>
+  </g>
+
+  <g transform="translate(1110 300)">
+    <rect x="0" y="0" width="1040" height="835" rx="34" fill="#f7f9fc" stroke="#dce5ee" stroke-width="6"/>
+    <rect x="52" y="52" width="936" height="340" rx="20" fill="#fefefe"/>
+    <rect x="76" y="78" width="275" height="275" rx="18" fill="#cfd9e5"/>
+    <rect x="385" y="78" width="182" height="140" rx="18" fill="#ffffff" stroke="#d7e0ea" stroke-width="4"/>
+    <rect x="593" y="78" width="156" height="140" rx="18" fill="#ffffff" stroke="#d7e0ea" stroke-width="4"/>
+    <rect x="775" y="78" width="161" height="140" rx="18" fill="#ffffff" stroke="#d7e0ea" stroke-width="4"/>
+    <rect x="385" y="250" width="551" height="96" rx="18" fill="#edf3f8"/>
+    <rect x="420" y="284" width="482" height="18" rx="9" fill="#d5dee8"/>
+    <rect x="52" y="428" width="936" height="355" rx="22" fill="#ffffff"/>
+    <rect x="116" y="565" width="526" height="166" rx="20" fill="#f2f5f9"/>
+    <rect x="145" y="500" width="470" height="90" rx="18" fill="#dde6ef"/>
+    <rect x="734" y="494" width="190" height="250" rx="16" fill="#f3f7fb"/>
+    <rect x="788" y="544" width="85" height="82" rx="12" fill="#d8e1ea"/>
+    <rect x="0" y="0" width="1040" height="835" rx="34" fill="none" stroke="#dce5ee" stroke-width="6"/>
+    <rect x="52" y="52" width="936" height="340" rx="20" fill="none" stroke="#d9e2ec" stroke-width="5"/>
+    <rect x="52" y="428" width="936" height="355" rx="22" fill="none" stroke="#e0e8f0" stroke-width="5"/>
+    <rect x="116" y="565" width="526" height="166" rx="20" fill="none" stroke="#dbe3ec" stroke-width="5"/>
+    <rect x="145" y="500" width="470" height="90" rx="18" fill="none" stroke="#d8e0e9" stroke-width="5"/>
+    <ellipse cx="378" cy="735" rx="420" ry="28" fill="#d8e0ea" opacity="0.55"/>
+    <ellipse cx="830" cy="752" rx="150" ry="20" fill="#d8e0ea" opacity="0.55"/>
+    <circle cx="815" cy="292" r="18" fill="#e3b14b"/>
+    <path d="M812 279 l7 12 15 2 -10 10 3 15 -15 -7 -13 7 2 -15 -10 -10 15 -2z" fill="#fff4cf"/>
+  </g>
+
+  <text x="220" y="245" fill="#0b233a" font-size="56" font-weight="700" font-family="'Montserrat', 'Avenir Next', Helvetica, Arial, sans-serif" letter-spacing="6">IMAN CLEANING SERVICE LLC</text>
+  <text x="220" y="380" fill="#17456f" font-size="112" font-weight="800" font-family="'Montserrat', 'Avenir Next', Helvetica, Arial, sans-serif">NYC PROFESSIONAL</text>
+  <text x="220" y="500" fill="#17456f" font-size="112" font-weight="800" font-family="'Montserrat', 'Avenir Next', Helvetica, Arial, sans-serif">CLEANING SERVICES</text>
+  <text x="220" y="620" fill="#4d6278" font-size="58" font-weight="600" font-family="'Montserrat', 'Avenir Next', Helvetica, Arial, sans-serif">We Make Your Home Spotless, Fresh &amp; Stress-Free</text>
+  <text x="220" y="720" fill="#6f8294" font-size="41" font-weight="500" font-family="'Montserrat', 'Avenir Next', Helvetica, Arial, sans-serif">Luxury-level care for apartments, homes, Airbnbs, and move-related cleanings across New York City.</text>
+
+  <g transform="translate(215 800)">
+    <rect x="0" y="0" width="790" height="235" rx="30" fill="url(#goldPanel)" filter="url(#softShadow)"/>
+    <text x="52" y="90" fill="#10263d" font-size="48" font-weight="800" font-family="'Montserrat', 'Avenir Next', Helvetica, Arial, sans-serif" letter-spacing="2">LIMITED TIME OFFER</text>
+    <text x="52" y="164" fill="#10263d" font-size="88" font-weight="900" font-family="'Montserrat', 'Avenir Next', Helvetica, Arial, sans-serif">$20 OFF YOUR FIRST CLEANING</text>
+    <text x="52" y="212" fill="#3c4f63" font-size="40" font-weight="700" font-family="'Montserrat', 'Avenir Next', Helvetica, Arial, sans-serif">Limited slots available this week - Book now!</text>
+  </g>
+
+  <g transform="translate(155 1370)">
+    <rect x="0" y="0" width="1085" height="780" rx="34" fill="#f7f9fc" stroke="#dde5ee" stroke-width="5"/>
+    <text x="60" y="96" fill="#0b233a" font-size="62" font-weight="800" font-family="'Montserrat', 'Avenir Next', Helvetica, Arial, sans-serif">SERVICES</text>
+
+    <g transform="translate(60 150)">
+      <circle cx="30" cy="30" r="30" fill="#17456f"/>
+      <path d="M15 31 l11 12 19 -24" fill="none" stroke="#ffffff" stroke-width="9" stroke-linecap="round" stroke-linejoin="round"/>
+      <text x="86" y="42" fill="#213447" font-size="50" font-weight="700" font-family="'Montserrat', 'Avenir Next', Helvetica, Arial, sans-serif">Standard Cleaning</text>
+    </g>
+    <g transform="translate(60 265)">
+      <circle cx="30" cy="30" r="30" fill="#17456f"/>
+      <path d="M15 31 l11 12 19 -24" fill="none" stroke="#ffffff" stroke-width="9" stroke-linecap="round" stroke-linejoin="round"/>
+      <text x="86" y="42" fill="#213447" font-size="50" font-weight="700" font-family="'Montserrat', 'Avenir Next', Helvetica, Arial, sans-serif">Deep Cleaning</text>
+    </g>
+    <g transform="translate(60 380)">
+      <circle cx="30" cy="30" r="30" fill="#17456f"/>
+      <path d="M15 31 l11 12 19 -24" fill="none" stroke="#ffffff" stroke-width="9" stroke-linecap="round" stroke-linejoin="round"/>
+      <text x="86" y="42" fill="#213447" font-size="50" font-weight="700" font-family="'Montserrat', 'Avenir Next', Helvetica, Arial, sans-serif">Move-In / Move-Out</text>
+    </g>
+    <g transform="translate(60 495)">
+      <circle cx="30" cy="30" r="30" fill="#17456f"/>
+      <path d="M15 31 l11 12 19 -24" fill="none" stroke="#ffffff" stroke-width="9" stroke-linecap="round" stroke-linejoin="round"/>
+      <text x="86" y="42" fill="#213447" font-size="50" font-weight="700" font-family="'Montserrat', 'Avenir Next', Helvetica, Arial, sans-serif">Airbnb Cleaning</text>
+    </g>
+
+    <rect x="60" y="620" width="965" height="106" rx="22" fill="#ffffff" stroke="#dce4ed" stroke-width="4"/>
+    <text x="104" y="688" fill="#17456f" font-size="48" font-weight="800" font-family="'Montserrat', 'Avenir Next', Helvetica, Arial, sans-serif">Serving All NYC Boroughs</text>
+  </g>
+
+  <g transform="translate(1310 1370)">
+    <rect x="0" y="0" width="1085" height="780" rx="34" fill="url(#navyPanel)"/>
+    <text x="60" y="96" fill="#f6d58c" font-size="62" font-weight="800" font-family="'Montserrat', 'Avenir Next', Helvetica, Arial, sans-serif">WHY CLIENTS TRUST US</text>
+
+    <g transform="translate(60 150)">
+      <circle cx="30" cy="30" r="30" fill="#f6d58c"/>
+      <path d="M15 31 l11 12 19 -24" fill="none" stroke="#0b233a" stroke-width="9" stroke-linecap="round" stroke-linejoin="round"/>
+      <text x="86" y="42" fill="#ffffff" font-size="50" font-weight="700" font-family="'Montserrat', 'Avenir Next', Helvetica, Arial, sans-serif">Reliable &amp; On-Time</text>
+    </g>
+    <g transform="translate(60 265)">
+      <circle cx="30" cy="30" r="30" fill="#f6d58c"/>
+      <path d="M15 31 l11 12 19 -24" fill="none" stroke="#0b233a" stroke-width="9" stroke-linecap="round" stroke-linejoin="round"/>
+      <text x="86" y="42" fill="#ffffff" font-size="50" font-weight="700" font-family="'Montserrat', 'Avenir Next', Helvetica, Arial, sans-serif">Affordable Pricing</text>
+    </g>
+    <g transform="translate(60 380)">
+      <circle cx="30" cy="30" r="30" fill="#f6d58c"/>
+      <path d="M15 31 l11 12 19 -24" fill="none" stroke="#0b233a" stroke-width="9" stroke-linecap="round" stroke-linejoin="round"/>
+      <text x="86" y="42" fill="#ffffff" font-size="50" font-weight="700" font-family="'Montserrat', 'Avenir Next', Helvetica, Arial, sans-serif">Detail-Oriented Service</text>
+    </g>
+    <g transform="translate(60 495)">
+      <circle cx="30" cy="30" r="30" fill="#f6d58c"/>
+      <path d="M15 31 l11 12 19 -24" fill="none" stroke="#0b233a" stroke-width="9" stroke-linecap="round" stroke-linejoin="round"/>
+      <text x="86" y="42" fill="#ffffff" font-size="50" font-weight="700" font-family="'Montserrat', 'Avenir Next', Helvetica, Arial, sans-serif">Same-Day &amp; Weekend Availability</text>
+    </g>
+
+    <text x="60" y="665" fill="#d6e1eb" font-size="42" font-weight="600" font-family="'Montserrat', 'Avenir Next', Helvetica, Arial, sans-serif">Designed to be easy to trust, easy to book, and easy to remember.</text>
+    <text x="60" y="722" fill="#d6e1eb" font-size="42" font-weight="600" font-family="'Montserrat', 'Avenir Next', Helvetica, Arial, sans-serif">Professional presentation. High-end finish. Results that feel worth it.</text>
+  </g>
+
+  <g transform="translate(155 2205)">
+    <rect x="0" y="0" width="2240" height="680" rx="38" fill="#ffffff" stroke="#dbe4ec" stroke-width="5"/>
+    <rect x="58" y="58" width="1415" height="564" rx="30" fill="url(#navyPanel)"/>
+    <text x="118" y="156" fill="#f6d58c" font-size="68" font-weight="800" font-family="'Montserrat', 'Avenir Next', Helvetica, Arial, sans-serif">CALL OR TEXT NOW</text>
+    <text x="118" y="252" fill="#ffffff" font-size="86" font-weight="900" font-family="'Montserrat', 'Avenir Next', Helvetica, Arial, sans-serif">917-774-7821</text>
+    <text x="118" y="342" fill="#d6e1eb" font-size="48" font-weight="600" font-family="'Montserrat', 'Avenir Next', Helvetica, Arial, sans-serif">Fast response. Friendly scheduling. Book your cleaning in minutes.</text>
+
+    <line x1="118" y1="398" x2="1415" y2="398" stroke="#335270" stroke-width="4"/>
+
+    <text x="118" y="492" fill="#f6d58c" font-size="54" font-weight="800" font-family="'Montserrat', 'Avenir Next', Helvetica, Arial, sans-serif">EMAIL</text>
+    <text x="118" y="576" fill="#ffffff" font-size="54" font-weight="700" font-family="'Montserrat', 'Avenir Next', Helvetica, Arial, sans-serif">Imancleaningservicellc@gmail.com</text>
+
+    <g transform="translate(1585 96)">
+      <rect x="0" y="0" width="520" height="520" rx="28" fill="#f7f9fc" stroke="#dbe4ec" stroke-width="5"/>
+      <rect x="70" y="70" width="380" height="380" fill="#ffffff" stroke="#213447" stroke-width="8"/>
+      <rect x="102" y="102" width="56" height="56" fill="#0b233a"/>
+      <rect x="158" y="102" width="56" height="56" fill="#ffffff"/>
+      <rect x="214" y="102" width="56" height="56" fill="#0b233a"/>
+      <rect x="270" y="102" width="56" height="56" fill="#0b233a"/>
+      <rect x="326" y="102" width="56" height="56" fill="#ffffff"/>
+      <rect x="102" y="158" width="56" height="56" fill="#ffffff"/>
+      <rect x="158" y="158" width="56" height="56" fill="#0b233a"/>
+      <rect x="214" y="158" width="56" height="56" fill="#ffffff"/>
+      <rect x="270" y="158" width="56" height="56" fill="#0b233a"/>
+      <rect x="326" y="158" width="56" height="56" fill="#0b233a"/>
+      <rect x="102" y="214" width="56" height="56" fill="#0b233a"/>
+      <rect x="158" y="214" width="56" height="56" fill="#0b233a"/>
+      <rect x="214" y="214" width="56" height="56" fill="#ffffff"/>
+      <rect x="270" y="214" width="56" height="56" fill="#ffffff"/>
+      <rect x="326" y="214" width="56" height="56" fill="#0b233a"/>
+      <rect x="102" y="270" width="56" height="56" fill="#0b233a"/>
+      <rect x="158" y="270" width="56" height="56" fill="#ffffff"/>
+      <rect x="214" y="270" width="56" height="56" fill="#0b233a"/>
+      <rect x="270" y="270" width="56" height="56" fill="#ffffff"/>
+      <rect x="326" y="270" width="56" height="56" fill="#0b233a"/>
+      <rect x="102" y="326" width="56" height="56" fill="#ffffff"/>
+      <rect x="158" y="326" width="56" height="56" fill="#0b233a"/>
+      <rect x="214" y="326" width="56" height="56" fill="#0b233a"/>
+      <rect x="270" y="326" width="56" height="56" fill="#0b233a"/>
+      <rect x="326" y="326" width="56" height="56" fill="#ffffff"/>
+      <text x="260" y="488" text-anchor="middle" fill="#17456f" font-size="38" font-weight="800" font-family="'Montserrat', 'Avenir Next', Helvetica, Arial, sans-serif">Scan to Book Instantly</text>
+    </g>
+  </g>
+
+  <g transform="translate(155 2920)">
+    <rect x="0" y="0" width="2240" height="168" rx="24" fill="url(#goldPanel)"/>
+    <text x="1120" y="72" text-anchor="middle" fill="#10263d" font-size="48" font-weight="800" font-family="'Montserrat', 'Avenir Next', Helvetica, Arial, sans-serif">Fully booked last week - limited spots available!</text>
+    <text x="1120" y="126" text-anchor="middle" fill="#3c4f63" font-size="36" font-weight="700" font-family="'Montserrat', 'Avenir Next', Helvetica, Arial, sans-serif">Premium home cleaning for busy NYC households that want reliable results without the hassle.</text>
+  </g>
+</svg>
