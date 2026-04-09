@@ -69,24 +69,7 @@ img {
 .brand {
   display: inline-flex;
   align-items: center;
-  gap: 12px;
-}
-
-.brand-text {
-  display: inline-flex;
-  flex-direction: column;
-  gap: 2px;
-}
-
-.brand-logo {
-  width: 52px;
-  height: 52px;
-  border-radius: 16px;
-  background-image: url("./iman-logo-source.png");
-  background-repeat: no-repeat;
-  background-size: 112px auto;
-  background-position: center 2px;
-  filter: grayscale(1) contrast(1.15) brightness(0.58);
+  flex-shrink: 0;
 }
 
 .brand-mark,
@@ -108,6 +91,11 @@ img {
   color: var(--muted);
   font-size: 0.94rem;
   font-weight: 500;
+}
+
+.brand-logo-full {
+  width: 170px;
+  height: auto;
 }
 
 .topnav {
@@ -847,9 +835,8 @@ h2 {
     padding: 18px;
   }
 
-  .brand-logo {
-    width: 46px;
-    height: 46px;
+  .brand-logo-full {
+    width: 138px;
   }
 
   .topnav {
