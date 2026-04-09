@@ -659,20 +659,53 @@ h2 {
   height: 52px;
   border-radius: 50%;
   color: var(--white);
-  background: rgba(255, 255, 255, 0.1);
-  border: 1px solid rgba(255, 255, 255, 0.12);
-  transition: transform 160ms ease, background 160ms ease;
+  border: 1px solid rgba(255, 255, 255, 0.18);
+  box-shadow: 0 12px 24px rgba(0, 0, 0, 0.16);
+  transition: transform 160ms ease, filter 160ms ease;
 }
 
 .social-icon:hover {
   transform: translateY(-2px);
-  background: rgba(255, 255, 255, 0.16);
+  filter: brightness(1.05);
 }
 
 .social-icon svg {
   width: 22px;
   height: 22px;
   fill: currentColor;
+}
+
+.social-icon-facebook {
+  background: linear-gradient(135deg, #1877f2, #0f5ed7);
+}
+
+.social-icon-instagram {
+  background:
+    radial-gradient(circle at 30% 110%, #fdf497 0%, #fdf497 8%, #fd5949 36%, #d6249f 62%, #285aeb 92%);
+}
+
+.social-icon-tiktok {
+  background: linear-gradient(135deg, #0f0f12, #111111);
+  position: relative;
+}
+
+.social-icon-tiktok::before,
+.social-icon-tiktok::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border-radius: 50%;
+  pointer-events: none;
+}
+
+.social-icon-tiktok::before {
+  box-shadow: -2px 0 0 0 rgba(37, 244, 238, 0.85);
+  transform: translateX(-1px);
+}
+
+.social-icon-tiktok::after {
+  box-shadow: 2px 0 0 0 rgba(254, 44, 85, 0.72);
+  transform: translateX(1px);
 }
 
 .contact-pill {
