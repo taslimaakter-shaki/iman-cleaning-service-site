@@ -69,16 +69,24 @@ img {
 .brand {
   display: inline-flex;
   align-items: center;
-  flex-shrink: 0;
+  gap: 12px;
 }
 
-.brand-mark,
-.brand-copy,
-.eyebrow,
-.button,
-.pill-label,
-.service-card h3 {
-  letter-spacing: 0.02em;
+.brand-text {
+  display: inline-flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.brand-logo {
+  width: 52px;
+  height: 52px;
+  border-radius: 16px;
+  background-image: url("./iman-logo-source.png");
+  background-repeat: no-repeat;
+  background-size: 112px auto;
+  background-position: center 2px;
+  filter: grayscale(1) contrast(1.15) brightness(0.58);
 }
 
 .brand-mark {
@@ -93,9 +101,13 @@ img {
   font-weight: 500;
 }
 
-.brand-logo-full {
-  width: 170px;
-  height: auto;
+.brand-mark,
+.brand-copy,
+.eyebrow,
+.button,
+.pill-label,
+.service-card h3 {
+  letter-spacing: 0.02em;
 }
 
 .topnav {
@@ -835,8 +847,9 @@ h2 {
     padding: 18px;
   }
 
-  .brand-logo-full {
-    width: 138px;
+  .brand-logo {
+    width: 46px;
+    height: 46px;
   }
 
   .topnav {
