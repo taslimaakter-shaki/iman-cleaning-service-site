@@ -644,6 +644,37 @@ h2 {
   min-width: min(100%, 340px);
 }
 
+.social-links {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+  margin-top: 18px;
+}
+
+.social-icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 52px;
+  height: 52px;
+  border-radius: 50%;
+  color: var(--white);
+  background: rgba(255, 255, 255, 0.1);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  transition: transform 160ms ease, background 160ms ease;
+}
+
+.social-icon:hover {
+  transform: translateY(-2px);
+  background: rgba(255, 255, 255, 0.16);
+}
+
+.social-icon svg {
+  width: 22px;
+  height: 22px;
+  fill: currentColor;
+}
+
 .contact-pill {
   display: grid;
   gap: 4px;
