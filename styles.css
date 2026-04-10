@@ -128,6 +128,7 @@ img {
 .proof-grid,
 .quote-section,
 .faq-section,
+.google-reviews-section,
 .testimonial-section,
 .contact-strip {
   animation: rise 0.8s ease both;
@@ -619,6 +620,86 @@ h2 {
   padding: 54px 0 12px;
 }
 
+.google-reviews-section {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(320px, 0.88fr);
+  gap: 24px;
+  align-items: center;
+  padding: 26px 0 10px;
+}
+
+.google-reviews-copy,
+.google-review-card {
+  padding: 32px;
+  border-radius: 32px;
+  border: 1px solid rgba(15, 92, 43, 0.08);
+  box-shadow: var(--shadow-soft);
+}
+
+.google-reviews-copy {
+  background:
+    linear-gradient(180deg, rgba(255, 255, 255, 0.95), rgba(245, 250, 240, 0.95));
+}
+
+.google-reviews-copy p,
+.google-review-card p {
+  color: var(--muted);
+  line-height: 1.7;
+}
+
+.google-review-card {
+  background:
+    radial-gradient(circle at top right, rgba(252, 232, 182, 0.34), transparent 28%),
+    linear-gradient(180deg, rgba(255, 255, 255, 0.97), rgba(249, 247, 241, 0.97));
+}
+
+.google-review-head {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+}
+
+.google-review-head strong {
+  display: block;
+  color: var(--forest-deep);
+  font-size: 1.1rem;
+}
+
+.google-review-head p {
+  margin: 4px 0 0;
+}
+
+.google-badge {
+  display: grid;
+  place-items: center;
+  width: 52px;
+  height: 52px;
+  border-radius: 16px;
+  color: var(--white);
+  font-size: 1.5rem;
+  font-weight: 800;
+  background: linear-gradient(135deg, #4285f4, #34a853 68%, #fbbc05);
+  box-shadow: 0 14px 26px rgba(66, 133, 244, 0.24);
+}
+
+.google-stars {
+  display: flex;
+  gap: 6px;
+  margin: 22px 0 14px;
+  color: #fbbc05;
+  font-size: 1.45rem;
+}
+
+.google-review-note {
+  margin-bottom: 22px;
+}
+
+.google-review-link {
+  color: var(--forest-deep);
+  font-weight: 800;
+  text-decoration: underline;
+}
+
 .faq-grid {
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
@@ -897,6 +978,7 @@ h2 {
   .proof-grid,
   .quote-section,
   .faq-grid,
+  .google-reviews-section,
   .testimonial-grid,
   .contact-strip {
     grid-template-columns: 1fr;
