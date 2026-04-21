@@ -146,10 +146,10 @@ img {
   min-height: 58px;
   padding: 12px 16px;
   border-radius: 22px;
-  border: 1px solid rgba(15, 92, 43, 0.12);
+  border: 1px solid rgba(8, 63, 29, 0.36);
   background:
-    linear-gradient(180deg, rgba(248, 251, 245, 0.96), rgba(238, 248, 231, 0.9));
-  color: var(--forest-deep);
+    linear-gradient(180deg, rgba(15, 92, 43, 0.96), rgba(24, 116, 57, 0.94));
+  color: var(--white);
   font-size: 1rem;
   font-weight: 700;
   text-align: center;
@@ -158,15 +158,17 @@ img {
 
 .page-links-grid a:hover {
   transform: translateY(-1px);
-  border-color: rgba(15, 92, 43, 0.22);
-  box-shadow: 0 12px 24px rgba(8, 63, 29, 0.08);
+  border-color: rgba(8, 63, 29, 0.48);
+  background:
+    linear-gradient(180deg, rgba(12, 74, 35, 0.98), rgba(20, 98, 48, 0.96));
+  box-shadow: 0 12px 24px rgba(8, 63, 29, 0.16);
 }
 
 .page-links-grid a[aria-current="page"] {
-  background: linear-gradient(180deg, rgba(15, 92, 43, 0.96), rgba(24, 116, 57, 0.94));
-  border-color: rgba(15, 92, 43, 0.4);
+  background: linear-gradient(180deg, rgba(8, 63, 29, 0.98), rgba(15, 92, 43, 0.96));
+  border-color: rgba(168, 212, 106, 0.55);
   color: var(--white);
-  box-shadow: 0 16px 28px rgba(8, 63, 29, 0.16);
+  box-shadow: 0 16px 28px rgba(8, 63, 29, 0.22);
 }
 
 .topnav a {
