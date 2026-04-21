@@ -583,6 +583,10 @@ h2 {
   gap: 24px;
 }
 
+.quote-page-main .quote-section-single {
+  grid-template-columns: 1fr;
+}
+
 .quote-page-intro {
   background:
     linear-gradient(180deg, rgba(255, 255, 255, 0.96), rgba(245, 250, 240, 0.96));
