@@ -890,6 +890,11 @@ h2 {
   background: linear-gradient(135deg, #1877f2, #0f5ed7);
 }
 
+.social-icon-google {
+  background: linear-gradient(135deg, #ffffff, #f3f6fb);
+  border-color: rgba(20, 49, 35, 0.1);
+}
+
 .social-icon-instagram {
   background:
     radial-gradient(circle at 30% 110%, #fdf497 0%, #fdf497 8%, #fd5949 36%, #d6249f 62%, #285aeb 92%);
