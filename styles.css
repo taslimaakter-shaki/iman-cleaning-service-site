@@ -520,8 +520,7 @@ h2 {
 .faq-card,
 .quote-form,
 .quote-copy,
-.quote-link-card,
-.quote-page-intro {
+.quote-link-card {
   padding: 32px;
   border-radius: 32px;
   background: rgba(255, 255, 255, 0.9);
@@ -585,25 +584,6 @@ h2 {
 
 .quote-page-main .quote-section-single {
   grid-template-columns: 1fr;
-}
-
-.quote-page-intro {
-  background:
-    linear-gradient(180deg, rgba(255, 255, 255, 0.96), rgba(245, 250, 240, 0.96));
-}
-
-.quote-page-intro p {
-  color: var(--muted);
-  line-height: 1.7;
-}
-
-.quote-page-back {
-  display: inline-flex;
-  align-items: center;
-  gap: 8px;
-  margin-bottom: 18px;
-  color: var(--forest);
-  font-weight: 700;
 }
 
 .estimate-panel {
@@ -1251,7 +1231,6 @@ h2 {
   .faq-card,
   .quote-copy,
   .quote-link-card,
-  .quote-page-intro,
   .quote-form,
   .contact-strip {
     border-radius: 26px;
