@@ -110,14 +110,7 @@
             <input type="hidden" name="Estimate Summary" value="" data-estimate-summary-hidden>
             <input type="text" name="_honey" class="hp-field" tabindex="-1" autocomplete="off">
             <section class="estimate-panel" aria-live="polite" aria-atomic="true">
-              <div>
-                <p class="eyebrow">Estimated Range</p>
-                <strong class="estimate-total" data-estimate-value>Complete the cleaning details to unlock your estimate.</strong>
-              </div>
-              <p class="estimate-note" data-estimate-note>
-                Choose a cleaning type and add the size of the space to see a starting range.
-              </p>
-              <div class="estimate-breakdown" data-estimate-breakdown hidden></div>
+              <strong class="estimate-total" data-estimate-value>Answer a Few Questions Below &amp; Get Your Quote</strong>
             </section>
             <div class="field-grid">
               <label>
@@ -360,8 +353,6 @@
         if (!form) return;
 
         const estimateValue = form.querySelector("[data-estimate-value]");
-        const estimateNote = form.querySelector("[data-estimate-note]");
-        const estimateBreakdown = form.querySelector("[data-estimate-breakdown]");
         const estimateHidden = form.querySelector("[data-estimate-hidden]");
         const estimateSummaryHidden = form.querySelector("[data-estimate-summary-hidden]");
         const money = new Intl.NumberFormat("en-US", {
@@ -438,10 +429,7 @@
           const addOns = Array.from(form.querySelectorAll('[name="Add-Ons[]"]:checked')).map((input) => input.value);
 
           if (!serviceType || (!squareFootage && !bedrooms && !bathrooms)) {
-            estimateValue.textContent = "Complete the cleaning details to unlock your estimate.";
-            estimateNote.textContent = "Choose a cleaning type and add the size of the space to see a starting range.";
-            estimateBreakdown.hidden = true;
-            estimateBreakdown.innerHTML = "";
+            estimateValue.textContent = "Answer a Few Questions Below & Get Your Quote";
             estimateHidden.value = "";
             estimateSummaryHidden.value = "";
             return;
@@ -536,12 +524,6 @@
 
           const rangeText = `${money.format(range.low)} - ${money.format(range.high)}`;
           estimateValue.textContent = rangeText;
-          estimateNote.textContent = "Instant estimate only. Final pricing may change after photos, special requests, or an in-person review.";
-          estimateBreakdown.hidden = false;
-          estimateBreakdown.innerHTML = summary
-            .slice(0, 6)
-            .map((item) => `<span class="estimate-chip">${item}</span>`)
-            .join("");
           estimateHidden.value = rangeText;
           estimateSummaryHidden.value = summary.join(", ");
         }
