@@ -527,6 +527,11 @@ h2 {
   box-shadow: var(--shadow-soft);
 }
 
+.quote-form {
+  display: grid;
+  gap: 22px;
+}
+
 .proof-card p,
 .faq-card p,
 .quote-copy p {
@@ -543,6 +548,54 @@ h2 {
   margin-top: 24px;
 }
 
+.estimate-panel {
+  display: grid;
+  gap: 14px;
+  padding: 22px 24px;
+  border-radius: 26px;
+  color: var(--white);
+  background:
+    radial-gradient(circle at top right, rgba(207, 233, 171, 0.16), transparent 34%),
+    linear-gradient(135deg, #0c4420, #146731 70%, #1b8741);
+  box-shadow: var(--shadow-soft);
+}
+
+.estimate-panel .eyebrow,
+.estimate-panel .estimate-total,
+.estimate-panel .estimate-note {
+  color: var(--white);
+}
+
+.estimate-total {
+  display: block;
+  font-family: "Fraunces", Georgia, serif;
+  font-size: clamp(1.8rem, 3vw, 2.6rem);
+  line-height: 1.02;
+}
+
+.estimate-note {
+  margin: 0;
+  color: rgba(255, 255, 255, 0.82);
+  line-height: 1.6;
+}
+
+.estimate-breakdown {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+
+.estimate-chip {
+  display: inline-flex;
+  align-items: center;
+  padding: 8px 12px;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.12);
+  color: var(--white);
+  font-size: 0.88rem;
+  font-weight: 700;
+}
+
 .field-grid {
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
@@ -552,12 +605,45 @@ h2 {
 .field-grid label {
   display: grid;
   gap: 8px;
+  align-content: start;
 }
 
 .field-grid span {
   color: var(--forest-deep);
   font-size: 0.88rem;
   font-weight: 700;
+}
+
+.field-note {
+  color: var(--muted);
+  font-size: 0.82rem;
+  line-height: 1.5;
+}
+
+.choice-grid {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+
+.choice-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  min-height: 48px;
+  padding: 12px 14px;
+  border: 1px solid rgba(15, 92, 43, 0.14);
+  border-radius: 18px;
+  background: rgba(248, 251, 245, 0.96);
+  color: var(--ink);
+  font-size: 0.95rem;
+  font-weight: 600;
+}
+
+.choice-chip input {
+  width: 18px;
+  height: 18px;
+  accent-color: var(--forest);
 }
 
 .field-grid input,
@@ -570,6 +656,14 @@ h2 {
   color: var(--ink);
   font: inherit;
   background: rgba(248, 251, 245, 0.96);
+}
+
+.field-grid input:focus,
+.field-grid select:focus,
+.field-grid textarea:focus {
+  outline: 2px solid rgba(21, 114, 55, 0.22);
+  outline-offset: 1px;
+  border-color: rgba(15, 92, 43, 0.28);
 }
 
 .field-grid textarea {
@@ -1114,6 +1208,11 @@ h2 {
   .contact-pill strong {
     font-size: 1rem;
     overflow-wrap: anywhere;
+  }
+
+  .choice-grid {
+    display: grid;
+    grid-template-columns: 1fr;
   }
 
   .field-grid {
