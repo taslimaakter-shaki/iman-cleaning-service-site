@@ -136,7 +136,6 @@ img {
 .story-band,
 .proof-grid,
 .quote-section,
-.faq-section,
 .google-reviews-section,
 .testimonial-section,
 .contact-strip {
@@ -440,8 +439,7 @@ h2 {
   box-shadow: var(--shadow-soft);
 }
 
-.stat-chip strong,
-.faq-card h3 {
+.stat-chip strong {
   display: block;
   margin-bottom: 8px;
   color: var(--forest-deep);
@@ -517,7 +515,6 @@ h2 {
 }
 
 .proof-card,
-.faq-card,
 .quote-form,
 .quote-copy,
 .quote-link-card {
@@ -534,7 +531,6 @@ h2 {
 }
 
 .proof-card p,
-.faq-card p,
 .quote-copy p {
   color: var(--muted);
   line-height: 1.7;
@@ -757,10 +753,6 @@ h2 {
   margin-top: 12px;
 }
 
-.faq-section {
-  padding: 54px 0 12px;
-}
-
 .google-reviews-section {
   display: grid;
   grid-template-columns: minmax(0, 1fr) minmax(320px, 0.88fr);
@@ -841,12 +833,6 @@ h2 {
   text-decoration: underline;
 }
 
-.faq-grid {
-  display: grid;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
-  gap: 18px;
-}
-
 .testimonial-section {
   padding: 36px 0 10px;
 }
@@ -886,7 +872,6 @@ h2 {
   font-size: 0.98rem;
 }
 
-.faq-card a,
 .site-footer a {
   text-decoration: underline;
 }
@@ -1143,7 +1128,6 @@ h2 {
   .story-band,
   .proof-grid,
   .quote-section,
-  .faq-grid,
   .google-reviews-section,
   .testimonial-grid,
   .contact-strip {
@@ -1228,7 +1212,6 @@ h2 {
   .service-card,
   .story-panel,
   .proof-card,
-  .faq-card,
   .quote-copy,
   .quote-link-card,
   .quote-form,
