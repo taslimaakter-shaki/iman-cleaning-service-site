@@ -21,7 +21,7 @@
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link
-      href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;700;800&family=Fraunces:opsz,wght@9..144,700&display=swap"
+      href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700;800&family=Playfair+Display:wght@600;700;800&display=swap"
       rel="stylesheet"
     >
     <script async src="https://www.googletagmanager.com/gtag/js?id=G-6MEJH73E0H"></script>
@@ -33,104 +33,117 @@
     </script>
     <link rel="stylesheet" href="./styles.css">
   </head>
-  <body>
-    <div class="site-shell">
-      <header class="topbar">
-        <a class="brand" href="./index.html" aria-label="Iman Cleaning Service LLC home">
+  <body class="homepage services-page">
+    <header class="home-nav">
+      <div class="home-shell home-nav-inner">
+        <a class="brand home-brand" href="./index.html" aria-label="Iman Cleaning Service LLC home">
           <span class="brand-logo" aria-hidden="true"></span>
           <span class="brand-text">
             <span class="brand-mark">IMAN</span>
             <span class="brand-copy">Cleaning Service LLC</span>
           </span>
         </a>
-        <div class="topbar-actions">
-          <div class="social-links social-links-top" aria-label="Social media">
-            <a class="social-icon social-icon-google" href="https://share.google/EAX7wC22J4PyMKcNx" target="_blank" rel="noreferrer" aria-label="Google Business Profile">
-              <svg viewBox="0 0 24 24" aria-hidden="true">
-                <path fill="#4285F4" d="M23.5 12.3c0-.8-.1-1.5-.2-2.2H12v4.2h6.5c-.3 1.4-1.1 2.7-2.4 3.6v3h3.8c2.2-2.1 3.6-5.1 3.6-8.6Z"/>
-                <path fill="#34A853" d="M12 24c3.2 0 5.9-1.1 7.8-3.1l-3.8-3c-1 .7-2.3 1.2-4 1.2-3.1 0-5.7-2.1-6.6-4.9H1.5v3.1A12 12 0 0 0 12 24Z"/>
-                <path fill="#FBBC04" d="M5.4 14.2c-.2-.7-.4-1.4-.4-2.2s.1-1.5.4-2.2V6.7H1.5A12 12 0 0 0 0 12c0 1.9.5 3.7 1.5 5.3l3.9-3.1Z"/>
-                <path fill="#EA4335" d="M12 4.8c1.7 0 3.2.6 4.4 1.7l3.3-3.3C17.9 1.1 15.2 0 12 0A12 12 0 0 0 1.5 6.7l3.9 3.1c.9-2.8 3.5-5 6.6-5Z"/>
-              </svg>
-            </a>
-            <a class="social-icon social-icon-facebook" href="https://www.facebook.com/Imancleaningservicellc/" target="_blank" rel="noreferrer" aria-label="Facebook">
-              <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M13.5 21v-7h2.4l.4-3h-2.8V9.1c0-.9.3-1.6 1.6-1.6H16V4.8c-.2 0-.9-.1-1.8-.1-2.7 0-4.3 1.6-4.3 4.5V11H7.5v3h2.4v7h3.6Z"/></svg>
-            </a>
-            <a class="social-icon social-icon-instagram" href="https://www.instagram.com/imancleaningservicellc/#" target="_blank" rel="noreferrer" aria-label="Instagram">
+        <nav class="home-nav-links" aria-label="Primary">
+          <a href="./services.html" aria-current="page">Services</a>
+          <a href="./why-us.html">Why Us</a>
+          <a href="./areas.html">Areas</a>
+          <a href="./quote.html">Quote</a>
+          <a href="./contact.html">Contact</a>
+        </nav>
+        <a class="home-nav-cta" href="./quote.html">Book Now</a>
+      </div>
+    </header>
+
+    <main class="services-page-main">
+      <section class="services-page-hero home-section">
+        <div class="home-shell">
+          <div class="home-section-head">
+            <p class="home-kicker">Services</p>
+            <h1>Cleaning options built to convert visitors into booked clients.</h1>
+            <p>From regular upkeep to urgent turnovers, every service is presented with clear value and a fast path to booking.</p>
+          </div>
+
+          <div class="home-services-grid">
+            <article class="home-service-card">
+              <span class="home-service-icon" aria-hidden="true">
+                <svg viewBox="0 0 24 24"><path d="M7 3h10l1 5H6l1-5Zm-1 7h12v10a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2V10Zm3 3v5h2v-5H9Zm4 0v5h2v-5h-2Z"/></svg>
+              </span>
+              <h3>Standard Cleaning</h3>
+              <p>Perfect for weekly, biweekly, or monthly upkeep in apartments, houses, and condos.</p>
+              <a href="./quote.html">Learn More</a>
+            </article>
+            <article class="home-service-card">
+              <span class="home-service-icon" aria-hidden="true">
+                <svg viewBox="0 0 24 24"><path d="M12 2 4 6v6c0 5 3.4 9.6 8 10 4.6-.4 8-5 8-10V6l-8-4Zm3.4 7.6-4 5a1 1 0 0 1-1.5.1L8 12.8l1.4-1.4 1.1 1.1 3.5-4.3 1.4 1.4Z"/></svg>
+              </span>
+              <h3>Deep Cleaning</h3>
+              <p>Ideal for first-time visits, seasonal resets, and homes that need extra attention in kitchens and baths.</p>
+              <a href="./quote.html">Learn More</a>
+            </article>
+            <article class="home-service-card">
+              <span class="home-service-icon" aria-hidden="true">
+                <svg viewBox="0 0 24 24"><path d="M3 11.5 12 4l9 7.5V20a2 2 0 0 1-2 2h-4v-6H9v6H5a2 2 0 0 1-2-2v-8.5Z"/></svg>
+              </span>
+              <h3>Move-In / Move-Out</h3>
+              <p>Detailed turnover cleaning that helps homes feel fresh, polished, and ready for the next chapter.</p>
+              <a href="./quote.html">Learn More</a>
+            </article>
+            <article class="home-service-card">
+              <span class="home-service-icon" aria-hidden="true">
+                <svg viewBox="0 0 24 24"><path d="M7 4h10a3 3 0 0 1 3 3v11H4V7a3 3 0 0 1 3-3Zm1 4v2h8V8H8Zm0 4v2h5v-2H8Z"/><path d="M8 18h8v2H8z"/></svg>
+              </span>
+              <h3>Airbnb Cleaning</h3>
+              <p>Fast, reliable turnovers for hosts who want five-star presentation and smooth guest-ready resets.</p>
+              <a href="./quote.html">Learn More</a>
+            </article>
+          </div>
+        </div>
+      </section>
+    </main>
+
+    <footer class="home-footer">
+      <div class="home-shell home-footer-grid">
+        <div class="home-footer-brand">
+          <a class="brand home-brand" href="./index.html" aria-label="Iman Cleaning Service LLC home">
+            <span class="brand-logo" aria-hidden="true"></span>
+            <span class="brand-text">
+              <span class="brand-mark">IMAN</span>
+              <span class="brand-copy">Cleaning Service LLC</span>
+            </span>
+          </a>
+          <p>Premium, detail-focused cleaning for apartments, homes, rentals, and offices across New York City.</p>
+        </div>
+        <div>
+          <h3>Contact</h3>
+          <p><a href="tel:9177747821">917-774-7821</a></p>
+          <p><a href="mailto:Info@imancleaningservice.com">Info@imancleaningservice.com</a></p>
+          <p>New York City, NY</p>
+        </div>
+        <div>
+          <h3>Quick Links</h3>
+          <p><a href="./services.html">Services</a></p>
+          <p><a href="./why-us.html">Why Us</a></p>
+          <p><a href="./areas.html">Areas</a></p>
+          <p><a href="./quote.html">Quote</a></p>
+          <p><a href="./contact.html">Contact</a></p>
+        </div>
+        <div>
+          <h3>Follow</h3>
+          <div class="home-footer-socials">
+            <a href="https://www.instagram.com/imancleaningservicellc/#" target="_blank" rel="noreferrer" aria-label="Instagram">
               <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M7.8 3h8.4A4.8 4.8 0 0 1 21 7.8v8.4A4.8 4.8 0 0 1 16.2 21H7.8A4.8 4.8 0 0 1 3 16.2V7.8A4.8 4.8 0 0 1 7.8 3Zm0 1.8A3 3 0 0 0 4.8 7.8v8.4a3 3 0 0 0 3 3h8.4a3 3 0 0 0 3-3V7.8a3 3 0 0 0-3-3H7.8Zm8.9 1.3a1.1 1.1 0 1 1 0 2.2 1.1 1.1 0 0 1 0-2.2ZM12 7a5 5 0 1 1 0 10 5 5 0 0 1 0-10Zm0 1.8a3.2 3.2 0 1 0 0 6.4 3.2 3.2 0 0 0 0-6.4Z"/></svg>
             </a>
-            <a class="social-icon social-icon-tiktok" href="https://www.tiktok.com/@imancleaningservicellc?is_from_webapp=1&amp;sender_device=pc" target="_blank" rel="noreferrer" aria-label="TikTok">
+            <a href="https://www.tiktok.com/@imancleaningservicellc?is_from_webapp=1&amp;sender_device=pc" target="_blank" rel="noreferrer" aria-label="TikTok">
               <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M14.6 3c.3 2 1.5 3.5 3.4 4.1v2.7a6.7 6.7 0 0 1-3.4-1.1v6.3a5 5 0 1 1-4.1-4.9v2.8a2.2 2.2 0 1 0 1.4 2V3h2.7Z"/></svg>
             </a>
-            <a class="social-icon social-icon-youtube" href="https://www.youtube.com/@ImanCleaningServiceLLC" target="_blank" rel="noreferrer" aria-label="YouTube">
-              <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M21.6 7.2a2.9 2.9 0 0 0-2-2A34.6 34.6 0 0 0 12 4.8a34.6 34.6 0 0 0-7.6.4 2.9 2.9 0 0 0-2 2A31 31 0 0 0 2 12a31 31 0 0 0 .4 4.8 2.9 2.9 0 0 0 2 2 34.6 34.6 0 0 0 7.6.4 34.6 34.6 0 0 0 7.6-.4 2.9 2.9 0 0 0 2-2A31 31 0 0 0 22 12a31 31 0 0 0-.4-4.8ZM10 15.5v-7l6 3.5-6 3.5Z"/></svg>
+            <a href="https://www.facebook.com/Imancleaningservicellc/" target="_blank" rel="noreferrer" aria-label="Facebook">
+              <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M13.5 21v-7h2.4l.4-3h-2.8V9.1c0-.9.3-1.6 1.6-1.6H16V4.8c-.2 0-.9-.1-1.8-.1-2.7 0-4.3 1.6-4.3 4.5V11H7.5v3h2.4v7h3.6Z"/></svg>
             </a>
           </div>
         </div>
-      </header>
+      </div>
+    </footer>
 
-      <main class="page-main">
-        <section class="page-links-band" aria-label="Site pages">
-          <div class="page-links-grid">
-            <a href="./services.html" aria-current="page">Services</a>
-            <a href="./why-us.html">Why Us</a>
-            <a href="./areas.html">Areas</a>
-            <a href="./quote.html">Quote</a>
-            <a href="./contact.html">Contact</a>
-          </div>
-        </section>
-
-        <section class="page-intro">
-          <p class="eyebrow">Our Services</p>
-          <h1>Cleaning options built around your space.</h1>
-          <p>Whether you need regular upkeep or a full reset before a move, we offer flexible cleaning for homes, rentals, and offices across NYC.</p>
-        </section>
-
-        <section class="services">
-          <div class="service-grid">
-            <article class="service-card">
-              <h3>Standard Cleaning</h3>
-              <p>Reliable recurring cleaning to keep your home or apartment fresh, tidy, and guest-ready.</p>
-            </article>
-            <article class="service-card">
-              <h3>Deep Cleaning</h3>
-              <p>Detailed attention for kitchens, bathrooms, floors, and hard-to-reach areas that need extra care.</p>
-            </article>
-            <article class="service-card">
-              <h3>Move-In & Move-Out</h3>
-              <p>A polished clean for transitions, helping new spaces feel ready and old spaces look their best.</p>
-            </article>
-            <article class="service-card">
-              <h3>Rental & Airbnb Cleaning</h3>
-              <p>Fast turnovers and clean presentation for hosts who want five-star-ready results.</p>
-            </article>
-            <article class="service-card">
-              <h3>Apartment & House Cleaning</h3>
-              <p>Tailored service for everyday homes, from smaller apartments to larger family spaces.</p>
-            </article>
-            <article class="service-card">
-              <h3>Commercial & Office Cleaning</h3>
-              <p>Dependable cleaning that keeps offices and business spaces welcoming, neat, and professional.</p>
-            </article>
-          </div>
-        </section>
-
-        <section class="page-cta">
-          <p class="eyebrow">Next Step</p>
-          <h2>Ready to get pricing?</h2>
-          <p>Use the quote page to answer a few questions and get started with an estimate.</p>
-          <div class="quote-actions">
-            <a class="button button-primary" href="./quote.html">Get A Free Quote</a>
-            <a class="button button-secondary" href="./contact.html">Contact Us</a>
-          </div>
-        </section>
-      </main>
-
-      <footer class="site-footer">
-        <p>Iman Cleaning Service LLC</p>
-        <p>NYC cleaning for homes, rentals, and offices • <a href="mailto:Info@imancleaningservice.com">Info@imancleaningservice.com</a></p>
-        <p><a href="tel:9177747821">917-774-7821</a> • <a href="tel:6362532035">636-253-2035</a> • <a href="https://www.imancleaningservice.com">www.imancleaningservice.com</a></p>
-      </footer>
-    </div>
+    <a class="floating-book" href="./quote.html">Book Now</a>
   </body>
 </html>
