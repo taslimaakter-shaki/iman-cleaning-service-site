@@ -29,7 +29,7 @@
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link
-      href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;700;800&family=Fraunces:opsz,wght@9..144,700&display=swap"
+      href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700;800&family=Playfair+Display:wght@600;700;800&display=swap"
       rel="stylesheet"
     >
     <!-- Google tag (gtag.js) -->
@@ -56,338 +56,401 @@
       }
     </script>
   </head>
-  <body>
-    <div class="site-shell">
-      <header class="topbar">
-        <a class="brand" href="./index.html" aria-label="Iman Cleaning Service LLC home">
+  <body class="homepage">
+    <header class="home-nav">
+      <div class="home-shell home-nav-inner">
+        <a class="brand home-brand" href="./index.html" aria-label="Iman Cleaning Service LLC home">
           <span class="brand-logo" aria-hidden="true"></span>
           <span class="brand-text">
             <span class="brand-mark">IMAN</span>
             <span class="brand-copy">Cleaning Service LLC</span>
           </span>
         </a>
-        <div class="topbar-actions">
-          <div class="social-links social-links-top" aria-label="Social media">
-            <a class="social-icon social-icon-google" href="https://share.google/EAX7wC22J4PyMKcNx" target="_blank" rel="noreferrer" aria-label="Google Business Profile">
-              <svg viewBox="0 0 24 24" aria-hidden="true">
-                <path fill="#4285F4" d="M23.5 12.3c0-.8-.1-1.5-.2-2.2H12v4.2h6.5c-.3 1.4-1.1 2.7-2.4 3.6v3h3.8c2.2-2.1 3.6-5.1 3.6-8.6Z"/>
-                <path fill="#34A853" d="M12 24c3.2 0 5.9-1.1 7.8-3.1l-3.8-3c-1 .7-2.3 1.2-4 1.2-3.1 0-5.7-2.1-6.6-4.9H1.5v3.1A12 12 0 0 0 12 24Z"/>
-                <path fill="#FBBC04" d="M5.4 14.2c-.2-.7-.4-1.4-.4-2.2s.1-1.5.4-2.2V6.7H1.5A12 12 0 0 0 0 12c0 1.9.5 3.7 1.5 5.3l3.9-3.1Z"/>
-                <path fill="#EA4335" d="M12 4.8c1.7 0 3.2.6 4.4 1.7l3.3-3.3C17.9 1.1 15.2 0 12 0A12 12 0 0 0 1.5 6.7l3.9 3.1c.9-2.8 3.5-5 6.6-5Z"/>
-              </svg>
+        <nav class="home-nav-links" aria-label="Primary">
+          <a href="#services">Services</a>
+          <a href="#pricing">Pricing</a>
+          <a href="#areas">Areas</a>
+          <a href="#reviews">Reviews</a>
+          <a href="#contact">Contact</a>
+        </nav>
+        <a class="home-nav-cta" href="./quote.html">Book Now</a>
+      </div>
+    </header>
+
+    <main class="home-main">
+      <section class="home-hero">
+        <div class="home-shell home-hero-grid">
+          <div class="home-hero-copy">
+            <p class="home-kicker">Premium residential and rental cleaning in New York City</p>
+            <h1>NYC’s Most Reliable Cleaning Service</h1>
+            <p class="home-subheadline">Deep Cleaning • Move-Out • Airbnb • Weekly Plans</p>
+            <ul class="home-hero-points" aria-label="Trust highlights">
+              <li>Fully Insured</li>
+              <li>Same-Day Availability</li>
+              <li>100+ Happy Clients</li>
+            </ul>
+            <div class="home-hero-actions">
+              <a class="home-btn home-btn-primary" href="#pricing">Get Instant Quote</a>
+              <a class="home-btn home-btn-secondary" href="./quote.html">Book Now</a>
+            </div>
+          </div>
+          <div class="home-hero-media">
+            <img
+              src="./home-hero-team.jpg"
+              alt="Iman Cleaning Service LLC team cleaning a bright modern apartment in New York City"
+              loading="eager"
+            >
+            <div class="home-hero-overlay">
+              <span class="home-pill">NYC based</span>
+              <strong>Luxury-level cleaning without the agency-level wait.</strong>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section class="home-services home-section" id="services">
+        <div class="home-shell">
+          <div class="home-section-head">
+            <p class="home-kicker">Services</p>
+            <h2>Cleaning options built to convert visitors into booked clients.</h2>
+            <p>From regular upkeep to urgent turnovers, every service is presented with clear value and a fast path to booking.</p>
+          </div>
+          <div class="home-services-grid">
+            <article class="home-service-card">
+              <span class="home-service-icon" aria-hidden="true">
+                <svg viewBox="0 0 24 24"><path d="M7 3h10l1 5H6l1-5Zm-1 7h12v10a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2V10Zm3 3v5h2v-5H9Zm4 0v5h2v-5h-2Z"/></svg>
+              </span>
+              <h3>Standard Cleaning</h3>
+              <p>Perfect for weekly, biweekly, or monthly upkeep in apartments, houses, and condos.</p>
+              <a href="./services.html">Learn More</a>
+            </article>
+            <article class="home-service-card">
+              <span class="home-service-icon" aria-hidden="true">
+                <svg viewBox="0 0 24 24"><path d="M12 2 4 6v6c0 5 3.4 9.6 8 10 4.6-.4 8-5 8-10V6l-8-4Zm3.4 7.6-4 5a1 1 0 0 1-1.5.1L8 12.8l1.4-1.4 1.1 1.1 3.5-4.3 1.4 1.4Z"/></svg>
+              </span>
+              <h3>Deep Cleaning</h3>
+              <p>Ideal for first-time visits, seasonal resets, and homes that need extra attention in kitchens and baths.</p>
+              <a href="./services.html">Learn More</a>
+            </article>
+            <article class="home-service-card">
+              <span class="home-service-icon" aria-hidden="true">
+                <svg viewBox="0 0 24 24"><path d="M3 11.5 12 4l9 7.5V20a2 2 0 0 1-2 2h-4v-6H9v6H5a2 2 0 0 1-2-2v-8.5Z"/></svg>
+              </span>
+              <h3>Move-In / Move-Out</h3>
+              <p>Detailed turnover cleaning that helps homes feel fresh, polished, and ready for the next chapter.</p>
+              <a href="./services.html">Learn More</a>
+            </article>
+            <article class="home-service-card">
+              <span class="home-service-icon" aria-hidden="true">
+                <svg viewBox="0 0 24 24"><path d="M7 4h10a3 3 0 0 1 3 3v11H4V7a3 3 0 0 1 3-3Zm1 4v2h8V8H8Zm0 4v2h5v-2H8Z"/><path d="M8 18h8v2H8z"/></svg>
+              </span>
+              <h3>Airbnb Cleaning</h3>
+              <p>Fast, reliable turnovers for hosts who want five-star presentation and smooth guest-ready resets.</p>
+              <a href="./services.html">Learn More</a>
+            </article>
+          </div>
+        </div>
+      </section>
+
+      <section class="home-quote home-section" id="pricing">
+        <div class="home-shell home-quote-grid">
+          <div class="home-quote-copy">
+            <p class="home-kicker">Instant Quote</p>
+            <h2>Give visitors a fast estimate before they ever leave the page.</h2>
+            <p>Select the space, number of rooms, and add-ons to preview a starting price range. Final pricing can still be confirmed after photos or walkthrough details.</p>
+            <div class="home-quote-estimate-card">
+              <span class="home-estimate-label">Estimated Starting Price</span>
+              <strong data-home-price>$175 - $225</strong>
+              <p data-home-summary>Standard cleaning for a small apartment with one bed and one bath.</p>
+            </div>
+          </div>
+          <form class="home-quote-form" data-home-estimator>
+            <div class="home-field-block">
+              <span>Cleaning Type</span>
+              <div class="home-toggle-grid">
+                <label class="home-toggle">
+                  <input type="radio" name="service_type" value="standard" checked>
+                  <span>Standard</span>
+                </label>
+                <label class="home-toggle">
+                  <input type="radio" name="service_type" value="deep">
+                  <span>Deep</span>
+                </label>
+                <label class="home-toggle">
+                  <input type="radio" name="service_type" value="move">
+                  <span>Move-Out</span>
+                </label>
+                <label class="home-toggle">
+                  <input type="radio" name="service_type" value="airbnb">
+                  <span>Airbnb</span>
+                </label>
+              </div>
+            </div>
+
+            <div class="home-field-grid">
+              <label>
+                <span>Apartment Size</span>
+                <select name="size">
+                  <option value="small">Studio / Small Apartment</option>
+                  <option value="medium">Medium Apartment</option>
+                  <option value="large">Large Apartment / House</option>
+                  <option value="xl">Townhouse / Multi-floor</option>
+                </select>
+              </label>
+              <label>
+                <span>Bedrooms</span>
+                <select name="bedrooms">
+                  <option value="1">1 bedroom</option>
+                  <option value="2">2 bedrooms</option>
+                  <option value="3">3 bedrooms</option>
+                  <option value="4">4+ bedrooms</option>
+                </select>
+              </label>
+              <label>
+                <span>Bathrooms</span>
+                <select name="bathrooms">
+                  <option value="1">1 bathroom</option>
+                  <option value="2">2 bathrooms</option>
+                  <option value="3">3+ bathrooms</option>
+                </select>
+              </label>
+            </div>
+
+            <div class="home-field-block">
+              <span>Add-ons</span>
+              <div class="home-addon-grid">
+                <label class="home-addon">
+                  <input type="checkbox" name="addons" value="oven">
+                  <span>Oven</span>
+                </label>
+                <label class="home-addon">
+                  <input type="checkbox" name="addons" value="fridge">
+                  <span>Fridge</span>
+                </label>
+                <label class="home-addon">
+                  <input type="checkbox" name="addons" value="cabinets">
+                  <span>Cabinets</span>
+                </label>
+              </div>
+            </div>
+
+            <a class="home-btn home-btn-primary home-book-service" href="./quote.html">Book This Service</a>
+          </form>
+        </div>
+      </section>
+
+      <section class="home-trust home-section" id="reviews">
+        <div class="home-shell">
+          <div class="home-section-head">
+            <p class="home-kicker">Trust</p>
+            <h2>Built to make first-time visitors feel safe booking fast.</h2>
+            <p>Real feedback, recognizable badges, and clean proof points help turn browsers into real inquiries.</p>
+          </div>
+          <div class="home-badge-row">
+            <span>Fully Insured</span>
+            <span>NYC Based</span>
+            <span>100+ Clients Served</span>
+          </div>
+          <div class="home-review-grid">
+            <article class="home-review-card">
+              <div class="home-stars" aria-label="5 star review">★★★★★</div>
+              <p>They were professional, easy to communicate with, and made sure everything was properly cleaned without rushing the job.</p>
+              <strong>Amena Limaliya</strong>
+              <span>Google review</span>
+            </article>
+            <article class="home-review-card">
+              <div class="home-stars" aria-label="5 star review">★★★★★</div>
+              <p>I booked last minute and they handled everything so well. They cleaned areas I usually ignore and left the place smelling fresh.</p>
+              <strong>Afreen Ali</strong>
+              <span>Google review</span>
+            </article>
+            <article class="home-review-card">
+              <div class="home-stars" aria-label="5 star review">★★★★★</div>
+              <p>They did an amazing job dealing with fur and odors. Everything felt fresh and they were careful and respectful of the space.</p>
+              <strong>Sanjida Afruz</strong>
+              <span>Google review</span>
+            </article>
+          </div>
+        </div>
+      </section>
+
+      <section class="home-before-after home-section">
+        <div class="home-shell home-before-after-grid">
+          <div class="home-before-after-copy">
+            <p class="home-kicker">Before / After</p>
+            <h2>Show the kind of transformation clients want for their own space.</h2>
+            <p>This layout is ready for real before-and-after content. For now, it uses your branded cleaning image as a polished visual placeholder.</p>
+          </div>
+          <div class="home-compare-grid">
+            <figure class="home-compare-card home-compare-before">
+              <img src="./home-hero-team.jpg" alt="Illustrative before cleaning scene">
+              <figcaption>Before</figcaption>
+            </figure>
+            <figure class="home-compare-card home-compare-after">
+              <img src="./home-hero-team.jpg" alt="Illustrative after cleaning scene">
+              <figcaption>After</figcaption>
+            </figure>
+          </div>
+        </div>
+      </section>
+
+      <section class="home-areas home-section" id="areas">
+        <div class="home-shell home-areas-grid">
+          <div class="home-areas-copy">
+            <p class="home-kicker">Service Areas</p>
+            <h2>Serving the boroughs New Yorkers call home.</h2>
+            <p>We support homes, apartments, rentals, and short-term stays across key NYC boroughs with dependable scheduling and detail-focused service.</p>
+            <div class="home-area-list">
+              <span>Manhattan</span>
+              <span>Brooklyn</span>
+              <span>Queens</span>
+              <span>Bronx</span>
+            </div>
+          </div>
+          <div class="home-map-card" aria-hidden="true">
+            <div class="home-map-dot home-map-dot-one">Manhattan</div>
+            <div class="home-map-dot home-map-dot-two">Brooklyn</div>
+            <div class="home-map-dot home-map-dot-three">Queens</div>
+            <div class="home-map-dot home-map-dot-four">Bronx</div>
+          </div>
+        </div>
+      </section>
+
+      <section class="home-social home-section">
+        <div class="home-shell home-social-card">
+          <div>
+            <p class="home-kicker">Social Media</p>
+            <h2>Follow us for cleaning transformations.</h2>
+            <p>Stay connected for fresh results, behind-the-scenes cleaning work, and service updates.</p>
+          </div>
+          <div class="home-social-links" aria-label="Social media">
+            <a class="home-social-link" href="https://www.instagram.com/imancleaningservicellc/#" target="_blank" rel="noreferrer" aria-label="Instagram">
+              <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M7.8 3h8.4A4.8 4.8 0 0 1 21 7.8v8.4A4.8 4.8 0 0 1 16.2 21H7.8A4.8 4.8 0 0 1 3 16.2V7.8A4.8 4.8 0 0 1 7.8 3Zm0 1.8A3 3 0 0 0 4.8 7.8v8.4a3 3 0 0 0 3 3h8.4a3 3 0 0 0 3-3V7.8a3 3 0 0 0-3-3H7.8Zm8.9 1.3a1.1 1.1 0 1 1 0 2.2 1.1 1.1 0 0 1 0-2.2ZM12 7a5 5 0 1 1 0 10 5 5 0 0 1 0-10Zm0 1.8a3.2 3.2 0 1 0 0 6.4 3.2 3.2 0 0 0 0-6.4Z"/></svg>
+              <span>Instagram</span>
             </a>
-            <a class="social-icon social-icon-facebook" href="https://www.facebook.com/Imancleaningservicellc/" target="_blank" rel="noreferrer" aria-label="Facebook">
-              <svg viewBox="0 0 24 24" aria-hidden="true">
-                <path d="M13.5 21v-7h2.4l.4-3h-2.8V9.1c0-.9.3-1.6 1.6-1.6H16V4.8c-.2 0-.9-.1-1.8-.1-2.7 0-4.3 1.6-4.3 4.5V11H7.5v3h2.4v7h3.6Z"/>
-              </svg>
+            <a class="home-social-link" href="https://www.tiktok.com/@imancleaningservicellc?is_from_webapp=1&amp;sender_device=pc" target="_blank" rel="noreferrer" aria-label="TikTok">
+              <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M14.6 3c.3 2 1.5 3.5 3.4 4.1v2.7a6.7 6.7 0 0 1-3.4-1.1v6.3a5 5 0 1 1-4.1-4.9v2.8a2.2 2.2 0 1 0 1.4 2V3h2.7Z"/></svg>
+              <span>TikTok</span>
             </a>
-            <a class="social-icon social-icon-instagram" href="https://www.instagram.com/imancleaningservicellc/#" target="_blank" rel="noreferrer" aria-label="Instagram">
-              <svg viewBox="0 0 24 24" aria-hidden="true">
-                <path d="M7.8 3h8.4A4.8 4.8 0 0 1 21 7.8v8.4A4.8 4.8 0 0 1 16.2 21H7.8A4.8 4.8 0 0 1 3 16.2V7.8A4.8 4.8 0 0 1 7.8 3Zm0 1.8A3 3 0 0 0 4.8 7.8v8.4a3 3 0 0 0 3 3h8.4a3 3 0 0 0 3-3V7.8a3 3 0 0 0-3-3H7.8Zm8.9 1.3a1.1 1.1 0 1 1 0 2.2 1.1 1.1 0 0 1 0-2.2ZM12 7a5 5 0 1 1 0 10 5 5 0 0 1 0-10Zm0 1.8a3.2 3.2 0 1 0 0 6.4 3.2 3.2 0 0 0 0-6.4Z"/>
-              </svg>
-            </a>
-            <a class="social-icon social-icon-tiktok" href="https://www.tiktok.com/@imancleaningservicellc?is_from_webapp=1&amp;sender_device=pc" target="_blank" rel="noreferrer" aria-label="TikTok">
-              <svg viewBox="0 0 24 24" aria-hidden="true">
-                <path d="M14.6 3c.3 2 1.5 3.5 3.4 4.1v2.7a6.7 6.7 0 0 1-3.4-1.1v6.3a5 5 0 1 1-4.1-4.9v2.8a2.2 2.2 0 1 0 1.4 2V3h2.7Z"/>
-              </svg>
-            </a>
-            <a class="social-icon social-icon-youtube" href="https://www.youtube.com/@ImanCleaningServiceLLC" target="_blank" rel="noreferrer" aria-label="YouTube">
-              <svg viewBox="0 0 24 24" aria-hidden="true">
-                <path d="M21.6 7.2a2.9 2.9 0 0 0-2-2A34.6 34.6 0 0 0 12 4.8a34.6 34.6 0 0 0-7.6.4 2.9 2.9 0 0 0-2 2A31 31 0 0 0 2 12a31 31 0 0 0 .4 4.8 2.9 2.9 0 0 0 2 2 34.6 34.6 0 0 0 7.6.4 34.6 34.6 0 0 0 7.6-.4 2.9 2.9 0 0 0 2-2A31 31 0 0 0 22 12a31 31 0 0 0-.4-4.8ZM10 15.5v-7l6 3.5-6 3.5Z"/>
-              </svg>
+            <a class="home-social-link" href="https://www.facebook.com/Imancleaningservicellc/" target="_blank" rel="noreferrer" aria-label="Facebook">
+              <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M13.5 21v-7h2.4l.4-3h-2.8V9.1c0-.9.3-1.6 1.6-1.6H16V4.8c-.2 0-.9-.1-1.8-.1-2.7 0-4.3 1.6-4.3 4.5V11H7.5v3h2.4v7h3.6Z"/></svg>
+              <span>Facebook</span>
             </a>
           </div>
         </div>
-      </header>
+      </section>
+    </main>
 
-      <main id="home">
-        <section class="hero">
-          <div class="hero-media" aria-hidden="true">
-            <img
-              src="./home-hero-team.jpg"
-              alt=""
-            >
-          </div>
-
-          <div class="hero-copy">
-            <p class="eyebrow hero-eyebrow">NYC cleaning service • Homes, rentals, offices</p>
-            <h1>Clean spaces for busy lives that do not slow down.</h1>
-            <p class="hero-text">
-              Iman Cleaning Service LLC brings dependable teams, clear communication,
-              and detail-focused cleaning to apartments, houses, rentals, and offices
-              across New York City.
-            </p>
-
-            <div class="hero-actions">
-              <a class="button button-primary" href="./quote.html">Get A Free Quote</a>
-              <a class="button button-secondary hero-link" href="./services.html">See Services</a>
-            </div>
-
-            <div class="hero-highlights" aria-label="Trust signals">
-              <span class="hero-highlight">Fully insured</span>
-              <span class="hero-highlight">Move-in and deep cleaning</span>
-              <span class="hero-highlight">Fast response and easy booking</span>
-            </div>
-          </div>
-
-          <div class="hero-badge">
-            <span class="offer-kicker">New Client Special</span>
-            <strong>$20 off your first cleaning</strong>
-            <p>Tell us about your space and we will help you get your quote started fast.</p>
-          </div>
-        </section>
-
-        <section class="page-links-band" aria-label="Site pages">
-          <div class="page-links-grid">
-            <a href="./services.html">Services</a>
-            <a href="./why-us.html">Why Us</a>
-            <a href="./areas.html">Areas</a>
-            <a href="./quote.html">Quote</a>
-            <a href="./contact.html">Contact</a>
-          </div>
-        </section>
-
-        <section class="stats-band" aria-label="Business highlights">
-          <article class="stat-chip">
-            <strong>Flexible scheduling</strong>
-            <span>Weekly, biweekly, monthly, and one-time service options</span>
-          </article>
-          <article class="stat-chip">
-            <strong>Homes and businesses</strong>
-            <span>Apartments, houses, rentals, turnovers, and office spaces</span>
-          </article>
-          <article class="stat-chip">
-            <strong>Direct communication</strong>
-            <span>Book by phone or email with fast, friendly follow-up</span>
-          </article>
-        </section>
-
-        <section class="flyer-feature" aria-labelledby="weekly-flyer-title">
-          <div class="flyer-copy">
-            <p class="eyebrow">Weekly Feature</p>
-            <h2 id="weekly-flyer-title">This week’s featured flyer deserves its own spotlight.</h2>
-            <p>
-              Every week, we can highlight a fresh promotion, message, or seasonal offer here
-              so visitors instantly see what is new without digging through social posts.
-            </p>
-            <div class="flyer-points" aria-label="Featured flyer benefits">
-              <span>Fresh weekly campaign</span>
-              <span>Perfect for offers and urgency</span>
-              <span>Designed to stand out on mobile</span>
-            </div>
-            <div class="hero-actions">
-              <a class="button button-primary" href="./quote.html">Book From This Offer</a>
-              <a class="button button-secondary" href="tel:9177747821">Call About This Flyer</a>
-            </div>
-          </div>
-          <div class="flyer-stage">
-            <div class="flyer-frame">
-              <div class="flyer-badge">Featured This Week</div>
-              <img
-                src="./weekly-flyer-01.png"
-                alt="Featured weekly cleaning flyer for Iman Cleaning Service LLC"
-              >
-            </div>
-          </div>
-        </section>
-
-        <section class="services" id="services">
-          <div class="section-heading">
-            <p class="eyebrow">Our Services</p>
-            <h2>Cleaning options built around your space.</h2>
-            <p>
-              Whether you need regular upkeep or a reset before a big move, we offer
-              flexible service for homes and businesses across NYC.
-            </p>
-          </div>
-
-          <div class="service-grid">
-            <article class="service-card">
-              <h3>Standard Cleaning</h3>
-              <p>Reliable recurring cleaning to keep your home or apartment fresh, tidy, and guest-ready.</p>
-            </article>
-            <article class="service-card">
-              <h3>Deep Cleaning</h3>
-              <p>Detailed attention for kitchens, bathrooms, floors, and hard-to-reach areas that need extra care.</p>
-            </article>
-            <article class="service-card">
-              <h3>Move-In & Move-Out</h3>
-              <p>A polished clean for transitions, helping new spaces feel ready and old spaces look their best.</p>
-            </article>
-            <article class="service-card">
-              <h3>Rental & Airbnb Cleaning</h3>
-              <p>Fast turnovers and clean presentation for hosts who want five-star-ready results.</p>
-            </article>
-            <article class="service-card">
-              <h3>Apartment & House Cleaning</h3>
-              <p>Tailored service for everyday homes, from smaller apartments to larger family spaces.</p>
-            </article>
-            <article class="service-card">
-              <h3>Commercial & Office Cleaning</h3>
-              <p>Dependable cleaning that keeps offices and business spaces welcoming, neat, and professional.</p>
-            </article>
-          </div>
-        </section>
-
-        <section class="story-band" id="about">
-          <div class="story-panel story-panel-dark">
-            <p class="eyebrow">Why Clients Choose Us</p>
-            <h2>Trusted service with a personal touch.</h2>
-            <ul class="check-list">
-              <li>Affordable pricing with dependable scheduling</li>
-              <li>Careful, detail-focused cleaning</li>
-              <li>Friendly communication and easy booking</li>
-              <li>Support for homes, rentals, and offices</li>
-            </ul>
-          </div>
-          <div class="story-panel story-panel-light">
-            <p class="eyebrow">Simple Process</p>
-            <h2>Call, schedule, relax.</h2>
-            <ol class="steps">
-              <li>Tell us what kind of cleaning you need.</li>
-              <li>Choose a time that works for your schedule.</li>
-              <li>Enjoy a clean space without the stress.</li>
-            </ol>
-          </div>
-        </section>
-
-        <section class="google-reviews-section" aria-labelledby="google-reviews-title">
-          <div class="google-reviews-copy">
-            <p class="eyebrow">Google Reviews</p>
-            <h2 id="google-reviews-title">Let visitors see your trust before they even call.</h2>
-            <p>
-              Google reviews help new clients feel confident about booking. This section gives
-              your website a dedicated trust signal and makes it easy for happy customers to
-              leave feedback after a cleaning.
-            </p>
-            <div class="hero-actions">
-              <a
-                class="button button-primary"
-                href="https://g.page/r/CZr1C9xnMwR3EAI/review"
-                target="_blank"
-                rel="noreferrer"
-              >Leave A Google Review</a>
-              <a
-                class="button button-secondary"
-                href="https://share.google/EAX7wC22J4PyMKcNx"
-                target="_blank"
-                rel="noreferrer"
-              >View Google Profile</a>
-            </div>
-          </div>
-          <div class="google-review-card">
-            <div class="google-review-head">
-              <div class="google-badge" aria-hidden="true">G</div>
-              <div>
-                <strong>Iman Cleaning Service LLC</strong>
-                <p>Google Business Profile • 5.0 rating from 9 reviews</p>
-              </div>
-            </div>
-            <div class="google-stars" aria-label="Google review stars">
-              <span>★</span>
-              <span>★</span>
-              <span>★</span>
-              <span>★</span>
-              <span>★</span>
-            </div>
-            <p class="google-review-note">
-              Your Google profile is already showing a perfect 5.0 rating. Keep the momentum
-              going by inviting happy clients to leave a review after each cleaning.
-            </p>
-            <a
-              class="google-review-link"
-              href="https://g.page/r/CZr1C9xnMwR3EAI/review"
-              target="_blank"
-              rel="noreferrer"
-            >Write a review on Google</a>
-          </div>
-        </section>
-
-        <section class="testimonial-section">
-          <div class="section-heading">
-            <p class="eyebrow">Client Confidence</p>
-            <h2>The kind of service people want to book again.</h2>
-            <p>
-              These are real review excerpts from your Google Business profile, featured here so
-              new visitors can immediately see what clients are saying.
-            </p>
-          </div>
-          <div class="testimonial-grid">
-            <article class="testimonial-card">
-              <p class="quote-mark">“</p>
-              <p>
-                I’ve tried a couple of cleaning services in NYC, and this one stands out. They
-                were very professional but also easy to communicate with. They didn’t rush
-                through the job and made sure everything was properly cleaned.
-              </p>
-              <strong>Amena Limaliya • Google review</strong>
-            </article>
-            <article class="testimonial-card">
-              <p class="quote-mark">“</p>
-              <p>
-                Honestly didn’t expect this level of detail. I booked them last minute because my
-                apartment was a mess, and they handled everything so well. They didn’t rush,
-                cleaned areas I usually ignore, and left the place smelling fresh without being overpowering.
-              </p>
-              <strong>Afreen Ali • Google review</strong>
-            </article>
-            <article class="testimonial-card">
-              <p class="quote-mark">“</p>
-              <p>
-                I have multiple cats, and keeping the house clean is always a challenge. They
-                did an amazing job dealing with fur and odors. Everything felt fresh without
-                being too strong. They were careful and respectful of the space.
-              </p>
-              <strong>Sanjida Afruz • Google review</strong>
-            </article>
-          </div>
-        </section>
-
-        <section class="contact-strip" id="contact">
-          <div>
-            <p class="eyebrow">Ready To Book?</p>
-            <h2>Stop cleaning. Start living.</h2>
-            <p>
-              Call or email Iman Cleaning Service LLC today to book your first visit or ask
-              about regular cleaning for your home, rental, or business.
-            </p>
-            <p class="contact-domain">
-              Online home: <strong>www.imancleaningservice.com</strong>
-            </p>
-          </div>
-          <div class="contact-actions">
-            <a class="contact-pill" href="tel:9177747821">
-              <span class="pill-label">Phone</span>
-              <strong>917-774-7821</strong>
+    <footer class="home-footer" id="contact">
+      <div class="home-shell home-footer-grid">
+        <div class="home-footer-brand">
+          <a class="brand home-brand" href="./index.html" aria-label="Iman Cleaning Service LLC home">
+            <span class="brand-logo" aria-hidden="true"></span>
+            <span class="brand-text">
+              <span class="brand-mark">IMAN</span>
+              <span class="brand-copy">Cleaning Service LLC</span>
+            </span>
+          </a>
+          <p>Premium, detail-focused cleaning for apartments, homes, rentals, and offices across New York City.</p>
+        </div>
+        <div>
+          <h3>Contact</h3>
+          <p><a href="tel:9177747821">917-774-7821</a></p>
+          <p><a href="mailto:Info@imancleaningservice.com">Info@imancleaningservice.com</a></p>
+          <p>New York City, NY</p>
+        </div>
+        <div>
+          <h3>Quick Links</h3>
+          <p><a href="#services">Services</a></p>
+          <p><a href="#pricing">Pricing</a></p>
+          <p><a href="#areas">Areas</a></p>
+          <p><a href="#reviews">Reviews</a></p>
+        </div>
+        <div>
+          <h3>Follow</h3>
+          <div class="home-footer-socials">
+            <a href="https://www.instagram.com/imancleaningservicellc/#" target="_blank" rel="noreferrer" aria-label="Instagram">
+              <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M7.8 3h8.4A4.8 4.8 0 0 1 21 7.8v8.4A4.8 4.8 0 0 1 16.2 21H7.8A4.8 4.8 0 0 1 3 16.2V7.8A4.8 4.8 0 0 1 7.8 3Zm0 1.8A3 3 0 0 0 4.8 7.8v8.4a3 3 0 0 0 3 3h8.4a3 3 0 0 0 3-3V7.8a3 3 0 0 0-3-3H7.8Zm8.9 1.3a1.1 1.1 0 1 1 0 2.2 1.1 1.1 0 0 1 0-2.2ZM12 7a5 5 0 1 1 0 10 5 5 0 0 1 0-10Zm0 1.8a3.2 3.2 0 1 0 0 6.4 3.2 3.2 0 0 0 0-6.4Z"/></svg>
             </a>
-            <a class="contact-pill" href="tel:6362532035">
-              <span class="pill-label">Phone</span>
-              <strong>636-253-2035</strong>
+            <a href="https://www.tiktok.com/@imancleaningservicellc?is_from_webapp=1&amp;sender_device=pc" target="_blank" rel="noreferrer" aria-label="TikTok">
+              <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M14.6 3c.3 2 1.5 3.5 3.4 4.1v2.7a6.7 6.7 0 0 1-3.4-1.1v6.3a5 5 0 1 1-4.1-4.9v2.8a2.2 2.2 0 1 0 1.4 2V3h2.7Z"/></svg>
             </a>
-            <a class="contact-pill" href="mailto:Info@imancleaningservice.com?subject=Book%20a%20Cleaning">
-              <span class="pill-label">Email</span>
-              <strong>Info@imancleaningservice.com</strong>
-            </a>
-            <a class="contact-pill" href="https://www.imancleaningservice.com">
-              <span class="pill-label">Website</span>
-              <strong>www.imancleaningservice.com</strong>
+            <a href="https://www.facebook.com/Imancleaningservicellc/" target="_blank" rel="noreferrer" aria-label="Facebook">
+              <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M13.5 21v-7h2.4l.4-3h-2.8V9.1c0-.9.3-1.6 1.6-1.6H16V4.8c-.2 0-.9-.1-1.8-.1-2.7 0-4.3 1.6-4.3 4.5V11H7.5v3h2.4v7h3.6Z"/></svg>
             </a>
           </div>
-        </section>
-      </main>
+        </div>
+      </div>
+    </footer>
 
-      <footer class="site-footer">
-        <p>Iman Cleaning Service LLC</p>
-        <p>
-          NYC cleaning for homes, rentals, and offices •
-          <a href="mailto:Info@imancleaningservice.com">Info@imancleaningservice.com</a>
-        </p>
-        <p>
-          <a href="tel:9177747821">917-774-7821</a> •
-          <a href="tel:6362532035">636-253-2035</a> •
-          <a href="https://www.imancleaningservice.com">www.imancleaningservice.com</a>
-        </p>
-      </footer>
-    </div>
+    <a class="floating-book" href="./quote.html">Book Now</a>
+
+    <script>
+      (() => {
+        const form = document.querySelector("[data-home-estimator]");
+        if (!form) return;
+
+        const priceEl = document.querySelector("[data-home-price]");
+        const summaryEl = document.querySelector("[data-home-summary]");
+        const money = new Intl.NumberFormat("en-US", {
+          style: "currency",
+          currency: "USD",
+          maximumFractionDigits: 0
+        });
+
+        const serviceBase = {
+          standard: 165,
+          deep: 235,
+          move: 285,
+          airbnb: 195
+        };
+
+        const serviceLabel = {
+          standard: "Standard cleaning",
+          deep: "Deep cleaning",
+          move: "Move-out cleaning",
+          airbnb: "Airbnb cleaning"
+        };
+
+        const sizeAdjust = {
+          small: 0,
+          medium: 45,
+          large: 95,
+          xl: 165
+        };
+
+        function updateEstimate() {
+          const service = form.querySelector('[name="service_type"]:checked')?.value || "standard";
+          const size = form.querySelector('[name="size"]').value;
+          const bedrooms = Number(form.querySelector('[name="bedrooms"]').value);
+          const bathrooms = Number(form.querySelector('[name="bathrooms"]').value);
+          const addons = Array.from(form.querySelectorAll('[name="addons"]:checked')).map((input) => input.value);
+
+          let estimate = serviceBase[service] + sizeAdjust[size];
+          estimate += Math.max(0, bedrooms - 1) * 28;
+          estimate += Math.max(0, bathrooms - 1) * 24;
+          estimate += addons.length * 25;
+
+          const low = Math.round(estimate / 5) * 5;
+          const high = Math.round((estimate + 55 + addons.length * 10) / 5) * 5;
+
+          priceEl.textContent = `${money.format(low)} - ${money.format(high)}`;
+
+          const sizeLabel = {
+            small: "small apartment",
+            medium: "medium apartment",
+            large: "large apartment or house",
+            xl: "multi-floor home"
+          };
+
+          const addonText = addons.length ? ` with ${addons.length} add-on${addons.length > 1 ? "s" : ""}` : "";
+          summaryEl.textContent = `${serviceLabel[service]} for a ${sizeLabel[size]}, ${bedrooms} bed, ${bathrooms} bath${addonText}.`;
+        }
+
+        form.addEventListener("input", updateEstimate);
+        form.addEventListener("change", updateEstimate);
+        updateEstimate();
+      })();
+    </script>
   </body>
 </html>
