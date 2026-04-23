@@ -13,6 +13,12 @@
   --radius-lg: 22px;
   --radius-md: 16px;
   --max-width: 1180px;
+  --home-green: #0f3d2e;
+  --home-green-soft: #174f3d;
+  --home-gray: #f3f5f4;
+  --home-gray-deep: #dfe6e3;
+  --home-text: #18211d;
+  --home-muted: #5c6a64;
 }
 
 * {
@@ -1546,9 +1552,21 @@ body.homepage {
   top: 0;
   z-index: 100;
   padding: 14px 0;
+  font-family: "Poppins", Arial, sans-serif;
   background: rgba(251, 252, 252, 0.88);
   backdrop-filter: blur(16px);
   border-bottom: 1px solid rgba(15, 61, 46, 0.08);
+}
+
+.site-shell > .topbar,
+.page-main > .page-links-band,
+.home-nav .social-links-top {
+  display: none;
+}
+
+.home-nav .brand-mark,
+.home-nav .brand-copy {
+  color: var(--home-green);
 }
 
 .home-nav-inner {
