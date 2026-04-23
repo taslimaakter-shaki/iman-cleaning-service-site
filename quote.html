@@ -154,8 +154,8 @@
               </label>
               <label>
                 <span>Bedrooms</span>
-                <select name="Bedrooms">
-                  <option value="" selected>Optional</option>
+                <select name="Bedrooms" required>
+                  <option value="" selected disabled>Select one</option>
                   <option value="0">Studio</option>
                   <option value="1">1 bedroom</option>
                   <option value="2">2 bedrooms</option>
@@ -166,8 +166,8 @@
               </label>
               <label>
                 <span>Bathrooms</span>
-                <select name="Bathrooms">
-                  <option value="" selected>Optional</option>
+                <select name="Bathrooms" required>
+                  <option value="" selected disabled>Select one</option>
                   <option value="1">1 bathroom</option>
                   <option value="1.5">1.5 bathrooms</option>
                   <option value="2">2 bathrooms</option>
@@ -219,7 +219,7 @@
               </label>
               <label>
                 <span>Do you have any office or business space?</span>
-                <select name="Do You Have an Office?">
+                <select name="Do You Have an Office?" required>
                   <option value="" selected disabled>Select one</option>
                   <option>No</option>
                   <option>Yes</option>
@@ -236,7 +236,7 @@
               </label>
               <label>
                 <span>When was it last professionally or thoroughly cleaned?</span>
-                <select name="Last Professional Cleaning">
+                <select name="Last Professional Cleaning" required>
                   <option value="" selected disabled>Select one</option>
                   <option>Within the last month</option>
                   <option>1 to 3 months ago</option>
@@ -267,24 +267,28 @@
                 <span>Would you like any add-ons cleaned thoroughly?</span>
                 <div class="choice-grid">
                   <label class="choice-chip">
-                    <input type="checkbox" name="Add-Ons[]" value="Inside cabinets">
+                    <input type="checkbox" name="Add-Ons[]" value="Inside cabinets" data-addon-option required>
                     <span>Inside cabinets</span>
                   </label>
                   <label class="choice-chip">
-                    <input type="checkbox" name="Add-Ons[]" value="Inside fridge">
+                    <input type="checkbox" name="Add-Ons[]" value="Inside fridge" data-addon-option>
                     <span>Inside fridge</span>
                   </label>
                   <label class="choice-chip">
-                    <input type="checkbox" name="Add-Ons[]" value="Inside oven">
+                    <input type="checkbox" name="Add-Ons[]" value="Inside oven" data-addon-option>
                     <span>Inside oven</span>
                   </label>
                   <label class="choice-chip">
-                    <input type="checkbox" name="Add-Ons[]" value="Inside microwave">
+                    <input type="checkbox" name="Add-Ons[]" value="Inside microwave" data-addon-option>
                     <span>Inside microwave</span>
                   </label>
                   <label class="choice-chip">
-                    <input type="checkbox" name="Add-Ons[]" value="Interior windows">
+                    <input type="checkbox" name="Add-Ons[]" value="Interior windows" data-addon-option>
                     <span>Interior windows</span>
+                  </label>
+                  <label class="choice-chip">
+                    <input type="checkbox" name="Add-Ons[]" value="No add-ons needed" data-addon-option>
+                    <span>No add-ons needed</span>
                   </label>
                 </div>
               </label>
@@ -294,6 +298,7 @@
                   name="Cabinets and Appliances Add-Ons"
                   rows="3"
                   placeholder="Example: inside dishwasher, inside freezer, or any other detailed add-on work. Put N/A if not applicable."
+                  required
                 ></textarea>
               </label>
               <label class="field-wide">
@@ -302,6 +307,7 @@
                   name="Condition Notes"
                   rows="4"
                   placeholder="You can mention grease in the kitchen, soap scum, mold, heavy dust, packed closets, or anything else that might affect the quote. Put N/A if not applicable."
+                  required
                 ></textarea>
               </label>
               <label>
@@ -314,11 +320,12 @@
                 </select>
               </label>
               <label class="field-wide">
-                <span>Photo link or notes</span>
+                <span>Photo link or notes. Put N/A if not applicable.</span>
                 <textarea
                   name="Photos of Rooms"
                   rows="3"
-                  placeholder="Paste a Google Drive link, or tell us whether you will text or email photos of the bathrooms, living room, dining room, and bedrooms."
+                  placeholder="Paste a Google Drive link, or tell us whether you will text or email photos of the bathrooms, living room, dining room, and bedrooms. Put N/A if not applicable."
+                  required
                 ></textarea>
               </label>
               <label class="field-wide">
@@ -327,6 +334,7 @@
                   name="Project Details"
                   rows="5"
                   placeholder="Share any extra details about the space, schedule, access, or cleaning priorities. Put N/A if not applicable."
+                  required
                 ></textarea>
               </label>
             </div>
@@ -354,5 +362,21 @@
     </div>
 
     <a class="floating-book" href="./quote.html">Get a Quote Now</a>
+    <script>
+      (() => {
+        const addOns = Array.from(document.querySelectorAll("[data-addon-option]"));
+        if (!addOns.length) return;
+
+        function syncAddOnRequirement() {
+          const hasSelection = addOns.some((input) => input.checked);
+          addOns.forEach((input, index) => {
+            input.required = index === 0 && !hasSelection;
+          });
+        }
+
+        addOns.forEach((input) => input.addEventListener("change", syncAddOnRequirement));
+        syncAddOnRequirement();
+      })();
+    </script>
   </body>
 </html>
