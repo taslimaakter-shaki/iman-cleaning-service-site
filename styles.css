@@ -1618,7 +1618,7 @@ body.homepage {
 .home-btn-primary,
 .floating-book {
   color: var(--white);
-  background: linear-gradient(135deg, var(--home-green), var(--home-green-soft));
+  background: linear-gradient(135deg, var(--home-green, var(--forest)), var(--home-green-soft, var(--forest-deep)));
   box-shadow: 0 18px 28px rgba(15, 61, 46, 0.18);
 }
 
