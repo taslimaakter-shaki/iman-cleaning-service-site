@@ -6,12 +6,12 @@
     <title>Get A Free Quote | Iman Cleaning Service LLC</title>
     <meta
       name="description"
-      content="Answer a few questions and get an instant cleaning estimate from Iman Cleaning Service LLC."
+      content="Answer a few questions and request a cleaning quote from Iman Cleaning Service LLC."
     >
     <meta property="og:title" content="Get A Free Quote | Iman Cleaning Service LLC">
     <meta
       property="og:description"
-      content="Use the Iman Cleaning Service LLC quote page to answer cleaning questions and see an instant estimate range."
+      content="Use the Iman Cleaning Service LLC quote page to answer cleaning questions and request a personalized quote."
     >
     <meta property="og:type" content="website">
     <meta property="og:image" content="https://www.imancleaningservice.com/brand-card.png">
@@ -21,7 +21,7 @@
     <meta name="twitter:title" content="Get A Free Quote | Iman Cleaning Service LLC">
     <meta
       name="twitter:description"
-      content="Answer the quote questions and see an estimate range before submitting your cleaning request."
+      content="Answer the quote questions and request a personalized cleaning quote."
     >
     <meta name="twitter:image" content="https://www.imancleaningservice.com/brand-card.png">
     <meta name="theme-color" content="#0f5c2b">
@@ -109,19 +109,13 @@
         <section class="quote-section quote-section-single">
           <form
             class="quote-form"
-            data-quote-estimator
             action="https://formsubmit.co/Info@imancleaningservice.com"
             method="POST"
           >
             <input type="hidden" name="_subject" value="New cleaning quote request from www.imancleaningservice.com">
             <input type="hidden" name="_next" value="https://www.imancleaningservice.com/thanks.html">
             <input type="hidden" name="_template" value="table">
-            <input type="hidden" name="Instant Estimate Range" value="" data-estimate-hidden>
-            <input type="hidden" name="Estimate Summary" value="" data-estimate-summary-hidden>
             <input type="text" name="_honey" class="hp-field" tabindex="-1" autocomplete="off">
-            <section class="estimate-panel" aria-live="polite" aria-atomic="true">
-              <strong class="estimate-total" data-estimate-value>Answer a Few Questions Below &amp; Get Your Quote</strong>
-            </section>
             <div class="field-grid">
               <label>
                 <span>First name</span>
@@ -307,7 +301,7 @@
                 <textarea
                   name="Condition Notes"
                   rows="4"
-                  placeholder="You can mention grease in the kitchen, soap scum, mold, heavy dust, packed closets, or anything else that might affect the estimate."
+                  placeholder="You can mention grease in the kitchen, soap scum, mold, heavy dust, packed closets, or anything else that might affect the quote."
                 ></textarea>
               </label>
               <label>
@@ -337,7 +331,7 @@
               </label>
             </div>
             <div class="quote-actions">
-              <button class="button button-primary" type="submit">Send Estimate Request</button>
+              <button class="button button-primary" type="submit">Request a Quote</button>
               <a class="button button-secondary" href="tel:6362532035">Or Call Now</a>
               <button class="button button-secondary" type="button" onclick="if (window.history.length > 1) { window.history.back(); } else { window.location.href = './index.html'; }">Go Back</button>
             </div>
@@ -360,192 +354,5 @@
     </div>
 
     <a class="floating-book" href="./quote.html">Get a Quote Now</a>
-
-    <script>
-      (() => {
-        const form = document.querySelector("[data-quote-estimator]");
-        if (!form) return;
-
-        const estimateValue = form.querySelector("[data-estimate-value]");
-        const estimateHidden = form.querySelector("[data-estimate-hidden]");
-        const estimateSummaryHidden = form.querySelector("[data-estimate-summary-hidden]");
-        const money = new Intl.NumberFormat("en-US", {
-          style: "currency",
-          currency: "USD",
-          maximumFractionDigits: 0
-        });
-
-        const serviceBase = {
-          "Standard Cleaning": [130, 170],
-          "Deep Cleaning": [190, 260],
-          "Move-In Cleaning": [220, 290],
-          "Move-Out Cleaning": [235, 310],
-          "Post-Construction Cleaning": [280, 380],
-          "Office Cleaning": [180, 260],
-          "Airbnb / Rental Cleaning": [160, 220]
-        };
-
-        const propertyAdjust = {
-          "Apartment": [0, 10],
-          "House": [20, 35],
-          "Condo / Co-op": [10, 20],
-          "Airbnb / Rental": [15, 30],
-          "Office / Business": [25, 45]
-        };
-
-        const frequencyAdjust = {
-          "One-time": 1,
-          "Weekly": 0.88,
-          "Biweekly": 0.92,
-          "Monthly": 0.96
-        };
-
-        function read(name) {
-          const field = form.querySelector(`[name="${name}"]`);
-          return field ? field.value.trim() : "";
-        }
-
-        function parseNumber(value) {
-          const normalized = Number.parseFloat(String(value).replace(/[^0-9.]/g, ""));
-          return Number.isFinite(normalized) ? normalized : 0;
-        }
-
-        function addRange(range, lowAdd, highAdd, label, list) {
-          range.low += lowAdd;
-          range.high += highAdd;
-          if (label) list.push(label);
-        }
-
-        function sizeAdjustment(squareFootage) {
-          if (squareFootage <= 600) return [0, 15];
-          if (squareFootage <= 900) return [20, 40];
-          if (squareFootage <= 1200) return [45, 75];
-          if (squareFootage <= 1600) return [75, 115];
-          if (squareFootage <= 2200) return [115, 170];
-          if (squareFootage <= 3000) return [170, 250];
-          const extraBlocks = Math.ceil((squareFootage - 3000) / 500);
-          return [170 + extraBlocks * 35, 250 + extraBlocks * 55];
-        }
-
-        function updateEstimate() {
-          const serviceType = read("Service Type");
-          const propertyType = read("Property Type");
-          const squareFootage = parseNumber(read("Square Footage"));
-          const bedrooms = parseNumber(read("Bedrooms"));
-          const bathrooms = parseNumber(read("Bathrooms"));
-          const frequency = read("Cleaning Frequency");
-          const pets = read("Do You Have Pets?");
-          const construction = read("Recent Construction or Renovation?");
-          const office = read("Do You Have an Office?");
-          const lastCleaned = read("Last Professional Cleaning");
-          const clutter = read("Clutter or Ready for Cleaning");
-          const buildup = read("Heavy Buildup Areas");
-          const addOns = Array.from(form.querySelectorAll('[name="Add-Ons[]"]:checked')).map((input) => input.value);
-
-          if (!serviceType || (!squareFootage && !bedrooms && !bathrooms)) {
-            estimateValue.textContent = "Answer a Few Questions Below & Get Your Quote";
-            estimateHidden.value = "";
-            estimateSummaryHidden.value = "";
-            return;
-          }
-
-          const baseRange = serviceBase[serviceType] || [150, 220];
-          const range = { low: baseRange[0], high: baseRange[1] };
-          const summary = [`${serviceType} base`];
-
-          if (propertyAdjust[propertyType]) {
-            addRange(range, propertyAdjust[propertyType][0], propertyAdjust[propertyType][1], propertyType, summary);
-          }
-
-          if (squareFootage) {
-            const [sizeLow, sizeHigh] = sizeAdjustment(squareFootage);
-            addRange(range, sizeLow, sizeHigh, `${squareFootage.toLocaleString()} sq ft`, summary);
-          } else {
-            addRange(
-              range,
-              bedrooms * 25 + bathrooms * 35,
-              bedrooms * 40 + bathrooms * 55,
-              "size estimated from bedrooms and bathrooms",
-              summary
-            );
-          }
-
-          if (bedrooms > 1) {
-            addRange(range, (bedrooms - 1) * 12, (bedrooms - 1) * 18, `${bedrooms} bedrooms`, summary);
-          }
-
-          if (bathrooms > 1) {
-            addRange(range, Math.round((bathrooms - 1) * 18), Math.round((bathrooms - 1) * 26), `${bathrooms} bathrooms`, summary);
-          }
-
-          if (pets === "1 or 2 pets") {
-            addRange(range, 20, 35, "pets", summary);
-          }
-
-          if (pets === "3+ pets") {
-            addRange(range, 35, 55, "multiple pets", summary);
-          }
-
-          if (construction === "Yes") {
-            addRange(range, 60, 120, "construction dust", summary);
-          }
-
-          if (office === "Yes" && serviceType !== "Office Cleaning") {
-            addRange(range, 25, 45, "office space", summary);
-          }
-
-          if (lastCleaned === "1 to 3 months ago") {
-            addRange(range, 10, 20, "not recently cleaned", summary);
-          } else if (lastCleaned === "3 to 6 months ago") {
-            addRange(range, 25, 45, "longer gap since last cleaning", summary);
-          } else if (lastCleaned === "More than 6 months ago") {
-            addRange(range, 45, 80, "extended time since last cleaning", summary);
-          } else if (lastCleaned === "Not sure") {
-            addRange(range, 20, 35, "cleaning history unknown", summary);
-          }
-
-          if (clutter === "Some clutter may still be there") {
-            addRange(range, 20, 35, "some clutter", summary);
-          } else if (clutter === "There is a lot of clutter to work around") {
-            addRange(range, 55, 90, "heavy clutter", summary);
-          }
-
-          if (buildup === "Some buildup in a few areas") {
-            addRange(range, 30, 55, "some buildup", summary);
-          } else if (buildup === "Heavy grease, soap scum, or mold") {
-            addRange(range, 70, 135, "heavy buildup", summary);
-          }
-
-          if (addOns.length) {
-            addRange(range, addOns.length * 22, addOns.length * 40, `${addOns.length} add-on${addOns.length > 1 ? "s" : ""}`, summary);
-          }
-
-          const multiplier = frequencyAdjust[frequency] || 1;
-          range.low = Math.round(range.low * multiplier / 5) * 5;
-          range.high = Math.round(range.high * multiplier / 5) * 5;
-
-          if (frequency === "Weekly") {
-            summary.push("weekly pricing");
-          } else if (frequency === "Biweekly") {
-            summary.push("biweekly pricing");
-          } else if (frequency === "Monthly") {
-            summary.push("monthly pricing");
-          }
-
-          if (range.high < range.low) {
-            range.high = range.low + 25;
-          }
-
-          const rangeText = `${money.format(range.low)} - ${money.format(range.high)}`;
-          estimateValue.textContent = rangeText;
-          estimateHidden.value = rangeText;
-          estimateSummaryHidden.value = summary.join(", ");
-        }
-
-        form.addEventListener("input", updateEstimate);
-        form.addEventListener("change", updateEstimate);
-        updateEstimate();
-      })();
-    </script>
   </body>
 </html>
