@@ -827,6 +827,12 @@ h2 {
   font-weight: 700;
 }
 
+.field-grid > label > span::after {
+  content: " *";
+  color: #d92d20;
+  font-weight: 800;
+}
+
 .field-note {
   color: var(--muted);
   font-size: 0.82rem;
