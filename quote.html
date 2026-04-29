@@ -291,6 +291,18 @@
                   required
                 ></textarea>
               </label>
+              <label>
+                <span>How many interior windows?</span>
+                <input
+                  type="number"
+                  name="Interior Window Count"
+                  min="0"
+                  step="1"
+                  placeholder="Only if adding interior windows"
+                  data-window-count
+                  disabled
+                >
+              </label>
               <label class="field-wide">
                 <span>Tell us more about any clutter or heavy buildup we should expect. If not applicable, please enter N/A.</span>
                 <textarea
@@ -360,6 +372,8 @@
       (() => {
         const addOns = Array.from(document.querySelectorAll("[data-addon-option]"));
         if (!addOns.length) return;
+        const windowAddOn = addOns.find((input) => input.value === "Interior windows");
+        const windowCount = document.querySelector("[data-window-count]");
 
         function syncAddOnRequirement() {
           const hasSelection = addOns.some((input) => input.checked);
@@ -368,8 +382,24 @@
           });
         }
 
-        addOns.forEach((input) => input.addEventListener("change", syncAddOnRequirement));
+        function syncWindowCount() {
+          if (!windowAddOn || !windowCount) return;
+          const needsWindowCount = windowAddOn.checked;
+          windowCount.disabled = !needsWindowCount;
+          windowCount.required = needsWindowCount;
+          if (!needsWindowCount) {
+            windowCount.value = "";
+          }
+        }
+
+        addOns.forEach((input) => {
+          input.addEventListener("change", () => {
+            syncAddOnRequirement();
+            syncWindowCount();
+          });
+        });
         syncAddOnRequirement();
+        syncWindowCount();
       })();
     </script>
   </body>
