@@ -810,7 +810,7 @@ h2 {
   gap: 16px;
 }
 
-.address-grid label:not(.optional-field) > span::after {
+.address-grid label > span::after {
   content: " *";
   color: #d92d20;
   font-weight: 800;
