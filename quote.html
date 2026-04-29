@@ -226,6 +226,32 @@
                   disabled
                 >
               </label>
+              <label data-detailed-hours-field hidden>
+                <span>The Hourly rate for Detailed Cleaning is $70 per hour. How many hours you need us for?</span>
+                <input
+                  type="number"
+                  name="Detailed Cleaning Hours Needed"
+                  min="1"
+                  step="1"
+                  placeholder="Enter number of hours"
+                  data-detailed-hours-input
+                  required
+                  disabled
+                >
+              </label>
+              <label data-detailed-team-field hidden>
+                <span>How many Team members?</span>
+                <input
+                  type="number"
+                  name="Detailed Cleaning Team Members"
+                  min="1"
+                  step="1"
+                  placeholder="Enter number of team members"
+                  data-detailed-team-input
+                  required
+                  disabled
+                >
+              </label>
               <label data-cleaning-detail-field>
                 <span>Approximate square footage</span>
                 <input type="number" name="Square Footage" min="0" step="50" placeholder="Example: 850" required>
@@ -481,6 +507,7 @@
         const serviceType = document.querySelector('[name="Service Type"]');
         const cleaningDetailFields = Array.from(document.querySelectorAll("[data-cleaning-detail-field]"));
         const organizingFields = Array.from(document.querySelectorAll("[data-organizing-hours-field], [data-organizing-team-field]"));
+        const detailedCleaningFields = Array.from(document.querySelectorAll("[data-detailed-hours-field], [data-detailed-team-field]"));
 
         function shouldShowCleaningDetails() {
           return serviceType && serviceType.value && !["Organizing", "Detailed Cleaning"].includes(serviceType.value);
@@ -488,6 +515,10 @@
 
         function shouldShowOrganizingFields() {
           return serviceType && serviceType.value === "Organizing";
+        }
+
+        function shouldShowDetailedCleaningFields() {
+          return serviceType && serviceType.value === "Detailed Cleaning";
         }
 
         function syncFieldAvailability(field, isAvailable) {
@@ -508,6 +539,9 @@
           });
           organizingFields.forEach((field) => {
             syncFieldAvailability(field, shouldShowOrganizingFields());
+          });
+          detailedCleaningFields.forEach((field) => {
+            syncFieldAvailability(field, shouldShowDetailedCleaningFields());
           });
           if (!showDetails && additionalAreasInput) {
             additionalAreasInput.value = "";
