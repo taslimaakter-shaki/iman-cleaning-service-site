@@ -2223,6 +2223,32 @@ body.homepage {
   background: var(--mint-soft);
 }
 
+.areas-follow-panel {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 18px;
+  margin-top: 22px;
+  padding: 24px 28px;
+  border: 1px solid rgba(15, 92, 43, 0.08);
+  border-radius: 28px;
+  background: rgba(255, 255, 255, 0.82);
+  box-shadow: var(--shadow-soft);
+}
+
+.areas-follow-panel p {
+  margin: 0;
+  color: var(--forest-deep);
+  font-size: 1.25rem;
+  font-weight: 800;
+}
+
+.areas-follow-links {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+}
+
 .home-quote-grid,
 .home-before-after-grid,
 .home-areas-grid {
@@ -2734,6 +2760,11 @@ body.homepage {
   }
 
   .home-social-card {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+  .areas-follow-panel {
     flex-direction: column;
     align-items: flex-start;
   }
