@@ -2188,6 +2188,41 @@ body.homepage {
   line-height: 1.65;
 }
 
+.areas-served-panel {
+  margin-top: 34px;
+  padding: 30px;
+  border: 1px solid rgba(15, 92, 43, 0.08);
+  border-radius: 28px;
+  background: rgba(255, 255, 255, 0.82);
+  box-shadow: var(--shadow-soft);
+}
+
+.areas-served-panel h2 {
+  margin-bottom: 20px;
+  font-size: clamp(1.8rem, 3vw, 2.6rem);
+  max-width: none;
+}
+
+.areas-borough-list {
+  display: grid;
+  grid-template-columns: repeat(5, minmax(0, 1fr));
+  gap: 12px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.areas-borough-list li {
+  display: flex;
+  align-items: center;
+  min-height: 54px;
+  padding: 12px 16px;
+  border-radius: 16px;
+  color: var(--forest-deep);
+  font-weight: 800;
+  background: var(--mint-soft);
+}
+
 .home-quote-grid,
 .home-before-after-grid,
 .home-areas-grid {
@@ -2662,6 +2697,10 @@ body.homepage {
     grid-template-columns: 1fr;
   }
 
+  .areas-borough-list {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
   .home-quote-copy {
     position: static;
   }
@@ -2755,7 +2794,8 @@ body.homepage {
   .services-page-hero .home-services-grid,
   .services-step-grid,
   .services-addon-list,
-  .service-detail-cards {
+  .service-detail-cards,
+  .areas-borough-list {
     grid-template-columns: 1fr;
   }
 
