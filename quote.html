@@ -200,11 +200,11 @@
                   <option>Weekly/BiWeekly/Monthly Cleaning</option>
                 </select>
               </label>
-              <label>
+              <label data-cleaning-detail-field>
                 <span>Approximate square footage</span>
                 <input type="number" name="Square Footage" min="0" step="50" placeholder="Example: 850" required>
               </label>
-              <label>
+              <label data-cleaning-detail-field>
                 <span>Bedrooms</span>
                 <select name="Bedrooms" required>
                   <option value="" selected disabled>Select one</option>
@@ -216,7 +216,7 @@
                   <option value="5">5+ bedrooms</option>
                 </select>
               </label>
-              <label>
+              <label data-cleaning-detail-field>
                 <span>Full bathrooms</span>
                 <select name="Full Bathrooms" required>
                   <option value="" selected disabled>Select one</option>
@@ -227,7 +227,7 @@
                   <option value="4">4+ full bathrooms</option>
                 </select>
               </label>
-              <label>
+              <label data-cleaning-detail-field>
                 <span>Half bathrooms</span>
                 <select name="Half Bathrooms" required>
                   <option value="" selected disabled>Select one</option>
@@ -237,7 +237,7 @@
                   <option value="3">3+ half bathrooms</option>
                 </select>
               </label>
-              <label>
+              <label data-cleaning-detail-field>
                 <span>Kitchen + dining room</span>
                 <select name="Kitchen and Dining Rooms" required>
                   <option value="" selected disabled>Select one</option>
@@ -247,7 +247,7 @@
                   <option value="3">3+ kitchen + dining rooms</option>
                 </select>
               </label>
-              <label>
+              <label data-cleaning-detail-field>
                 <span>Living rooms</span>
                 <select name="Living Rooms" required>
                   <option value="" selected disabled>Select one</option>
@@ -257,7 +257,7 @@
                   <option value="3">3+ living rooms</option>
                 </select>
               </label>
-              <label>
+              <label data-cleaning-detail-field>
                 <span>Do you live there?</span>
                 <select name="Do You Live There?" required>
                   <option value="" selected disabled>Select one</option>
@@ -266,7 +266,7 @@
                   <option>Sometimes / part-time</option>
                 </select>
               </label>
-              <label>
+              <label data-cleaning-detail-field>
                 <span>How often do you need cleaning?</span>
                 <select name="Cleaning Frequency" required>
                   <option value="" selected disabled>Select one</option>
@@ -277,7 +277,7 @@
                   <option>Not sure</option>
                 </select>
               </label>
-              <label>
+              <label data-cleaning-detail-field>
                 <span>Do you need any additional areas cleaned outside of the bedrooms, bathrooms, kitchen, living room, and dining area?</span>
                 <select name="Additional Areas Needed?" data-additional-areas-select required>
                   <option value="" selected disabled>Select one</option>
@@ -285,7 +285,7 @@
                   <option>Yes</option>
                 </select>
               </label>
-              <label class="field-wide" data-additional-areas-field hidden>
+              <label class="field-wide" data-cleaning-detail-field data-additional-areas-field hidden>
                 <span>List those spaces below</span>
                 <textarea
                   name="Additional Areas"
@@ -295,7 +295,7 @@
                   disabled
                 ></textarea>
               </label>
-              <label>
+              <label data-cleaning-detail-field>
                 <span>Do you have pets?</span>
                 <select name="Do You Have Pets?" required>
                   <option value="" selected disabled>Select one</option>
@@ -306,7 +306,7 @@
                   <option>Not sure if you are moving in and you do not know</option>
                 </select>
               </label>
-              <label>
+              <label data-cleaning-detail-field>
                 <span>When was it last professionally or thoroughly cleaned?</span>
                 <select name="Last Professional Cleaning" required>
                   <option value="" selected disabled>Select one</option>
@@ -318,7 +318,7 @@
                   <option>More than a year</option>
                 </select>
               </label>
-              <label>
+              <label data-cleaning-detail-field>
                 <span>Will everything be ready for cleaning?</span>
                 <select name="Clutter or Ready for Cleaning" required>
                   <option value="" selected disabled>Select one</option>
@@ -327,7 +327,7 @@
                   <option>Heavy clutter</option>
                 </select>
               </label>
-              <label>
+              <label data-cleaning-detail-field>
                 <span>Are there any heavy buildup areas?</span>
                 <select name="Heavy Buildup Areas" required>
                   <option value="" selected disabled>Select one</option>
@@ -336,7 +336,7 @@
                   <option>Heavy grease, soap scum, or mold</option>
                 </select>
               </label>
-              <label class="field-wide">
+              <label class="field-wide" data-cleaning-detail-field>
                 <span>Would you like any add-ons cleaned thoroughly?</span>
                 <div class="choice-grid">
                   <label class="choice-chip">
@@ -377,7 +377,7 @@
                   </label>
                 </div>
               </label>
-              <label class="field-wide">
+              <label class="field-wide" data-cleaning-detail-field>
                 <span>List any other appliances or add-ons you want cleaned thoroughly. If not applicable, please enter N/A.</span>
                 <textarea
                   name="Cabinets and Appliances Add-Ons"
@@ -386,7 +386,7 @@
                   required
                 ></textarea>
               </label>
-              <label class="field-wide">
+              <label class="field-wide" data-cleaning-detail-field>
                 <span>Tell us more about any clutter or heavy buildup we should expect. If not applicable, please enter N/A.</span>
                 <textarea
                   name="Condition Notes"
@@ -395,7 +395,7 @@
                   required
                 ></textarea>
               </label>
-              <label class="field-wide">
+              <label class="field-wide" data-cleaning-detail-field>
                 <span>Anything else we should know? If not applicable, please enter N/A.</span>
                 <textarea
                   name="Project Details"
@@ -452,8 +452,44 @@
         const additionalAreasSelect = document.querySelector("[data-additional-areas-select]");
         const additionalAreasField = document.querySelector("[data-additional-areas-field]");
         const additionalAreasInput = document.querySelector("[data-additional-areas-input]");
+        const serviceType = document.querySelector('[name="Service Type"]');
+        const cleaningDetailFields = Array.from(document.querySelectorAll("[data-cleaning-detail-field]"));
+
+        function shouldShowCleaningDetails() {
+          return serviceType && serviceType.value && !["Organizing", "Detailed Cleaning"].includes(serviceType.value);
+        }
+
+        function syncFieldAvailability(field, isAvailable) {
+          field.hidden = !isAvailable;
+          field.querySelectorAll("input, select, textarea").forEach((control) => {
+            if (!control.dataset.initialRequired) {
+              control.dataset.initialRequired = control.required ? "true" : "false";
+            }
+            control.disabled = !isAvailable;
+            control.required = isAvailable && control.dataset.initialRequired === "true";
+          });
+        }
+
+        function syncCleaningDetailFields() {
+          const showDetails = shouldShowCleaningDetails();
+          cleaningDetailFields.forEach((field) => {
+            syncFieldAvailability(field, showDetails);
+          });
+          if (!showDetails && additionalAreasInput) {
+            additionalAreasInput.value = "";
+          }
+          syncAdditionalAreas();
+          syncAddOnRequirement();
+          syncWindowCount();
+        }
 
         function syncAddOnRequirement() {
+          if (!shouldShowCleaningDetails()) {
+            addOns.forEach((input) => {
+              input.required = false;
+            });
+            return;
+          }
           const hasSelection = addOns.some((input) => input.checked);
           addOns.forEach((input, index) => {
             input.required = index === 0 && !hasSelection;
@@ -487,7 +523,7 @@
 
         function syncAdditionalAreas() {
           if (!additionalAreasSelect || !additionalAreasInput) return;
-          const needsDetails = additionalAreasSelect.value === "Yes";
+          const needsDetails = shouldShowCleaningDetails() && additionalAreasSelect.value === "Yes";
           if (additionalAreasField) {
             additionalAreasField.hidden = !needsDetails;
           }
@@ -508,9 +544,10 @@
         if (additionalAreasSelect) {
           additionalAreasSelect.addEventListener("change", syncAdditionalAreas);
         }
-        syncAddOnRequirement();
-        syncWindowCount();
-        syncAdditionalAreas();
+        if (serviceType) {
+          serviceType.addEventListener("change", syncCleaningDetailFields);
+        }
+        syncCleaningDetailFields();
       })();
     </script>
   </body>
