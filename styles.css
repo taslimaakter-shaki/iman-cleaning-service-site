@@ -789,6 +789,33 @@ h2 {
   font-weight: 800;
 }
 
+.address-fieldset {
+  display: grid;
+  gap: 14px;
+  margin: 0;
+  padding: 0;
+  border: 0;
+}
+
+.address-fieldset legend {
+  margin-bottom: 2px;
+  color: var(--forest-deep);
+  font-size: 0.88rem;
+  font-weight: 800;
+}
+
+.address-grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 16px;
+}
+
+.address-grid label:not(.optional-field) > span::after {
+  content: " *";
+  color: #d92d20;
+  font-weight: 800;
+}
+
 .field-note {
   color: var(--muted);
   font-size: 0.82rem;
@@ -3253,7 +3280,8 @@ body.homepage {
   }
 
   .home-field-grid,
-  .home-compare-grid {
+  .home-compare-grid,
+  .address-grid {
     grid-template-columns: 1fr;
   }
 

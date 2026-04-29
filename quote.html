@@ -134,10 +134,31 @@
                 <span>Phone number</span>
                 <input type="tel" name="Phone" placeholder="Best number to reach you" required>
               </label>
-              <label class="field-wide">
-                <span>Home’s physical address</span>
-                <input type="text" name="Home Address" placeholder="Street address, city, and ZIP code" required>
-              </label>
+              <fieldset class="field-wide address-fieldset">
+                <legend>Address</legend>
+                <div class="address-grid">
+                  <label class="field-wide">
+                    <span>Street address</span>
+                    <input type="text" name="Street Address" placeholder="Street address" required>
+                  </label>
+                  <label class="field-wide optional-field">
+                    <span>Unit, apartment, suite, etc. (optional)</span>
+                    <input type="text" name="Unit Apartment Suite" placeholder="Unit, apartment, suite, etc.">
+                  </label>
+                  <label>
+                    <span>City</span>
+                    <input type="text" name="City" placeholder="City" required>
+                  </label>
+                  <label>
+                    <span>State</span>
+                    <input type="text" name="State" placeholder="State" required>
+                  </label>
+                  <label>
+                    <span>ZIP Code</span>
+                    <input type="text" name="ZIP Code" placeholder="ZIP Code" inputmode="numeric" autocomplete="postal-code" required>
+                  </label>
+                </div>
+              </fieldset>
               <label>
                 <span>What type of space is it?</span>
                 <select name="Property Type" required>
