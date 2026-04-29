@@ -2511,6 +2511,168 @@ body.homepage {
   line-height: 1.65;
 }
 
+.standard-cleaning-main {
+  background:
+    linear-gradient(180deg, rgba(248, 251, 245, 0.96), rgba(255, 255, 255, 0.98) 36%),
+    var(--home-bg);
+}
+
+.standard-cleaning-shell {
+  width: min(calc(100% - 40px), 900px);
+}
+
+.standard-cleaning-hero {
+  padding: 58px 0 24px;
+}
+
+.standard-cleaning-hero h1 {
+  max-width: 11ch;
+  margin: 0 0 20px;
+  font-size: clamp(3.1rem, 7vw, 6rem);
+  line-height: 0.92;
+}
+
+.standard-cleaning-hero p {
+  max-width: 760px;
+  margin: 0;
+  color: var(--home-muted);
+  font-size: clamp(1.05rem, 2vw, 1.22rem);
+  line-height: 1.78;
+}
+
+.standard-cleaning-content {
+  padding: 22px 0 54px;
+}
+
+.standard-cleaning-content .standard-cleaning-shell {
+  display: grid;
+  gap: 22px;
+}
+
+.standard-cleaning-card,
+.standard-cleaning-schedule,
+.standard-cleaning-cta {
+  border: 1px solid rgba(15, 61, 46, 0.08);
+  border-radius: 28px;
+  background: rgba(255, 255, 255, 0.96);
+  box-shadow: 0 18px 44px rgba(15, 61, 46, 0.08);
+}
+
+.standard-cleaning-card {
+  display: grid;
+  gap: 20px;
+  padding: clamp(24px, 4vw, 34px);
+}
+
+.standard-cleaning-card-important {
+  border-color: rgba(15, 92, 43, 0.16);
+  background: linear-gradient(180deg, rgba(255, 255, 255, 0.98), rgba(248, 251, 245, 0.98));
+}
+
+.standard-cleaning-card-head {
+  display: flex;
+  gap: 14px;
+  align-items: flex-start;
+}
+
+.standard-cleaning-card-head span {
+  display: inline-grid;
+  width: 46px;
+  height: 46px;
+  flex: 0 0 auto;
+  place-items: center;
+  border-radius: 16px;
+  background: rgba(207, 233, 171, 0.42);
+  font-size: 1.45rem;
+}
+
+.standard-cleaning-card h2 {
+  margin: 0;
+  font-size: clamp(1.8rem, 3.5vw, 2.65rem);
+  line-height: 1;
+}
+
+.standard-cleaning-card h3 {
+  margin: 0 0 12px;
+  color: var(--home-forest);
+  font-size: 1.1rem;
+}
+
+.standard-cleaning-intro,
+.standard-cleaning-note {
+  margin: 0;
+  color: var(--home-muted);
+  line-height: 1.72;
+}
+
+.standard-cleaning-note {
+  padding: 16px 18px;
+  border-radius: 18px;
+  background: rgba(248, 251, 245, 0.9);
+}
+
+.standard-cleaning-list {
+  display: grid;
+  gap: 12px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.standard-cleaning-list li {
+  position: relative;
+  padding-left: 28px;
+  color: var(--home-muted);
+  line-height: 1.65;
+}
+
+.standard-cleaning-list li::before {
+  content: "";
+  position: absolute;
+  left: 0;
+  top: 0.64em;
+  width: 9px;
+  height: 9px;
+  border-radius: 999px;
+  background: var(--home-green);
+  box-shadow: 0 0 0 4px rgba(15, 92, 43, 0.1);
+}
+
+.standard-cleaning-columns {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 22px;
+}
+
+.standard-cleaning-list-grid {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
+.standard-cleaning-schedule {
+  padding: 22px 24px;
+  color: var(--home-forest);
+  font-weight: 800;
+  line-height: 1.6;
+}
+
+.standard-cleaning-cta {
+  display: grid;
+  justify-items: center;
+  gap: 12px;
+  padding: 30px 24px;
+  text-align: center;
+}
+
+.standard-cleaning-cta .home-btn {
+  min-width: min(100%, 260px);
+}
+
+.standard-cleaning-cta p {
+  margin: 0;
+  color: var(--home-muted);
+  font-weight: 700;
+}
+
 .areas-served-panel {
   margin-top: 34px;
   padding: 30px;
@@ -3174,6 +3336,8 @@ body.homepage {
   .services-page-hero .home-services-grid,
   .services-step-grid,
   .services-addon-list,
+  .standard-cleaning-columns,
+  .standard-cleaning-list-grid,
   .service-detail-cards,
   .areas-borough-list {
     grid-template-columns: 1fr;
@@ -3195,6 +3359,29 @@ body.homepage {
   .service-detail-copy h1 {
     max-width: none;
     font-size: clamp(2.5rem, 10vw, 4rem);
+  }
+
+  .standard-cleaning-shell {
+    width: min(calc(100% - 20px), 900px);
+  }
+
+  .standard-cleaning-hero {
+    padding-top: 38px;
+  }
+
+  .standard-cleaning-hero h1 {
+    max-width: none;
+    font-size: clamp(2.8rem, 13vw, 4.4rem);
+  }
+
+  .standard-cleaning-card,
+  .standard-cleaning-schedule,
+  .standard-cleaning-cta {
+    border-radius: 24px;
+  }
+
+  .standard-cleaning-card-head {
+    flex-direction: column;
   }
 
   .home-toggle span,
