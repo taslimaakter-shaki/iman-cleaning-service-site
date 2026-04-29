@@ -2077,7 +2077,7 @@ body.homepage {
 
 .services-page-hero .home-services-grid {
   grid-template-columns: 1fr;
-  max-width: 900px;
+  max-width: 1120px;
   margin: 0 auto;
 }
 
@@ -2127,7 +2127,8 @@ body.homepage {
 
 .services-page-hero .home-service-card {
   position: relative;
-  min-height: 280px;
+  min-height: 520px;
+  aspect-ratio: 4 / 3;
   overflow: hidden;
   padding: clamp(28px, 5vw, 56px);
   align-content: center;
@@ -2139,7 +2140,7 @@ body.homepage {
   z-index: 2;
   max-width: none;
   color: #fff;
-  font-size: clamp(2.4rem, 6vw, 5rem);
+  font-size: clamp(3rem, 7vw, 6.4rem);
   line-height: 0.94;
   text-shadow: 0 4px 24px rgba(0, 0, 0, 0.48);
 }
@@ -2161,8 +2162,9 @@ body.homepage {
   height: 100%;
   margin: 0;
   border-radius: inherit;
+  object-fit: cover;
   filter: grayscale(0.18) brightness(0.58) contrast(1.1);
-  transform: scale(1.04);
+  transform: scale(1.01);
   animation: servicePhotoMove 9s ease-in-out infinite alternate;
 }
 
@@ -2239,11 +2241,11 @@ body.homepage {
 
 @keyframes servicePhotoMove {
   from {
-    transform: scale(1.04) translateX(-1.5%);
+    transform: scale(1.01) translateX(-0.8%);
   }
 
   to {
-    transform: scale(1.1) translateX(1.5%);
+    transform: scale(1.04) translateX(0.8%);
   }
 }
 
@@ -3082,7 +3084,7 @@ body.homepage {
   }
 
   .services-page-hero .home-service-card {
-    min-height: 220px;
+    min-height: 320px;
   }
 
   .service-detail-copy h1 {
