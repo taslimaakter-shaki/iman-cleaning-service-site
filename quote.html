@@ -115,16 +115,7 @@
             <input type="hidden" name="_subject" value="New cleaning quote request from www.imancleaningservice.com">
             <input type="hidden" name="_next" value="https://www.imancleaningservice.com/thanks.html">
             <input type="hidden" name="_template" value="table">
-            <input type="hidden" name="Cleaning Estimate" data-estimate-input>
             <input type="text" name="_honey" class="hp-field" tabindex="-1" autocomplete="off">
-            <aside class="estimate-panel field-wide" data-standard-estimate>
-              <p class="eyebrow">Cleaning estimate</p>
-              <strong class="estimate-total" data-estimate-total>Choose Standard, Deep, Move-In, Move-Out, or Airbnb / Rental Cleaning</strong>
-              <p class="estimate-note" data-estimate-note>
-                Standard, Deep, Move-In, Move-Out, and Airbnb / Rental Cleaning pricing is calculated for homes under 1500 sq ft. Larger spaces receive a custom quote.
-              </p>
-              <div class="estimate-breakdown" data-estimate-breakdown></div>
-            </aside>
             <div class="field-grid">
               <label>
                 <span>First name</span>
@@ -159,11 +150,11 @@
               </label>
               <label>
                 <span>Approximate square footage</span>
-                <input type="number" name="Square Footage" min="0" step="50" placeholder="Example: 850" data-estimate-field required>
+                <input type="number" name="Square Footage" min="0" step="50" placeholder="Example: 850" required>
               </label>
               <label>
                 <span>Bedrooms</span>
-                <select name="Bedrooms" data-estimate-field data-price-label="Bedroom" data-unit-price="30" required>
+                <select name="Bedrooms" required>
                   <option value="" selected disabled>Select one</option>
                   <option value="0">Studio</option>
                   <option value="1">1 bedroom</option>
@@ -175,7 +166,7 @@
               </label>
               <label>
                 <span>Full bathrooms</span>
-                <select name="Full Bathrooms" data-estimate-field data-price-label="Full bathroom" data-unit-price="30" required>
+                <select name="Full Bathrooms" required>
                   <option value="" selected disabled>Select one</option>
                   <option value="0">No full bathrooms</option>
                   <option value="1">1 full bathroom</option>
@@ -186,7 +177,7 @@
               </label>
               <label>
                 <span>Half bathrooms</span>
-                <select name="Half Bathrooms" data-estimate-field data-price-label="Half bathroom" data-unit-price="25" required>
+                <select name="Half Bathrooms" required>
                   <option value="" selected disabled>Select one</option>
                   <option value="0">No half bathrooms</option>
                   <option value="1">1 half bathroom</option>
@@ -196,7 +187,7 @@
               </label>
               <label>
                 <span>Kitchen + dining room</span>
-                <select name="Kitchen and Dining Rooms" data-estimate-field required>
+                <select name="Kitchen and Dining Rooms" required>
                   <option value="" selected disabled>Select one</option>
                   <option value="0">No kitchen + dining room</option>
                   <option value="1">1 kitchen + dining room</option>
@@ -206,7 +197,7 @@
               </label>
               <label>
                 <span>Living rooms</span>
-                <select name="Living Rooms" data-estimate-field required>
+                <select name="Living Rooms" required>
                   <option value="" selected disabled>Select one</option>
                   <option value="0">No living room</option>
                   <option value="1">1 living room</option>
@@ -225,7 +216,7 @@
               </label>
               <label>
                 <span>Type of cleaning</span>
-                <select name="Service Type" data-estimate-field required>
+                <select name="Service Type" required>
                   <option value="" selected disabled>Select one</option>
                   <option>Standard Cleaning</option>
                   <option>Deep Cleaning</option>
@@ -247,71 +238,71 @@
               </label>
               <label>
                 <span>Do you have any office or business space?</span>
-                <select name="Do You Have an Office?" data-estimate-field required>
+                <select name="Do You Have an Office?" required>
                   <option value="" selected disabled>Select one</option>
-                  <option data-price="0">No</option>
-                  <option data-price="30">Yes</option>
+                  <option>No</option>
+                  <option>Yes</option>
                 </select>
               </label>
               <label>
                 <span>Do you have pets?</span>
-                <select name="Do You Have Pets?" data-estimate-field required>
+                <select name="Do You Have Pets?" required>
                   <option value="" selected disabled>Select one</option>
-                  <option data-price="0">No pets</option>
-                  <option data-price="30">One pet</option>
-                  <option data-price="50">Two pets</option>
-                  <option data-price="80">More than two pets</option>
+                  <option>No pets</option>
+                  <option>One pet</option>
+                  <option>Two pets</option>
+                  <option>More than two pets</option>
                 </select>
               </label>
               <label>
                 <span>When was it last professionally or thoroughly cleaned?</span>
-                <select name="Last Professional Cleaning" data-estimate-field required>
+                <select name="Last Professional Cleaning" required>
                   <option value="" selected disabled>Select one</option>
-                  <option data-price="30">3 months ago</option>
-                  <option data-price="60">6 months ago</option>
-                  <option data-price="100">1 year ago</option>
-                  <option data-price="100">More than 1 year ago / not sure</option>
+                  <option>3 months ago</option>
+                  <option>6 months ago</option>
+                  <option>1 year ago</option>
+                  <option>More than 1 year ago / not sure</option>
                 </select>
               </label>
               <label>
                 <span>Will everything be ready for cleaning?</span>
-                <select name="Clutter or Ready for Cleaning" data-estimate-field required>
+                <select name="Clutter or Ready for Cleaning" required>
                   <option value="" selected disabled>Select one</option>
-                  <option data-price="0">No clutter</option>
-                  <option data-price="50">Some clutter</option>
-                  <option data-price="100">Heavy clutter</option>
+                  <option>No clutter</option>
+                  <option>Some clutter</option>
+                  <option>Heavy clutter</option>
                 </select>
               </label>
               <label>
                 <span>Are there any heavy buildup areas?</span>
-                <select name="Heavy Buildup Areas" data-estimate-field required>
+                <select name="Heavy Buildup Areas" required>
                   <option value="" selected disabled>Select one</option>
-                  <option data-price="0">No major buildup</option>
-                  <option data-price="30">Some buildup in a few areas</option>
-                  <option data-price="50">Heavy grease, soap scum, or mold</option>
+                  <option>No major buildup</option>
+                  <option>Some buildup in a few areas</option>
+                  <option>Heavy grease, soap scum, or mold</option>
                 </select>
               </label>
               <label class="field-wide">
                 <span>Would you like any add-ons cleaned thoroughly?</span>
                 <div class="choice-grid">
                   <label class="choice-chip">
-                    <input type="checkbox" name="Add-Ons[]" value="Inside cabinets" data-addon-option data-price="30" required>
+                    <input type="checkbox" name="Add-Ons[]" value="Inside cabinets" data-addon-option required>
                     <span>Inside cabinets</span>
                   </label>
                   <label class="choice-chip">
-                    <input type="checkbox" name="Add-Ons[]" value="Inside fridge" data-addon-option data-price="30">
+                    <input type="checkbox" name="Add-Ons[]" value="Inside fridge" data-addon-option>
                     <span>Inside fridge</span>
                   </label>
                   <label class="choice-chip">
-                    <input type="checkbox" name="Add-Ons[]" value="Inside oven" data-addon-option data-price="30">
+                    <input type="checkbox" name="Add-Ons[]" value="Inside oven" data-addon-option>
                     <span>Inside oven</span>
                   </label>
                   <label class="choice-chip">
-                    <input type="checkbox" name="Add-Ons[]" value="Inside microwave" data-addon-option data-price="30">
+                    <input type="checkbox" name="Add-Ons[]" value="Inside microwave" data-addon-option>
                     <span>Inside microwave</span>
                   </label>
                   <label class="choice-chip">
-                    <input type="checkbox" name="Add-Ons[]" value="Interior windows" data-addon-option data-unit-price="25">
+                    <input type="checkbox" name="Add-Ons[]" value="Interior windows" data-addon-option>
                     <span>Interior windows</span>
                   </label>
                   <label class="choice-window-count" data-window-count-field hidden>
@@ -413,222 +404,6 @@
         const windowAddOn = addOns.find((input) => input.value === "Interior windows");
         const windowCount = document.querySelector("[data-window-count]");
         const windowCountField = document.querySelector("[data-window-count-field]");
-        const estimateFields = Array.from(document.querySelectorAll("[data-estimate-field]"));
-        const estimateInput = document.querySelector("[data-estimate-input]");
-        const estimateTotal = document.querySelector("[data-estimate-total]");
-        const estimateNote = document.querySelector("[data-estimate-note]");
-        const estimateBreakdown = document.querySelector("[data-estimate-breakdown]");
-        const pricing = {
-          "Standard Cleaning": {
-            bedroom: 30,
-            fullBathroom: 30,
-            halfBathroom: 25,
-            kitchenDining: 50,
-            livingRoom: 30,
-            office: 30,
-            pets: {
-              "No pets": 0,
-              "One pet": 30,
-              "Two pets": 50,
-              "More than two pets": 80
-            },
-            lastCleaned: {
-              "3 months ago": 30,
-              "6 months ago": 60,
-              "1 year ago": 100,
-              "More than 1 year ago / not sure": 100
-            },
-            clutter: {
-              "No clutter": 0,
-              "Some clutter": 50,
-              "Heavy clutter": 100
-            },
-            buildup: {
-              "No major buildup": 0,
-              "Some buildup in a few areas": 30,
-              "Heavy grease, soap scum, or mold": 50
-            },
-            addons: {
-              "Inside cabinets": 30,
-              "Inside fridge": 30,
-              "Inside oven": 30,
-              "Inside microwave": 30,
-              "Interior windows": 25
-            }
-          },
-          "Deep Cleaning": {
-            bedroom: 50,
-            fullBathroom: 50,
-            halfBathroom: 40,
-            kitchenDining: 10,
-            livingRoom: 50,
-            office: 50,
-            pets: {
-              "No pets": 0,
-              "One pet": 40,
-              "Two pets": 60,
-              "More than two pets": 80
-            },
-            lastCleaned: {
-              "3 months ago": 50,
-              "6 months ago": 80,
-              "1 year ago": 130,
-              "More than 1 year ago / not sure": 130
-            },
-            clutter: {
-              "No clutter": 0,
-              "Some clutter": 80,
-              "Heavy clutter": 150
-            },
-            buildup: {
-              "No major buildup": 0,
-              "Some buildup in a few areas": 50,
-              "Heavy grease, soap scum, or mold": 70
-            },
-            addons: {
-              "Inside cabinets": 30,
-              "Inside fridge": 30,
-              "Inside oven": 30,
-              "Inside microwave": 30,
-              "Interior windows": 25
-            }
-          },
-          "Move-In Cleaning": {
-            bedroom: 50,
-            fullBathroom: 50,
-            halfBathroom: 40,
-            kitchenDining: 100,
-            livingRoom: 50,
-            office: 50,
-            pets: {
-              "No pets": 0,
-              "One pet": 40,
-              "Two pets": 60,
-              "More than two pets": 80
-            },
-            lastCleaned: {
-              "3 months ago": 50,
-              "6 months ago": 80,
-              "1 year ago": 130,
-              "More than 1 year ago / not sure": 130
-            },
-            clutter: {
-              "No clutter": 0,
-              "Some clutter": 80,
-              "Heavy clutter": 150
-            },
-            buildup: {
-              "No major buildup": 0,
-              "Some buildup in a few areas": 50,
-              "Heavy grease, soap scum, or mold": 70
-            },
-            addons: {
-              "Inside cabinets": 30,
-              "Inside fridge": 30,
-              "Inside oven": 30,
-              "Inside microwave": 30,
-              "Interior windows": 25
-            }
-          },
-          "Move-Out Cleaning": {
-            bedroom: 50,
-            fullBathroom: 50,
-            halfBathroom: 40,
-            kitchenDining: 100,
-            livingRoom: 50,
-            office: 50,
-            pets: {
-              "No pets": 0,
-              "One pet": 40,
-              "Two pets": 60,
-              "More than two pets": 80
-            },
-            lastCleaned: {
-              "3 months ago": 50,
-              "6 months ago": 80,
-              "1 year ago": 130,
-              "More than 1 year ago / not sure": 130
-            },
-            clutter: {
-              "No clutter": 0,
-              "Some clutter": 80,
-              "Heavy clutter": 150
-            },
-            buildup: {
-              "No major buildup": 0,
-              "Some buildup in a few areas": 50,
-              "Heavy grease, soap scum, or mold": 70
-            },
-            addons: {
-              "Inside cabinets": 30,
-              "Inside fridge": 30,
-              "Inside oven": 30,
-              "Inside microwave": 30,
-              "Interior windows": 25
-            }
-          },
-          "Airbnb / Rental Cleaning": {
-            bedroom: 50,
-            fullBathroom: 50,
-            halfBathroom: 40,
-            kitchenDining: 10,
-            livingRoom: 50,
-            office: 50,
-            pets: {
-              "No pets": 0,
-              "One pet": 40,
-              "Two pets": 60,
-              "More than two pets": 80
-            },
-            lastCleaned: {
-              "3 months ago": 50,
-              "6 months ago": 80,
-              "1 year ago": 130,
-              "More than 1 year ago / not sure": 130
-            },
-            clutter: {
-              "No clutter": 0,
-              "Some clutter": 80,
-              "Heavy clutter": 150
-            },
-            buildup: {
-              "No major buildup": 0,
-              "Some buildup in a few areas": 50,
-              "Heavy grease, soap scum, or mold": 70
-            },
-            addons: {
-              "Inside cabinets": 30,
-              "Inside fridge": 30,
-              "Inside oven": 30,
-              "Inside microwave": 30,
-              "Interior windows": 25
-            }
-          }
-        };
-
-        function money(value) {
-          return `$${value.toLocaleString("en-US")}`;
-        }
-
-        function selectedOption(select) {
-          return select.options[select.selectedIndex] || null;
-        }
-
-        function addLine(lines, label, amount) {
-          if (!amount) return 0;
-          lines.push(`${label}: ${money(amount)}`);
-          return amount;
-        }
-
-        function optionText(select) {
-          const option = selectedOption(select);
-          return option && !option.disabled ? option.textContent.trim() : "";
-        }
-
-        function mappedPrice(map, select) {
-          const text = optionText(select);
-          return text ? Number(map[text] || 0) : 0;
-        }
 
         function syncAddOnRequirement() {
           const hasSelection = addOns.some((input) => input.checked);
@@ -662,108 +437,15 @@
           }
         }
 
-        function calculateEstimate() {
-          if (!estimateTotal || !estimateNote || !estimateBreakdown) return;
-
-          const serviceType = document.querySelector('[name="Service Type"]');
-          const sqftField = document.querySelector('[name="Square Footage"]');
-          const squareFeet = Number(sqftField?.value || 0);
-          const serviceName = serviceType ? optionText(serviceType) : "";
-
-          const servicePricing = pricing[serviceName];
-
-          if (!servicePricing) {
-            estimateTotal.textContent = "Choose Standard, Deep, Move-In, Move-Out, or Airbnb / Rental Cleaning";
-            estimateNote.textContent = "This estimate uses the Standard, Deep, Move-In, Move-Out, and Airbnb / Rental Cleaning pricing systems for homes under 1500 sq ft.";
-            estimateBreakdown.innerHTML = "";
-            if (estimateInput) estimateInput.value = "Not calculated: Standard, Deep, Move-In, Move-Out, or Airbnb / Rental Cleaning was not selected.";
-            return;
-          }
-
-          if (!squareFeet) {
-            estimateTotal.textContent = "Enter square footage";
-            estimateNote.textContent = `${serviceName} pricing applies to homes under 1500 sq ft.`;
-            estimateBreakdown.innerHTML = "";
-            if (estimateInput) estimateInput.value = "Not calculated: square footage missing.";
-            return;
-          }
-
-          if (squareFeet >= 1500) {
-            estimateTotal.textContent = "Custom quote";
-            estimateNote.textContent = `Homes 1500 sq ft and above need a custom ${serviceName} quote.`;
-            estimateBreakdown.innerHTML = "";
-            if (estimateInput) estimateInput.value = "Custom quote: home is 1500 sq ft or above.";
-            return;
-          }
-
-          const lines = [];
-          let total = 0;
-
-          const bedrooms = document.querySelector('[name="Bedrooms"]');
-          const fullBathrooms = document.querySelector('[name="Full Bathrooms"]');
-          const halfBathrooms = document.querySelector('[name="Half Bathrooms"]');
-          const kitchenDining = document.querySelector('[name="Kitchen and Dining Rooms"]');
-          const livingRooms = document.querySelector('[name="Living Rooms"]');
-          const bedroomCount = Number(bedrooms?.value || 0);
-          const fullBathroomCount = Number(fullBathrooms?.value || 0);
-          const halfBathroomCount = Number(halfBathrooms?.value || 0);
-          const kitchenDiningCount = Number(kitchenDining?.value || 0);
-          const livingRoomCount = Number(livingRooms?.value || 0);
-
-          total += addLine(lines, `${bedroomCount} bedroom${bedroomCount === 1 ? "" : "s"}`, bedroomCount * servicePricing.bedroom);
-          total += addLine(lines, `${fullBathroomCount} full bathroom${fullBathroomCount === 1 ? "" : "s"}`, fullBathroomCount * servicePricing.fullBathroom);
-          total += addLine(lines, `${halfBathroomCount} half bathroom${halfBathroomCount === 1 ? "" : "s"}`, halfBathroomCount * servicePricing.halfBathroom);
-          total += addLine(lines, `${kitchenDiningCount} kitchen + dining room${kitchenDiningCount === 1 ? "" : "s"}`, kitchenDiningCount * servicePricing.kitchenDining);
-          total += addLine(lines, `${livingRoomCount} living room${livingRoomCount === 1 ? "" : "s"}`, livingRoomCount * servicePricing.livingRoom);
-
-          const office = document.querySelector('[name="Do You Have an Office?"]');
-          const pets = document.querySelector('[name="Do You Have Pets?"]');
-          const lastCleaned = document.querySelector('[name="Last Professional Cleaning"]');
-          const clutter = document.querySelector('[name="Clutter or Ready for Cleaning"]');
-          const buildup = document.querySelector('[name="Heavy Buildup Areas"]');
-
-          total += addLine(lines, "Office or business space cleaning", optionText(office) === "Yes" ? servicePricing.office : 0);
-          total += addLine(lines, optionText(pets), mappedPrice(servicePricing.pets, pets));
-          total += addLine(lines, optionText(lastCleaned), mappedPrice(servicePricing.lastCleaned, lastCleaned));
-          total += addLine(lines, optionText(clutter), mappedPrice(servicePricing.clutter, clutter));
-          total += addLine(lines, optionText(buildup), mappedPrice(servicePricing.buildup, buildup));
-
-          addOns.forEach((input) => {
-            if (!input.checked || input.value === "No add-ons needed") return;
-            if (input === windowAddOn) {
-              const count = Number(windowCount?.value || 0);
-              if (count > 0) {
-                total += addLine(lines, `${count} interior window${count === 1 ? "" : "s"}`, count * servicePricing.addons["Interior windows"]);
-              }
-              return;
-            }
-            total += addLine(lines, input.value, Number(servicePricing.addons[input.value] || 0));
-          });
-
-          estimateTotal.textContent = money(total);
-          estimateNote.textContent = `Estimated ${serviceName} total for a home under 1500 sq ft. Final quote may be confirmed after reviewing details and photos.`;
-          estimateBreakdown.innerHTML = lines.map((line) => `<span class="estimate-chip">${line}</span>`).join("");
-          if (estimateInput) {
-            estimateInput.value = `${serviceName}: ${money(total)} (${lines.join("; ") || "No priced selections yet"})`;
-          }
-        }
-
         addOns.forEach((input) => {
           input.addEventListener("change", () => {
             syncNoAddOns(input);
             syncAddOnRequirement();
             syncWindowCount();
-            calculateEstimate();
           });
         });
-        estimateFields.forEach((field) => field.addEventListener("input", calculateEstimate));
-        estimateFields.forEach((field) => field.addEventListener("change", calculateEstimate));
-        if (windowCount) {
-          windowCount.addEventListener("input", calculateEstimate);
-        }
         syncAddOnRequirement();
         syncWindowCount();
-        calculateEstimate();
       })();
     </script>
   </body>

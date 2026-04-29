@@ -761,54 +761,6 @@ h2 {
   grid-template-columns: 1fr;
 }
 
-.estimate-panel {
-  display: grid;
-  gap: 14px;
-  padding: 22px 24px;
-  border-radius: 26px;
-  color: var(--white);
-  background:
-    radial-gradient(circle at top right, rgba(207, 233, 171, 0.16), transparent 34%),
-    linear-gradient(135deg, #0c4420, #146731 70%, #1b8741);
-  box-shadow: var(--shadow-soft);
-}
-
-.estimate-panel .eyebrow,
-.estimate-panel .estimate-total,
-.estimate-panel .estimate-note {
-  color: var(--white);
-}
-
-.estimate-total {
-  display: block;
-  font-family: "Fraunces", Georgia, serif;
-  font-size: clamp(1.8rem, 3vw, 2.6rem);
-  line-height: 1.02;
-}
-
-.estimate-note {
-  margin: 0;
-  color: rgba(255, 255, 255, 0.82);
-  line-height: 1.6;
-}
-
-.estimate-breakdown {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 10px;
-}
-
-.estimate-chip {
-  display: inline-flex;
-  align-items: center;
-  padding: 8px 12px;
-  border-radius: 999px;
-  background: rgba(255, 255, 255, 0.12);
-  color: var(--white);
-  font-size: 0.88rem;
-  font-weight: 700;
-}
-
 .field-grid {
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
