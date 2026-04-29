@@ -200,6 +200,32 @@
                   <option>Weekly/BiWeekly/Monthly Cleaning</option>
                 </select>
               </label>
+              <label data-organizing-hours-field hidden>
+                <span>The Hourly rate for organizing is $50/hour per person. How many hours do you need us for?</span>
+                <input
+                  type="number"
+                  name="Organizing Hours Needed"
+                  min="1"
+                  step="1"
+                  placeholder="Enter number of hours"
+                  data-organizing-hours-input
+                  required
+                  disabled
+                >
+              </label>
+              <label data-organizing-team-field hidden>
+                <span>How many team members?</span>
+                <input
+                  type="number"
+                  name="Organizing Team Members"
+                  min="1"
+                  step="1"
+                  placeholder="Enter number of team members"
+                  data-organizing-team-input
+                  required
+                  disabled
+                >
+              </label>
               <label data-cleaning-detail-field>
                 <span>Approximate square footage</span>
                 <input type="number" name="Square Footage" min="0" step="50" placeholder="Example: 850" required>
@@ -454,9 +480,14 @@
         const additionalAreasInput = document.querySelector("[data-additional-areas-input]");
         const serviceType = document.querySelector('[name="Service Type"]');
         const cleaningDetailFields = Array.from(document.querySelectorAll("[data-cleaning-detail-field]"));
+        const organizingFields = Array.from(document.querySelectorAll("[data-organizing-hours-field], [data-organizing-team-field]"));
 
         function shouldShowCleaningDetails() {
           return serviceType && serviceType.value && !["Organizing", "Detailed Cleaning"].includes(serviceType.value);
+        }
+
+        function shouldShowOrganizingFields() {
+          return serviceType && serviceType.value === "Organizing";
         }
 
         function syncFieldAvailability(field, isAvailable) {
@@ -474,6 +505,9 @@
           const showDetails = shouldShowCleaningDetails();
           cleaningDetailFields.forEach((field) => {
             syncFieldAvailability(field, showDetails);
+          });
+          organizingFields.forEach((field) => {
+            syncFieldAvailability(field, shouldShowOrganizingFields());
           });
           if (!showDetails && additionalAreasInput) {
             additionalAreasInput.value = "";
