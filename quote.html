@@ -119,9 +119,9 @@
             <input type="text" name="_honey" class="hp-field" tabindex="-1" autocomplete="off">
             <aside class="estimate-panel field-wide" data-standard-estimate>
               <p class="eyebrow">Cleaning estimate</p>
-              <strong class="estimate-total" data-estimate-total>Choose Standard or Deep Cleaning</strong>
+              <strong class="estimate-total" data-estimate-total>Choose Standard, Deep, Move-In, or Move-Out Cleaning</strong>
               <p class="estimate-note" data-estimate-note>
-                Standard and Deep Cleaning pricing is calculated for homes under 1500 sq ft. Larger spaces receive a custom quote.
+                Standard, Deep, Move-In, and Move-Out Cleaning pricing is calculated for homes under 1500 sq ft. Larger spaces receive a custom quote.
               </p>
               <div class="estimate-breakdown" data-estimate-breakdown></div>
             </aside>
@@ -192,6 +192,26 @@
                   <option value="1">1 half bathroom</option>
                   <option value="2">2 half bathrooms</option>
                   <option value="3">3+ half bathrooms</option>
+                </select>
+              </label>
+              <label>
+                <span>Kitchen + dining room</span>
+                <select name="Kitchen and Dining Rooms" data-estimate-field required>
+                  <option value="" selected disabled>Select one</option>
+                  <option value="0">No kitchen + dining room</option>
+                  <option value="1">1 kitchen + dining room</option>
+                  <option value="2">2 kitchen + dining rooms</option>
+                  <option value="3">3+ kitchen + dining rooms</option>
+                </select>
+              </label>
+              <label>
+                <span>Living rooms</span>
+                <select name="Living Rooms" data-estimate-field required>
+                  <option value="" selected disabled>Select one</option>
+                  <option value="0">No living room</option>
+                  <option value="1">1 living room</option>
+                  <option value="2">2 living rooms</option>
+                  <option value="3">3+ living rooms</option>
                 </select>
               </label>
               <label>
@@ -403,6 +423,8 @@
             bedroom: 30,
             fullBathroom: 30,
             halfBathroom: 25,
+            kitchenDining: 50,
+            livingRoom: 30,
             office: 30,
             pets: {
               "No pets": 0,
@@ -438,6 +460,82 @@
             bedroom: 50,
             fullBathroom: 50,
             halfBathroom: 40,
+            kitchenDining: 10,
+            livingRoom: 50,
+            office: 50,
+            pets: {
+              "No pets": 0,
+              "One pet": 40,
+              "Two pets": 60,
+              "More than two pets": 80
+            },
+            lastCleaned: {
+              "3 months ago": 50,
+              "6 months ago": 80,
+              "1 year ago": 130,
+              "More than 1 year ago / not sure": 130
+            },
+            clutter: {
+              "No clutter": 0,
+              "Some clutter": 80,
+              "Heavy clutter": 150
+            },
+            buildup: {
+              "No major buildup": 0,
+              "Some buildup in a few areas": 50,
+              "Heavy grease, soap scum, or mold": 70
+            },
+            addons: {
+              "Inside cabinets": 30,
+              "Inside fridge": 30,
+              "Inside oven": 30,
+              "Inside microwave": 30,
+              "Interior windows": 25
+            }
+          },
+          "Move-In Cleaning": {
+            bedroom: 50,
+            fullBathroom: 50,
+            halfBathroom: 40,
+            kitchenDining: 100,
+            livingRoom: 50,
+            office: 50,
+            pets: {
+              "No pets": 0,
+              "One pet": 40,
+              "Two pets": 60,
+              "More than two pets": 80
+            },
+            lastCleaned: {
+              "3 months ago": 50,
+              "6 months ago": 80,
+              "1 year ago": 130,
+              "More than 1 year ago / not sure": 130
+            },
+            clutter: {
+              "No clutter": 0,
+              "Some clutter": 80,
+              "Heavy clutter": 150
+            },
+            buildup: {
+              "No major buildup": 0,
+              "Some buildup in a few areas": 50,
+              "Heavy grease, soap scum, or mold": 70
+            },
+            addons: {
+              "Inside cabinets": 30,
+              "Inside fridge": 30,
+              "Inside oven": 30,
+              "Inside microwave": 30,
+              "Interior windows": 25
+            }
+          },
+          "Move-Out Cleaning": {
+            bedroom: 50,
+            fullBathroom: 50,
+            halfBathroom: 40,
+            kitchenDining: 100,
+            livingRoom: 50,
             office: 50,
             pets: {
               "No pets": 0,
@@ -538,10 +636,10 @@
           const servicePricing = pricing[serviceName];
 
           if (!servicePricing) {
-            estimateTotal.textContent = "Choose Standard or Deep Cleaning";
-            estimateNote.textContent = "This estimate uses the Standard and Deep Cleaning pricing systems for homes under 1500 sq ft.";
+            estimateTotal.textContent = "Choose Standard, Deep, Move-In, or Move-Out Cleaning";
+            estimateNote.textContent = "This estimate uses the Standard, Deep, Move-In, and Move-Out Cleaning pricing systems for homes under 1500 sq ft.";
             estimateBreakdown.innerHTML = "";
-            if (estimateInput) estimateInput.value = "Not calculated: Standard or Deep Cleaning was not selected.";
+            if (estimateInput) estimateInput.value = "Not calculated: Standard, Deep, Move-In, or Move-Out Cleaning was not selected.";
             return;
           }
 
@@ -567,13 +665,19 @@
           const bedrooms = document.querySelector('[name="Bedrooms"]');
           const fullBathrooms = document.querySelector('[name="Full Bathrooms"]');
           const halfBathrooms = document.querySelector('[name="Half Bathrooms"]');
+          const kitchenDining = document.querySelector('[name="Kitchen and Dining Rooms"]');
+          const livingRooms = document.querySelector('[name="Living Rooms"]');
           const bedroomCount = Number(bedrooms?.value || 0);
           const fullBathroomCount = Number(fullBathrooms?.value || 0);
           const halfBathroomCount = Number(halfBathrooms?.value || 0);
+          const kitchenDiningCount = Number(kitchenDining?.value || 0);
+          const livingRoomCount = Number(livingRooms?.value || 0);
 
           total += addLine(lines, `${bedroomCount} bedroom${bedroomCount === 1 ? "" : "s"}`, bedroomCount * servicePricing.bedroom);
           total += addLine(lines, `${fullBathroomCount} full bathroom${fullBathroomCount === 1 ? "" : "s"}`, fullBathroomCount * servicePricing.fullBathroom);
           total += addLine(lines, `${halfBathroomCount} half bathroom${halfBathroomCount === 1 ? "" : "s"}`, halfBathroomCount * servicePricing.halfBathroom);
+          total += addLine(lines, `${kitchenDiningCount} kitchen + dining room${kitchenDiningCount === 1 ? "" : "s"}`, kitchenDiningCount * servicePricing.kitchenDining);
+          total += addLine(lines, `${livingRoomCount} living room${livingRoomCount === 1 ? "" : "s"}`, livingRoomCount * servicePricing.livingRoom);
 
           const office = document.querySelector('[name="Do You Have an Office?"]');
           const pets = document.querySelector('[name="Do You Have Pets?"]');
