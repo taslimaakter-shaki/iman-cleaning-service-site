@@ -111,6 +111,7 @@
             class="quote-form"
             action="https://formsubmit.co/Info@imancleaningservice.com"
             method="POST"
+            enctype="multipart/form-data"
           >
             <input type="hidden" name="_subject" value="New cleaning quote request from www.imancleaningservice.com">
             <input type="hidden" name="_next" value="https://www.imancleaningservice.com/thanks.html">
@@ -350,6 +351,16 @@
                   <option>Maybe, I can try</option>
                   <option>No, not right now</option>
                 </select>
+              </label>
+              <label class="field-wide">
+                <span>Upload images</span>
+                <input
+                  type="file"
+                  name="Work Images"
+                  accept="image/*"
+                  multiple
+                >
+                <small class="field-note">Share images of the work to be done.</small>
               </label>
               <label class="field-wide">
                 <span>Photo link or notes. If not applicable, please enter N/A.</span>
