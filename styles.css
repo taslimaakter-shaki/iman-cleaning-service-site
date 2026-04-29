@@ -1973,15 +1973,17 @@ body.homepage {
 
 .home-hero-copy h1 {
   font-size: clamp(3rem, 6vw, 5.4rem);
-  max-width: 8ch;
+  max-width: 11ch;
   margin-bottom: 18px;
 }
 
 .home-subheadline {
   margin: 0 0 24px;
-  color: var(--home-green);
-  font-size: 1.05rem;
+  max-width: 620px;
+  color: var(--home-muted);
+  font-size: 1.16rem;
   font-weight: 600;
+  line-height: 1.65;
 }
 
 .home-hero-points {
@@ -2067,6 +2069,120 @@ body.homepage {
   display: block;
   font-size: 1.2rem;
   line-height: 1.4;
+}
+
+.home-pain-grid,
+.home-pricing-grid,
+.home-proof-grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 20px;
+}
+
+.home-pain-card,
+.home-price-card,
+.home-rating-badge,
+.home-proof-card {
+  border: 1px solid rgba(15, 61, 46, 0.08);
+  border-radius: 28px;
+  background: rgba(255, 255, 255, 0.96);
+  box-shadow: 0 18px 40px rgba(15, 61, 46, 0.08);
+}
+
+.home-pain-card,
+.home-price-card,
+.home-rating-badge {
+  display: grid;
+  align-content: start;
+  gap: 12px;
+  padding: 28px;
+}
+
+.home-pain-card span {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 44px;
+  height: 44px;
+  border-radius: 50%;
+  background: rgba(15, 61, 46, 0.08);
+  color: var(--home-green);
+  font-weight: 800;
+}
+
+.home-pain-card h3,
+.home-price-card h3,
+.home-proof-card h3 {
+  margin: 0;
+  font-size: 1.18rem;
+}
+
+.home-pain-card p,
+.home-price-card p,
+.home-rating-badge p,
+.home-proof-card p {
+  margin: 0;
+  color: var(--home-muted);
+  line-height: 1.72;
+}
+
+.home-life-back,
+.home-trust-note {
+  margin: 26px 0 0;
+  padding: 24px 28px;
+  border-radius: 28px;
+  background: linear-gradient(135deg, var(--home-green), var(--home-green-soft));
+  color: var(--white);
+  font-size: clamp(1.4rem, 3vw, 2.4rem);
+  font-weight: 800;
+  line-height: 1.25;
+}
+
+.home-price-card {
+  min-height: 240px;
+}
+
+.home-price-card strong {
+  color: var(--home-green);
+  font-size: clamp(2rem, 4vw, 3.2rem);
+  line-height: 1;
+}
+
+.home-price-card-featured {
+  border-color: rgba(15, 61, 46, 0.22);
+  transform: translateY(-8px);
+}
+
+.home-pricing-actions {
+  display: flex;
+  margin-top: 24px;
+}
+
+.home-proof-grid {
+  margin-bottom: 24px;
+}
+
+.home-rating-badge strong {
+  color: var(--home-text);
+  font-size: 1.35rem;
+  line-height: 1.35;
+}
+
+.home-proof-card {
+  overflow: hidden;
+}
+
+.home-proof-card img {
+  display: block;
+  width: 100%;
+  aspect-ratio: 4 / 3;
+  object-fit: cover;
+}
+
+.home-proof-card div {
+  display: grid;
+  gap: 10px;
+  padding: 22px;
 }
 
 .home-services-grid {
@@ -2928,6 +3044,8 @@ body.homepage {
 .home-hero,
 .home-services,
 .home-quote,
+.home-pain,
+.home-pricing,
 .home-trust,
 .home-contact,
 .home-before-after,
@@ -2951,6 +3069,9 @@ body.homepage {
 @media (max-width: 1080px) {
   .home-services-grid,
   .home-review-grid,
+  .home-pain-grid,
+  .home-pricing-grid,
+  .home-proof-grid,
   .services-step-grid {
     grid-template-columns: repeat(2, minmax(0, 1fr));
   }
@@ -3047,6 +3168,10 @@ body.homepage {
   .home-service-card,
   .home-review-card,
   .home-social-card,
+  .home-pain-card,
+  .home-price-card,
+  .home-rating-badge,
+  .home-proof-card,
   .home-contact-panel,
   .home-contact-card,
   .home-quote-form,
@@ -3068,14 +3193,27 @@ body.homepage {
     min-height: 360px;
   }
 
+  .home-life-back,
+  .home-trust-note {
+    border-radius: 24px;
+    padding: 22px;
+  }
+
   .home-services-grid,
   .home-review-grid,
+  .home-pain-grid,
+  .home-pricing-grid,
+  .home-proof-grid,
   .services-page-hero .home-services-grid,
   .services-step-grid,
   .services-addon-list,
   .service-detail-cards,
   .areas-borough-list {
     grid-template-columns: 1fr;
+  }
+
+  .home-price-card-featured {
+    transform: none;
   }
 
   .services-step,
