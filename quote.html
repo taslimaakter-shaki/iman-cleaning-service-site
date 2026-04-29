@@ -276,6 +276,18 @@
                     <input type="checkbox" name="Add-Ons[]" value="Interior windows" data-addon-option>
                     <span>Interior windows</span>
                   </label>
+                  <label class="choice-window-count" data-window-count-field hidden>
+                    <span>How many interior windows?</span>
+                    <input
+                      type="number"
+                      name="Interior Window Count"
+                      min="0"
+                      step="1"
+                      placeholder="Enter window count"
+                      data-window-count
+                      disabled
+                    >
+                  </label>
                   <label class="choice-chip">
                     <input type="checkbox" name="Add-Ons[]" value="No add-ons needed" data-addon-option>
                     <span>No add-ons needed</span>
@@ -290,18 +302,6 @@
                   placeholder="Example: inside dishwasher, inside freezer, or any other detailed add-on work. If not applicable, please enter N/A."
                   required
                 ></textarea>
-              </label>
-              <label data-window-count-field hidden>
-                <span>How many interior windows?</span>
-                <input
-                  type="number"
-                  name="Interior Window Count"
-                  min="0"
-                  step="1"
-                  placeholder="Only if adding interior windows"
-                  data-window-count
-                  disabled
-                >
               </label>
               <label class="field-wide">
                 <span>Tell us more about any clutter or heavy buildup we should expect. If not applicable, please enter N/A.</span>

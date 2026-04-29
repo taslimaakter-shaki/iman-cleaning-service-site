@@ -869,6 +869,17 @@ h2 {
   accent-color: var(--forest);
 }
 
+.choice-window-count {
+  flex: 1 1 100%;
+  display: grid;
+  gap: 8px;
+  max-width: 360px;
+}
+
+.choice-window-count[hidden] {
+  display: none;
+}
+
 .field-grid input,
 .field-grid select,
 .field-grid textarea {
