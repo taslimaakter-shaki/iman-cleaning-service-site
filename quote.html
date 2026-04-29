@@ -119,9 +119,9 @@
             <input type="text" name="_honey" class="hp-field" tabindex="-1" autocomplete="off">
             <aside class="estimate-panel field-wide" data-standard-estimate>
               <p class="eyebrow">Cleaning estimate</p>
-              <strong class="estimate-total" data-estimate-total>Choose Standard, Deep, Move-In, or Move-Out Cleaning</strong>
+              <strong class="estimate-total" data-estimate-total>Choose Standard, Deep, Move-In, Move-Out, or Airbnb / Rental Cleaning</strong>
               <p class="estimate-note" data-estimate-note>
-                Standard, Deep, Move-In, and Move-Out Cleaning pricing is calculated for homes under 1500 sq ft. Larger spaces receive a custom quote.
+                Standard, Deep, Move-In, Move-Out, and Airbnb / Rental Cleaning pricing is calculated for homes under 1500 sq ft. Larger spaces receive a custom quote.
               </p>
               <div class="estimate-breakdown" data-estimate-breakdown></div>
             </aside>
@@ -566,6 +566,43 @@
               "Inside microwave": 30,
               "Interior windows": 25
             }
+          },
+          "Airbnb / Rental Cleaning": {
+            bedroom: 50,
+            fullBathroom: 50,
+            halfBathroom: 40,
+            kitchenDining: 10,
+            livingRoom: 50,
+            office: 50,
+            pets: {
+              "No pets": 0,
+              "One pet": 40,
+              "Two pets": 60,
+              "More than two pets": 80
+            },
+            lastCleaned: {
+              "3 months ago": 50,
+              "6 months ago": 80,
+              "1 year ago": 130,
+              "More than 1 year ago / not sure": 130
+            },
+            clutter: {
+              "No clutter": 0,
+              "Some clutter": 80,
+              "Heavy clutter": 150
+            },
+            buildup: {
+              "No major buildup": 0,
+              "Some buildup in a few areas": 50,
+              "Heavy grease, soap scum, or mold": 70
+            },
+            addons: {
+              "Inside cabinets": 30,
+              "Inside fridge": 30,
+              "Inside oven": 30,
+              "Inside microwave": 30,
+              "Interior windows": 25
+            }
           }
         };
 
@@ -636,10 +673,10 @@
           const servicePricing = pricing[serviceName];
 
           if (!servicePricing) {
-            estimateTotal.textContent = "Choose Standard, Deep, Move-In, or Move-Out Cleaning";
-            estimateNote.textContent = "This estimate uses the Standard, Deep, Move-In, and Move-Out Cleaning pricing systems for homes under 1500 sq ft.";
+            estimateTotal.textContent = "Choose Standard, Deep, Move-In, Move-Out, or Airbnb / Rental Cleaning";
+            estimateNote.textContent = "This estimate uses the Standard, Deep, Move-In, Move-Out, and Airbnb / Rental Cleaning pricing systems for homes under 1500 sq ft.";
             estimateBreakdown.innerHTML = "";
-            if (estimateInput) estimateInput.value = "Not calculated: Standard, Deep, Move-In, or Move-Out Cleaning was not selected.";
+            if (estimateInput) estimateInput.value = "Not calculated: Standard, Deep, Move-In, Move-Out, or Airbnb / Rental Cleaning was not selected.";
             return;
           }
 
