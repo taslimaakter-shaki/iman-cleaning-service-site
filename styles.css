@@ -821,6 +821,10 @@ h2 {
   align-content: start;
 }
 
+.field-grid label[hidden] {
+  display: none;
+}
+
 .field-grid span {
   color: var(--forest-deep);
   font-size: 0.88rem;
