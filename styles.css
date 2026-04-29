@@ -883,6 +883,25 @@ h2 {
   resize: vertical;
 }
 
+.date-picker-input {
+  cursor: pointer;
+  min-height: 52px;
+  padding-right: 48px;
+  color-scheme: light;
+}
+
+.date-picker-input::-webkit-calendar-picker-indicator {
+  width: 24px;
+  height: 24px;
+  margin-right: 2px;
+  cursor: pointer;
+  opacity: 0.78;
+}
+
+.date-picker-input::-webkit-calendar-picker-indicator:hover {
+  opacity: 1;
+}
+
 .hp-field {
   position: absolute;
   left: -9999px;

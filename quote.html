@@ -254,7 +254,7 @@
               </label>
               <label>
                 <span>Which day are you available?</span>
-                <input type="date" name="Available Day" required>
+                <input class="date-picker-input" type="date" name="Available Day" data-date-picker required>
               </label>
               <label data-cleaning-detail-field>
                 <span>Approximate square footage</span>
@@ -512,6 +512,7 @@
         const cleaningDetailFields = Array.from(document.querySelectorAll("[data-cleaning-detail-field]"));
         const organizingFields = Array.from(document.querySelectorAll("[data-organizing-hours-field], [data-organizing-team-field]"));
         const detailedCleaningFields = Array.from(document.querySelectorAll("[data-detailed-hours-field], [data-detailed-team-field]"));
+        const datePickers = Array.from(document.querySelectorAll("[data-date-picker]"));
 
         function shouldShowCleaningDetails() {
           return serviceType && serviceType.value && !["Organizing", "Detailed Cleaning"].includes(serviceType.value);
@@ -619,6 +620,13 @@
         if (serviceType) {
           serviceType.addEventListener("change", syncCleaningDetailFields);
         }
+        datePickers.forEach((input) => {
+          input.addEventListener("click", () => {
+            if (typeof input.showPicker === "function") {
+              input.showPicker();
+            }
+          });
+        });
         syncCleaningDetailFields();
       })();
     </script>
