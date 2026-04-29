@@ -291,7 +291,7 @@
                   required
                 ></textarea>
               </label>
-              <label>
+              <label data-window-count-field hidden>
                 <span>How many interior windows?</span>
                 <input
                   type="number"
@@ -374,6 +374,7 @@
         if (!addOns.length) return;
         const windowAddOn = addOns.find((input) => input.value === "Interior windows");
         const windowCount = document.querySelector("[data-window-count]");
+        const windowCountField = document.querySelector("[data-window-count-field]");
 
         function syncAddOnRequirement() {
           const hasSelection = addOns.some((input) => input.checked);
@@ -385,6 +386,9 @@
         function syncWindowCount() {
           if (!windowAddOn || !windowCount) return;
           const needsWindowCount = windowAddOn.checked;
+          if (windowCountField) {
+            windowCountField.hidden = !needsWindowCount;
+          }
           windowCount.disabled = !needsWindowCount;
           windowCount.required = needsWindowCount;
           if (!needsWindowCount) {
