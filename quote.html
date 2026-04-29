@@ -115,13 +115,13 @@
             <input type="hidden" name="_subject" value="New cleaning quote request from www.imancleaningservice.com">
             <input type="hidden" name="_next" value="https://www.imancleaningservice.com/thanks.html">
             <input type="hidden" name="_template" value="table">
-            <input type="hidden" name="Standard Cleaning Estimate" data-estimate-input>
+            <input type="hidden" name="Cleaning Estimate" data-estimate-input>
             <input type="text" name="_honey" class="hp-field" tabindex="-1" autocomplete="off">
             <aside class="estimate-panel field-wide" data-standard-estimate>
-              <p class="eyebrow">Standard cleaning estimate</p>
-              <strong class="estimate-total" data-estimate-total>Choose Standard Cleaning</strong>
+              <p class="eyebrow">Cleaning estimate</p>
+              <strong class="estimate-total" data-estimate-total>Choose Standard or Deep Cleaning</strong>
               <p class="estimate-note" data-estimate-note>
-                Standard cleaning pricing is calculated for homes under 1500 sq ft. Larger spaces receive a custom quote.
+                Standard and Deep Cleaning pricing is calculated for homes under 1500 sq ft. Larger spaces receive a custom quote.
               </p>
               <div class="estimate-breakdown" data-estimate-breakdown></div>
             </aside>
@@ -398,6 +398,78 @@
         const estimateTotal = document.querySelector("[data-estimate-total]");
         const estimateNote = document.querySelector("[data-estimate-note]");
         const estimateBreakdown = document.querySelector("[data-estimate-breakdown]");
+        const pricing = {
+          "Standard Cleaning": {
+            bedroom: 30,
+            fullBathroom: 30,
+            halfBathroom: 25,
+            office: 30,
+            pets: {
+              "No pets": 0,
+              "One pet": 30,
+              "Two pets": 50,
+              "More than two pets": 80
+            },
+            lastCleaned: {
+              "3 months ago": 30,
+              "6 months ago": 60,
+              "1 year ago": 100,
+              "More than 1 year ago / not sure": 100
+            },
+            clutter: {
+              "No clutter": 0,
+              "Some clutter": 50,
+              "Heavy clutter": 100
+            },
+            buildup: {
+              "No major buildup": 0,
+              "Some buildup in a few areas": 30,
+              "Heavy grease, soap scum, or mold": 50
+            },
+            addons: {
+              "Inside cabinets": 30,
+              "Inside fridge": 30,
+              "Inside oven": 30,
+              "Inside microwave": 30,
+              "Interior windows": 25
+            }
+          },
+          "Deep Cleaning": {
+            bedroom: 50,
+            fullBathroom: 50,
+            halfBathroom: 40,
+            office: 50,
+            pets: {
+              "No pets": 0,
+              "One pet": 40,
+              "Two pets": 60,
+              "More than two pets": 80
+            },
+            lastCleaned: {
+              "3 months ago": 50,
+              "6 months ago": 80,
+              "1 year ago": 130,
+              "More than 1 year ago / not sure": 130
+            },
+            clutter: {
+              "No clutter": 0,
+              "Some clutter": 80,
+              "Heavy clutter": 150
+            },
+            buildup: {
+              "No major buildup": 0,
+              "Some buildup in a few areas": 50,
+              "Heavy grease, soap scum, or mold": 70
+            },
+            addons: {
+              "Inside cabinets": 30,
+              "Inside fridge": 30,
+              "Inside oven": 30,
+              "Inside microwave": 30,
+              "Interior windows": 25
+            }
+          }
+        };
 
         function money(value) {
           return `$${value.toLocaleString("en-US")}`;
@@ -413,15 +485,14 @@
           return amount;
         }
 
-        function optionPrice(select) {
-          const option = selectedOption(select);
-          if (!option || option.disabled) return 0;
-          return Number(option.dataset.price || 0);
-        }
-
         function optionText(select) {
           const option = selectedOption(select);
           return option && !option.disabled ? option.textContent.trim() : "";
+        }
+
+        function mappedPrice(map, select) {
+          const text = optionText(select);
+          return text ? Number(map[text] || 0) : 0;
         }
 
         function syncAddOnRequirement() {
@@ -464,17 +535,19 @@
           const squareFeet = Number(sqftField?.value || 0);
           const serviceName = serviceType ? optionText(serviceType) : "";
 
-          if (serviceName !== "Standard Cleaning") {
-            estimateTotal.textContent = "Choose Standard Cleaning";
-            estimateNote.textContent = "This estimate uses the Standard Cleaning pricing system for homes under 1500 sq ft.";
+          const servicePricing = pricing[serviceName];
+
+          if (!servicePricing) {
+            estimateTotal.textContent = "Choose Standard or Deep Cleaning";
+            estimateNote.textContent = "This estimate uses the Standard and Deep Cleaning pricing systems for homes under 1500 sq ft.";
             estimateBreakdown.innerHTML = "";
-            if (estimateInput) estimateInput.value = "Not calculated: Standard Cleaning was not selected.";
+            if (estimateInput) estimateInput.value = "Not calculated: Standard or Deep Cleaning was not selected.";
             return;
           }
 
           if (!squareFeet) {
             estimateTotal.textContent = "Enter square footage";
-            estimateNote.textContent = "Standard cleaning pricing applies to homes under 1500 sq ft.";
+            estimateNote.textContent = `${serviceName} pricing applies to homes under 1500 sq ft.`;
             estimateBreakdown.innerHTML = "";
             if (estimateInput) estimateInput.value = "Not calculated: square footage missing.";
             return;
@@ -482,7 +555,7 @@
 
           if (squareFeet >= 1500) {
             estimateTotal.textContent = "Custom quote";
-            estimateNote.textContent = "Homes 1500 sq ft and above need a custom Standard Cleaning quote.";
+            estimateNote.textContent = `Homes 1500 sq ft and above need a custom ${serviceName} quote.`;
             estimateBreakdown.innerHTML = "";
             if (estimateInput) estimateInput.value = "Custom quote: home is 1500 sq ft or above.";
             return;
@@ -491,15 +564,16 @@
           const lines = [];
           let total = 0;
 
-          document.querySelectorAll("[data-unit-price]").forEach((field) => {
-            if (field.type === "checkbox") return;
-            const count = Number(field.value || 0);
-            const unitPrice = Number(field.dataset.unitPrice || 0);
-            const label = field.dataset.priceLabel || field.name;
-            if (count > 0 && unitPrice > 0) {
-              total += addLine(lines, `${count} ${label}${count === 1 ? "" : "s"}`, count * unitPrice);
-            }
-          });
+          const bedrooms = document.querySelector('[name="Bedrooms"]');
+          const fullBathrooms = document.querySelector('[name="Full Bathrooms"]');
+          const halfBathrooms = document.querySelector('[name="Half Bathrooms"]');
+          const bedroomCount = Number(bedrooms?.value || 0);
+          const fullBathroomCount = Number(fullBathrooms?.value || 0);
+          const halfBathroomCount = Number(halfBathrooms?.value || 0);
+
+          total += addLine(lines, `${bedroomCount} bedroom${bedroomCount === 1 ? "" : "s"}`, bedroomCount * servicePricing.bedroom);
+          total += addLine(lines, `${fullBathroomCount} full bathroom${fullBathroomCount === 1 ? "" : "s"}`, fullBathroomCount * servicePricing.fullBathroom);
+          total += addLine(lines, `${halfBathroomCount} half bathroom${halfBathroomCount === 1 ? "" : "s"}`, halfBathroomCount * servicePricing.halfBathroom);
 
           const office = document.querySelector('[name="Do You Have an Office?"]');
           const pets = document.querySelector('[name="Do You Have Pets?"]');
@@ -507,29 +581,29 @@
           const clutter = document.querySelector('[name="Clutter or Ready for Cleaning"]');
           const buildup = document.querySelector('[name="Heavy Buildup Areas"]');
 
-          total += addLine(lines, "Office or business space cleaning", optionPrice(office));
-          total += addLine(lines, optionText(pets), optionPrice(pets));
-          total += addLine(lines, optionText(lastCleaned), optionPrice(lastCleaned));
-          total += addLine(lines, optionText(clutter), optionPrice(clutter));
-          total += addLine(lines, optionText(buildup), optionPrice(buildup));
+          total += addLine(lines, "Office or business space cleaning", optionText(office) === "Yes" ? servicePricing.office : 0);
+          total += addLine(lines, optionText(pets), mappedPrice(servicePricing.pets, pets));
+          total += addLine(lines, optionText(lastCleaned), mappedPrice(servicePricing.lastCleaned, lastCleaned));
+          total += addLine(lines, optionText(clutter), mappedPrice(servicePricing.clutter, clutter));
+          total += addLine(lines, optionText(buildup), mappedPrice(servicePricing.buildup, buildup));
 
           addOns.forEach((input) => {
             if (!input.checked || input.value === "No add-ons needed") return;
             if (input === windowAddOn) {
               const count = Number(windowCount?.value || 0);
               if (count > 0) {
-                total += addLine(lines, `${count} interior window${count === 1 ? "" : "s"}`, count * Number(input.dataset.unitPrice || 0));
+                total += addLine(lines, `${count} interior window${count === 1 ? "" : "s"}`, count * servicePricing.addons["Interior windows"]);
               }
               return;
             }
-            total += addLine(lines, input.value, Number(input.dataset.price || 0));
+            total += addLine(lines, input.value, Number(servicePricing.addons[input.value] || 0));
           });
 
           estimateTotal.textContent = money(total);
-          estimateNote.textContent = "Estimated Standard Cleaning total for a home under 1500 sq ft. Final quote may be confirmed after reviewing details and photos.";
+          estimateNote.textContent = `Estimated ${serviceName} total for a home under 1500 sq ft. Final quote may be confirmed after reviewing details and photos.`;
           estimateBreakdown.innerHTML = lines.map((line) => `<span class="estimate-chip">${line}</span>`).join("");
           if (estimateInput) {
-            estimateInput.value = `${money(total)} (${lines.join("; ") || "No priced selections yet"})`;
+            estimateInput.value = `${serviceName}: ${money(total)} (${lines.join("; ") || "No priced selections yet"})`;
           }
         }
 
