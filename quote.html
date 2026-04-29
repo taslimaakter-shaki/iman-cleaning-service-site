@@ -254,7 +254,14 @@
               </label>
               <label>
                 <span>Which day are you available?</span>
-                <input class="date-picker-input" type="date" name="Available Day" data-date-picker required>
+                <span class="date-picker-wrap">
+                  <input class="date-picker-input" type="date" name="Available Day" data-date-picker required>
+                  <button class="date-picker-button" type="button" data-date-picker-button aria-label="Open calendar">
+                    <svg viewBox="0 0 24 24" aria-hidden="true">
+                      <path d="M7 2a1 1 0 0 1 1 1v1h8V3a1 1 0 1 1 2 0v1h1.5A2.5 2.5 0 0 1 22 6.5v13A2.5 2.5 0 0 1 19.5 22h-15A2.5 2.5 0 0 1 2 19.5v-13A2.5 2.5 0 0 1 4.5 4H6V3a1 1 0 0 1 1-1Zm12.5 8h-15v9.5a.5.5 0 0 0 .5.5h14.5a.5.5 0 0 0 .5-.5V10ZM5 6a.5.5 0 0 0-.5.5V8h15V6.5A.5.5 0 0 0 19 6H5Zm2 7h3v3H7v-3Zm5 0h3v3h-3v-3Z"/>
+                    </svg>
+                  </button>
+                </span>
               </label>
               <label data-cleaning-detail-field>
                 <span>Approximate square footage</span>
@@ -513,6 +520,7 @@
         const organizingFields = Array.from(document.querySelectorAll("[data-organizing-hours-field], [data-organizing-team-field]"));
         const detailedCleaningFields = Array.from(document.querySelectorAll("[data-detailed-hours-field], [data-detailed-team-field]"));
         const datePickers = Array.from(document.querySelectorAll("[data-date-picker]"));
+        const datePickerButtons = Array.from(document.querySelectorAll("[data-date-picker-button]"));
 
         function shouldShowCleaningDetails() {
           return serviceType && serviceType.value && !["Organizing", "Detailed Cleaning"].includes(serviceType.value);
@@ -622,6 +630,16 @@
         }
         datePickers.forEach((input) => {
           input.addEventListener("click", () => {
+            if (typeof input.showPicker === "function") {
+              input.showPicker();
+            }
+          });
+        });
+        datePickerButtons.forEach((button) => {
+          button.addEventListener("click", () => {
+            const input = button.closest(".date-picker-wrap")?.querySelector("[data-date-picker]");
+            if (!input) return;
+            input.focus();
             if (typeof input.showPicker === "function") {
               input.showPicker();
             }
