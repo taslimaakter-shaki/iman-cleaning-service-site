@@ -1708,14 +1708,62 @@ body.homepage {
   margin-bottom: 34px;
 }
 
+.services-hero-grid {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(280px, 0.46fr);
+  gap: 28px;
+  align-items: end;
+  margin-bottom: 34px;
+}
+
 .services-page-hero .home-section-head h1 {
-  font-size: clamp(3.2rem, 7vw, 6rem);
-  max-width: 8.5ch;
+  font-size: clamp(3rem, 6vw, 5.6rem);
+  max-width: 11ch;
 }
 
 .services-page-hero .home-section-head p {
   max-width: 60ch;
   font-size: 1.05rem;
+}
+
+.services-hero-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 14px;
+  margin-top: 26px;
+}
+
+.services-hero-panel {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 12px;
+  padding: 24px;
+  border: 1px solid rgba(15, 61, 46, 0.08);
+  border-radius: 28px;
+  background: rgba(255, 255, 255, 0.9);
+  box-shadow: 0 18px 40px rgba(15, 61, 46, 0.08);
+}
+
+.services-hero-panel span,
+.services-addon-list span {
+  position: relative;
+  display: flex;
+  align-items: center;
+  min-height: 44px;
+  padding-left: 30px;
+  color: var(--home-text);
+  font-weight: 700;
+}
+
+.services-hero-panel span::before,
+.services-addon-list span::before {
+  content: "✔";
+  position: absolute;
+  left: 0;
+  top: 50%;
+  color: var(--home-green);
+  font-weight: 800;
+  transform: translateY(-50%);
 }
 
 .home-section-head h2,
@@ -1859,7 +1907,7 @@ body.homepage {
 }
 
 .services-page-hero .home-services-grid {
-  grid-template-columns: repeat(4, minmax(0, 1fr));
+  grid-template-columns: repeat(3, minmax(0, 1fr));
 }
 
 .home-review-grid {
@@ -1889,15 +1937,42 @@ body.homepage {
 }
 
 .services-page-hero .home-service-card {
-  min-height: 430px;
+  min-height: 460px;
 }
 
 .services-page-hero .home-service-card h3 {
-  max-width: 9ch;
+  max-width: 10ch;
 }
 
 .services-page-hero .home-service-card a {
   align-self: end;
+}
+
+.service-card-list {
+  display: grid;
+  gap: 10px;
+  margin: 0;
+  padding: 0;
+  color: var(--home-muted);
+  font-size: 0.95rem;
+  line-height: 1.5;
+  list-style: none;
+}
+
+.service-card-list li {
+  position: relative;
+  padding-left: 22px;
+}
+
+.service-card-list li::before {
+  content: "";
+  position: absolute;
+  left: 0;
+  top: 0.62em;
+  width: 7px;
+  height: 7px;
+  border-radius: 999px;
+  background: var(--home-green);
 }
 
 .home-service-icon {
@@ -1932,6 +2007,80 @@ body.homepage {
   color: var(--home-green);
   font-size: 0.95rem;
   font-weight: 700;
+}
+
+.services-detail-grid {
+  display: grid;
+  grid-template-columns: minmax(0, 0.8fr) minmax(0, 1.2fr);
+  gap: 26px;
+  align-items: start;
+}
+
+.services-detail-copy h2 {
+  font-size: clamp(2.4rem, 4.6vw, 4rem);
+  max-width: 12ch;
+}
+
+.services-detail-copy p {
+  max-width: 58ch;
+  color: var(--home-muted);
+  line-height: 1.75;
+}
+
+.services-step-grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 18px;
+}
+
+.services-step {
+  min-height: 280px;
+  padding: 26px;
+  border: 1px solid rgba(15, 61, 46, 0.08);
+  border-radius: 28px;
+  background: rgba(255, 255, 255, 0.96);
+  box-shadow: 0 18px 40px rgba(15, 61, 46, 0.08);
+}
+
+.services-step strong {
+  display: grid;
+  place-items: center;
+  width: 42px;
+  height: 42px;
+  margin-bottom: 22px;
+  border-radius: 16px;
+  color: var(--white);
+  background: var(--home-green);
+}
+
+.services-step h3 {
+  margin-bottom: 12px;
+  font-size: 1.35rem;
+  line-height: 1.05;
+}
+
+.services-step p {
+  margin: 0;
+  color: var(--home-muted);
+  line-height: 1.65;
+}
+
+.services-addon-list {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 14px;
+}
+
+.services-addon-list span {
+  padding: 18px 18px 18px 48px;
+  border: 1px solid rgba(15, 61, 46, 0.08);
+  border-radius: 18px;
+  background: rgba(255, 255, 255, 0.92);
+  box-shadow: 0 12px 24px rgba(15, 61, 46, 0.06);
+}
+
+.services-addon-list span::before {
+  left: 20px;
 }
 
 .home-quote-grid,
@@ -2390,7 +2539,9 @@ body.homepage {
 
 @media (max-width: 1080px) {
   .home-services-grid,
-  .home-review-grid {
+  .home-review-grid,
+  .services-page-hero .home-services-grid,
+  .services-step-grid {
     grid-template-columns: repeat(2, minmax(0, 1fr));
   }
 
@@ -2399,7 +2550,9 @@ body.homepage {
   .home-areas-grid,
   .home-hero-grid,
   .home-contact-panel,
-  .home-footer-grid {
+  .home-footer-grid,
+  .services-hero-grid,
+  .services-detail-grid {
     grid-template-columns: 1fr;
   }
 
@@ -2492,8 +2645,16 @@ body.homepage {
   }
 
   .home-services-grid,
-  .home-review-grid {
+  .home-review-grid,
+  .services-page-hero .home-services-grid,
+  .services-step-grid,
+  .services-addon-list {
     grid-template-columns: 1fr;
+  }
+
+  .services-page-hero .home-service-card,
+  .services-step {
+    min-height: auto;
   }
 
   .home-toggle span,
