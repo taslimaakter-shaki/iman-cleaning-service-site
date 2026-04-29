@@ -115,7 +115,16 @@
             <input type="hidden" name="_subject" value="New cleaning quote request from www.imancleaningservice.com">
             <input type="hidden" name="_next" value="https://www.imancleaningservice.com/thanks.html">
             <input type="hidden" name="_template" value="table">
+            <input type="hidden" name="Standard Cleaning Estimate" data-estimate-input>
             <input type="text" name="_honey" class="hp-field" tabindex="-1" autocomplete="off">
+            <aside class="estimate-panel field-wide" data-standard-estimate>
+              <p class="eyebrow">Standard cleaning estimate</p>
+              <strong class="estimate-total" data-estimate-total>Choose Standard Cleaning</strong>
+              <p class="estimate-note" data-estimate-note>
+                Standard cleaning pricing is calculated for homes under 1500 sq ft. Larger spaces receive a custom quote.
+              </p>
+              <div class="estimate-breakdown" data-estimate-breakdown></div>
+            </aside>
             <div class="field-grid">
               <label>
                 <span>First name</span>
@@ -150,11 +159,11 @@
               </label>
               <label>
                 <span>Approximate square footage</span>
-                <input type="number" name="Square Footage" min="0" step="50" placeholder="Example: 850" required>
+                <input type="number" name="Square Footage" min="0" step="50" placeholder="Example: 850" data-estimate-field required>
               </label>
               <label>
                 <span>Bedrooms</span>
-                <select name="Bedrooms" required>
+                <select name="Bedrooms" data-estimate-field data-price-label="Bedroom" data-unit-price="30" required>
                   <option value="" selected disabled>Select one</option>
                   <option value="0">Studio</option>
                   <option value="1">1 bedroom</option>
@@ -165,15 +174,24 @@
                 </select>
               </label>
               <label>
-                <span>Bathrooms</span>
-                <select name="Bathrooms" required>
+                <span>Full bathrooms</span>
+                <select name="Full Bathrooms" data-estimate-field data-price-label="Full bathroom" data-unit-price="30" required>
                   <option value="" selected disabled>Select one</option>
-                  <option value="1">1 bathroom</option>
-                  <option value="1.5">1.5 bathrooms</option>
-                  <option value="2">2 bathrooms</option>
-                  <option value="2.5">2.5 bathrooms</option>
-                  <option value="3">3 bathrooms</option>
-                  <option value="4">4+ bathrooms</option>
+                  <option value="0">No full bathrooms</option>
+                  <option value="1">1 full bathroom</option>
+                  <option value="2">2 full bathrooms</option>
+                  <option value="3">3 full bathrooms</option>
+                  <option value="4">4+ full bathrooms</option>
+                </select>
+              </label>
+              <label>
+                <span>Half bathrooms</span>
+                <select name="Half Bathrooms" data-estimate-field data-price-label="Half bathroom" data-unit-price="25" required>
+                  <option value="" selected disabled>Select one</option>
+                  <option value="0">No half bathrooms</option>
+                  <option value="1">1 half bathroom</option>
+                  <option value="2">2 half bathrooms</option>
+                  <option value="3">3+ half bathrooms</option>
                 </select>
               </label>
               <label>
@@ -187,7 +205,7 @@
               </label>
               <label>
                 <span>Type of cleaning</span>
-                <select name="Service Type" required>
+                <select name="Service Type" data-estimate-field required>
                   <option value="" selected disabled>Select one</option>
                   <option>Standard Cleaning</option>
                   <option>Deep Cleaning</option>
@@ -209,71 +227,71 @@
               </label>
               <label>
                 <span>Do you have any office or business space?</span>
-                <select name="Do You Have an Office?" required>
+                <select name="Do You Have an Office?" data-estimate-field required>
                   <option value="" selected disabled>Select one</option>
-                  <option>No</option>
-                  <option>Yes</option>
+                  <option data-price="0">No</option>
+                  <option data-price="30">Yes</option>
                 </select>
               </label>
               <label>
                 <span>Do you have pets?</span>
-                <select name="Do You Have Pets?" required>
+                <select name="Do You Have Pets?" data-estimate-field required>
                   <option value="" selected disabled>Select one</option>
-                  <option>No pets</option>
-                  <option>1 or 2 pets</option>
-                  <option>3+ pets</option>
+                  <option data-price="0">No pets</option>
+                  <option data-price="30">One pet</option>
+                  <option data-price="50">Two pets</option>
+                  <option data-price="80">More than two pets</option>
                 </select>
               </label>
               <label>
                 <span>When was it last professionally or thoroughly cleaned?</span>
-                <select name="Last Professional Cleaning" required>
+                <select name="Last Professional Cleaning" data-estimate-field required>
                   <option value="" selected disabled>Select one</option>
-                  <option>Within the last month</option>
-                  <option>1 to 3 months ago</option>
-                  <option>3 to 6 months ago</option>
-                  <option>More than 6 months ago</option>
-                  <option>Not sure</option>
+                  <option data-price="30">3 months ago</option>
+                  <option data-price="60">6 months ago</option>
+                  <option data-price="100">1 year ago</option>
+                  <option data-price="100">More than 1 year ago / not sure</option>
                 </select>
               </label>
               <label>
                 <span>Will everything be ready for cleaning?</span>
-                <select name="Clutter or Ready for Cleaning" required>
+                <select name="Clutter or Ready for Cleaning" data-estimate-field required>
                   <option value="" selected disabled>Select one</option>
-                  <option>Yes, everything will be ready</option>
-                  <option>Some clutter may still be there</option>
-                  <option>There is a lot of clutter to work around</option>
+                  <option data-price="0">No clutter</option>
+                  <option data-price="50">Some clutter</option>
+                  <option data-price="100">Heavy clutter</option>
                 </select>
               </label>
               <label>
                 <span>Are there any heavy buildup areas?</span>
-                <select name="Heavy Buildup Areas" required>
+                <select name="Heavy Buildup Areas" data-estimate-field required>
                   <option value="" selected disabled>Select one</option>
-                  <option>No major buildup</option>
-                  <option>Some buildup in a few areas</option>
-                  <option>Heavy grease, soap scum, or mold</option>
+                  <option data-price="0">No major buildup</option>
+                  <option data-price="30">Some buildup in a few areas</option>
+                  <option data-price="50">Heavy grease, soap scum, or mold</option>
                 </select>
               </label>
               <label class="field-wide">
                 <span>Would you like any add-ons cleaned thoroughly?</span>
                 <div class="choice-grid">
                   <label class="choice-chip">
-                    <input type="checkbox" name="Add-Ons[]" value="Inside cabinets" data-addon-option required>
+                    <input type="checkbox" name="Add-Ons[]" value="Inside cabinets" data-addon-option data-price="30" required>
                     <span>Inside cabinets</span>
                   </label>
                   <label class="choice-chip">
-                    <input type="checkbox" name="Add-Ons[]" value="Inside fridge" data-addon-option>
+                    <input type="checkbox" name="Add-Ons[]" value="Inside fridge" data-addon-option data-price="30">
                     <span>Inside fridge</span>
                   </label>
                   <label class="choice-chip">
-                    <input type="checkbox" name="Add-Ons[]" value="Inside oven" data-addon-option>
+                    <input type="checkbox" name="Add-Ons[]" value="Inside oven" data-addon-option data-price="30">
                     <span>Inside oven</span>
                   </label>
                   <label class="choice-chip">
-                    <input type="checkbox" name="Add-Ons[]" value="Inside microwave" data-addon-option>
+                    <input type="checkbox" name="Add-Ons[]" value="Inside microwave" data-addon-option data-price="30">
                     <span>Inside microwave</span>
                   </label>
                   <label class="choice-chip">
-                    <input type="checkbox" name="Add-Ons[]" value="Interior windows" data-addon-option>
+                    <input type="checkbox" name="Add-Ons[]" value="Interior windows" data-addon-option data-unit-price="25">
                     <span>Interior windows</span>
                   </label>
                   <label class="choice-window-count" data-window-count-field hidden>
@@ -375,6 +393,36 @@
         const windowAddOn = addOns.find((input) => input.value === "Interior windows");
         const windowCount = document.querySelector("[data-window-count]");
         const windowCountField = document.querySelector("[data-window-count-field]");
+        const estimateFields = Array.from(document.querySelectorAll("[data-estimate-field]"));
+        const estimateInput = document.querySelector("[data-estimate-input]");
+        const estimateTotal = document.querySelector("[data-estimate-total]");
+        const estimateNote = document.querySelector("[data-estimate-note]");
+        const estimateBreakdown = document.querySelector("[data-estimate-breakdown]");
+
+        function money(value) {
+          return `$${value.toLocaleString("en-US")}`;
+        }
+
+        function selectedOption(select) {
+          return select.options[select.selectedIndex] || null;
+        }
+
+        function addLine(lines, label, amount) {
+          if (!amount) return 0;
+          lines.push(`${label}: ${money(amount)}`);
+          return amount;
+        }
+
+        function optionPrice(select) {
+          const option = selectedOption(select);
+          if (!option || option.disabled) return 0;
+          return Number(option.dataset.price || 0);
+        }
+
+        function optionText(select) {
+          const option = selectedOption(select);
+          return option && !option.disabled ? option.textContent.trim() : "";
+        }
 
         function syncAddOnRequirement() {
           const hasSelection = addOns.some((input) => input.checked);
@@ -396,14 +444,111 @@
           }
         }
 
+        function syncNoAddOns(input) {
+          const noAddOns = addOns.find((option) => option.value === "No add-ons needed");
+          if (!noAddOns || !input.checked) return;
+          if (input === noAddOns) {
+            addOns.forEach((option) => {
+              if (option !== noAddOns) option.checked = false;
+            });
+          } else {
+            noAddOns.checked = false;
+          }
+        }
+
+        function calculateEstimate() {
+          if (!estimateTotal || !estimateNote || !estimateBreakdown) return;
+
+          const serviceType = document.querySelector('[name="Service Type"]');
+          const sqftField = document.querySelector('[name="Square Footage"]');
+          const squareFeet = Number(sqftField?.value || 0);
+          const serviceName = serviceType ? optionText(serviceType) : "";
+
+          if (serviceName !== "Standard Cleaning") {
+            estimateTotal.textContent = "Choose Standard Cleaning";
+            estimateNote.textContent = "This estimate uses the Standard Cleaning pricing system for homes under 1500 sq ft.";
+            estimateBreakdown.innerHTML = "";
+            if (estimateInput) estimateInput.value = "Not calculated: Standard Cleaning was not selected.";
+            return;
+          }
+
+          if (!squareFeet) {
+            estimateTotal.textContent = "Enter square footage";
+            estimateNote.textContent = "Standard cleaning pricing applies to homes under 1500 sq ft.";
+            estimateBreakdown.innerHTML = "";
+            if (estimateInput) estimateInput.value = "Not calculated: square footage missing.";
+            return;
+          }
+
+          if (squareFeet >= 1500) {
+            estimateTotal.textContent = "Custom quote";
+            estimateNote.textContent = "Homes 1500 sq ft and above need a custom Standard Cleaning quote.";
+            estimateBreakdown.innerHTML = "";
+            if (estimateInput) estimateInput.value = "Custom quote: home is 1500 sq ft or above.";
+            return;
+          }
+
+          const lines = [];
+          let total = 0;
+
+          document.querySelectorAll("[data-unit-price]").forEach((field) => {
+            if (field.type === "checkbox") return;
+            const count = Number(field.value || 0);
+            const unitPrice = Number(field.dataset.unitPrice || 0);
+            const label = field.dataset.priceLabel || field.name;
+            if (count > 0 && unitPrice > 0) {
+              total += addLine(lines, `${count} ${label}${count === 1 ? "" : "s"}`, count * unitPrice);
+            }
+          });
+
+          const office = document.querySelector('[name="Do You Have an Office?"]');
+          const pets = document.querySelector('[name="Do You Have Pets?"]');
+          const lastCleaned = document.querySelector('[name="Last Professional Cleaning"]');
+          const clutter = document.querySelector('[name="Clutter or Ready for Cleaning"]');
+          const buildup = document.querySelector('[name="Heavy Buildup Areas"]');
+
+          total += addLine(lines, "Office or business space cleaning", optionPrice(office));
+          total += addLine(lines, optionText(pets), optionPrice(pets));
+          total += addLine(lines, optionText(lastCleaned), optionPrice(lastCleaned));
+          total += addLine(lines, optionText(clutter), optionPrice(clutter));
+          total += addLine(lines, optionText(buildup), optionPrice(buildup));
+
+          addOns.forEach((input) => {
+            if (!input.checked || input.value === "No add-ons needed") return;
+            if (input === windowAddOn) {
+              const count = Number(windowCount?.value || 0);
+              if (count > 0) {
+                total += addLine(lines, `${count} interior window${count === 1 ? "" : "s"}`, count * Number(input.dataset.unitPrice || 0));
+              }
+              return;
+            }
+            total += addLine(lines, input.value, Number(input.dataset.price || 0));
+          });
+
+          estimateTotal.textContent = money(total);
+          estimateNote.textContent = "Estimated Standard Cleaning total for a home under 1500 sq ft. Final quote may be confirmed after reviewing details and photos.";
+          estimateBreakdown.innerHTML = lines.map((line) => `<span class="estimate-chip">${line}</span>`).join("");
+          if (estimateInput) {
+            estimateInput.value = `${money(total)} (${lines.join("; ") || "No priced selections yet"})`;
+          }
+        }
+
         addOns.forEach((input) => {
           input.addEventListener("change", () => {
+            syncNoAddOns(input);
             syncAddOnRequirement();
             syncWindowCount();
+            calculateEstimate();
           });
         });
+        estimateFields.forEach((field) => field.addEventListener("input", calculateEstimate));
+        estimateFields.forEach((field) => field.addEventListener("change", calculateEstimate));
+        if (windowCount) {
+          windowCount.addEventListener("input", calculateEstimate);
+        }
         syncAddOnRequirement();
         syncWindowCount();
+        calculateEstimate();
       })();
     </script>
   </body>
