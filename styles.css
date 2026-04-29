@@ -2223,6 +2223,11 @@ body.homepage {
   background: var(--mint-soft);
 }
 
+.site-follow-section {
+  width: min(calc(100% - 32px), var(--max-width));
+  margin: 34px auto 0;
+}
+
 .areas-follow-panel {
   display: flex;
   align-items: center;
