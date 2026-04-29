@@ -278,11 +278,21 @@
               </label>
               <label>
                 <span>Do you need any additional areas cleaned outside of the bedrooms, bathrooms, kitchen, living room, and dining area?</span>
-                <select name="Do You Have an Office?" required>
+                <select name="Additional Areas Needed?" data-additional-areas-select required>
                   <option value="" selected disabled>Select one</option>
                   <option>No</option>
                   <option>Yes</option>
                 </select>
+              </label>
+              <label class="field-wide" data-additional-areas-field hidden>
+                <span>List those spaces below</span>
+                <textarea
+                  name="Additional Areas"
+                  rows="3"
+                  placeholder="Example: hallway, entryway, laundry room, den, stairs, basement, balcony"
+                  data-additional-areas-input
+                  disabled
+                ></textarea>
               </label>
               <label>
                 <span>Do you have pets?</span>
@@ -445,6 +455,9 @@
         const windowAddOn = addOns.find((input) => input.value === "Interior windows");
         const windowCount = document.querySelector("[data-window-count]");
         const windowCountField = document.querySelector("[data-window-count-field]");
+        const additionalAreasSelect = document.querySelector("[data-additional-areas-select]");
+        const additionalAreasField = document.querySelector("[data-additional-areas-field]");
+        const additionalAreasInput = document.querySelector("[data-additional-areas-input]");
 
         function syncAddOnRequirement() {
           const hasSelection = addOns.some((input) => input.checked);
@@ -478,6 +491,19 @@
           }
         }
 
+        function syncAdditionalAreas() {
+          if (!additionalAreasSelect || !additionalAreasInput) return;
+          const needsDetails = additionalAreasSelect.value === "Yes";
+          if (additionalAreasField) {
+            additionalAreasField.hidden = !needsDetails;
+          }
+          additionalAreasInput.disabled = !needsDetails;
+          additionalAreasInput.required = needsDetails;
+          if (!needsDetails) {
+            additionalAreasInput.value = "";
+          }
+        }
+
         addOns.forEach((input) => {
           input.addEventListener("change", () => {
             syncNoAddOns(input);
@@ -485,8 +511,12 @@
             syncWindowCount();
           });
         });
+        if (additionalAreasSelect) {
+          additionalAreasSelect.addEventListener("change", syncAdditionalAreas);
+        }
         syncAddOnRequirement();
         syncWindowCount();
+        syncAdditionalAreas();
       })();
     </script>
   </body>
