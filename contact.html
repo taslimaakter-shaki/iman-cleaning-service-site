@@ -67,16 +67,34 @@
               Reach out for a quick quote, and we’ll get you booked in fast.
             </p>
           </div>
-          <div class="contact-cta-card">
-            <h2>Let’s get your place cleaned.</h2>
-            <div class="contact-cta-links">
-              <a href="tel:9177747821"><span>Call or text</span><strong>917-774-7821</strong></a>
-              <a href="tel:6362532035"><span>Second contact</span><strong>636-253-2035</strong></a>
-              <a href="mailto:Info@imancleaningservice.com?subject=Get%20a%20Cleaning%20Quote"><span>Email</span><strong>Info@imancleaningservice.com</strong></a>
-            </div>
-            <p>Get your quote in minutes. Book your spot today.</p>
-            <a class="button button-primary" href="./quote.html">Request a Quote</a>
-          </div>
+          <form
+            class="contact-cta-card contact-now-form"
+            action="https://formsubmit.co/Info@imancleaningservice.com"
+            method="POST"
+          >
+            <input type="hidden" name="_subject" value="New contact message from www.imancleaningservice.com">
+            <input type="hidden" name="_next" value="https://www.imancleaningservice.com/thanks.html">
+            <input type="hidden" name="_template" value="table">
+            <input type="text" name="_honey" class="hp-field" tabindex="-1" autocomplete="off">
+            <h2>Contact Us Now</h2>
+            <label>
+              <span>Full Name</span>
+              <input type="text" name="Full Name" placeholder="Your full name" required>
+            </label>
+            <label>
+              <span>Phone Number</span>
+              <input type="tel" name="Phone Number" placeholder="Your phone number" required>
+            </label>
+            <label>
+              <span>Email Address</span>
+              <input type="email" name="Email Address" placeholder="you@example.com" required>
+            </label>
+            <label>
+              <span>Message</span>
+              <textarea name="Message" rows="5" placeholder="Tell us how we can help." required></textarea>
+            </label>
+            <button class="button button-primary" type="submit">Send Message</button>
+          </form>
         </section>
       </main>
     <section class="iman-contact-footer" aria-label="Contact Iman Cleaning Service LLC">
