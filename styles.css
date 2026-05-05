@@ -4422,25 +4422,54 @@ body.homepage {
 }
 
 @media (max-width: 860px) {
+  body,
+  body.homepage {
+    padding-top: 118px;
+  }
+
+  .home-nav {
+    padding: 10px 0 12px;
+  }
+
   .home-nav-inner {
+    flex-direction: column;
     flex-wrap: nowrap;
-    justify-content: space-between;
+    justify-content: center;
+    gap: 10px;
+  }
+
+  .home-brand {
+    align-self: flex-start;
+  }
+
+  .home-nav .brand-logo {
+    width: 42px;
+    height: 42px;
+    border-radius: 13px;
+  }
+
+  .home-nav .brand-mark {
+    font-size: 1.25rem;
+  }
+
+  .home-nav .brand-copy {
+    font-size: 0.95rem;
   }
 
   .home-nav-links {
-    position: absolute;
-    left: 16px;
-    right: 16px;
-    top: calc(100% + 10px);
-    display: none;
-    flex-direction: column;
-    align-items: stretch;
-    gap: 0;
-    padding: 12px;
-    border: 1px solid rgba(15, 61, 46, 0.1);
-    border-radius: 20px;
-    background: rgba(255, 255, 255, 0.98);
-    box-shadow: 0 18px 36px rgba(15, 61, 46, 0.12);
+    position: static;
+    display: flex;
+    flex-direction: row;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: flex-start;
+    gap: 8px 14px;
+    width: 100%;
+    padding: 0;
+    border: 0;
+    border-radius: 0;
+    background: transparent;
+    box-shadow: none;
   }
 
   .home-nav-links.is-open {
@@ -4448,10 +4477,13 @@ body.homepage {
   }
 
   .home-nav-links a {
-    min-height: 46px;
+    min-height: auto;
     display: inline-flex;
     align-items: center;
-    padding: 0 12px;
+    padding: 0;
+    font-size: 0.78rem;
+    line-height: 1.15;
+    white-space: nowrap;
   }
 
   .home-nav-links a::after {
@@ -4459,7 +4491,7 @@ body.homepage {
   }
 
   .home-menu-toggle {
-    display: inline-flex;
+    display: none;
   }
 
   .services-page .social-links-top {
@@ -4487,7 +4519,7 @@ body.homepage {
 @media (max-width: 640px) {
   body,
   body.homepage {
-    padding-top: 79px;
+    padding-top: 118px;
   }
 
   .home-shell {
