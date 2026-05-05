@@ -2773,6 +2773,41 @@ body.homepage {
   line-height: 1.65;
 }
 
+.service-subgrid {
+  display: grid;
+  gap: 10px;
+}
+
+.service-subbox {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  min-height: 52px;
+  padding: 14px 16px;
+  border: 1px solid rgba(15, 61, 46, 0.1);
+  border-radius: 16px;
+  color: var(--forest-deep);
+  background: linear-gradient(180deg, rgba(245, 250, 240, 0.98), rgba(255, 255, 255, 0.96));
+  font-weight: 800;
+  line-height: 1.25;
+  text-decoration: none;
+  box-shadow: 0 10px 22px rgba(15, 61, 46, 0.06);
+  transition: transform 160ms ease, border-color 160ms ease, box-shadow 160ms ease;
+}
+
+.service-subbox::after {
+  content: ">";
+  margin-left: 12px;
+  color: var(--forest);
+  font-weight: 900;
+}
+
+.service-subbox:hover {
+  transform: translateY(-2px);
+  border-color: rgba(15, 61, 46, 0.22);
+  box-shadow: 0 14px 28px rgba(15, 61, 46, 0.1);
+}
+
 .service-type-copy .home-btn {
   width: fit-content;
 }
