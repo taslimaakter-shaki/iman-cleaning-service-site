@@ -2453,42 +2453,6 @@ body.homepage {
   box-shadow: 0 16px 30px rgba(15, 61, 46, 0.12);
 }
 
-.home-hero-overlay {
-  position: absolute;
-  left: 50%;
-  bottom: 24px;
-  width: min(78%, 430px);
-  z-index: 2;
-  padding: clamp(20px, 3vw, 30px);
-  border-radius: 24px;
-  color: var(--white);
-  background: rgba(15, 61, 46, 0.78);
-  backdrop-filter: blur(14px);
-  box-shadow: 0 22px 40px rgba(8, 63, 29, 0.24);
-  transform: translateX(-50%);
-}
-
-.home-pill {
-  display: inline-flex;
-  align-items: center;
-  min-height: 34px;
-  padding: 0 12px;
-  margin-bottom: 12px;
-  border-radius: 999px;
-  background: rgba(255, 255, 255, 0.12);
-  font-size: 0.8rem;
-  font-weight: 700;
-  text-transform: uppercase;
-  letter-spacing: 0.08em;
-}
-
-.home-hero-overlay strong {
-  display: block;
-  max-width: 560px;
-  font-size: clamp(1.1rem, 2vw, 1.55rem);
-  line-height: 1.4;
-}
-
 .home-pain-grid,
 .home-pricing-grid,
 .home-proof-grid {
@@ -3809,15 +3773,6 @@ body.homepage {
     inset: 0;
     border-width: 10px;
     border-radius: 28px;
-  }
-
-  .home-hero-overlay {
-    left: 14px;
-    right: 14px;
-    bottom: 14px;
-    width: auto;
-    border-radius: 20px;
-    transform: none;
   }
 
   .home-hero-media::before {
