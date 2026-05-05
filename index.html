@@ -66,12 +66,17 @@
             <span class="brand-copy">Cleaning Service LLC</span>
           </span>
         </a>
-        <nav class="home-nav-links" aria-label="Primary">
+        <nav class="home-nav-links" id="home-navigation" aria-label="Primary">
           <a href="./services.html">Services</a>
           <a href="./why-us.html">Why Us</a>
           <a href="./areas.html">Service Areas</a>
           <a href="./contact.html">Contact</a>
         </nav>
+        <button class="home-menu-toggle" type="button" aria-label="Open navigation" aria-controls="home-navigation" aria-expanded="false">
+          <span></span>
+          <span></span>
+          <span></span>
+        </button>
       </div>
     </header>
 
@@ -79,15 +84,16 @@
       <section class="home-hero">
         <div class="home-shell home-hero-grid">
           <div class="home-hero-copy">
-            <p class="home-kicker">Affordable cleaning across New York City</p>
-            <h1>You deserve to hold hands — not mop.</h1>
+            <p class="home-kicker">Professional cleaning across New York City</p>
+            <h1>Cleaning you can trust for homes, offices, and Airbnbs.</h1>
             <p class="home-subheadline">
-              Affordable, high-quality cleaning across NYC. So you can focus on what actually matters.
+              Affordable, high-quality residential and commercial cleaning across NYC and surrounding areas.
             </p>
             <ul class="home-hero-points" aria-label="Trust highlights">
               <li>Fully Insured</li>
-              <li>Same-Day Availability</li>
-              <li>100+ Happy Clients</li>
+              <li>Same-Day &amp; Weekend Availability</li>
+              <li>Residential &amp; Commercial Cleaning</li>
+              <li>Serving NYC &amp; Surrounding Areas</li>
             </ul>
             <div class="home-hero-actions">
               <a class="home-btn home-btn-primary" href="./quote.html">Get Instant Quote</a>
@@ -95,13 +101,19 @@
             </div>
           </div>
           <div class="home-hero-media">
-            <img
-              src="./home-hero-cleaners.png"
-              alt="Three Iman Cleaning Service LLC cleaners working inside a modern New York City apartment"
-              loading="eager"
-            >
+            <div class="home-hero-orb home-hero-orb-one" aria-hidden="true"></div>
+            <div class="home-hero-orb home-hero-orb-two" aria-hidden="true"></div>
+            <div class="home-hero-visual">
+              <video autoplay muted loop playsinline poster="./home-hero-cleaners.png" aria-label="Iman Cleaning Service LLC team cleaning a modern apartment">
+              </video>
+              <img
+                src="./home-hero-cleaners.png"
+                alt="Three Iman Cleaning Service LLC cleaners working inside a modern New York City apartment"
+                loading="eager"
+              >
+            </div>
             <div class="home-hero-overlay">
-              <span class="home-pill">Same-day help</span>
+              <span class="home-pill">SAME-DAY HELP</span>
               <strong>Reliable cleaners for homes, apartments, offices, Airbnbs, and move-outs.</strong>
             </div>
           </div>
@@ -237,6 +249,16 @@
 
     <script>
       (() => {
+        const menuButton = document.querySelector(".home-menu-toggle");
+        const nav = document.querySelector(".home-nav-links");
+        if (menuButton && nav) {
+          menuButton.addEventListener("click", () => {
+            const isOpen = menuButton.getAttribute("aria-expanded") === "true";
+            menuButton.setAttribute("aria-expanded", String(!isOpen));
+            nav.classList.toggle("is-open", !isOpen);
+          });
+        }
+
         document.querySelectorAll('a[href^="#"]').forEach((link) => {
           link.addEventListener("click", (event) => {
             const id = link.getAttribute("href");
