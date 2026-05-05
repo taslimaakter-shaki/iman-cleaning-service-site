@@ -1049,6 +1049,23 @@ h2 {
   line-height: 1.7;
 }
 
+.areas-page-intro {
+  text-align: center;
+}
+
+.areas-page-intro h1 {
+  margin: 0 auto 14px;
+  max-width: none;
+  font-size: clamp(2.4rem, 4vw, 3.6rem);
+  line-height: 1.08;
+}
+
+.areas-page-intro p {
+  max-width: 860px;
+  margin: 0 auto;
+  font-size: clamp(1.02rem, 1.6vw, 1.18rem);
+}
+
 .page-cta {
   padding: 32px;
   border-radius: 32px;
