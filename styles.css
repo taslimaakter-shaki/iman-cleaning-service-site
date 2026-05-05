@@ -2730,6 +2730,53 @@ body.homepage {
   box-shadow: 0 22px 50px rgba(15, 61, 46, 0.12);
 }
 
+.service-type-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: clamp(18px, 3vw, 28px);
+  max-width: 1120px;
+  margin: 0 auto;
+}
+
+.service-type-card {
+  overflow: hidden;
+  border: 1px solid rgba(15, 61, 46, 0.1);
+  border-radius: 30px;
+  background: rgba(255, 255, 255, 0.96);
+  box-shadow: 0 18px 42px rgba(15, 61, 46, 0.1);
+}
+
+.service-type-media {
+  width: 100%;
+  aspect-ratio: 16 / 10;
+  object-fit: cover;
+}
+
+.service-type-copy {
+  display: grid;
+  gap: 16px;
+  padding: clamp(24px, 4vw, 34px);
+}
+
+.service-type-copy h2 {
+  max-width: none;
+  color: var(--forest-deep);
+  font-size: clamp(2rem, 3.5vw, 3.2rem);
+  line-height: 1.02;
+}
+
+.service-type-copy p {
+  margin: 0;
+  color: var(--home-muted);
+  font-size: 1rem;
+  font-weight: 700;
+  line-height: 1.65;
+}
+
+.service-type-copy .home-btn {
+  width: fit-content;
+}
+
 .home-service-media {
   width: 100%;
   aspect-ratio: 16 / 10;
@@ -3732,6 +3779,7 @@ body.homepage {
   .home-pain-grid,
   .home-pricing-grid,
   .home-proof-grid,
+  .service-type-grid,
   .services-step-grid {
     grid-template-columns: repeat(2, minmax(0, 1fr));
   }
@@ -3910,6 +3958,7 @@ body.homepage {
   .home-pain-grid,
   .home-pricing-grid,
   .home-proof-grid,
+  .service-type-grid,
   .services-page-hero .home-services-grid,
   .services-step-grid,
   .services-addon-list,
