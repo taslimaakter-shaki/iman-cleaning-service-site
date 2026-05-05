@@ -207,18 +207,20 @@
   display: flex;
   flex-wrap: wrap;
   justify-content: center;
-  gap: 10px;
+  gap: 12px;
 }
 
 .iman-footer-social-links .social-icon {
-  width: 42px;
-  height: 42px;
-  box-shadow: 0 10px 18px rgba(8, 63, 29, 0.12);
+  width: 50px;
+  height: 50px;
+  border-width: 2px;
+  box-shadow: 0 12px 22px rgba(8, 63, 29, 0.16);
 }
 
 .iman-footer-social-links .social-icon svg {
-  width: 18px;
-  height: 18px;
+  width: 24px;
+  height: 24px;
+  filter: drop-shadow(0 1px 1px rgba(0, 0, 0, 0.18));
 }
 
 .iman-footer-info h3 {
