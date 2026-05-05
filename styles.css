@@ -207,20 +207,20 @@
   display: flex;
   flex-wrap: wrap;
   justify-content: center;
-  gap: 12px;
+  gap: 14px;
 }
 
 .iman-footer-social-links .social-icon {
-  width: 54px;
-  height: 54px;
-  border-width: 2px;
-  box-shadow: 0 12px 22px rgba(8, 63, 29, 0.16);
+  width: 58px;
+  height: 58px;
+  border: 2px solid rgba(255, 255, 255, 0.34);
+  box-shadow: 0 16px 26px rgba(8, 63, 29, 0.18);
 }
 
 .iman-footer-social-links .social-icon svg {
-  width: 24px;
-  height: 24px;
-  filter: drop-shadow(0 1px 1px rgba(0, 0, 0, 0.18));
+  width: 27px;
+  height: 27px;
+  filter: drop-shadow(0 1px 1px rgba(0, 0, 0, 0.2));
 }
 
 .iman-footer-info h3 {
@@ -1556,21 +1556,26 @@ h2 {
 }
 
 .social-icon-facebook {
-  background: linear-gradient(135deg, #1877f2, #0f5ed7);
+  background: linear-gradient(145deg, #2f80ff 0%, #1768dc 100%);
 }
 
 .social-icon-google {
   background: linear-gradient(135deg, #ffffff, #f3f6fb);
-  border-color: rgba(20, 49, 35, 0.1);
+  border-color: rgba(20, 49, 35, 0.08);
 }
 
 .social-icon-instagram {
   background:
-    radial-gradient(circle at 30% 110%, #fdf497 0%, #fdf497 8%, #fd5949 36%, #d6249f 62%, #285aeb 92%);
+    radial-gradient(circle at 30% 112%, #ffd35c 0%, #ff9a4d 24%, #fd3f6c 48%, #d534b8 70%, #3f5cff 100%);
 }
 
 .social-icon-tiktok {
-  background: linear-gradient(135deg, #0f0f12, #111111);
+  background: linear-gradient(145deg, #08080a 0%, #17171b 100%);
+  border-color: rgba(37, 244, 238, 0.72);
+  box-shadow:
+    3px 0 0 rgba(254, 44, 85, 0.72),
+    -3px 0 0 rgba(37, 244, 238, 0.72),
+    0 16px 26px rgba(8, 63, 29, 0.18);
   position: relative;
 }
 
@@ -1584,17 +1589,15 @@ h2 {
 }
 
 .social-icon-tiktok::before {
-  box-shadow: -2px 0 0 0 rgba(37, 244, 238, 0.85);
-  transform: translateX(-1px);
+  box-shadow: inset -2px 0 0 rgba(37, 244, 238, 0.58);
 }
 
 .social-icon-tiktok::after {
-  box-shadow: 2px 0 0 0 rgba(254, 44, 85, 0.72);
-  transform: translateX(1px);
+  box-shadow: inset 2px 0 0 rgba(254, 44, 85, 0.56);
 }
 
 .social-icon-youtube {
-  background: linear-gradient(135deg, #ff2d2d, #c90000);
+  background: linear-gradient(145deg, #ff2828 0%, #e40707 100%);
 }
 
 .contact-pill {
