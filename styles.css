@@ -2732,9 +2732,9 @@ body.homepage {
 
 .service-type-grid {
   display: grid;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
+  grid-template-columns: 1fr;
   gap: clamp(18px, 3vw, 28px);
-  max-width: 1120px;
+  max-width: 920px;
   margin: 0 auto;
 }
 
@@ -3814,7 +3814,6 @@ body.homepage {
   .home-pain-grid,
   .home-pricing-grid,
   .home-proof-grid,
-  .service-type-grid,
   .services-step-grid {
     grid-template-columns: repeat(2, minmax(0, 1fr));
   }
