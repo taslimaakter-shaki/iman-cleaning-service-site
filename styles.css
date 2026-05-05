@@ -1568,7 +1568,7 @@ h2 {
 
 .contact-hero {
   display: grid;
-  grid-template-columns: minmax(0, 0.95fr) minmax(280px, 0.6fr) minmax(320px, 0.75fr);
+  grid-template-columns: minmax(280px, 0.8fr) minmax(320px, 1fr);
   gap: 28px;
   align-items: stretch;
   margin-bottom: 36px;
