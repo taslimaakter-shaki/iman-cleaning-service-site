@@ -3549,6 +3549,113 @@ body.homepage {
   line-height: 1.6;
 }
 
+.residential-detail-main {
+  background:
+    radial-gradient(circle at 10% 12%, rgba(177, 221, 136, 0.28), transparent 28%),
+    linear-gradient(180deg, rgba(248, 251, 245, 0.98), rgba(255, 255, 255, 0.98) 42%);
+  padding: 46px 0 86px;
+}
+
+.residential-detail-hero {
+  padding: 38px 0 28px;
+}
+
+.residential-detail-hero-grid {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(300px, 0.55fr);
+  gap: 32px;
+  align-items: end;
+}
+
+.residential-detail-copy h1 {
+  max-width: 13ch;
+  margin: 0 0 20px;
+  color: var(--home-ink);
+  font-size: clamp(3rem, 6vw, 5.6rem);
+  line-height: 0.96;
+}
+
+.residential-detail-copy p {
+  max-width: 62ch;
+  color: var(--home-muted);
+  font-size: 1.08rem;
+  line-height: 1.75;
+}
+
+.residential-detail-copy .home-btn {
+  margin-top: 18px;
+}
+
+.residential-detail-note {
+  padding: 26px;
+  border: 1px solid rgba(15, 61, 46, 0.1);
+  border-radius: 28px;
+  background: rgba(255, 255, 255, 0.94);
+  box-shadow: 0 18px 45px rgba(15, 61, 46, 0.08);
+}
+
+.residential-detail-note h2,
+.residential-clean-list h2,
+.residential-best-list h2 {
+  margin: 0 0 14px;
+  color: var(--home-ink);
+  font-size: 1.08rem;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.residential-detail-note p {
+  margin: 0;
+  color: var(--home-muted);
+  line-height: 1.68;
+}
+
+.residential-detail-section {
+  padding: 24px 0;
+}
+
+.residential-detail-grid {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(300px, 0.56fr);
+  gap: 24px;
+}
+
+.residential-clean-list,
+.residential-best-list {
+  padding: clamp(24px, 4vw, 38px);
+  border: 1px solid rgba(15, 61, 46, 0.08);
+  border-radius: 30px;
+  background: rgba(255, 255, 255, 0.96);
+  box-shadow: 0 18px 50px rgba(15, 61, 46, 0.08);
+}
+
+.residential-clean-list ul,
+.residential-best-list ul {
+  display: grid;
+  gap: 12px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.residential-clean-list li,
+.residential-best-list li {
+  position: relative;
+  padding-left: 28px;
+  color: var(--home-muted);
+  line-height: 1.58;
+}
+
+.residential-clean-list li::before,
+.residential-best-list li::before {
+  content: "✔";
+  position: absolute;
+  left: 0;
+  top: 0;
+  color: var(--home-green);
+  font-weight: 900;
+}
+
 .standard-cleaning-main {
   background:
     linear-gradient(180deg, rgba(248, 251, 245, 0.96), rgba(255, 255, 255, 0.98) 36%),
@@ -4451,16 +4558,22 @@ body.homepage {
   }
 
   .commercial-detail-hero-grid,
-  .commercial-service-grid {
+  .commercial-service-grid,
+  .residential-detail-hero-grid,
+  .residential-detail-grid {
     grid-template-columns: 1fr;
   }
 
   .commercial-detail-hero h1,
-  .commercial-service-copy h2 {
+  .commercial-service-copy h2,
+  .residential-detail-copy h1 {
     max-width: none;
   }
 
-  .commercial-service-grid {
+  .commercial-service-grid,
+  .residential-clean-list,
+  .residential-best-list,
+  .residential-detail-note {
     border-radius: 24px;
     padding: 22px;
   }
