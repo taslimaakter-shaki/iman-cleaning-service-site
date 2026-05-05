@@ -154,7 +154,25 @@
                   <option>Commercial</option>
                 </select>
               </label>
-              <label>
+              <label data-commercial-field hidden>
+                <span>What kind of a space is it?</span>
+                <select name="Commercial Space Type" data-commercial-space-select required disabled>
+                  <option value="" selected disabled>Select one</option>
+                  <option>Office</option>
+                  <option>Retail Store</option>
+                  <option>Restaurant</option>
+                  <option>Medical / Clinic</option>
+                  <option>Other</option>
+                </select>
+              </label>
+              <label data-commercial-other-field hidden>
+                <span>Please enter your space name</span>
+                <input type="text" name="Other Commercial Space" placeholder="Example: salon, studio, warehouse" data-commercial-other-input disabled>
+              </label>
+              <div class="commercial-quote-note field-wide" data-commercial-message hidden>
+                <p>Commercial cleaning quotes are provided after a brief phone consultation and, if needed, an on-site walkthrough. After you submit this form, we will contact you shortly by phone. Thank you.</p>
+              </div>
+              <label data-residential-field>
                 <span>What type of space is it?</span>
                 <select name="Property Type" required>
                   <option value="" selected disabled>Select one</option>
@@ -164,7 +182,7 @@
                   <option>Airbnb / Rental</option>
                 </select>
               </label>
-              <label>
+              <label data-residential-field>
                 <span>What service are you interested in?</span>
                 <small class="field-note">We will need photos of your space to confirm eligibility for this type of cleaning, estimate how long the service will take, and determine how many team members will be required.</small>
                 <select name="Service Type" required>
@@ -230,7 +248,7 @@
                   disabled
                 >
               </label>
-              <label>
+              <label data-residential-field>
                 <span>Which day are you available?</span>
                 <span class="date-picker-wrap">
                   <input class="date-picker-input" type="date" name="Available Day" data-date-picker required>
@@ -241,7 +259,7 @@
                   </button>
                 </span>
               </label>
-              <label>
+              <label data-residential-field>
                 <span>Which time of the day are you available?</span>
                 <select name="Available Time of Day" required>
                   <option value="" selected disabled>Select one</option>
@@ -453,7 +471,7 @@
                   required
                 ></textarea>
               </label>
-              <label class="field-wide">
+              <label class="field-wide" data-residential-field>
                 <span>Please upload clear photos of the space you’d like us to clean so we can assess it properly.</span>
                 <input
                   type="file"
@@ -534,6 +552,12 @@
           ? Array.from(serviceCategoryField.parentElement.children).slice(Array.from(serviceCategoryField.parentElement.children).indexOf(serviceCategoryField) + 1)
           : [];
         const quoteActions = document.querySelector(".quote-actions");
+        const residentialFields = Array.from(document.querySelectorAll("[data-residential-field]"));
+        const commercialFields = Array.from(document.querySelectorAll("[data-commercial-field]"));
+        const commercialSpaceSelect = document.querySelector("[data-commercial-space-select]");
+        const commercialOtherField = document.querySelector("[data-commercial-other-field]");
+        const commercialOtherInput = document.querySelector("[data-commercial-other-input]");
+        const commercialMessage = document.querySelector("[data-commercial-message]");
         const serviceType = document.querySelector('[name="Service Type"]');
         const cleaningDetailFields = Array.from(document.querySelectorAll("[data-cleaning-detail-field]"));
         const organizingFields = Array.from(document.querySelectorAll("[data-organizing-hours-field], [data-organizing-team-field]"));
@@ -545,16 +569,24 @@
           return Boolean(serviceCategory && serviceCategory.value);
         }
 
+        function isResidentialService() {
+          return serviceCategory && serviceCategory.value === "Residential";
+        }
+
+        function isCommercialService() {
+          return serviceCategory && serviceCategory.value === "Commercial";
+        }
+
         function shouldShowCleaningDetails() {
-          return hasSelectedServiceCategory() && (!serviceType || !serviceType.value || !["Organizing", "Detailed Cleaning"].includes(serviceType.value));
+          return isResidentialService() && (!serviceType || !serviceType.value || !["Organizing", "Detailed Cleaning"].includes(serviceType.value));
         }
 
         function shouldShowOrganizingFields() {
-          return hasSelectedServiceCategory() && serviceType && serviceType.value === "Organizing";
+          return isResidentialService() && serviceType && serviceType.value === "Organizing";
         }
 
         function shouldShowDetailedCleaningFields() {
-          return hasSelectedServiceCategory() && serviceType && serviceType.value === "Detailed Cleaning";
+          return isResidentialService() && serviceType && serviceType.value === "Detailed Cleaning";
         }
 
         function syncFieldAvailability(field, isAvailable) {
@@ -572,13 +604,34 @@
           return field.matches("[data-cleaning-detail-field], [data-organizing-hours-field], [data-organizing-team-field], [data-detailed-hours-field], [data-detailed-team-field]");
         }
 
+        function syncCommercialFields() {
+          const showCommercialFields = isCommercialService();
+          commercialFields.forEach((field) => {
+            syncFieldAvailability(field, showCommercialFields);
+          });
+          const showOtherField = showCommercialFields && commercialSpaceSelect && commercialSpaceSelect.value === "Other";
+          if (commercialOtherField) {
+            syncFieldAvailability(commercialOtherField, showOtherField);
+          }
+          if (commercialOtherInput && !showOtherField) {
+            commercialOtherInput.value = "";
+          }
+          if (commercialMessage) {
+            commercialMessage.hidden = !(showCommercialFields && commercialSpaceSelect && commercialSpaceSelect.value);
+          }
+        }
+
         function syncProgressiveQuoteFields() {
           const showRemainingQuestions = hasSelectedServiceCategory();
           progressiveQuoteFields.forEach((field) => {
             if (!showRemainingQuestions || !isConditionalDetailField(field)) {
-              syncFieldAvailability(field, showRemainingQuestions);
+              syncFieldAvailability(field, false);
             }
           });
+          residentialFields.forEach((field) => {
+            syncFieldAvailability(field, isResidentialService());
+          });
+          syncCommercialFields();
           if (quoteActions) {
             syncFieldAvailability(quoteActions, showRemainingQuestions);
           }
@@ -670,6 +723,9 @@
         }
         if (serviceCategory) {
           serviceCategory.addEventListener("change", syncProgressiveQuoteFields);
+        }
+        if (commercialSpaceSelect) {
+          commercialSpaceSelect.addEventListener("change", syncCommercialFields);
         }
         datePickers.forEach((input) => {
           input.addEventListener("click", () => {

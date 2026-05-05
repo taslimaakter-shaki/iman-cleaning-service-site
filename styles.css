@@ -1098,7 +1098,7 @@ h2 {
   align-content: start;
 }
 
-.field-grid label[hidden] {
+.field-grid [hidden] {
   display: none;
 }
 
@@ -1145,6 +1145,20 @@ h2 {
   color: var(--muted);
   font-size: 0.82rem;
   line-height: 1.5;
+}
+
+.commercial-quote-note {
+  padding: 18px 20px;
+  border: 1px solid rgba(15, 92, 43, 0.12);
+  border-radius: 20px;
+  background: rgba(238, 248, 231, 0.78);
+}
+
+.commercial-quote-note p {
+  margin: 0;
+  color: var(--forest-deep);
+  font-weight: 800;
+  line-height: 1.65;
 }
 
 .choice-grid {
