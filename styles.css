@@ -342,6 +342,7 @@ html {
 
 body {
   margin: 0;
+  padding-top: 85px;
   color: var(--ink);
   font-family: "DM Sans", Arial, sans-serif;
   background:
@@ -2390,6 +2391,7 @@ body.homepage {
   --home-text: #18211d;
   --home-muted: #5c6a64;
   margin: 0;
+  padding-top: 85px;
   color: var(--home-text);
   font-family: "Poppins", Arial, sans-serif;
   background:
@@ -2435,8 +2437,10 @@ body.homepage {
 }
 
 .home-nav {
-  position: sticky;
+  position: fixed;
   top: 0;
+  right: 0;
+  left: 0;
   z-index: 100;
   padding: 16px 0;
   font-family: "Poppins", Arial, sans-serif;
@@ -4481,6 +4485,11 @@ body.homepage {
 }
 
 @media (max-width: 640px) {
+  body,
+  body.homepage {
+    padding-top: 79px;
+  }
+
   .home-shell {
     width: min(calc(100% - 20px), 1200px);
   }
