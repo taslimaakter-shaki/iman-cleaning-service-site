@@ -528,6 +528,12 @@
         const additionalAreasSelect = document.querySelector("[data-additional-areas-select]");
         const additionalAreasField = document.querySelector("[data-additional-areas-field]");
         const additionalAreasInput = document.querySelector("[data-additional-areas-input]");
+        const serviceCategory = document.querySelector('[name="Service Category"]');
+        const serviceCategoryField = serviceCategory ? serviceCategory.closest("label") : null;
+        const progressiveQuoteFields = serviceCategoryField
+          ? Array.from(serviceCategoryField.parentElement.children).slice(Array.from(serviceCategoryField.parentElement.children).indexOf(serviceCategoryField) + 1)
+          : [];
+        const quoteActions = document.querySelector(".quote-actions");
         const serviceType = document.querySelector('[name="Service Type"]');
         const cleaningDetailFields = Array.from(document.querySelectorAll("[data-cleaning-detail-field]"));
         const organizingFields = Array.from(document.querySelectorAll("[data-organizing-hours-field], [data-organizing-team-field]"));
@@ -535,16 +541,20 @@
         const datePickers = Array.from(document.querySelectorAll("[data-date-picker]"));
         const datePickerButtons = Array.from(document.querySelectorAll("[data-date-picker-button]"));
 
+        function hasSelectedServiceCategory() {
+          return Boolean(serviceCategory && serviceCategory.value);
+        }
+
         function shouldShowCleaningDetails() {
-          return serviceType && serviceType.value && !["Organizing", "Detailed Cleaning"].includes(serviceType.value);
+          return hasSelectedServiceCategory() && (!serviceType || !serviceType.value || !["Organizing", "Detailed Cleaning"].includes(serviceType.value));
         }
 
         function shouldShowOrganizingFields() {
-          return serviceType && serviceType.value === "Organizing";
+          return hasSelectedServiceCategory() && serviceType && serviceType.value === "Organizing";
         }
 
         function shouldShowDetailedCleaningFields() {
-          return serviceType && serviceType.value === "Detailed Cleaning";
+          return hasSelectedServiceCategory() && serviceType && serviceType.value === "Detailed Cleaning";
         }
 
         function syncFieldAvailability(field, isAvailable) {
@@ -556,6 +566,23 @@
             control.disabled = !isAvailable;
             control.required = isAvailable && control.dataset.initialRequired === "true";
           });
+        }
+
+        function isConditionalDetailField(field) {
+          return field.matches("[data-cleaning-detail-field], [data-organizing-hours-field], [data-organizing-team-field], [data-detailed-hours-field], [data-detailed-team-field]");
+        }
+
+        function syncProgressiveQuoteFields() {
+          const showRemainingQuestions = hasSelectedServiceCategory();
+          progressiveQuoteFields.forEach((field) => {
+            if (!showRemainingQuestions || !isConditionalDetailField(field)) {
+              syncFieldAvailability(field, showRemainingQuestions);
+            }
+          });
+          if (quoteActions) {
+            syncFieldAvailability(quoteActions, showRemainingQuestions);
+          }
+          syncCleaningDetailFields();
         }
 
         function syncCleaningDetailFields() {
@@ -641,6 +668,9 @@
         if (serviceType) {
           serviceType.addEventListener("change", syncCleaningDetailFields);
         }
+        if (serviceCategory) {
+          serviceCategory.addEventListener("change", syncProgressiveQuoteFields);
+        }
         datePickers.forEach((input) => {
           input.addEventListener("click", () => {
             if (typeof input.showPicker === "function") {
@@ -658,7 +688,7 @@
             }
           });
         });
-        syncCleaningDetailFields();
+        syncProgressiveQuoteFields();
       })();
     </script>
   </body>
