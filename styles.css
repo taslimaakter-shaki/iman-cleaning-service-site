@@ -211,16 +211,42 @@
 }
 
 .iman-footer-social-links .social-icon {
-  width: 58px;
-  height: 58px;
-  border: 2px solid rgba(255, 255, 255, 0.34);
-  box-shadow: 0 16px 26px rgba(8, 63, 29, 0.18);
+  width: 42px;
+  height: 42px;
+  border: 0;
+  background: transparent;
+  box-shadow: none;
 }
 
 .iman-footer-social-links .social-icon svg {
-  width: 27px;
-  height: 27px;
-  filter: drop-shadow(0 1px 1px rgba(0, 0, 0, 0.2));
+  width: 34px;
+  height: 34px;
+  filter: none;
+}
+
+.iman-footer-social-links .social-icon-youtube {
+  color: #ff0000;
+}
+
+.iman-footer-social-links .social-icon-facebook {
+  color: #1877f2;
+}
+
+.iman-footer-social-links .social-icon-instagram {
+  color: #e4405f;
+}
+
+.iman-footer-social-links .social-icon-tiktok {
+  color: #111111;
+}
+
+.iman-footer-social-links .social-icon-google {
+  background: transparent;
+}
+
+.iman-footer-social-links .social-icon-tiktok::before,
+.iman-footer-social-links .social-icon-tiktok::after {
+  display: none;
 }
 
 .iman-footer-info h3 {
