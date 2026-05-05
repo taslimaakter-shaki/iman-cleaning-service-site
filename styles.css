@@ -1677,7 +1677,8 @@ h2 {
   gap: 12px;
 }
 
-.contact-cta-links a {
+.contact-cta-links a,
+.contact-phone-box {
   display: flex;
   flex-direction: column;
   gap: 6px;
@@ -1687,7 +1688,8 @@ h2 {
   background: rgba(255, 255, 255, 0.09);
 }
 
-.contact-cta-links span {
+.contact-cta-links span,
+.contact-phone-box span {
   color: rgba(255, 255, 255, 0.72);
   font-size: 0.8rem;
   font-weight: 800;
@@ -1695,10 +1697,24 @@ h2 {
   text-transform: uppercase;
 }
 
-.contact-cta-links strong {
+.contact-cta-links strong,
+.contact-phone-box strong {
   color: var(--white);
   font-size: clamp(1.15rem, 2vw, 1.55rem);
   word-break: break-word;
+}
+
+.contact-phone-box strong {
+  display: grid;
+  gap: 6px;
+}
+
+.contact-phone-box strong a {
+  display: inline;
+  padding: 0;
+  border: 0;
+  border-radius: 0;
+  background: transparent;
 }
 
 .contact-how {
