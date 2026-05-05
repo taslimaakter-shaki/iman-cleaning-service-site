@@ -117,35 +117,83 @@
 
 .iman-footer-details {
   display: grid;
-  grid-template-columns: minmax(220px, 1fr) 2fr;
-  gap: 32px;
-  padding: 4px 8px 0;
+  gap: clamp(28px, 5vw, 48px);
+  padding: 10px 0 0;
   color: var(--muted);
 }
 
 .iman-footer-brand-block h2 {
   max-width: none;
   color: var(--forest-deep);
-  font-family: "DM Sans", Arial, sans-serif;
-  font-size: clamp(1.45rem, 2vw, 1.9rem);
+  font-size: clamp(2rem, 4vw, 3rem);
   line-height: 1.15;
+  text-align: center;
 }
 
 .iman-footer-brand-block p {
   margin: 12px 0 0;
+  color: var(--forest-deep);
+  font-size: clamp(1rem, 2vw, 1.2rem);
+  font-weight: 800;
+  letter-spacing: 0.04em;
   line-height: 1.6;
+  text-align: center;
+  text-transform: uppercase;
+}
+
+.iman-footer-brand-block strong {
+  display: block;
+  margin-top: 8px;
+  color: var(--muted);
+  font-size: clamp(0.98rem, 1.8vw, 1.1rem);
+  font-weight: 700;
+  line-height: 1.5;
+  text-align: center;
 }
 
 .iman-footer-info {
   display: grid;
   grid-template-columns: repeat(4, minmax(0, 1fr));
-  gap: 22px;
+  gap: clamp(16px, 2.6vw, 24px);
+}
+
+.iman-footer-contact-card {
+  display: grid;
+  justify-items: center;
+  align-content: start;
+  gap: 12px;
+  min-width: 0;
+  min-height: 190px;
+  padding: 24px 18px;
+  border: 1px solid rgba(15, 92, 43, 0.08);
+  border-radius: 22px;
+  background: rgba(255, 255, 255, 0.62);
+  box-shadow: 0 14px 30px rgba(8, 63, 29, 0.07);
+  text-align: center;
+}
+
+.iman-footer-contact-icon {
+  display: inline-flex;
+  width: 56px;
+  height: 56px;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+  color: var(--white);
+  background: var(--forest-deep);
+  box-shadow: 0 14px 26px rgba(8, 63, 29, 0.18);
+}
+
+.iman-footer-contact-icon svg {
+  width: 26px;
+  height: 26px;
+  fill: currentColor;
 }
 
 .iman-footer-info h3 {
-  margin-bottom: 10px;
+  margin: 0;
   color: var(--forest-deep);
-  font-size: 0.8rem;
+  font-size: 0.84rem;
   font-weight: 800;
   letter-spacing: 0.07em;
   line-height: 1.2;
@@ -157,6 +205,9 @@
   color: var(--muted);
   font-size: 0.96rem;
   line-height: 1.55;
+  max-width: 100%;
+  overflow-wrap: break-word;
+  word-break: normal;
 }
 
 .iman-footer-info a {
@@ -170,12 +221,12 @@
 }
 
 .iman-footer-bottom {
-  grid-column: 1 / -1;
-  margin: 6px 0 0;
+  margin: 2px 0 0;
   padding-top: 22px;
   border-top: 1px solid rgba(15, 92, 43, 0.12);
   color: var(--muted);
   font-size: 0.9rem;
+  text-align: center;
 }
 
 .floating-book {
@@ -189,19 +240,23 @@
 }
 
 @media (max-width: 900px) {
-  .iman-follow-card,
-  .iman-footer-details,
-  .iman-footer-info {
-    grid-template-columns: 1fr;
-  }
-
   .iman-follow-card {
     align-items: flex-start;
     flex-direction: column;
   }
 
+  .iman-footer-info {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
   .iman-follow-links {
     justify-content: flex-start;
+  }
+}
+
+@media (max-width: 660px) {
+  .iman-footer-info {
+    grid-template-columns: 1fr;
   }
 }
 
@@ -215,7 +270,8 @@
   }
 
   .iman-footer-cta,
-  .iman-follow-card {
+  .iman-follow-card,
+  .iman-footer-contact-card {
     border-radius: 22px;
   }
 
