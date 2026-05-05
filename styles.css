@@ -1090,8 +1090,8 @@ h2 {
 
 .why-hero-section {
   display: grid;
-  gap: 30px;
-  padding: clamp(46px, 8vw, 84px) clamp(24px, 6vw, 72px);
+  gap: 24px;
+  padding: clamp(34px, 5vw, 58px) clamp(22px, 5vw, 56px);
   border: 1px solid rgba(15, 92, 43, 0.08);
   border-radius: 34px;
   background:
@@ -1101,7 +1101,7 @@ h2 {
 }
 
 .why-hero-copy {
-  max-width: 860px;
+  max-width: 980px;
 }
 
 .why-kicker {
@@ -1114,10 +1114,10 @@ h2 {
 }
 
 .why-hero-copy h1 {
-  max-width: 11ch;
+  max-width: 14ch;
   color: var(--forest-deep);
-  font-size: clamp(3.1rem, 7vw, 6.4rem);
-  line-height: 0.98;
+  font-size: clamp(2.35rem, 4.6vw, 4.35rem);
+  line-height: 1.04;
 }
 
 .why-hero-copy p,
@@ -1133,7 +1133,7 @@ h2 {
 
 .why-hero-copy > p {
   max-width: 680px;
-  margin: 22px 0 0;
+  margin: 18px 0 0;
 }
 
 .why-actions {
