@@ -1568,7 +1568,7 @@ h2 {
 
 .contact-hero {
   display: grid;
-  grid-template-columns: minmax(0, 1fr) minmax(300px, 0.6fr);
+  grid-template-columns: minmax(0, 0.95fr) minmax(280px, 0.6fr) minmax(320px, 0.75fr);
   gap: 28px;
   align-items: stretch;
   margin-bottom: 36px;
@@ -1588,9 +1588,9 @@ h2 {
 }
 
 .contact-hero-copy h1 {
-  max-width: 10ch;
+  max-width: 11ch;
   margin-bottom: 24px;
-  font-size: clamp(3rem, 6vw, 5rem);
+  font-size: clamp(2.7rem, 4.6vw, 4.5rem);
 }
 
 .contact-hero-copy p,
