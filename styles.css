@@ -3033,32 +3033,58 @@ body.homepage {
 }
 
 .home-area-cta {
-  display: flex;
+  display: grid;
+  grid-template-columns: minmax(0, 1.25fr) minmax(280px, 0.75fr);
   align-items: center;
-  justify-content: space-between;
-  gap: 28px;
+  gap: clamp(24px, 4vw, 48px);
   padding: clamp(28px, 5vw, 44px);
   border-radius: 34px;
   background:
-    linear-gradient(135deg, rgba(15, 61, 46, 0.94), rgba(23, 79, 61, 0.94)),
-    var(--home-green);
-  box-shadow: 0 24px 62px rgba(15, 61, 46, 0.18);
+    radial-gradient(circle at 88% 14%, rgba(178, 222, 124, 0.28), transparent 34%),
+    linear-gradient(135deg, #ffffff 0%, #f8fcf5 64%, #edf7e6 100%);
+  border: 1px solid rgba(15, 61, 46, 0.08);
+  box-shadow: 0 24px 62px rgba(15, 61, 46, 0.12);
 }
 
-.home-area-cta .home-kicker,
-.home-area-cta h2,
-.home-area-cta p {
-  color: #fff;
+.home-area-cta h2 {
+  max-width: 780px;
+  color: var(--home-ink);
 }
 
 .home-area-cta p {
-  opacity: 0.86;
+  max-width: 780px;
+  color: var(--home-muted);
 }
 
 .home-area-cta .home-btn-secondary {
-  flex-shrink: 0;
+  margin-top: 8px;
+  color: #fff;
+  background: var(--home-green);
+  border-color: var(--home-green);
+  box-shadow: 0 16px 34px rgba(15, 61, 46, 0.18);
+}
+
+.home-borough-badges {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 12px;
+}
+
+.home-borough-badges span {
+  display: flex;
+  align-items: center;
+  min-height: 64px;
+  padding: 14px 16px;
+  border-radius: 18px;
+  background: rgba(255, 255, 255, 0.82);
+  border: 1px solid rgba(15, 61, 46, 0.1);
+  box-shadow: 0 12px 28px rgba(15, 61, 46, 0.08);
   color: var(--home-green);
-  background: #fff;
+  font-weight: 900;
+}
+
+.home-borough-badges span:last-child {
+  grid-column: 1 / -1;
 }
 
 .home-final-cta-panel {
@@ -4752,7 +4778,7 @@ body.homepage {
   }
 
   .home-area-cta {
-    flex-direction: column;
+    grid-template-columns: 1fr;
     align-items: flex-start;
   }
 
@@ -4833,8 +4859,13 @@ body.homepage {
   }
 
   .home-service-preview-grid,
-  .home-trust-list {
+  .home-trust-list,
+  .home-borough-badges {
     grid-template-columns: 1fr;
+  }
+
+  .home-borough-badges span:last-child {
+    grid-column: auto;
   }
 
   .home-hero-media {
