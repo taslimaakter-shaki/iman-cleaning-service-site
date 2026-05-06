@@ -2744,11 +2744,28 @@ body.homepage {
   overflow: hidden;
 }
 
+.home-hero-copy {
+  position: relative;
+  padding-left: clamp(18px, 2.2vw, 34px);
+}
+
+.home-hero-copy::before {
+  content: "";
+  position: absolute;
+  left: 0;
+  top: 8px;
+  width: 4px;
+  height: clamp(120px, 22vw, 230px);
+  border-radius: 999px;
+  background: linear-gradient(180deg, var(--home-green), rgba(168, 212, 106, 0.74));
+}
+
 .home-hero-copy h1 {
-  max-width: 13ch;
+  max-width: 760px;
   margin-bottom: 18px;
   color: var(--home-text);
-  font-size: clamp(2.75rem, 4.8vw, 4.85rem);
+  font-size: clamp(2.55rem, 4.4vw, 4.35rem);
+  line-height: 1.02;
 }
 
 .home-subheadline {
@@ -2762,7 +2779,8 @@ body.homepage {
 
 .home-hero-points {
   display: grid;
-  gap: 12px;
+  grid-template-columns: repeat(3, max-content);
+  gap: 12px 18px;
   margin: 0;
   padding: 0;
   list-style: none;
@@ -2770,7 +2788,7 @@ body.homepage {
 
 .home-hero-points li {
   position: relative;
-  padding-left: 30px;
+  padding-left: 28px;
   color: var(--home-text);
   font-weight: 600;
 }
@@ -4976,6 +4994,7 @@ body.homepage {
   .home-service-preview-grid,
   .home-trust-list,
   .home-choose-grid,
+  .home-hero-points,
   .home-borough-badges {
     grid-template-columns: 1fr;
   }
