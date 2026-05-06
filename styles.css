@@ -3032,6 +3032,112 @@ body.homepage {
   font-weight: 900;
 }
 
+.home-choose-panel {
+  position: relative;
+  overflow: hidden;
+  padding: clamp(30px, 5vw, 58px);
+  border: 1px solid rgba(15, 61, 46, 0.08);
+  border-radius: 38px;
+  background:
+    radial-gradient(circle at 92% 8%, rgba(168, 212, 106, 0.26), transparent 20rem),
+    radial-gradient(circle at 8% 96%, rgba(15, 61, 46, 0.08), transparent 18rem),
+    linear-gradient(135deg, #ffffff 0%, #f9fcf7 56%, #eef8e9 100%);
+  box-shadow: 0 30px 76px rgba(15, 61, 46, 0.12);
+}
+
+.home-choose-head {
+  max-width: 920px;
+}
+
+.home-choose-head h2 {
+  max-width: 780px;
+  margin: 0 0 18px;
+  color: var(--home-text);
+  font-size: clamp(2.25rem, 4.2vw, 3.8rem);
+  line-height: 1;
+}
+
+.home-choose-head p {
+  max-width: 82ch;
+  margin: 0;
+  color: var(--home-muted);
+  font-size: 1.03rem;
+  line-height: 1.75;
+}
+
+.home-choose-head .home-choose-subhead {
+  margin-bottom: 12px;
+  color: rgba(15, 61, 46, 0.86);
+  font-weight: 700;
+}
+
+.home-choose-grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 16px;
+  margin-top: clamp(24px, 4vw, 38px);
+}
+
+.home-choose-card {
+  position: relative;
+  min-height: 210px;
+  padding: 24px;
+  border: 1px solid rgba(15, 61, 46, 0.09);
+  border-radius: 24px;
+  background: rgba(255, 255, 255, 0.9);
+  box-shadow: 0 16px 38px rgba(15, 61, 46, 0.07);
+  transition: transform 180ms ease, box-shadow 180ms ease, border-color 180ms ease;
+}
+
+.home-choose-card:hover {
+  transform: translateY(-4px);
+  border-color: rgba(15, 61, 46, 0.18);
+  box-shadow: 0 24px 52px rgba(15, 61, 46, 0.12);
+}
+
+.home-choose-icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 48px;
+  height: 48px;
+  margin-bottom: 18px;
+  border-radius: 16px;
+  color: var(--home-green);
+  background: rgba(168, 212, 106, 0.18);
+  box-shadow: inset 0 0 0 1px rgba(15, 61, 46, 0.08);
+}
+
+.home-choose-icon svg {
+  width: 24px;
+  height: 24px;
+  fill: currentColor;
+}
+
+.home-choose-card h3 {
+  margin: 0 0 10px;
+  color: var(--home-text);
+  font-size: 1.14rem;
+  line-height: 1.2;
+}
+
+.home-choose-card p {
+  margin: 0;
+  color: var(--home-muted);
+  font-size: 0.98rem;
+  line-height: 1.6;
+}
+
+.home-choose-actions {
+  display: flex;
+  justify-content: center;
+  margin-top: clamp(24px, 4vw, 38px);
+}
+
+.home-choose-actions .home-btn-primary {
+  box-shadow: 0 18px 42px rgba(15, 61, 46, 0.2);
+}
+
 .home-area-cta {
   display: grid;
   grid-template-columns: minmax(0, 1.25fr) minmax(280px, 0.75fr);
@@ -4775,7 +4881,8 @@ body.homepage {
   }
 
   .home-service-preview-grid,
-  .home-trust-list {
+  .home-trust-list,
+  .home-choose-grid {
     grid-template-columns: repeat(2, minmax(0, 1fr));
   }
 
@@ -4826,6 +4933,7 @@ body.homepage {
 
   .home-hero-grid,
   .home-services-preview,
+  .home-choose-panel,
   .home-area-cta,
   .home-final-cta-panel,
   .home-service-card,
@@ -4854,6 +4962,7 @@ body.homepage {
   }
 
   .home-premium-copy h2,
+  .home-choose-head h2,
   .home-area-cta h2,
   .home-final-cta-panel h2 {
     max-width: none;
@@ -4866,6 +4975,7 @@ body.homepage {
 
   .home-service-preview-grid,
   .home-trust-list,
+  .home-choose-grid,
   .home-borough-badges {
     grid-template-columns: 1fr;
   }
