@@ -2761,14 +2761,15 @@ body.homepage {
 }
 
 .home-hero-copy h1 {
-  max-width: 760px;
+  max-width: 680px;
   margin-bottom: 18px;
   color: var(--home-text);
   font-family: "Playfair Display", Georgia, serif;
-  font-size: clamp(2.65rem, 4.8vw, 4.75rem);
+  font-size: clamp(2rem, 3.2vw, 3.15rem);
   font-weight: 800;
-  line-height: 0.98;
+  line-height: 1.08;
   letter-spacing: 0;
+  text-align: left;
 }
 
 .home-hero-copy h1 span {
@@ -4988,7 +4989,7 @@ body.homepage {
 
   .home-hero-copy h1 {
     max-width: none;
-    font-size: clamp(2.5rem, 10vw, 4.1rem);
+    font-size: clamp(2rem, 7vw, 2.85rem);
   }
 
   .home-premium-copy h2,
