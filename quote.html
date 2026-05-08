@@ -86,6 +86,11 @@
             <input type="hidden" name="_subject" value="New cleaning quote request from www.imancleaningservice.com">
             <input type="hidden" name="_next" value="https://www.imancleaningservice.com/thanks.html">
             <input type="hidden" name="_template" value="table">
+            <input type="hidden" name="AI Estimate Summary" data-ai-summary-field>
+            <input type="hidden" name="AI Estimated Hours" data-ai-hours-field>
+            <input type="hidden" name="AI Price Range" data-ai-price-field>
+            <input type="hidden" name="AI Recommended Cleaners" data-ai-cleaners-field>
+            <input type="hidden" name="AI Borough Rate" data-ai-rate-field>
             <input type="text" name="_honey" class="hp-field" tabindex="-1" autocomplete="off">
             <div class="field-grid">
               <label>
@@ -476,10 +481,35 @@
                 <input
                   type="file"
                   name="Work Images"
+                  data-work-images
                   accept="image/*"
                   multiple
                 >
               </label>
+            </div>
+            <div class="quote-ai-card" data-ai-card hidden aria-live="polite">
+              <div class="quote-ai-copy">
+                <span class="quote-ai-kicker">Gemini AI estimate</span>
+                <h2>Get an instant cleaning estimate before submitting.</h2>
+                <p>Gemini reviews your quote details and photos to estimate time. Pricing uses Iman Cleaning Service LLC’s official NYC borough hourly rates.</p>
+              </div>
+              <button class="button button-secondary quote-ai-button" type="button" data-ai-estimate-button>
+                Analyze with Gemini
+              </button>
+              <p class="quote-ai-status" data-ai-status>Complete the cleaning details, then run the AI estimate.</p>
+              <div class="quote-ai-result" data-ai-result hidden>
+                <p data-ai-summary></p>
+                <div class="quote-ai-metrics">
+                  <div><span>Hours</span><strong data-ai-hours>-</strong></div>
+                  <div><span>Price</span><strong data-ai-price>-</strong></div>
+                  <div><span>Cleaners</span><strong data-ai-cleaners>-</strong></div>
+                  <div><span>Borough rate</span><strong data-ai-rate>-</strong></div>
+                </div>
+                <div class="quote-ai-lists">
+                  <p><strong>Included:</strong> <span data-ai-included>-</span></p>
+                  <p><strong>Not included:</strong> <span data-ai-not-included>-</span></p>
+                </div>
+              </div>
             </div>
             <div class="quote-actions">
               <button class="button button-primary" type="submit">Request a Quote</button>
@@ -564,6 +594,22 @@
         const detailedCleaningFields = Array.from(document.querySelectorAll("[data-detailed-hours-field], [data-detailed-team-field]"));
         const datePickers = Array.from(document.querySelectorAll("[data-date-picker]"));
         const datePickerButtons = Array.from(document.querySelectorAll("[data-date-picker-button]"));
+        const aiCard = document.querySelector("[data-ai-card]");
+        const aiButton = document.querySelector("[data-ai-estimate-button]");
+        const aiStatus = document.querySelector("[data-ai-status]");
+        const aiResult = document.querySelector("[data-ai-result]");
+        const aiSummary = document.querySelector("[data-ai-summary]");
+        const aiHours = document.querySelector("[data-ai-hours]");
+        const aiPrice = document.querySelector("[data-ai-price]");
+        const aiCleaners = document.querySelector("[data-ai-cleaners]");
+        const aiRate = document.querySelector("[data-ai-rate]");
+        const aiIncluded = document.querySelector("[data-ai-included]");
+        const aiNotIncluded = document.querySelector("[data-ai-not-included]");
+        const aiSummaryField = document.querySelector("[data-ai-summary-field]");
+        const aiHoursField = document.querySelector("[data-ai-hours-field]");
+        const aiPriceField = document.querySelector("[data-ai-price-field]");
+        const aiCleanersField = document.querySelector("[data-ai-cleaners-field]");
+        const aiRateField = document.querySelector("[data-ai-rate-field]");
 
         function hasSelectedServiceCategory() {
           return Boolean(serviceCategory && serviceCategory.value);
@@ -634,6 +680,9 @@
           syncCommercialFields();
           if (quoteActions) {
             syncFieldAvailability(quoteActions, showRemainingQuestions);
+          }
+          if (aiCard) {
+            aiCard.hidden = !showRemainingQuestions;
           }
           syncCleaningDetailFields();
         }
@@ -744,6 +793,105 @@
             }
           });
         });
+
+        function getFieldValue(name) {
+          return document.querySelector(`[name="${name}"]`)?.value || "";
+        }
+
+        function getCheckedValues(name) {
+          return Array.from(document.querySelectorAll(`[name="${name}"]:checked`)).map((input) => input.value);
+        }
+
+        function readFileAsDataUrl(file) {
+          return new Promise((resolve, reject) => {
+            const reader = new FileReader();
+            reader.onload = () => resolve(reader.result);
+            reader.onerror = () => reject(new Error("Photo could not be read."));
+            reader.readAsDataURL(file);
+          });
+        }
+
+        function buildAiPayload(images) {
+          return {
+            serviceCategory: getFieldValue("Service Category"),
+            commercialSpaceType: getFieldValue("Commercial Space Type"),
+            propertyType: getFieldValue("Property Type"),
+            serviceType: getFieldValue("Service Type"),
+            streetAddress: getFieldValue("Street Address"),
+            city: getFieldValue("City"),
+            state: getFieldValue("State"),
+            zipCode: getFieldValue("ZIP Code"),
+            squareFootage: getFieldValue("Square Footage"),
+            bedrooms: getFieldValue("Bedrooms"),
+            fullBathrooms: getFieldValue("Full Bathrooms"),
+            halfBathrooms: getFieldValue("Half Bathrooms"),
+            kitchenDiningRooms: getFieldValue("Kitchen and Dining Rooms"),
+            livingRooms: getFieldValue("Living Rooms"),
+            frequency: getFieldValue("Cleaning Frequency"),
+            additionalAreas: getFieldValue("Additional Areas"),
+            pets: getFieldValue("Do You Have Pets?"),
+            lastCleaned: getFieldValue("Last Professional Cleaning"),
+            clutter: getFieldValue("Clutter or Ready for Cleaning"),
+            heavyBuildup: getFieldValue("Heavy Buildup Areas"),
+            addOns: getCheckedValues("Add-Ons[]"),
+            conditionNotes: getFieldValue("Condition Notes"),
+            projectDetails: getFieldValue("Project Details"),
+            images
+          };
+        }
+
+        function updateAiResult(estimate) {
+          if (!estimate || !aiResult) return;
+          aiResult.hidden = false;
+          aiSummary.textContent = estimate.summary || "AI estimate generated.";
+          aiHours.textContent = estimate.estimatedHours || "-";
+          aiPrice.textContent = estimate.priceRange || "-";
+          aiCleaners.textContent = estimate.recommendedCleaners || "-";
+          aiRate.textContent = estimate.borough && estimate.hourlyRate ? `${estimate.borough}: ${estimate.hourlyRate}` : "-";
+          aiIncluded.textContent = Array.isArray(estimate.included) ? estimate.included.join(", ") : "-";
+          aiNotIncluded.textContent = Array.isArray(estimate.notIncluded) ? estimate.notIncluded.join(", ") : "-";
+
+          if (aiSummaryField) aiSummaryField.value = estimate.summary || "";
+          if (aiHoursField) aiHoursField.value = estimate.estimatedHours || "";
+          if (aiPriceField) aiPriceField.value = estimate.priceRange || "";
+          if (aiCleanersField) aiCleanersField.value = estimate.recommendedCleaners || "";
+          if (aiRateField) aiRateField.value = estimate.borough && estimate.hourlyRate ? `${estimate.borough}: ${estimate.hourlyRate}` : "";
+        }
+
+        async function analyzeQuoteWithAi() {
+          if (!aiButton || !aiStatus) return;
+          const imageInput = document.querySelector("[data-work-images]");
+          const files = Array.from(imageInput?.files || []).slice(0, 4);
+          aiButton.disabled = true;
+          aiButton.textContent = "Analyzing...";
+          aiStatus.textContent = files.length ? "Gemini is reviewing your photos and quote details." : "Gemini is estimating from your quote details.";
+
+          try {
+            const images = await Promise.all(files.map(readFileAsDataUrl));
+            const response = await fetch("/api/ai/cleaning-estimate", {
+              method: "POST",
+              headers: {
+                "Content-Type": "application/json"
+              },
+              body: JSON.stringify(buildAiPayload(images))
+            });
+            const data = await response.json();
+            if (!response.ok) throw new Error(data.error || "AI estimate failed.");
+            updateAiResult(data.estimate);
+            aiStatus.textContent = data.estimate.provider === "vertex-gemini"
+              ? "Gemini estimate complete."
+              : "AI estimate complete.";
+          } catch (error) {
+            aiStatus.textContent = error.message || "AI estimate failed.";
+          } finally {
+            aiButton.disabled = false;
+            aiButton.textContent = "Analyze with Gemini";
+          }
+        }
+
+        if (aiButton) {
+          aiButton.addEventListener("click", analyzeQuoteWithAi);
+        }
         syncProgressiveQuoteFields();
       })();
     </script>

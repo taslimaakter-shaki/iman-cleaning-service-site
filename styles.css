@@ -1583,6 +1583,103 @@ h2 {
   margin-top: 20px;
 }
 
+.quote-ai-card {
+  display: grid;
+  gap: 18px;
+  padding: 24px;
+  border: 1px solid rgba(15, 92, 43, 0.12);
+  border-radius: 26px;
+  background:
+    radial-gradient(circle at 88% 8%, rgba(168, 212, 106, 0.28), transparent 30%),
+    linear-gradient(180deg, rgba(246, 251, 242, 0.98), rgba(255, 255, 255, 0.98));
+}
+
+.quote-ai-card[hidden] {
+  display: none;
+}
+
+.quote-ai-copy {
+  display: grid;
+  gap: 8px;
+}
+
+.quote-ai-kicker {
+  color: var(--forest);
+  font-size: 0.78rem;
+  font-weight: 900;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+}
+
+.quote-ai-copy h2 {
+  margin: 0;
+  color: var(--forest-deep);
+  font-family: "DM Sans", Arial, sans-serif;
+  font-size: clamp(1.35rem, 2vw, 1.9rem);
+  line-height: 1.18;
+}
+
+.quote-ai-copy p,
+.quote-ai-status,
+.quote-ai-result p {
+  margin: 0;
+  color: var(--muted);
+  line-height: 1.65;
+}
+
+.quote-ai-button {
+  justify-self: start;
+}
+
+.quote-ai-status {
+  font-weight: 800;
+}
+
+.quote-ai-result {
+  display: grid;
+  gap: 16px;
+}
+
+.quote-ai-result[hidden] {
+  display: none;
+}
+
+.quote-ai-metrics {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 12px;
+}
+
+.quote-ai-metrics div {
+  display: grid;
+  gap: 6px;
+  min-height: 94px;
+  align-content: center;
+  padding: 14px;
+  border: 1px solid rgba(15, 92, 43, 0.1);
+  border-radius: 18px;
+  background: rgba(255, 255, 255, 0.78);
+}
+
+.quote-ai-metrics span {
+  color: var(--muted);
+  font-size: 0.78rem;
+  font-weight: 900;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.quote-ai-metrics strong {
+  color: var(--forest-deep);
+  font-size: clamp(1rem, 1.6vw, 1.35rem);
+  line-height: 1.2;
+}
+
+.quote-ai-lists {
+  display: grid;
+  gap: 8px;
+}
+
 .proof-card-accent {
   background:
     linear-gradient(180deg, rgba(238, 248, 231, 0.92), rgba(255, 255, 255, 0.96));
@@ -2393,6 +2490,10 @@ h2 {
 
   .field-grid {
     grid-template-columns: 1fr;
+  }
+
+  .quote-ai-metrics {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
   }
 
   .site-footer {
@@ -5172,6 +5273,10 @@ body.homepage {
 }
 
 @media (max-width: 560px) {
+  .quote-ai-metrics {
+    grid-template-columns: 1fr;
+  }
+
   .floating-book {
     right: 12px;
     bottom: 12px;
