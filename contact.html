@@ -3,13 +3,18 @@
   <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>Contact | Iman Cleaning Service LLC</title>
-    <meta name="description" content="Contact Iman Cleaning Service LLC by phone, email, or website to get a cleaning quote.">
-    <meta property="og:title" content="Contact | Iman Cleaning Service LLC">
-    <meta property="og:description" content="Reach Iman Cleaning Service LLC to get a cleaning quote or ask questions about service.">
+    <title>Contact Iman Cleaning Service | NYC Cleaning Quote</title>
+    <meta name="description" content="Request a home or commercial cleaning quote from Iman Cleaning Service LLC. Serving all five NYC boroughs. Call or text 929-803-4053.">
+    <meta property="og:title" content="Contact Iman Cleaning Service | NYC Cleaning Quote">
+    <meta property="og:description" content="Request a home or commercial cleaning quote from Iman Cleaning Service LLC. Serving all five NYC boroughs. Call or text 929-803-4053.">
     <meta property="og:type" content="website">
     <meta property="og:image" content="https://www.imancleaningservice.com/brand-card.png">
     <meta property="og:url" content="https://www.imancleaningservice.com/contact.html">
+    <meta property="og:site_name" content="Iman Cleaning Service LLC">
+    <meta name="twitter:card" content="summary_large_image">
+    <meta name="twitter:title" content="Contact Iman Cleaning Service | NYC Cleaning Quote">
+    <meta name="twitter:description" content="Request a home or commercial cleaning quote from Iman Cleaning Service LLC. Call or text 929-803-4053.">
+    <meta name="twitter:image" content="https://www.imancleaningservice.com/brand-card.png">
     <meta name="theme-color" content="#0f5c2b">
     <link rel="canonical" href="https://www.imancleaningservice.com/contact.html">
     <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -23,8 +28,65 @@
       gtag('config', 'G-6MEJH73E0H');
     </script>
     <link rel="stylesheet" href="./styles.css">
+    <script type="application/ld+json">
+      {
+        "@context": "https://schema.org",
+        "@graph": [
+          {
+            "@type": "Organization",
+            "@id": "https://www.imancleaningservice.com/#organization",
+            "name": "Iman Cleaning Service LLC",
+            "url": "https://www.imancleaningservice.com",
+            "logo": "https://www.imancleaningservice.com/brand-card.png",
+            "email": "Info@imancleaningservice.com",
+            "telephone": "+1-929-803-4053",
+            "sameAs": [
+              "https://www.instagram.com/imancleaningservicellc/",
+              "https://www.youtube.com/@ImanCleaningServiceLLC",
+              "https://www.facebook.com/Imancleaningservicellc/",
+              "https://www.tiktok.com/@imancleaningservicellc"
+            ],
+            "contactPoint": {
+              "@type": "ContactPoint",
+              "telephone": "+1-929-803-4053",
+              "contactType": "customer service",
+              "areaServed": "New York City",
+              "availableLanguage": ["English"]
+            }
+          },
+          {
+            "@type": "ContactPage",
+            "@id": "https://www.imancleaningservice.com/contact.html#contactpage",
+            "url": "https://www.imancleaningservice.com/contact.html",
+            "name": "Contact Iman Cleaning Service LLC",
+            "description": "Request a home or commercial cleaning quote from Iman Cleaning Service LLC. Serving all five NYC boroughs.",
+            "about": {
+              "@id": "https://www.imancleaningservice.com/#organization"
+            }
+          },
+          {
+            "@type": "BreadcrumbList",
+            "@id": "https://www.imancleaningservice.com/contact.html#breadcrumb",
+            "itemListElement": [
+              {
+                "@type": "ListItem",
+                "position": 1,
+                "name": "Home",
+                "item": "https://www.imancleaningservice.com/"
+              },
+              {
+                "@type": "ListItem",
+                "position": 2,
+                "name": "Contact",
+                "item": "https://www.imancleaningservice.com/contact.html"
+              }
+            ]
+          }
+        ]
+      }
+    </script>
   </head>
-  <body>
+  <body class="contact-page">
     <header class="home-nav">
       <div class="home-shell home-nav-inner">
         <a class="brand home-brand" href="./index.html" aria-label="Iman Cleaning Service LLC home">
@@ -33,6 +95,7 @@
         </a>
         <nav class="home-nav-links" aria-label="Primary">
           <a href="./services.html">Services</a>
+          <a href="./our-work.html">Our Work</a>
           <a href="./why-us.html">Why Us</a>
           <a href="./areas.html">Service Areas</a>
           <a href="./contact.html" aria-current="page">Contact</a>
@@ -50,47 +113,142 @@
         </div>
       </header>
 
-      <main class="page-main">
-        <section class="contact-hero">
-          <div class="contact-cta-card">
-            <h2>Let’s get your place cleaned.</h2>
-            <div class="contact-cta-links">
-              <div class="contact-phone-box"><span>Call or text</span><strong><a href="tel:9177747821">917-774-7821</a><a href="tel:6362532035">636-253-2035</a></strong></div>
-              <a href="mailto:Info@imancleaningservice.com?subject=Get%20a%20Cleaning%20Quote"><span>Email</span><strong>Info@imancleaningservice.com</strong></a>
+      <main class="page-main contact-lean-main">
+        <section class="contact-split-hero" aria-labelledby="contact-hero-title">
+          <div class="contact-split-copy">
+            <p class="home-kicker">Contact Iman Cleaning Service LLC</p>
+            <h1 id="contact-hero-title">Get a Clear Cleaning Quote in NYC</h1>
+            <p>Tell us what needs cleaning, where the property is, and your preferred date. We’ll review the details and confirm the scope and price before anything is booked.</p>
+            <div class="contact-split-actions">
+              <a class="home-btn home-btn-primary" href="sms:+19298034053" onclick="gtag('event','text_click',{event_category:'contact',event_label:'hero_text'});">Text for a Quote</a>
+              <a class="home-btn home-btn-secondary" href="tel:9298034053" onclick="gtag('event','call_click',{event_category:'contact',event_label:'hero_call'});">Call 929-803-4053</a>
             </div>
-            <a class="button button-primary" href="./quote.html">Request a Quote</a>
+            <a class="contact-detail-link" href="./quote.html" onclick="gtag('event','detailed_quote_click',{event_category:'contact',event_label:'hero_quote'});">Prefer the detailed form? Request a full estimate</a>
+            <p class="contact-trust-line">Fully insured · Same-day replies during business hours · Serving all five NYC boroughs</p>
           </div>
+
+          <aside class="contact-method-card" aria-label="Contact methods">
+            <a href="sms:+19298034053" onclick="gtag('event','text_click',{event_category:'contact',event_label:'method_card_text'});">
+              <span>Text us</span>
+              <strong>Text 929-803-4053</strong>
+              <p>Best for photos, apartment details, and quick estimate questions.</p>
+            </a>
+            <a href="tel:9298034053" onclick="gtag('event','call_click',{event_category:'contact',event_label:'method_card_call'});">
+              <span>Call us</span>
+              <strong>Call 929-803-4053</strong>
+              <p>Best for commercial work, unusual conditions, or questions that need discussion.</p>
+            </a>
+            <a href="mailto:Info@imancleaningservice.com?subject=Cleaning%20Quote%20Request" onclick="gtag('event','email_click',{event_category:'contact',event_label:'method_card_email'});">
+              <span>Email us</span>
+              <strong>Info@imancleaningservice.com</strong>
+              <p>Best for property managers, written scopes, and commercial documentation.</p>
+            </a>
+          </aside>
+        </section>
+
+        <section class="contact-quick-section" aria-labelledby="quick-request-title">
           <form
-            id="message-us"
-            class="contact-cta-card contact-now-form"
+            id="quick-request"
+            class="contact-quick-form"
             action="https://formsubmit.co/Info@imancleaningservice.com"
             method="POST"
+            enctype="multipart/form-data"
+            aria-describedby="quick-request-note"
+            onsubmit="gtag('event','quick_form_submit',{event_category:'contact',event_label:'contact_page'});"
           >
-            <input type="hidden" name="_subject" value="New contact message from www.imancleaningservice.com">
+            <input type="hidden" name="_subject" value="New quick contact request from www.imancleaningservice.com">
             <input type="hidden" name="_next" value="https://www.imancleaningservice.com/thanks.html">
             <input type="hidden" name="_template" value="table">
+            <input type="hidden" name="Page" value="Contact quick request">
             <input type="text" name="_honey" class="hp-field" tabindex="-1" autocomplete="off">
-            <h2>Message Us Now</h2>
-            <label>
-              <span>Full Name</span>
-              <input type="text" name="Full Name" placeholder="Your full name" required>
-            </label>
-            <label>
-              <span>Phone Number</span>
-              <input type="tel" name="Phone Number" placeholder="Your phone number" required>
-            </label>
-            <label>
-              <span>Email Address</span>
-              <input type="email" name="Email Address" placeholder="you@example.com" required>
-            </label>
-            <label>
-              <span>Message</span>
-              <textarea name="Message" rows="5" placeholder="Tell us how we can help." required></textarea>
-            </label>
-            <button class="button button-primary" type="submit">Send Message</button>
+            <div class="contact-section-head">
+              <p class="home-kicker">Quick Request</p>
+              <h2 id="quick-request-title">Send a Quick Request</h2>
+              <p id="quick-request-note">Share the basics now. We’ll ask for additional information only when it is needed for your quote.</p>
+            </div>
+            <div class="contact-quick-grid">
+              <label for="quick-name"><span>Name</span><input id="quick-name" type="text" name="Name" autocomplete="name" required></label>
+              <label for="quick-contact"><span>Phone or email</span><input id="quick-contact" type="text" name="Phone or Email" autocomplete="email" required></label>
+              <label for="quick-service"><span>Service type</span><input id="quick-service" type="text" name="Service Type" placeholder="Standard, deep, move-out, office..." required></label>
+              <label for="quick-location"><span>Borough or ZIP code</span><input id="quick-location" type="text" name="Borough or ZIP" placeholder="Queens, 11375, Brooklyn..." required></label>
+              <label for="quick-date"><span>Preferred date</span><input id="quick-date" type="date" name="Preferred Date"></label>
+              <label for="quick-photo"><span>Optional photo</span><input id="quick-photo" type="file" name="Photo" accept="image/*"></label>
+              <label class="contact-wide-field" for="quick-message"><span>Short message</span><textarea id="quick-message" name="Message" rows="4" placeholder="Tell us the property type, condition, timing, and anything important." required></textarea></label>
+            </div>
+            <button class="button button-primary contact-request-submit" type="submit">Send My Request</button>
+            <p class="contact-confirm-note">Your appointment is not confirmed until you approve the scope, timing, and price.</p>
           </form>
         </section>
+
+        <section class="contact-proof-section" aria-labelledby="contact-proof-title">
+          <div class="contact-section-head">
+            <p class="home-kicker">Social Proof</p>
+            <h2 id="contact-proof-title">Trusted by NYC homeowners and businesses</h2>
+          </div>
+          <div class="contact-proof-grid">
+            <article class="contact-review-card">
+              <div class="contact-stars" aria-label="5 star review">★★★★★</div>
+              <p>“They made my apartment spotless, especially the bathrooms and kitchen. Highly recommend.”</p>
+              <strong>Janet Li</strong>
+              <span>Google Review · Deep cleaning</span>
+            </article>
+            <article class="contact-review-card">
+              <div class="contact-stars" aria-label="5 star review">★★★★★</div>
+              <p>“They were on time, efficient, and very thorough. The place looked ready for the next tenant.”</p>
+              <strong>Rameen Rizwan</strong>
+              <span>Google Review · Move-out cleaning</span>
+            </article>
+            <div class="contact-proof-card">
+              <strong>Fully insured</strong>
+              <p>Residential and commercial cleaning handled by a detail-focused team.</p>
+              <a href="https://share.google/EAX7wC22J4PyMKcNx" target="_blank" rel="noreferrer">View Google Business Profile</a>
+            </div>
+          </div>
+        </section>
+
+        <section class="contact-process-section" aria-labelledby="contact-process-title">
+          <div class="contact-section-head">
+            <p class="home-kicker">Next Steps</p>
+            <h2 id="contact-process-title">What Happens Next</h2>
+          </div>
+          <ol class="contact-process-list">
+            <li><span>1</span><strong>We review your request</strong><p>We check the service, property details, timing, and any photos you provide.</p></li>
+            <li><span>2</span><strong>We confirm what is needed</strong><p>We may text or call if the scope, access, or condition needs clarification.</p></li>
+            <li><span>3</span><strong>You receive your quote</strong><p>Nothing is booked until you approve the service details and price.</p></li>
+          </ol>
+        </section>
+
+        <section class="contact-faq-section" aria-labelledby="contact-faq-title">
+          <div class="contact-section-head">
+            <p class="home-kicker">Contact FAQ</p>
+            <h2 id="contact-faq-title">Common contact questions</h2>
+          </div>
+          <div class="contact-faq-grid">
+            <details><summary>Can I get a quote by text?</summary><p>Yes. Send the service needed, borough, property type, preferred date, and photos when helpful.</p></details>
+            <details><summary>How quickly will I receive a response?</summary><p>We aim for same-day replies during business hours.</p></details>
+            <details><summary>Can I send photos?</summary><p>Yes. Photos can help clarify buildup, add-ons, access conditions, and the expected scope.</p></details>
+            <details><summary>Do commercial properties require a walkthrough?</summary><p>Some larger or specialized commercial spaces may require a phone consultation or walkthrough before pricing is confirmed.</p></details>
+          </div>
+        </section>
+
+        <section class="contact-local-sentence" aria-label="Local service area">
+          <p>Based in Jamaica, Queens, Iman Cleaning Service LLC serves Manhattan, Brooklyn, Queens, The Bronx, and Staten Island.</p>
+        </section>
+
+        <section class="contact-final-cta" aria-label="Contact Iman Cleaning Service LLC">
+          <h2>Ready to ask about a cleaning?</h2>
+          <div class="contact-split-actions">
+            <a class="home-btn home-btn-primary" href="sms:+19298034053" onclick="gtag('event','text_click',{event_category:'contact',event_label:'final_text'});">Text for a Quote</a>
+            <a class="home-btn home-btn-secondary" href="./quote.html" onclick="gtag('event','detailed_quote_click',{event_category:'contact',event_label:'final_quote'});">Complete the Detailed Quote Form</a>
+          </div>
+        </section>
       </main>
+
+      <nav class="contact-mobile-bar" aria-label="Quick contact actions">
+        <a href="sms:+19298034053" onclick="gtag('event','text_click',{event_category:'contact',event_label:'mobile_bar_text'});">Text</a>
+        <a href="tel:9298034053" onclick="gtag('event','call_click',{event_category:'contact',event_label:'mobile_bar_call'});">Call</a>
+        <a href="./quote.html" onclick="gtag('event','detailed_quote_click',{event_category:'contact',event_label:'mobile_bar_quote'});">Get Quote</a>
+      </nav>
     <section class="iman-contact-footer" aria-label="Contact Iman Cleaning Service LLC">
       <div class="iman-footer-shell">
         <footer class="iman-footer-details">
@@ -107,12 +265,12 @@
             <div class="iman-footer-contact-card">
               <span class="iman-footer-contact-icon" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M12 2a7 7 0 0 0-7 7c0 5.2 7 13 7 13s7-7.8 7-13a7 7 0 0 0-7-7Zm0 9.6A2.6 2.6 0 1 1 12 6.4a2.6 2.6 0 0 1 0 5.2Z"/></svg></span>
               <h3>Service Area</h3>
-              <p>We proudly serve all five boroughs—Manhattan, Brooklyn, Queens, The Bronx, and Staten Island.</p>
+              <p>We proudly serve all five NYC boroughs.</p>
             </div>
             <div class="iman-footer-contact-card">
               <span class="iman-footer-contact-icon" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M6.6 10.8a15.8 15.8 0 0 0 6.6 6.6l2.2-2.2a1.2 1.2 0 0 1 1.2-.3 13.3 13.3 0 0 0 4.1.7 1.2 1.2 0 0 1 1.3 1.2v3.5a1.2 1.2 0 0 1-1.3 1.2A18.2 18.2 0 0 1 2.5 3.3 1.2 1.2 0 0 1 3.7 2h3.5a1.2 1.2 0 0 1 1.2 1.3 13.3 13.3 0 0 0 .7 4.1 1.2 1.2 0 0 1-.3 1.2l-2.2 2.2Z"/></svg></span>
               <h3>Call Us Today</h3>
-              <p><a href="tel:9177747821">917-774-7821</a><br><a href="tel:6362532035">636-253-2035</a></p>
+              <p><a href="tel:9298034053">929-803-4053</a></p>
             </div>
             <div class="iman-footer-contact-card">
               <span class="iman-footer-contact-icon" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M12 2a10 10 0 1 0 0 20 10 10 0 0 0 0-20Zm1 10.2 3.4 2-.9 1.5-4.3-2.5V6.5H13v5.7Z"/></svg></span>
@@ -131,13 +289,13 @@
               </div>
             </div>
           </div>
-          <p class="iman-footer-bottom">@ 2026 Iman Cleaning Service LLC. All rights reserved.</p>
+          <p class="iman-footer-bottom">&copy; 2026 Iman Cleaning Service LLC. All rights reserved.</p>
         </footer>
       </div>
     </section>
     </div>
 
-    <a class="floating-book" href="./quote.html">Request a Quote Now</a>
+    <a class="floating-book" href="./quote.html">See My Price</a>
     <script src="./chatbot.js" defer></script>
   </body>
 </html>

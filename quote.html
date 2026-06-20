@@ -41,9 +41,9 @@
 
       gtag('config', 'G-6MEJH73E0H');
     </script>
-    <link rel="stylesheet" href="./styles.css">
+    <link rel="stylesheet" href="./styles.css?v=20260609-2">
   </head>
-  <body>
+  <body class="quote-page">
     <header class="home-nav">
       <div class="home-shell home-nav-inner">
         <a class="brand home-brand" href="./index.html" aria-label="Iman Cleaning Service LLC home">
@@ -55,6 +55,7 @@
         </a>
         <nav class="home-nav-links" aria-label="Primary">
           <a href="./services.html">Services</a>
+          <a href="./our-work.html">Our Work</a>
           <a href="./why-us.html">Why Us</a>
           <a href="./areas.html">Service Areas</a>
           <a href="./contact.html">Contact</a>
@@ -76,23 +77,61 @@
       </header>
 
       <main class="quote-page-main">
+        <section class="quote-intro-card" aria-labelledby="quote-intro-heading">
+          <p class="eyebrow">Free cleaning quote</p>
+          <h1 id="quote-intro-heading">Get a cleaning quote</h1>
+          <p>Answer the quote questions in three simple steps. We review your details before confirming the service scope, timing, team size, and appointment total.</p>
+          <div class="quote-intro-badges" aria-label="Quote trust details">
+            <span>Fully insured</span>
+            <span>All five NYC boroughs</span>
+            <span>6:00 AM - 11:00 PM</span>
+            <span>Residential &amp; commercial</span>
+          </div>
+        </section>
         <section class="quote-section quote-section-single">
           <form
             class="quote-form"
-            action="https://formsubmit.co/Info@imancleaningservice.com"
             method="POST"
             enctype="multipart/form-data"
+            novalidate
           >
-            <input type="hidden" name="_subject" value="New cleaning quote request from www.imancleaningservice.com">
-            <input type="hidden" name="_next" value="https://www.imancleaningservice.com/thanks.html">
-            <input type="hidden" name="_template" value="table">
-            <input type="hidden" name="AI Estimate Summary" data-ai-summary-field>
-            <input type="hidden" name="AI Estimated Hours" data-ai-hours-field>
-            <input type="hidden" name="AI Price Range" data-ai-price-field>
-            <input type="hidden" name="AI Recommended Cleaners" data-ai-cleaners-field>
-            <input type="hidden" name="AI Borough Rate" data-ai-rate-field>
             <input type="text" name="_honey" class="hp-field" tabindex="-1" autocomplete="off">
+            <div class="quote-wizard-progress" aria-label="Quote form progress">
+              <button class="quote-step-indicator is-active" type="button" data-wizard-jump="1">
+                <span>1</span>
+                Service
+              </button>
+              <button class="quote-step-indicator" type="button" data-wizard-jump="2">
+                <span>2</span>
+                Details
+              </button>
+              <button class="quote-step-indicator" type="button" data-wizard-jump="3">
+                <span>3</span>
+                Contact
+              </button>
+            </div>
+            <div class="quote-wizard-head" data-wizard-head>
+              <p class="eyebrow">Step 1 of 3</p>
+              <h2>Choose your service</h2>
+              <p>Start with the type of cleaning you need. More detailed questions appear only when they are useful for your quote.</p>
+            </div>
             <div class="field-grid">
+              <label>
+                <span>First name</span>
+                <input type="text" name="First Name" placeholder="Your first name" required>
+              </label>
+              <label>
+                <span>Last name</span>
+                <input type="text" name="Last Name" placeholder="Your last name" required>
+              </label>
+              <label>
+                <span>Email address</span>
+                <input type="email" name="Email" placeholder="Your email address" required>
+              </label>
+              <label>
+                <span>Phone number</span>
+                <input type="tel" name="Phone" placeholder="Best number to reach you" required>
+              </label>
               <label>
                 <span>Repeat client?</span>
                 <select name="Repeat Client" required>
@@ -113,22 +152,6 @@
                   <option>Friends or family</option>
                   <option>Other</option>
                 </select>
-              </label>
-              <label>
-                <span>First name</span>
-                <input type="text" name="First Name" placeholder="Your first name" required>
-              </label>
-              <label>
-                <span>Last name</span>
-                <input type="text" name="Last Name" placeholder="Your last name" required>
-              </label>
-              <label>
-                <span>Email address</span>
-                <input type="email" name="Email" placeholder="Your email address" required>
-              </label>
-              <label>
-                <span>Phone number</span>
-                <input type="tel" name="Phone" placeholder="Best number to reach you" required>
               </label>
               <fieldset class="field-wide address-fieldset">
                 <legend>Address</legend>
@@ -172,7 +195,7 @@
               </label>
               <label data-commercial-other-field hidden>
                 <span>Please enter your space name</span>
-                <input type="text" name="Other Commercial Space" placeholder="Example: salon, studio, warehouse" data-commercial-other-input disabled>
+                <input type="text" name="Other Commercial Space" placeholder="Example: salon, studio, warehouse" data-commercial-other-input required disabled>
               </label>
               <div class="commercial-quote-note field-wide" data-commercial-message hidden>
                 <p>Commercial cleaning quotes are provided after a brief phone consultation and, if needed, an on-site walkthrough. After you submit this form, we will contact you shortly by phone. Thank you.</p>
@@ -196,19 +219,20 @@
                   <option>Standard Cleaning</option>
                   <option>Move-In and Move Out Cleaning</option>
                   <option>Post Construction/Renovations Cleaning</option>
-                  <option>Organizing</option>
-                  <option>Detailed Cleaning</option>
+                  <option>Organization</option>
+                  <option>Extreme Cleaning</option>
+                  <option>Details Cleaning</option>
                   <option>Weekly/BiWeekly/Monthly Cleaning</option>
                 </select>
               </label>
               <label data-organizing-hours-field hidden>
-                <span>The Hourly rate for organizing is $50/hour per person. How many hours do you need us for?</span>
+                <span>The hourly rate for Organization is $60 per person / per hour. A 3-hour minimum is required. How many hours do you need us for?</span>
                 <input
                   type="number"
-                  name="Organizing Hours Needed"
-                  min="1"
+                  name="Organization Hours Needed"
+                  min="3"
                   step="1"
-                  placeholder="Enter number of hours"
+                  placeholder="Minimum 3 hours"
                   data-organizing-hours-input
                   required
                   disabled
@@ -218,7 +242,7 @@
                 <span>How many team members?</span>
                 <input
                   type="number"
-                  name="Organizing Team Members"
+                  name="Organization Team Members"
                   min="1"
                   step="1"
                   placeholder="Enter number of team members"
@@ -228,13 +252,13 @@
                 >
               </label>
               <label data-detailed-hours-field hidden>
-                <span>The Hourly rate for Detailed Cleaning is $70/hour per person. How many hours you need us for?</span>
+                <span>The hourly rate for Details Cleaning is $80 per person / per hour. A 2-hour minimum is required. How many hours do you need us for?</span>
                 <input
                   type="number"
-                  name="Detailed Cleaning Hours Needed"
-                  min="1"
+                  name="Details Cleaning Hours Needed"
+                  min="2"
                   step="1"
-                  placeholder="Enter number of hours"
+                  placeholder="Minimum 2 hours"
                   data-detailed-hours-input
                   required
                   disabled
@@ -244,7 +268,7 @@
                 <span>How many Team members?</span>
                 <input
                   type="number"
-                  name="Detailed Cleaning Team Members"
+                  name="Details Cleaning Team Members"
                   min="1"
                   step="1"
                   placeholder="Enter number of team members"
@@ -253,25 +277,143 @@
                   disabled
                 >
               </label>
-              <label data-residential-field>
-                <span>Which day are you available?</span>
-                <span class="date-picker-wrap">
-                  <input class="date-picker-input" type="date" name="Available Day" data-date-picker required>
-                  <button class="date-picker-button" type="button" data-date-picker-button aria-label="Open calendar">
-                    <svg viewBox="0 0 24 24" aria-hidden="true">
-                      <path d="M7 2a1 1 0 0 1 1 1v1h8V3a1 1 0 1 1 2 0v1h1.5A2.5 2.5 0 0 1 22 6.5v13A2.5 2.5 0 0 1 19.5 22h-15A2.5 2.5 0 0 1 2 19.5v-13A2.5 2.5 0 0 1 4.5 4H6V3a1 1 0 0 1 1-1Zm12.5 8h-15v9.5a.5.5 0 0 0 .5.5h14.5a.5.5 0 0 0 .5-.5V10ZM5 6a.5.5 0 0 0-.5.5V8h15V6.5A.5.5 0 0 0 19 6H5Zm2 7h3v3H7v-3Zm5 0h3v3h-3v-3Z"/>
-                    </svg>
-                  </button>
-                </span>
+              <label data-extreme-hours-field hidden>
+                <span>The hourly rate for Extreme Cleaning is $100 per person / per hour. A 4-hour minimum is required. How many hours do you need us for?</span>
+                <input
+                  type="number"
+                  name="Extreme Cleaning Hours Needed"
+                  min="4"
+                  step="1"
+                  placeholder="Minimum 4 hours"
+                  data-extreme-hours-input
+                  required
+                  disabled
+                >
               </label>
-              <label data-residential-field>
-                <span>Which time of the day are you available?</span>
-                <select name="Available Time of Day" required>
-                  <option value="" selected disabled>Select one</option>
-                  <option>Morning</option>
-                  <option>Afternoon</option>
-                </select>
+              <label data-extreme-team-field hidden>
+                <span>How many team members?</span>
+                <input
+                  type="number"
+                  name="Extreme Cleaning Team Members"
+                  min="1"
+                  step="1"
+                  placeholder="Enter number of team members"
+                  data-extreme-team-input
+                  required
+                  disabled
+                >
               </label>
+              <label data-post-construction-hours-field hidden>
+                <span>Post-construction cleaning is billed hourly at $70 per hour. Flat-rate estimates require photo review. How many hours do you think may be needed?</span>
+                <input
+                  type="number"
+                  name="Post Construction Cleaning Hours Needed"
+                  min="1"
+                  step="1"
+                  placeholder="Enter estimated hours"
+                  data-post-construction-hours-input
+                  required
+                  disabled
+                >
+              </label>
+              <fieldset class="field-wide priority-date-fieldset" data-residential-field>
+                <legend>Which days are you available?</legend>
+                <div class="priority-date-grid">
+                  <div class="priority-date-card">
+                    <label class="priority-required">
+                      <span>1st priority day</span>
+                      <span class="date-picker-wrap">
+                        <input class="date-picker-input" type="date" name="1st Priority Available Day" data-date-picker required>
+                        <button class="date-picker-button" type="button" data-date-picker-button aria-label="Open 1st priority calendar">
+                          <svg viewBox="0 0 24 24" aria-hidden="true">
+                            <path d="M7 2a1 1 0 0 1 1 1v1h8V3a1 1 0 1 1 2 0v1h1.5A2.5 2.5 0 0 1 22 6.5v13A2.5 2.5 0 0 1 19.5 22h-15A2.5 2.5 0 0 1 2 19.5v-13A2.5 2.5 0 0 1 4.5 4H6V3a1 1 0 0 1 1-1Zm12.5 8h-15v9.5a.5.5 0 0 0 .5.5h14.5a.5.5 0 0 0 .5-.5V10ZM5 6a.5.5 0 0 0-.5.5V8h15V6.5A.5.5 0 0 0 19 6H5Zm2 7h3v3H7v-3Zm5 0h3v3h-3v-3Z"/>
+                          </svg>
+                        </button>
+                      </span>
+                    </label>
+                    <label class="priority-required">
+                      <span>1st priority start time</span>
+                      <select name="1st Priority Start Time" required>
+                        <option value="" selected disabled>Select time</option>
+                        <option>8:00 AM</option>
+                        <option>9:00 AM</option>
+                        <option>10:00 AM</option>
+                        <option>11:00 AM</option>
+                        <option>12:00 PM</option>
+                        <option>1:00 PM</option>
+                        <option>2:00 PM</option>
+                        <option>3:00 PM</option>
+                        <option>4:00 PM</option>
+                        <option>5:00 PM</option>
+                        <option>6:00 PM</option>
+                        <option>Flexible</option>
+                      </select>
+                    </label>
+                  </div>
+                  <div class="priority-date-card">
+                    <label>
+                      <span>2nd priority day</span>
+                      <span class="date-picker-wrap">
+                        <input class="date-picker-input" type="date" name="2nd Priority Available Day" data-date-picker>
+                        <button class="date-picker-button" type="button" data-date-picker-button aria-label="Open 2nd priority calendar">
+                          <svg viewBox="0 0 24 24" aria-hidden="true">
+                            <path d="M7 2a1 1 0 0 1 1 1v1h8V3a1 1 0 1 1 2 0v1h1.5A2.5 2.5 0 0 1 22 6.5v13A2.5 2.5 0 0 1 19.5 22h-15A2.5 2.5 0 0 1 2 19.5v-13A2.5 2.5 0 0 1 4.5 4H6V3a1 1 0 0 1 1-1Zm12.5 8h-15v9.5a.5.5 0 0 0 .5.5h14.5a.5.5 0 0 0 .5-.5V10ZM5 6a.5.5 0 0 0-.5.5V8h15V6.5A.5.5 0 0 0 19 6H5Zm2 7h3v3H7v-3Zm5 0h3v3h-3v-3Z"/>
+                          </svg>
+                        </button>
+                      </span>
+                    </label>
+                    <label>
+                      <span>2nd priority start time</span>
+                      <select name="2nd Priority Start Time">
+                        <option value="" selected disabled>Select time</option>
+                        <option>8:00 AM</option>
+                        <option>9:00 AM</option>
+                        <option>10:00 AM</option>
+                        <option>11:00 AM</option>
+                        <option>12:00 PM</option>
+                        <option>1:00 PM</option>
+                        <option>2:00 PM</option>
+                        <option>3:00 PM</option>
+                        <option>4:00 PM</option>
+                        <option>5:00 PM</option>
+                        <option>6:00 PM</option>
+                        <option>Flexible</option>
+                      </select>
+                    </label>
+                  </div>
+                  <div class="priority-date-card">
+                    <label>
+                      <span>3rd priority day</span>
+                      <span class="date-picker-wrap">
+                        <input class="date-picker-input" type="date" name="3rd Priority Available Day" data-date-picker>
+                        <button class="date-picker-button" type="button" data-date-picker-button aria-label="Open 3rd priority calendar">
+                          <svg viewBox="0 0 24 24" aria-hidden="true">
+                            <path d="M7 2a1 1 0 0 1 1 1v1h8V3a1 1 0 1 1 2 0v1h1.5A2.5 2.5 0 0 1 22 6.5v13A2.5 2.5 0 0 1 19.5 22h-15A2.5 2.5 0 0 1 2 19.5v-13A2.5 2.5 0 0 1 4.5 4H6V3a1 1 0 0 1 1-1Zm12.5 8h-15v9.5a.5.5 0 0 0 .5.5h14.5a.5.5 0 0 0 .5-.5V10ZM5 6a.5.5 0 0 0-.5.5V8h15V6.5A.5.5 0 0 0 19 6H5Zm2 7h3v3H7v-3Zm5 0h3v3h-3v-3Z"/>
+                          </svg>
+                        </button>
+                      </span>
+                    </label>
+                    <label>
+                      <span>3rd priority start time</span>
+                      <select name="3rd Priority Start Time">
+                        <option value="" selected disabled>Select time</option>
+                        <option>8:00 AM</option>
+                        <option>9:00 AM</option>
+                        <option>10:00 AM</option>
+                        <option>11:00 AM</option>
+                        <option>12:00 PM</option>
+                        <option>1:00 PM</option>
+                        <option>2:00 PM</option>
+                        <option>3:00 PM</option>
+                        <option>4:00 PM</option>
+                        <option>5:00 PM</option>
+                        <option>6:00 PM</option>
+                        <option>Flexible</option>
+                      </select>
+                    </label>
+                  </div>
+                </div>
+              </fieldset>
               <label data-cleaning-detail-field>
                 <span>Approximate square footage</span>
                 <input type="number" name="Square Footage" min="0" step="50" placeholder="Example: 850" required>
@@ -279,8 +421,9 @@
               <label data-cleaning-detail-field>
                 <span>Bedrooms</span>
                 <select name="Bedrooms" required>
-                  <option value="" selected disabled>Select one</option>
-                  <option value="0">Studio</option>
+	                  <option value="" selected disabled>Select one</option>
+	                  <option value="0">No bedrooms</option>
+	                  <option value="studio">Studio</option>
                   <option value="1">1 bedroom</option>
                   <option value="2">2 bedrooms</option>
                   <option value="3">3 bedrooms</option>
@@ -480,42 +623,25 @@
                 <span>Please upload clear photos of the space you’d like us to clean so we can assess it properly.</span>
                 <input
                   type="file"
-                  name="Work Images"
+                  name="Work Images[]"
                   data-work-images
                   accept="image/*"
                   multiple
+                  required
                 >
+                <small class="field-note">Maximum 100 photos per quote request.</small>
               </label>
             </div>
-            <div class="quote-ai-card" data-ai-card hidden aria-live="polite">
-              <div class="quote-ai-copy">
-                <span class="quote-ai-kicker">Gemini AI estimate</span>
-                <h2>Get an instant cleaning estimate before submitting.</h2>
-                <p>Gemini reviews your quote details and photos to estimate time. Pricing uses Iman Cleaning Service LLC’s official NYC borough hourly rates.</p>
-              </div>
-              <button class="button button-secondary quote-ai-button" type="button" data-ai-estimate-button>
-                Analyze with Gemini
-              </button>
-              <p class="quote-ai-status" data-ai-status>Complete the cleaning details, then run the AI estimate.</p>
-              <div class="quote-ai-result" data-ai-result hidden>
-                <p data-ai-summary></p>
-                <div class="quote-ai-metrics">
-                  <div><span>Hours</span><strong data-ai-hours>-</strong></div>
-                  <div><span>Price</span><strong data-ai-price>-</strong></div>
-                  <div><span>Cleaners</span><strong data-ai-cleaners>-</strong></div>
-                  <div><span>Borough rate</span><strong data-ai-rate>-</strong></div>
-                </div>
-                <div class="quote-ai-lists">
-                  <p><strong>Included:</strong> <span data-ai-included>-</span></p>
-                  <p><strong>Not included:</strong> <span data-ai-not-included>-</span></p>
-                </div>
-              </div>
+            <div class="quote-wizard-actions" data-wizard-actions>
+              <button class="button button-secondary" type="button" data-wizard-prev>Back</button>
+              <button class="button button-primary" type="button" data-wizard-next>Continue</button>
             </div>
             <div class="quote-actions">
-              <button class="button button-primary" type="submit">Request a Quote</button>
-              <a class="button button-secondary" href="tel:6362532035">Or Call Now</a>
+              <button class="button button-primary" type="submit" data-submit-quote>Request a Quote</button>
+              <a class="button button-secondary" href="tel:9298034053">Or Call Now</a>
               <button class="button button-secondary" type="button" onclick="if (window.history.length > 1) { window.history.back(); } else { window.location.href = './index.html'; }">Go Back</button>
             </div>
+            <div class="quote-status" data-quote-status role="status" aria-live="polite" hidden></div>
           </form>
         </section>
       </main>
@@ -540,7 +666,7 @@
             <div class="iman-footer-contact-card">
               <span class="iman-footer-contact-icon" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M6.6 10.8a15.8 15.8 0 0 0 6.6 6.6l2.2-2.2a1.2 1.2 0 0 1 1.2-.3 13.3 13.3 0 0 0 4.1.7 1.2 1.2 0 0 1 1.3 1.2v3.5a1.2 1.2 0 0 1-1.3 1.2A18.2 18.2 0 0 1 2.5 3.3 1.2 1.2 0 0 1 3.7 2h3.5a1.2 1.2 0 0 1 1.2 1.3 13.3 13.3 0 0 0 .7 4.1 1.2 1.2 0 0 1-.3 1.2l-2.2 2.2Z"/></svg></span>
               <h3>Call Us Today</h3>
-              <p><a href="tel:9177747821">917-774-7821</a><br><a href="tel:6362532035">636-253-2035</a></p>
+              <p><a href="tel:9298034053">929-803-4053</a></p>
             </div>
             <div class="iman-footer-contact-card">
               <span class="iman-footer-contact-icon" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M12 2a10 10 0 1 0 0 20 10 10 0 0 0 0-20Zm1 10.2 3.4 2-.9 1.5-4.3-2.5V6.5H13v5.7Z"/></svg></span>
@@ -565,7 +691,7 @@
     </section>
     </div>
 
-    <a class="floating-book" href="./quote.html">Request a Quote Now</a>
+    <a class="floating-book" href="./quote.html">See My Price</a>
     <script>
       (() => {
         const addOns = Array.from(document.querySelectorAll("[data-addon-option]"));
@@ -592,25 +718,17 @@
         const cleaningDetailFields = Array.from(document.querySelectorAll("[data-cleaning-detail-field]"));
         const organizingFields = Array.from(document.querySelectorAll("[data-organizing-hours-field], [data-organizing-team-field]"));
         const detailedCleaningFields = Array.from(document.querySelectorAll("[data-detailed-hours-field], [data-detailed-team-field]"));
+        const extremeCleaningFields = Array.from(document.querySelectorAll("[data-extreme-hours-field], [data-extreme-team-field]"));
+        const postConstructionFields = Array.from(document.querySelectorAll("[data-post-construction-hours-field]"));
         const datePickers = Array.from(document.querySelectorAll("[data-date-picker]"));
         const datePickerButtons = Array.from(document.querySelectorAll("[data-date-picker-button]"));
-        const aiCard = document.querySelector("[data-ai-card]");
-        const aiButton = document.querySelector("[data-ai-estimate-button]");
-        const aiStatus = document.querySelector("[data-ai-status]");
-        const aiResult = document.querySelector("[data-ai-result]");
-        const aiSummary = document.querySelector("[data-ai-summary]");
-        const aiHours = document.querySelector("[data-ai-hours]");
-        const aiPrice = document.querySelector("[data-ai-price]");
-        const aiCleaners = document.querySelector("[data-ai-cleaners]");
-        const aiRate = document.querySelector("[data-ai-rate]");
-        const aiIncluded = document.querySelector("[data-ai-included]");
-        const aiNotIncluded = document.querySelector("[data-ai-not-included]");
-        const aiSummaryField = document.querySelector("[data-ai-summary-field]");
-        const aiHoursField = document.querySelector("[data-ai-hours-field]");
-        const aiPriceField = document.querySelector("[data-ai-price-field]");
-        const aiCleanersField = document.querySelector("[data-ai-cleaners-field]");
-        const aiRateField = document.querySelector("[data-ai-rate-field]");
-
+        const quoteForm = document.querySelector(".quote-form");
+        const workImages = document.querySelector("[data-work-images]");
+        const maxWorkImages = 100;
+        const maxCompressedImageBytes = 3.5 * 1024 * 1024;
+        const maxAttachmentBytes = 2.5 * 1024 * 1024;
+        const quoteStatus = document.querySelector("[data-quote-status]");
+        const submitQuote = document.querySelector("[data-submit-quote]");
         function hasSelectedServiceCategory() {
           return Boolean(serviceCategory && serviceCategory.value);
         }
@@ -624,15 +742,23 @@
         }
 
         function shouldShowCleaningDetails() {
-          return isResidentialService() && (!serviceType || !serviceType.value || !["Organizing", "Detailed Cleaning"].includes(serviceType.value));
+          return isResidentialService() && (!serviceType || !serviceType.value || !["Organization", "Details Cleaning", "Extreme Cleaning", "Post Construction/Renovations Cleaning"].includes(serviceType.value));
         }
 
         function shouldShowOrganizingFields() {
-          return isResidentialService() && serviceType && serviceType.value === "Organizing";
+          return isResidentialService() && serviceType && serviceType.value === "Organization";
         }
 
         function shouldShowDetailedCleaningFields() {
-          return isResidentialService() && serviceType && serviceType.value === "Detailed Cleaning";
+          return isResidentialService() && serviceType && serviceType.value === "Details Cleaning";
+        }
+
+        function shouldShowExtremeCleaningFields() {
+          return isResidentialService() && serviceType && serviceType.value === "Extreme Cleaning";
+        }
+
+        function shouldShowPostConstructionFields() {
+          return isResidentialService() && serviceType && serviceType.value === "Post Construction/Renovations Cleaning";
         }
 
         function syncFieldAvailability(field, isAvailable) {
@@ -647,7 +773,7 @@
         }
 
         function isConditionalDetailField(field) {
-          return field.matches("[data-cleaning-detail-field], [data-organizing-hours-field], [data-organizing-team-field], [data-detailed-hours-field], [data-detailed-team-field]");
+          return field.matches("[data-cleaning-detail-field], [data-organizing-hours-field], [data-organizing-team-field], [data-detailed-hours-field], [data-detailed-team-field], [data-extreme-hours-field], [data-extreme-team-field], [data-post-construction-hours-field]");
         }
 
         function syncCommercialFields() {
@@ -681,10 +807,10 @@
           if (quoteActions) {
             syncFieldAvailability(quoteActions, showRemainingQuestions);
           }
-          if (aiCard) {
-            aiCard.hidden = !showRemainingQuestions;
-          }
           syncCleaningDetailFields();
+          if (typeof syncQuoteWizard === "function") {
+            syncQuoteWizard();
+          }
         }
 
         function syncCleaningDetailFields() {
@@ -698,12 +824,21 @@
           detailedCleaningFields.forEach((field) => {
             syncFieldAvailability(field, shouldShowDetailedCleaningFields());
           });
+          extremeCleaningFields.forEach((field) => {
+            syncFieldAvailability(field, shouldShowExtremeCleaningFields());
+          });
+          postConstructionFields.forEach((field) => {
+            syncFieldAvailability(field, shouldShowPostConstructionFields());
+          });
           if (!showDetails && additionalAreasInput) {
             additionalAreasInput.value = "";
           }
           syncAdditionalAreas();
           syncAddOnRequirement();
           syncWindowCount();
+          if (typeof syncQuoteWizard === "function") {
+            syncQuoteWizard();
+          }
         }
 
         function syncAddOnRequirement() {
@@ -757,6 +892,212 @@
           }
         }
 
+        function applyQuoteServicePrefill() {
+          const params = new URLSearchParams(window.location.search);
+          const requestedService = (params.get("service") || "").toLowerCase();
+          const serviceMap = {
+            organization: "Organization",
+            organizing: "Organization",
+            "deep-cleaning": "Deep Cleaning",
+            "standard-cleaning": "Standard Cleaning",
+            "move-in-move-out": "Move-In and Move Out Cleaning",
+            "move-out": "Move-In and Move Out Cleaning",
+            "move-in": "Move-In and Move Out Cleaning",
+            "extreme-cleaning": "Extreme Cleaning",
+            "post-construction": "Post Construction/Renovations Cleaning",
+            "post-construction-cleaning": "Post Construction/Renovations Cleaning",
+            renovation: "Post Construction/Renovations Cleaning",
+            renovations: "Post Construction/Renovations Cleaning",
+            "details-cleaning": "Details Cleaning",
+            "detailed-cleaning": "Details Cleaning"
+          };
+          const mappedService = serviceMap[requestedService];
+          if (!mappedService || !serviceCategory || !serviceType) return;
+          serviceCategory.value = "Residential";
+          syncProgressiveQuoteFields();
+          serviceType.value = mappedService;
+          syncProgressiveQuoteFields();
+        }
+
+        const wizardHead = document.querySelector("[data-wizard-head]");
+        const wizardPrev = document.querySelector("[data-wizard-prev]");
+        const wizardNext = document.querySelector("[data-wizard-next]");
+        const wizardActions = document.querySelector("[data-wizard-actions]");
+        const wizardIndicators = Array.from(document.querySelectorAll("[data-wizard-jump]"));
+        const quoteDraftKey = "imanCleaningQuoteDraft";
+        const wizardCopy = {
+          1: {
+            eyebrow: "Step 1 of 3",
+            title: "Choose your service",
+            body: "Start with the type of cleaning you need. More detailed questions appear only when they are useful for your quote."
+          },
+          2: {
+            eyebrow: "Step 2 of 3",
+            title: "Tell us about the space",
+            body: "Share the details that help us estimate time, team size, condition, add-ons, and availability."
+          },
+          3: {
+            eyebrow: "Step 3 of 3",
+            title: "Where should we send your quote?",
+            body: "Add your contact and address details so our team can review the request and follow up with the next step."
+          }
+        };
+        let activeWizardStep = 1;
+
+        function getDirectFieldChild(element) {
+          if (!element || !element.closest) return null;
+          const child = element.closest(".field-grid > label, .field-grid > fieldset, .field-grid > div");
+          return child && child.parentElement?.classList.contains("field-grid") ? child : null;
+        }
+
+        function getFieldStep(field) {
+          const controls = Array.from(field.querySelectorAll("input, select, textarea"));
+          const names = controls.map((control) => control.name);
+          if (names.some((name) => ["Service Category", "Commercial Space Type", "Other Commercial Space", "Property Type", "Service Type"].includes(name))) {
+            return 1;
+          }
+          if (names.some((name) => ["First Name", "Last Name", "Email", "Phone", "Repeat Client", "Referral Source", "Street Address", "City", "State", "ZIP Code"].includes(name))) {
+            return 3;
+          }
+          return 2;
+        }
+
+        function assignWizardSteps() {
+          if (!quoteForm) return;
+          Array.from(quoteForm.querySelectorAll(".field-grid > label, .field-grid > fieldset, .field-grid > div")).forEach((field) => {
+            field.dataset.quoteStep = String(getFieldStep(field));
+          });
+          if (quoteActions) {
+            quoteActions.dataset.quoteStep = "3";
+          }
+        }
+
+        function getStepFields(step) {
+          return Array.from(quoteForm?.querySelectorAll(`[data-quote-step="${step}"]`) || []);
+        }
+
+        function syncQuoteWizard() {
+          if (!quoteForm) return;
+          getStepFields(1).concat(getStepFields(2), getStepFields(3)).forEach((field) => {
+            field.classList.toggle("quote-step-hidden", field.dataset.quoteStep !== String(activeWizardStep));
+          });
+          if (quoteActions) {
+            quoteActions.classList.toggle("quote-step-hidden", activeWizardStep !== 3);
+          }
+          if (wizardActions) {
+            wizardActions.hidden = false;
+          }
+          if (wizardPrev) {
+            wizardPrev.hidden = activeWizardStep === 1;
+          }
+          if (wizardNext) {
+            wizardNext.hidden = activeWizardStep === 3;
+          }
+          wizardIndicators.forEach((button) => {
+            button.classList.toggle("is-active", Number(button.dataset.wizardJump) === activeWizardStep);
+          });
+          const copy = wizardCopy[activeWizardStep];
+          if (wizardHead && copy) {
+            wizardHead.querySelector(".eyebrow").textContent = copy.eyebrow;
+            wizardHead.querySelector("h2").textContent = copy.title;
+            wizardHead.querySelector("p:not(.eyebrow)").textContent = copy.body;
+          }
+        }
+
+        function validateWizardStep(step) {
+          clearMissingFieldHighlights();
+          const invalidControls = getStepFields(step)
+            .filter((field) => !field.hidden)
+            .flatMap((field) => Array.from(field.querySelectorAll("input, select, textarea")))
+            .filter((control) => !control.disabled && !control.checkValidity());
+
+          invalidControls.forEach((control) => {
+            getFieldHighlightTarget(control)?.classList.add("is-missing");
+          });
+
+          if (!invalidControls.length) return true;
+
+          const firstInvalid = invalidControls[0];
+          const firstTarget = getFieldHighlightTarget(firstInvalid) || firstInvalid;
+          setQuoteStatus("Please complete the highlighted fields before continuing.", "error");
+          firstTarget.scrollIntoView({ behavior: "smooth", block: "center" });
+          window.setTimeout(() => {
+            firstInvalid.focus({ preventScroll: true });
+            firstInvalid.reportValidity();
+          }, 350);
+          return false;
+        }
+
+        function goToWizardStep(step) {
+          const targetStep = Math.max(1, Math.min(3, step));
+          if (targetStep > activeWizardStep) {
+            for (let stepIndex = activeWizardStep; stepIndex < targetStep; stepIndex += 1) {
+              if (!validateWizardStep(stepIndex)) return;
+            }
+          }
+          activeWizardStep = targetStep;
+          syncQuoteWizard();
+          wizardHead?.scrollIntoView({ behavior: "smooth", block: "start" });
+        }
+
+        function saveQuoteDraft() {
+          if (!quoteForm) return;
+          const draft = {};
+          Array.from(quoteForm.querySelectorAll("input, select, textarea")).forEach((control) => {
+            if (!control.name || control.type === "file" || control.classList.contains("hp-field")) return;
+            if (control.type === "checkbox") {
+              draft[control.name] = Array.from(quoteForm.querySelectorAll(`[name="${CSS.escape(control.name)}"]:checked`)).map((input) => input.value);
+              return;
+            }
+            draft[control.name] = control.value;
+          });
+          try {
+            localStorage.setItem(quoteDraftKey, JSON.stringify(draft));
+          } catch (error) {
+            // Draft saving is helpful, but the quote form should still work if storage is unavailable.
+          }
+        }
+
+        function restoreQuoteDraft() {
+          if (!quoteForm || new URLSearchParams(window.location.search).has("service")) return;
+          let draft;
+          try {
+            const rawDraft = localStorage.getItem(quoteDraftKey);
+            if (!rawDraft) return;
+            draft = JSON.parse(rawDraft);
+          } catch (error) {
+            return;
+          }
+          Object.entries(draft).forEach(([name, value]) => {
+            const controls = Array.from(quoteForm.querySelectorAll(`[name="${CSS.escape(name)}"]`));
+            controls.forEach((control) => {
+              if (control.type === "file") return;
+              if (control.type === "checkbox") {
+                control.checked = Array.isArray(value) && value.includes(control.value);
+                return;
+              }
+              control.value = value;
+            });
+          });
+        }
+
+        assignWizardSteps();
+        restoreQuoteDraft();
+
+        wizardPrev?.addEventListener("click", () => {
+          goToWizardStep(activeWizardStep - 1);
+        });
+        wizardNext?.addEventListener("click", () => {
+          goToWizardStep(activeWizardStep + 1);
+        });
+        wizardIndicators.forEach((button) => {
+          button.addEventListener("click", () => {
+            goToWizardStep(Number(button.dataset.wizardJump));
+          });
+        });
+        quoteForm?.addEventListener("input", saveQuoteDraft);
+        quoteForm?.addEventListener("change", saveQuoteDraft);
+
         addOns.forEach((input) => {
           input.addEventListener("change", () => {
             syncNoAddOns(input);
@@ -793,106 +1134,237 @@
             }
           });
         });
-
-        function getFieldValue(name) {
-          return document.querySelector(`[name="${name}"]`)?.value || "";
+        function setQuoteStatus(message, type = "info") {
+          if (!quoteStatus) return;
+          quoteStatus.hidden = false;
+          quoteStatus.textContent = message;
+          quoteStatus.dataset.status = type;
         }
 
-        function getCheckedValues(name) {
-          return Array.from(document.querySelectorAll(`[name="${name}"]:checked`)).map((input) => input.value);
+        function getFieldHighlightTarget(control) {
+          if (!control) return null;
+          if (control.matches("[data-addon-option]")) {
+            return control.closest(".choice-grid");
+          }
+          return control.closest(".priority-date-card, label, fieldset");
         }
 
-        function readFileAsDataUrl(file) {
+        function clearMissingFieldHighlights() {
+          quoteForm?.querySelectorAll(".is-missing").forEach((field) => {
+            field.classList.remove("is-missing");
+          });
+        }
+
+        function showMissingFieldHighlights() {
+          if (!quoteForm) return false;
+          clearMissingFieldHighlights();
+
+          const invalidControls = Array.from(quoteForm.querySelectorAll("input, select, textarea"))
+            .filter((control) => !control.disabled && !control.hidden && !control.checkValidity());
+
+          invalidControls.forEach((control) => {
+            getFieldHighlightTarget(control)?.classList.add("is-missing");
+          });
+
+          if (!invalidControls.length) return true;
+
+          const firstInvalid = invalidControls[0];
+          const firstTarget = getFieldHighlightTarget(firstInvalid) || firstInvalid;
+          setQuoteStatus("Please complete the highlighted required fields before submitting your quote request.", "error");
+          firstTarget.scrollIntoView({ behavior: "smooth", block: "center" });
+          window.setTimeout(() => {
+            firstInvalid.focus({ preventScroll: true });
+            firstInvalid.reportValidity();
+          }, 450);
+          return false;
+        }
+
+        function getQuoteFields(form) {
+          const fields = {};
+          const formData = new FormData(form);
+          formData.forEach((value, key) => {
+            if (!key || key.startsWith("_") || value instanceof File) return;
+            const cleanKey = key.replace(/\[\]$/, "");
+            if (Object.prototype.hasOwnProperty.call(fields, cleanKey)) {
+              fields[cleanKey] = Array.isArray(fields[cleanKey]) ? fields[cleanKey] : [fields[cleanKey]];
+              fields[cleanKey].push(value);
+            } else {
+              fields[cleanKey] = value;
+            }
+          });
+          return fields;
+        }
+
+        async function postJson(url, body) {
+          const response = await fetch(url, {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify(body)
+          });
+          const data = await response.json().catch(() => ({}));
+          if (!response.ok) {
+            throw new Error(data.error || "Request failed.");
+          }
+          return data;
+        }
+
+        function canvasToBlob(canvas, type, quality) {
+          return new Promise((resolve, reject) => {
+            canvas.toBlob((blob) => {
+              if (blob) resolve(blob);
+              else reject(new Error("Photo compression failed."));
+            }, type, quality);
+          });
+        }
+
+        function loadImage(url) {
+          return new Promise((resolve, reject) => {
+            const image = new Image();
+            image.onload = () => resolve(image);
+            image.onerror = () => reject(new Error("Photo could not be read."));
+            image.src = url;
+          });
+        }
+
+        async function compressImage(file) {
+          const objectUrl = URL.createObjectURL(file);
+          try {
+            const image = await loadImage(objectUrl);
+            const scale = Math.min(1, 1600 / Math.max(image.naturalWidth || image.width, image.naturalHeight || image.height));
+            const width = Math.max(1, Math.round((image.naturalWidth || image.width) * scale));
+            const height = Math.max(1, Math.round((image.naturalHeight || image.height) * scale));
+            const canvas = document.createElement("canvas");
+            canvas.width = width;
+            canvas.height = height;
+            const context = canvas.getContext("2d");
+            context.drawImage(image, 0, 0, width, height);
+            const blob = await canvasToBlob(canvas, "image/jpeg", 0.75);
+            const filename = file.name.replace(/\.[^.]+$/, "") + ".jpg";
+            if (blob.size > maxCompressedImageBytes) {
+              throw new Error(`${file.name} is still too large after compression. Please upload a smaller photo.`);
+            }
+            return new File([blob], filename, { type: "image/jpeg" });
+          } finally {
+            URL.revokeObjectURL(objectUrl);
+          }
+        }
+
+        function fileToDataUrl(file) {
           return new Promise((resolve, reject) => {
             const reader = new FileReader();
             reader.onload = () => resolve(reader.result);
-            reader.onerror = () => reject(new Error("Photo could not be read."));
+            reader.onerror = () => reject(new Error("Photo attachment preview could not be prepared."));
             reader.readAsDataURL(file);
           });
         }
 
-        function buildAiPayload(images) {
-          return {
-            serviceCategory: getFieldValue("Service Category"),
-            commercialSpaceType: getFieldValue("Commercial Space Type"),
-            propertyType: getFieldValue("Property Type"),
-            serviceType: getFieldValue("Service Type"),
-            streetAddress: getFieldValue("Street Address"),
-            city: getFieldValue("City"),
-            state: getFieldValue("State"),
-            zipCode: getFieldValue("ZIP Code"),
-            squareFootage: getFieldValue("Square Footage"),
-            bedrooms: getFieldValue("Bedrooms"),
-            fullBathrooms: getFieldValue("Full Bathrooms"),
-            halfBathrooms: getFieldValue("Half Bathrooms"),
-            kitchenDiningRooms: getFieldValue("Kitchen and Dining Rooms"),
-            livingRooms: getFieldValue("Living Rooms"),
-            frequency: getFieldValue("Cleaning Frequency"),
-            additionalAreas: getFieldValue("Additional Areas"),
-            pets: getFieldValue("Do You Have Pets?"),
-            lastCleaned: getFieldValue("Last Professional Cleaning"),
-            clutter: getFieldValue("Clutter or Ready for Cleaning"),
-            heavyBuildup: getFieldValue("Heavy Buildup Areas"),
-            addOns: getCheckedValues("Add-Ons[]"),
-            conditionNotes: getFieldValue("Condition Notes"),
-            projectDetails: getFieldValue("Project Details"),
-            images
-          };
+        async function uploadPhoto({ quoteId, folderId, file, photoIndex }) {
+          const formData = new FormData();
+          formData.append("quoteId", quoteId);
+          formData.append("folderId", folderId);
+          formData.append("photoIndex", String(photoIndex));
+          formData.append("photo", file, file.name);
+
+          const response = await fetch("/api/quote/photo", {
+            method: "POST",
+            body: formData
+          });
+          const data = await response.json().catch(() => ({}));
+          if (!response.ok) {
+            throw new Error(data.error || `Photo ${photoIndex} could not be uploaded.`);
+          }
+          return data;
         }
 
-        function updateAiResult(estimate) {
-          if (!estimate || !aiResult) return;
-          aiResult.hidden = false;
-          aiSummary.textContent = estimate.summary || "AI estimate generated.";
-          aiHours.textContent = estimate.estimatedHours || "-";
-          aiPrice.textContent = estimate.priceRange || "-";
-          aiCleaners.textContent = estimate.recommendedCleaners || "-";
-          aiRate.textContent = estimate.borough && estimate.hourlyRate ? `${estimate.borough}: ${estimate.hourlyRate}` : "-";
-          aiIncluded.textContent = Array.isArray(estimate.included) ? estimate.included.join(", ") : "-";
-          aiNotIncluded.textContent = Array.isArray(estimate.notIncluded) ? estimate.notIncluded.join(", ") : "-";
+        async function handleQuoteSubmit(event) {
+          event.preventDefault();
+          if (!quoteForm) return;
+          if (quoteForm.querySelector(".hp-field")?.value) return;
+          if (!showMissingFieldHighlights()) return;
 
-          if (aiSummaryField) aiSummaryField.value = estimate.summary || "";
-          if (aiHoursField) aiHoursField.value = estimate.estimatedHours || "";
-          if (aiPriceField) aiPriceField.value = estimate.priceRange || "";
-          if (aiCleanersField) aiCleanersField.value = estimate.recommendedCleaners || "";
-          if (aiRateField) aiRateField.value = estimate.borough && estimate.hourlyRate ? `${estimate.borough}: ${estimate.hourlyRate}` : "";
-        }
+          const files = Array.from(workImages?.files || []);
+          if (files.length > maxWorkImages) {
+            workImages.setCustomValidity(`Please upload no more than ${maxWorkImages} photos.`);
+            showMissingFieldHighlights();
+            return;
+          }
+          workImages.setCustomValidity("");
+          clearMissingFieldHighlights();
 
-        async function analyzeQuoteWithAi() {
-          if (!aiButton || !aiStatus) return;
-          const imageInput = document.querySelector("[data-work-images]");
-          const files = Array.from(imageInput?.files || []).slice(0, 4);
-          aiButton.disabled = true;
-          aiButton.textContent = "Analyzing...";
-          aiStatus.textContent = files.length ? "Gemini is reviewing your photos and quote details." : "Gemini is estimating from your quote details.";
+          const originalSubmitText = submitQuote ? submitQuote.textContent : "";
+
+          if (submitQuote) {
+            submitQuote.disabled = true;
+            submitQuote.textContent = "Sending...";
+          }
 
           try {
-            const images = await Promise.all(files.map(readFileAsDataUrl));
-            const response = await fetch("/api/ai/cleaning-estimate", {
-              method: "POST",
-              headers: {
-                "Content-Type": "application/json"
-              },
-              body: JSON.stringify(buildAiPayload(images))
+            const formFields = getQuoteFields(quoteForm);
+            setQuoteStatus("Creating your quote request...", "info");
+            const started = await postJson("/api/quote/start", { formFields });
+            const photos = [];
+            const attachments = [];
+            let attachmentBytes = 0;
+
+            for (let index = 0; index < files.length; index += 1) {
+              setQuoteStatus(`Compressing photo ${index + 1} of ${files.length}...`, "info");
+              const compressed = await compressImage(files[index]);
+              setQuoteStatus(`Uploading photo ${index + 1} of ${files.length}...`, "info");
+              const uploaded = await uploadPhoto({
+                quoteId: started.quoteId,
+                folderId: started.folderId,
+                file: compressed,
+                photoIndex: index + 1
+              });
+              photos.push(uploaded);
+
+              if (attachments.length < 3 && attachmentBytes + compressed.size <= maxAttachmentBytes) {
+                attachments.push({
+                  filename: compressed.name,
+                  dataUrl: await fileToDataUrl(compressed)
+                });
+                attachmentBytes += compressed.size;
+              }
+            }
+
+            setQuoteStatus("Sending your quote request email...", "info");
+            await postJson("/api/quote/finish", {
+              quoteId: started.quoteId,
+              folderId: started.folderId,
+              folderLink: started.folderLink,
+              formFields,
+              photos,
+              attachments
             });
-            const data = await response.json();
-            if (!response.ok) throw new Error(data.error || "AI estimate failed.");
-            updateAiResult(data.estimate);
-            aiStatus.textContent = data.estimate.provider === "vertex-gemini"
-              ? "Gemini estimate complete."
-              : "AI estimate complete.";
+
+            window.location.href = "./thanks.html";
           } catch (error) {
-            aiStatus.textContent = error.message || "AI estimate failed.";
-          } finally {
-            aiButton.disabled = false;
-            aiButton.textContent = "Analyze with Gemini";
+            setQuoteStatus(error.message || "Quote request could not be sent. Please call us or try again.", "error");
+            if (submitQuote) {
+              submitQuote.disabled = false;
+              submitQuote.textContent = originalSubmitText;
+            }
           }
         }
 
-        if (aiButton) {
-          aiButton.addEventListener("click", analyzeQuoteWithAi);
+        if (quoteForm && workImages) {
+          quoteForm.addEventListener("submit", handleQuoteSubmit);
+          quoteForm.addEventListener("input", (event) => {
+            getFieldHighlightTarget(event.target)?.classList.remove("is-missing");
+            event.target.setCustomValidity("");
+          });
+          quoteForm.addEventListener("change", (event) => {
+            getFieldHighlightTarget(event.target)?.classList.remove("is-missing");
+            event.target.setCustomValidity("");
+            if (event.target.matches("[data-addon-option]")) {
+              getFieldHighlightTarget(event.target)?.classList.toggle("is-missing", !addOns.some((input) => input.checked));
+            }
+          });
         }
+
         syncProgressiveQuoteFields();
+        applyQuoteServicePrefill();
+        syncQuoteWizard();
       })();
     </script>
     <script src="./chatbot.js" defer></script>
