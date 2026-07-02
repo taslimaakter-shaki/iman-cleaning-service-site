@@ -1,0 +1,107 @@
+/* Iman Cleaning — homepage content. Service names & prices mirror the live
+   site exactly (do not diverge). Everything else is conversion-focused copy. */
+window.IMAN_DATA = {
+  phone: "929-803-4053",
+  phoneHref: "tel:9298034053",
+  nav: [
+    { label: "Services", href: "#services" },
+    { label: "How it works", href: "#how" },
+    { label: "Why us", href: "#why" },
+    { label: "Service areas", href: "#areas" },
+    { label: "FAQ", href: "#faq" },
+  ],
+  services: [
+    {
+      title: "Standard Cleaning",
+      price: "Starting at $180",
+      image: "./home-hero-clean-living-room.jpg",
+      blurb: "Regular upkeep that keeps your home reliably fresh between visits.",
+      points: ["Kitchens, baths, bedrooms & living areas", "Weekly, biweekly, monthly, or one-time"],
+      href: "#",
+    },
+    {
+      title: "Deep Cleaning",
+      price: "Starting at $280",
+      image: "./contact-kitchen-hero.jpg",
+      blurb: "First-time cleanings, seasonal resets, and heavier buildup.",
+      points: ["Detailed high-touch & neglected areas", "Photos help us size the team accurately"],
+      href: "#",
+      featured: true,
+    },
+    {
+      title: "Move-In / Move-Out",
+      price: "Starting at $280",
+      image: "./home-hero-team.jpg",
+      blurb: "A clean handoff for apartments, homes, and rental turnovers.",
+      points: ["Empty-space cleaning for leases", "Ideal before photos, staging, or keys"],
+      href: "#",
+    },
+    {
+      title: "Office & Commercial",
+      price: "Custom quote",
+      image: "./home-hero-clean-living-room.jpg",
+      blurb: "Offices, retail, clinics, restaurants, and recurring janitorial.",
+      points: ["Walkthroughs for larger spaces", "Recurring janitorial options available"],
+      href: "#",
+    },
+  ],
+  steps: [
+    { n: "01", title: "Request your quote", body: "Send your details online or call or text us. Add photos of the space so we can quote accurately." },
+    { n: "02", title: "We confirm everything", body: "We call you back to review the scope, timing, and exact price — so it's all clear before you commit." },
+    { n: "03", title: "Approve & pay", body: "Happy with the quote? Confirm and pay to lock in your appointment for the day that works for you." },
+    { n: "04", title: "We clean, you relax", body: "On the scheduled day, an insured Iman crew arrives on time and leaves the space spotless." },
+  ],
+  reasons: [
+    { icon: "shield", title: "Fully Insured & Background Checked", body: "Licensed and insured cleaners you can trust in your home or business." },
+    { icon: "quote", title: "Upfront Pricing", body: "No hidden fees. You'll know the exact cost before service begins." },
+    { icon: "sparkle", title: "Supplies & Equipment Included", body: "We bring the professional products and tools needed for a thorough clean." },
+    { icon: "heart", title: "Satisfaction Guaranteed", body: "If we missed something, let us know before we leave and we'll make it right." },
+  ],
+  reviews: [
+    { stars: 5, text: "Professional, thorough, and affordable.", author: "Ishita V." },
+    { stars: 5, text: "Spotless every time.", author: "Ammarah L." },
+    { stars: 5, text: "Highly recommend.", author: "Danish M." },
+  ],
+  serviceCategories: [
+    {
+      title: "Residential Cleaning", kicker: "Homes & apartments",
+      image: "./home-hero-clean-living-room.jpg",
+      services: [
+        { name: "Standard Cleaning", price: "$180", href: "./service-detail.html" },
+        { name: "Deep Cleaning", price: "$280", href: "./service-detail.html" },
+        { name: "Move-In / Move-Out", price: "$280", href: "./service-detail.html" },
+        { name: "Airbnb / Short-Term Rental", price: "Custom quote", href: "./service-detail.html" },
+        { name: "Detailed Cleaning", price: "Custom quote", href: "./service-detail.html" },
+        { name: "Extreme Cleaning", price: "Custom quote", href: "./service-detail.html" },
+        { name: "Organization Services", price: "Custom quote", href: "./service-detail.html" },
+      ],
+    },
+    {
+      title: "Commercial Cleaning", kicker: "Offices & businesses",
+      image: "./assets/commercial-restaurant.png",
+      services: [
+        { name: "Office Cleaning", price: "Custom quote", href: "./service-detail.html" },
+        { name: "Retail Store Cleaning", price: "Custom quote", href: "./service-detail.html" },
+        { name: "Restaurant Cleaning", price: "Custom quote", href: "./service-detail.html" },
+        { name: "Medical & Clinic Cleaning", price: "Custom quote", href: "./service-detail.html" },
+        { name: "Post-Construction Cleaning", price: "Custom quote", href: "./service-detail.html" },
+        { name: "Janitorial / Recurring Cleaning", price: "Custom quote", href: "./service-detail.html" },
+      ],
+    },
+  ],
+  boroughs: ["Manhattan", "Brooklyn", "Queens", "The Bronx", "Staten Island"],
+  faqs: [
+    { q: "Do I get a price before the appointment is confirmed?", a: "Yes. Submit the quote request, and we review the space details before confirming the service scope and total.", open: true },
+    { q: "Do you clean in all five NYC boroughs?", a: "Yes. Iman Cleaning Service LLC serves Manhattan, Brooklyn, Queens, The Bronx, and Staten Island." },
+    { q: "Can I request commercial cleaning?", a: "Yes. Offices, retail stores, restaurants, clinics, and recurring janitorial requests can be submitted through the quote form. Larger jobs may need a phone consultation or walkthrough." },
+    { q: "What should I include in my quote request?", a: "Share your service type, address, preferred dates, space details, and photos if the job needs deeper review." },
+    { q: "What hours are available?", a: "Cleaning can be scheduled between 6:00 AM and 8:00 PM, seven days a week, based on availability." },
+    { q: "Why is Iman priced higher than a typical cleaning service?", a: "Because we don't cut the corners that cheaper services do. Iman Cleaning Service LLC is fully licensed and insured, our cleaners are trained professionals (not gig fill-ins), and we use top-quality, professional-grade supplies and equipment. We never rush a job — every clean is thorough and detailed, and we ask up front what you'd like us to pay extra attention to. You're paying for work done right by a team that keeps its word." },
+    { q: "My budget is low — is Iman right for me?", a: "Honestly, if price is your top priority, we may not be the best fit. We focus on quality over being the cheapest option — fully insured, trained cleaners, professional-grade supplies, and detailed work that isn't rushed. If that's what you're looking for, we'd love to help." },
+  ],
+  review: {
+    name: "Verified Google review",
+    text: "They showed up on time, gave me a clear price first, and the apartment looked better than move-in day. Easiest booking I've had with any cleaner in the city.",
+    author: "NYC homeowner · Google Business Profile",
+  },
+};

@@ -1,0 +1,407 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Iman Cleaning Service Footer</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Inter:wght@500;600;700;800&family=Playfair+Display:wght@700;800&display=swap"
+      rel="stylesheet"
+    />
+    <style>
+      :root {
+        --iman-green: #1f5f39;
+        --iman-green-dark: #143f2a;
+        --iman-green-soft: #edf7ee;
+        --iman-mint: #dcefdc;
+        --iman-cream: #fbfaf4;
+        --iman-ink: #173526;
+        --iman-muted: #627367;
+        --iman-line: rgba(31, 95, 57, 0.14);
+        --shadow: 0 22px 60px rgba(23, 53, 38, 0.12);
+        --radius-lg: 24px;
+        --radius-md: 18px;
+      }
+
+      * {
+        box-sizing: border-box;
+      }
+
+      body {
+        margin: 0;
+        font-family: Inter, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+        color: var(--iman-ink);
+        background: var(--iman-cream);
+      }
+
+      a {
+        color: inherit;
+      }
+
+      .iman-footer-section {
+        position: relative;
+        overflow: hidden;
+        padding: clamp(64px, 8vw, 112px) 20px 96px;
+        background:
+          radial-gradient(circle at top left, rgba(220, 239, 220, 0.9), transparent 34rem),
+          linear-gradient(180deg, #fbfcf7 0%, #f5f7ef 100%);
+      }
+
+      .iman-footer-wrap {
+        width: min(1120px, 100%);
+        margin: 0 auto;
+      }
+
+      .iman-cta-card {
+        display: grid;
+        gap: 26px;
+        padding: clamp(28px, 5vw, 52px);
+        border: 1px solid var(--iman-line);
+        border-radius: var(--radius-lg);
+        background:
+          linear-gradient(135deg, rgba(237, 247, 238, 0.94), rgba(255, 255, 255, 0.96)),
+          #fff;
+        box-shadow: var(--shadow);
+      }
+
+      .iman-kicker {
+        margin: 0;
+        color: var(--iman-muted);
+        font-size: 0.78rem;
+        font-weight: 800;
+        letter-spacing: 0.08em;
+        text-transform: uppercase;
+      }
+
+      .iman-cta-title {
+        max-width: 680px;
+        margin: 0;
+        color: var(--iman-green-dark);
+        font-family: "Playfair Display", Georgia, serif;
+        font-size: clamp(2.4rem, 6vw, 5rem);
+        line-height: 0.98;
+        letter-spacing: 0;
+      }
+
+      .iman-cta-copy {
+        max-width: 760px;
+        margin: 0;
+        color: var(--iman-muted);
+        font-size: clamp(1rem, 2vw, 1.14rem);
+        line-height: 1.7;
+      }
+
+      .iman-actions {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 14px;
+        align-items: center;
+      }
+
+      .iman-button {
+        display: inline-flex;
+        min-height: 52px;
+        align-items: center;
+        justify-content: center;
+        border-radius: 999px;
+        padding: 0 28px;
+        font-weight: 800;
+        text-decoration: none;
+        transition: transform 180ms ease, box-shadow 180ms ease, background-color 180ms ease;
+      }
+
+      .iman-button:hover {
+        transform: translateY(-2px);
+      }
+
+      .iman-button-primary {
+        color: #fff;
+        background: var(--iman-green);
+        box-shadow: 0 14px 30px rgba(31, 95, 57, 0.24);
+      }
+
+      .iman-button-primary:hover {
+        background: var(--iman-green-dark);
+      }
+
+      .iman-button-secondary {
+        color: var(--iman-green);
+        background: #fff;
+        border: 1px solid var(--iman-line);
+      }
+
+      .iman-social-bar {
+        display: flex;
+        gap: 24px;
+        align-items: center;
+        justify-content: space-between;
+        margin: clamp(48px, 6vw, 72px) auto 34px;
+        padding: 22px clamp(22px, 4vw, 34px);
+        border-radius: var(--radius-md);
+        background: #fff;
+        box-shadow: 0 18px 46px rgba(23, 53, 38, 0.1);
+      }
+
+      .iman-social-text {
+        margin: 0;
+        color: var(--iman-green-dark);
+        font-size: clamp(1.05rem, 2vw, 1.35rem);
+        font-weight: 800;
+        line-height: 1.35;
+      }
+
+      .iman-social-icons {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 14px;
+        justify-content: flex-end;
+      }
+
+      .iman-social-icon {
+        display: inline-flex;
+        width: 52px;
+        height: 52px;
+        align-items: center;
+        justify-content: center;
+        border-radius: 50%;
+        color: #fff;
+        text-decoration: none;
+        box-shadow: 0 10px 22px rgba(23, 53, 38, 0.16);
+        transition: transform 180ms ease, box-shadow 180ms ease;
+      }
+
+      .iman-social-icon:hover {
+        transform: translateY(-3px) scale(1.03);
+        box-shadow: 0 14px 30px rgba(23, 53, 38, 0.2);
+      }
+
+      .iman-youtube {
+        background: #e62117;
+      }
+
+      .iman-facebook {
+        background: #316ff6;
+      }
+
+      .iman-tiktok {
+        background: #070707;
+        box-shadow: 0 10px 22px rgba(0, 242, 234, 0.15);
+      }
+
+      .iman-instagram {
+        background: radial-gradient(circle at 30% 110%, #feda75 0%, #fa7e1e 28%, #d62976 55%, #962fbf 78%, #4f5bd5 100%);
+      }
+
+      .iman-social-icon svg {
+        width: 23px;
+        height: 23px;
+        fill: currentColor;
+      }
+
+      .iman-footer {
+        display: grid;
+        grid-template-columns: 1.3fr repeat(3, 1fr);
+        gap: 28px;
+        padding: 34px 8px 0;
+      }
+
+      .iman-footer h2,
+      .iman-footer h3,
+      .iman-footer p {
+        margin: 0;
+      }
+
+      .iman-footer-brand h2 {
+        color: var(--iman-green-dark);
+        font-size: clamp(1.45rem, 2vw, 1.9rem);
+        line-height: 1.15;
+      }
+
+      .iman-footer-brand p {
+        margin-top: 12px;
+        color: var(--iman-muted);
+        line-height: 1.6;
+      }
+
+      .iman-footer-block {
+        display: grid;
+        gap: 10px;
+      }
+
+      .iman-footer-block h3 {
+        color: var(--iman-green-dark);
+        font-size: 0.82rem;
+        font-weight: 800;
+        letter-spacing: 0.07em;
+        text-transform: uppercase;
+      }
+
+      .iman-footer-block p,
+      .iman-footer-block a {
+        color: var(--iman-muted);
+        font-size: 0.98rem;
+        line-height: 1.55;
+      }
+
+      .iman-footer-block a:hover {
+        color: var(--iman-green);
+      }
+
+      .iman-footer-bottom {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 10px 20px;
+        justify-content: space-between;
+        margin-top: 34px;
+        padding-top: 22px;
+        border-top: 1px solid var(--iman-line);
+        color: var(--iman-muted);
+        font-size: 0.92rem;
+      }
+
+      .iman-floating-quote {
+        position: fixed;
+        right: 22px;
+        bottom: 22px;
+        z-index: 20;
+        display: inline-flex;
+        min-height: 56px;
+        align-items: center;
+        justify-content: center;
+        border-radius: 999px;
+        padding: 0 28px;
+        color: #fff;
+        background: var(--iman-green-dark);
+        box-shadow: 0 18px 36px rgba(20, 63, 42, 0.28);
+        font-weight: 800;
+        text-decoration: none;
+      }
+
+      .iman-floating-quote:hover {
+        background: var(--iman-green);
+      }
+
+      @media (max-width: 820px) {
+        .iman-social-bar,
+        .iman-footer {
+          grid-template-columns: 1fr;
+        }
+
+        .iman-social-bar {
+          align-items: flex-start;
+          flex-direction: column;
+        }
+
+        .iman-social-icons {
+          justify-content: flex-start;
+        }
+
+        .iman-footer {
+          padding-inline: 0;
+        }
+      }
+
+      @media (max-width: 520px) {
+        .iman-footer-section {
+          padding: 44px 16px 92px;
+        }
+
+        .iman-cta-card {
+          border-radius: 20px;
+        }
+
+        .iman-button {
+          width: 100%;
+        }
+
+        .iman-social-icon {
+          width: 48px;
+          height: 48px;
+        }
+
+        .iman-floating-quote {
+          right: 14px;
+          bottom: 14px;
+          min-height: 50px;
+          padding: 0 20px;
+          font-size: 0.92rem;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <section class="iman-footer-section" aria-label="Contact Iman Cleaning Service LLC">
+      <div class="iman-footer-wrap">
+        <div class="iman-cta-card">
+          <p class="iman-kicker">READY FOR A CLEANER SPACE?</p>
+          <h1 class="iman-cta-title">Get your free cleaning quote today.</h1>
+          <p class="iman-cta-copy">
+            Tell us about your home, apartment, office, or Airbnb and we'll send a personalized estimate.
+          </p>
+          <div class="iman-actions">
+            <a class="iman-button iman-button-primary" href="./quote.html">Get a Quote Now</a>
+            <a class="iman-button iman-button-secondary" href="./contact.html">Contact Us</a>
+          </div>
+        </div>
+
+        <div class="iman-social-bar" aria-label="Follow Iman Cleaning Service LLC">
+          <p class="iman-social-text">Follow us for more cleaning tips, transformations, and offers</p>
+          <div class="iman-social-icons">
+            <a class="iman-social-icon iman-youtube" href="#" aria-label="Follow Iman Cleaning Service LLC on YouTube">
+              <svg viewBox="0 0 24 24" aria-hidden="true">
+                <path d="M23.5 6.2a3 3 0 0 0-2.1-2.1C19.6 3.6 12 3.6 12 3.6s-7.6 0-9.4.5A3 3 0 0 0 .5 6.2 31.1 31.1 0 0 0 0 12a31.1 31.1 0 0 0 .5 5.8 3 3 0 0 0 2.1 2.1c1.8.5 9.4.5 9.4.5s7.6 0 9.4-.5a3 3 0 0 0 2.1-2.1A31.1 31.1 0 0 0 24 12a31.1 31.1 0 0 0-.5-5.8ZM9.6 15.6V8.4L15.8 12l-6.2 3.6Z" />
+              </svg>
+            </a>
+            <a class="iman-social-icon iman-facebook" href="#" aria-label="Follow Iman Cleaning Service LLC on Facebook">
+              <svg viewBox="0 0 24 24" aria-hidden="true">
+                <path d="M14.2 8.1V6.5c0-.8.5-1 1-1h2.6V1.1L14.2 1C10.3 1 9.4 3.3 9.4 6v2.1H6.2v4.7h3.2V23h4.8V12.8h3.6l.6-4.7h-4.2Z" />
+              </svg>
+            </a>
+            <a class="iman-social-icon iman-tiktok" href="#" aria-label="Follow Iman Cleaning Service LLC on TikTok">
+              <svg viewBox="0 0 24 24" aria-hidden="true">
+                <path d="M16.6 1c.4 3 2.1 4.8 5.1 5v4.1a8.7 8.7 0 0 1-5-1.5v7.7c0 9.8-10.7 12.8-15 5.8-2.8-4.5-1.1-12.5 7.8-12.8v4.3c-.7.1-1.5.3-2.1.7-2 1.3-2.4 3.8-1.1 5.6 2.4 3.4 6 .8 6-2.7V1h4.3Z" />
+              </svg>
+            </a>
+            <a class="iman-social-icon iman-instagram" href="#" aria-label="Follow Iman Cleaning Service LLC on Instagram">
+              <svg viewBox="0 0 24 24" aria-hidden="true">
+                <path d="M12 2.2c3.2 0 3.6 0 4.9.1 1.2.1 1.9.3 2.4.5.6.2 1 .5 1.5 1 .5.5.8.9 1 1.5.2.5.4 1.2.5 2.4.1 1.3.1 1.7.1 4.9s0 3.6-.1 4.9c-.1 1.2-.3 1.9-.5 2.4-.2.6-.5 1-1 1.5-.5.5-.9.8-1.5 1-.5.2-1.2.4-2.4.5-1.3.1-1.7.1-4.9.1s-3.6 0-4.9-.1c-1.2-.1-1.9-.3-2.4-.5-.6-.2-1-.5-1.5-1-.5-.5-.8-.9-1-1.5-.2-.5-.4-1.2-.5-2.4-.1-1.3-.1-1.7-.1-4.9s0-3.6.1-4.9c.1-1.2.3-1.9.5-2.4.2-.6.5-1 1-1.5.5-.5.9-.8 1.5-1 .5-.2 1.2-.4 2.4-.5 1.3-.1 1.7-.1 4.9-.1Zm0 2.2c-3.1 0-3.5 0-4.8.1-1 .1-1.5.2-1.8.3-.4.2-.7.3-1 .6-.3.3-.5.6-.6 1-.1.3-.3.8-.3 1.8-.1 1.3-.1 1.7-.1 4.8s0 3.5.1 4.8c.1 1 .2 1.5.3 1.8.2.4.3.7.6 1 .3.3.6.5 1 .6.3.1.8.3 1.8.3 1.3.1 1.7.1 4.8.1s3.5 0 4.8-.1c1-.1 1.5-.2 1.8-.3.4-.2.7-.3 1-.6.3-.3.5-.6.6-1 .1-.3.3-.8.3-1.8.1-1.3.1-1.7.1-4.8s0-3.5-.1-4.8c-.1-1-.2-1.5-.3-1.8-.2-.4-.3-.7-.6-1-.3-.3-.6-.5-1-.6-.3-.1-.8-.3-1.8-.3-1.3-.1-1.7-.1-4.8-.1Zm0 3.7a4.9 4.9 0 1 1 0 9.8 4.9 4.9 0 0 1 0-9.8Zm0 7.6a2.7 2.7 0 1 0 0-5.4 2.7 2.7 0 0 0 0 5.4Zm5.2-8.8a1.1 1.1 0 1 1 0 2.2 1.1 1.1 0 0 1 0-2.2Z" />
+              </svg>
+            </a>
+          </div>
+        </div>
+
+        <footer class="iman-footer">
+          <div class="iman-footer-brand">
+            <h2>Iman Cleaning Service LLC</h2>
+            <p>Residential &amp; Commercial Cleaning Services for homes, apartments, offices, and short-term rentals.</p>
+          </div>
+          <div class="iman-footer-block">
+            <h3>Call Us</h3>
+            <p><a href="tel:+19177747821">917-774-7821</a></p>
+            <p><a href="tel:+19298034053">929-803-4053</a></p>
+          </div>
+          <div class="iman-footer-block">
+            <h3>Email</h3>
+            <p><a href="mailto:Info@imancleaningservice.com">Info@imancleaningservice.com</a></p>
+            <h3>Service Area</h3>
+            <p>New York City and surrounding areas</p>
+          </div>
+          <div class="iman-footer-block">
+            <h3>Business Hours</h3>
+            <p>Monday to Saturday<br />8:00 AM - 6:00 PM</p>
+            <p>Sunday by appointment</p>
+          </div>
+        </footer>
+
+        <div class="iman-footer-bottom">
+          <span>&copy; 2026 Iman Cleaning Service LLC. All rights reserved.</span>
+          <span>Professional cleaning with a fresh, reliable finish.</span>
+        </div>
+      </div>
+
+      <a class="iman-floating-quote" href="./quote.html">Get a Quote Now</a>
+    </section>
+  </body>
+</html>

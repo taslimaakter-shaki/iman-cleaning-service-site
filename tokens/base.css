@@ -1,0 +1,92 @@
+/* ===========================================================================
+   Iman Cleaning Service — Base element styles & utilities
+   Minimal resets + brand-correct defaults so any page that links styles.css
+   inherits the right type, color, and rhythm.
+   =========================================================================== */
+
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+html {
+  scroll-behavior: smooth;
+  -webkit-text-size-adjust: 100%;
+}
+
+body {
+  margin: 0;
+  font-family: var(--font-sans);
+  font-size: var(--text-base);
+  line-height: var(--leading-relaxed);
+  color: var(--text-body);
+  background: var(--bg-page);
+  -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
+}
+
+h1, h2, h3, h4, h5 {
+  margin: 0;
+  font-family: var(--font-display);
+  font-weight: var(--fw-bold);
+  color: var(--text-strong);
+  line-height: var(--leading-tight);
+  letter-spacing: var(--tracking-tight);
+  text-wrap: balance;
+}
+
+h1 { font-size: var(--text-h1); }
+h2 { font-size: var(--text-h2); }
+h3 { font-size: var(--text-h3); letter-spacing: var(--tracking-normal); }
+h4 { font-size: var(--text-h4); letter-spacing: var(--tracking-normal); }
+
+p { margin: 0; text-wrap: pretty; }
+
+a {
+  color: var(--text-link);
+  text-decoration: none;
+  transition: color var(--dur-fast) var(--ease-out);
+}
+a:hover { color: var(--text-link-hover); }
+
+img, svg, video { display: block; max-width: 100%; }
+
+strong { font-weight: var(--fw-bold); color: var(--text-strong); }
+
+::selection { background: var(--leaf-300); color: var(--teal-900); }
+
+:focus-visible {
+  outline: 2px solid var(--brand);
+  outline-offset: 2px;
+}
+
+/* --- Shared helpers consumers can lean on ----------------------------- */
+.ds-shell {
+  width: min(calc(100% - 2 * var(--gutter)), var(--max-width));
+  margin-inline: auto;
+}
+
+.ds-kicker {
+  display: inline-block;
+  font-family: var(--font-sans);
+  font-size: var(--text-kicker);
+  font-weight: var(--fw-bold);
+  letter-spacing: var(--tracking-kicker);
+  text-transform: uppercase;
+  color: var(--accent-deep);
+}
+
+.ds-lead {
+  font-size: var(--text-lead);
+  line-height: var(--leading-normal);
+  color: var(--text-body);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  html { scroll-behavior: auto; }
+  *, *::before, *::after {
+    animation-duration: 0.01ms !important;
+    transition-duration: 0.01ms !important;
+  }
+}

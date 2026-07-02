@@ -1,0 +1,118 @@
+<!-- @dsCard group="Website" viewport="1280x720" name="Services Hub" subtitle="All NYC cleaning services — residential & commercial" -->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>NYC Cleaning Services | Residential &amp; Commercial | Iman Cleaning Service LLC</title>
+<meta name="description" content="Explore Iman Cleaning Service LLC's full range of NYC cleaning services — standard, deep, move-in/move-out, Airbnb, office, retail, restaurant, clinic, and post-construction. Fully insured.">
+<link rel="canonical" href="https://www.imancleaningservice.com/services-hub.html">
+<meta name="robots" content="index, follow, max-image-preview:large">
+<meta name="theme-color" content="#0b6474">
+<meta name="author" content="Iman Cleaning Service LLC">
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="Iman Cleaning Service LLC">
+<meta property="og:locale" content="en_US">
+<meta property="og:title" content="NYC Cleaning Services | Residential &amp; Commercial | Iman Cleaning Service LLC">
+<meta property="og:description" content="Explore Iman Cleaning Service LLC's full range of NYC cleaning services — standard, deep, move-in/move-out, Airbnb, office, retail, restaurant, clinic, and post-construction. Fully insured.">
+<meta property="og:url" content="https://www.imancleaningservice.com/services-hub.html">
+<meta property="og:image" content="https://www.imancleaningservice.com/brand-card.png">
+<meta property="og:image:alt" content="Iman Cleaning Service LLC — NYC residential & commercial cleaning">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="NYC Cleaning Services | Residential &amp; Commercial | Iman Cleaning Service LLC">
+<meta name="twitter:description" content="Explore Iman Cleaning Service LLC's full range of NYC cleaning services — standard, deep, move-in/move-out, Airbnb, office, retail, restaurant, clinic, and post-construction. Fully insured.">
+<meta name="twitter:image" content="https://www.imancleaningservice.com/brand-card.png">
+<link rel="stylesheet" href="./design-system.css">
+<link rel="stylesheet" href="./site.css">
+
+<!-- SEO: LocalBusiness. Keep in sync with visible content. -->
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "CleaningService",
+  "name": "Iman Cleaning Service LLC",
+  "url": "https://www.imancleaningservice.com/services-hub.html",
+  "logo": "https://www.imancleaningservice.com/iman-logo-icon.png",
+  "telephone": "+1-929-803-4053",
+  "email": "Info@imancleaningservice.com",
+  "priceRange": "$$",
+  "address": { "@type": "PostalAddress", "addressLocality": "New York", "addressRegion": "NY", "addressCountry": "US" },
+  "areaServed": [
+    { "@type": "City", "name": "Manhattan" },
+    { "@type": "City", "name": "Brooklyn" },
+    { "@type": "City", "name": "Queens" },
+    { "@type": "City", "name": "The Bronx" },
+    { "@type": "City", "name": "Staten Island" }
+  ],
+  "hasOfferCatalog": {
+    "@type": "OfferCatalog",
+    "name": "Cleaning Services",
+    "itemListElement": [
+      { "@type": "Offer", "itemOffered": { "@type": "Service", "name": "Residential Cleaning" } },
+      { "@type": "Offer", "itemOffered": { "@type": "Service", "name": "Commercial Cleaning" } }
+    ]
+  }
+}
+</script>
+</head>
+<body>
+<div id="root"></div>
+<script src="https://unpkg.com/react@18.3.1/umd/react.development.js" integrity="sha384-hD6/rw4ppMLGNu3tX5cjIb+uRZ7UkRJ6BPkLpg4hAu/6onKUg4lLsHAs9EBPT82L" crossorigin="anonymous"></script>
+<script src="https://unpkg.com/react-dom@18.3.1/umd/react-dom.development.js" integrity="sha384-u6aeetuaXnQ38mYT8rp6sbXaQe3NL9t+IBXmnYxwkUI2Hw4bsp2Wvmx4yRQF1uAm" crossorigin="anonymous"></script>
+<script src="https://unpkg.com/@babel/standalone@7.29.0/babel.min.js" integrity="sha384-m08KidiNqLdpJqLq95G/LEi8Qvjl/xUYll3QILypMoQ65QorJ9Lvtp2RXYGBFj1y" crossorigin="anonymous"></script>
+<script src="./_ds_bundle.js"></script>
+<script src="./data.js"></script>
+<script type="text/babel" src="./chrome.jsx"></script>
+<script type="text/babel">
+const mount = () => {
+  if (!window.ImanChrome) return setTimeout(mount, 30);
+  const { Button, Badge, ServiceListCard } = window.ImanCleaningDesignSystem_5652ad;
+  const { Icon, Header, Footer } = window.ImanChrome;
+  const D = window.IMAN_DATA;
+
+  function Page() {
+    return (<>
+      <Header active="services" onDark />
+      <section className="page-hero on-photo center" style={{ "--hero-img": "url('./home-hero-clean-living-room.jpg')" }}>
+        <div className="ds-shell page-hero-inner">
+          <span className="ds-kicker">All NYC cleaning services</span>
+          <h1>One team for every kind of clean</h1>
+          <p className="ds-lead">Residential and commercial cleaning across all five boroughs — each quote built around your space, condition, and timing.</p>
+          <div className="page-hero-actions">
+            <Button href="./quote.html" variant="accent" size="lg" iconRight={<Icon name="arrow" size={18} />}>Get a free quote</Button>
+          </div>
+        </div>
+      </section>
+
+      <section className="section">
+        <div className="ds-shell">
+          <div className="sec-head sec-head-split">
+            <div><span className="ds-kicker">Two ways we help</span><h2>Residential &amp; commercial cleaning</h2></div>
+            <p>Pick a category to see every service and its starting price. Each one links to the details and a clear quote.</p>
+          </div>
+          <div className="two-cards">
+            {D.serviceCategories.map((c) => <ServiceListCard key={c.title} {...c} />)}
+          </div>
+        </div>
+      </section>
+
+      <section className="final-cta">
+        <div className="ds-shell final-inner">
+          <span className="ds-kicker" style={{ color: "var(--leaf-300)" }}>Not sure which one?</span>
+          <h2>Pick the closest option — we confirm the details before booking.</h2>
+          <p>Start a quote and add a note. We'll review and recommend the right service for your space.</p>
+          <div className="final-actions">
+            <Button href="./quote.html" variant="accent" size="lg">Start a quote</Button>
+            <Button href={D.phoneHref} variant="secondary" size="lg" iconLeft={<Icon name="phone" size={18} stroke="var(--brand)" />}>Call or text {D.phone}</Button>
+          </div>
+        </div>
+      </section>
+      <Footer />
+    </>);
+  }
+  ReactDOM.createRoot(document.getElementById("root")).render(<Page />);
+};
+mount();
+</script>
+</body>
+</html>

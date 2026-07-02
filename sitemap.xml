@@ -2,92 +2,42 @@
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
   <url>
     <loc>https://www.imancleaningservice.com/</loc>
+    <changefreq>weekly</changefreq>
+    <priority>1.0</priority>
   </url>
   <url>
-    <loc>https://www.imancleaningservice.com/services.html</loc>
+    <loc>https://www.imancleaningservice.com/services-hub.html</loc>
+    <changefreq>monthly</changefreq>
+    <priority>0.9</priority>
   </url>
   <url>
-    <loc>https://www.imancleaningservice.com/cleaning-services-nyc.html</loc>
-  </url>
-  <url>
-    <loc>https://www.imancleaningservice.com/our-work.html</loc>
-  </url>
-  <url>
-    <loc>https://www.imancleaningservice.com/standard-cleaning.html</loc>
-  </url>
-  <url>
-    <loc>https://www.imancleaningservice.com/deep-cleaning.html</loc>
-  </url>
-  <url>
-    <loc>https://www.imancleaningservice.com/move-in-move-out-cleaning.html</loc>
-  </url>
-  <url>
-    <loc>https://www.imancleaningservice.com/airbnb-cleaning.html</loc>
-  </url>
-  <url>
-    <loc>https://www.imancleaningservice.com/post-construction-cleaning.html</loc>
-  </url>
-  <url>
-    <loc>https://www.imancleaningservice.com/organization-services.html</loc>
-  </url>
-  <url>
-    <loc>https://www.imancleaningservice.com/details-cleaning.html</loc>
-  </url>
-  <url>
-    <loc>https://www.imancleaningservice.com/extreme-cleaning.html</loc>
-  </url>
-  <url>
-    <loc>https://www.imancleaningservice.com/office-cleaning.html</loc>
-  </url>
-  <url>
-    <loc>https://www.imancleaningservice.com/retail-store-cleaning.html</loc>
-  </url>
-  <url>
-    <loc>https://www.imancleaningservice.com/restaurant-cleaning.html</loc>
-  </url>
-  <url>
-    <loc>https://www.imancleaningservice.com/medical-clinic-cleaning.html</loc>
-  </url>
-  <url>
-    <loc>https://www.imancleaningservice.com/janitorial-recurring-cleaning.html</loc>
-  </url>
-  <url>
-    <loc>https://www.imancleaningservice.com/commercial-cleaning.html</loc>
+    <loc>https://www.imancleaningservice.com/service-detail.html</loc>
+    <changefreq>monthly</changefreq>
+    <priority>0.8</priority>
   </url>
   <url>
     <loc>https://www.imancleaningservice.com/quote.html</loc>
-  </url>
-  <url>
-    <loc>https://www.imancleaningservice.com/why-us.html</loc>
+    <changefreq>monthly</changefreq>
+    <priority>0.9</priority>
   </url>
   <url>
     <loc>https://www.imancleaningservice.com/areas.html</loc>
+    <changefreq>monthly</changefreq>
+    <priority>0.8</priority>
   </url>
   <url>
-    <loc>https://www.imancleaningservice.com/manhattan-cleaning-service.html</loc>
+    <loc>https://www.imancleaningservice.com/why-us.html</loc>
+    <changefreq>monthly</changefreq>
+    <priority>0.7</priority>
   </url>
   <url>
-    <loc>https://www.imancleaningservice.com/brooklyn-cleaning-service.html</loc>
-  </url>
-  <url>
-    <loc>https://www.imancleaningservice.com/queens-cleaning-service.html</loc>
-  </url>
-  <url>
-    <loc>https://www.imancleaningservice.com/bronx-cleaning-service.html</loc>
-  </url>
-  <url>
-    <loc>https://www.imancleaningservice.com/staten-island-cleaning-service.html</loc>
+    <loc>https://www.imancleaningservice.com/our-work.html</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.7</priority>
   </url>
   <url>
     <loc>https://www.imancleaningservice.com/contact.html</loc>
-  </url>
-  <url>
-    <loc>https://www.imancleaningservice.com/privacy-policy.html</loc>
-  </url>
-  <url>
-    <loc>https://www.imancleaningservice.com/sms-terms.html</loc>
-  </url>
-  <url>
-    <loc>https://www.imancleaningservice.com/thanks.html</loc>
+    <changefreq>monthly</changefreq>
+    <priority>0.6</priority>
   </url>
 </urlset>

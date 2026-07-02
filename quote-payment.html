@@ -1,0 +1,374 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Create Quote Payment | Iman Cleaning Service LLC</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap"
+      rel="stylesheet"
+    />
+    <style>
+      :root {
+        --green: #075f5d;
+        --green-dark: #034341;
+        --green-deep: #022f2e;
+        --ink: #1f2933;
+        --muted: #62717f;
+        --paper: #ffffff;
+        --soft: #f4f8f7;
+        --line: #d8e4e2;
+        --danger: #a93131;
+        --radius: 8px;
+      }
+
+      * {
+        box-sizing: border-box;
+      }
+
+      body {
+        margin: 0;
+        background: var(--soft);
+        color: var(--ink);
+        font-family: Inter, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      }
+
+      .shell {
+        width: min(980px, calc(100% - 32px));
+        margin: 0 auto;
+      }
+
+      header {
+        background: var(--green-dark);
+        color: #ffffff;
+        padding: 24px 0;
+      }
+
+      .brand {
+        display: flex;
+        align-items: center;
+        gap: 14px;
+        font-weight: 800;
+      }
+
+      .brand img {
+        width: 116px;
+        height: 52px;
+        border-radius: var(--radius);
+        background: #ffffff;
+        object-fit: contain;
+        padding: 5px 8px;
+      }
+
+      main {
+        padding: clamp(32px, 5vw, 58px) 0;
+      }
+
+      .panel {
+        border: 1px solid var(--line);
+        border-radius: var(--radius);
+        background: var(--paper);
+        padding: clamp(22px, 4vw, 40px);
+      }
+
+      h1 {
+        margin: 0 0 8px;
+        font-size: clamp(2rem, 5vw, 3.6rem);
+        line-height: 1.05;
+        letter-spacing: 0;
+      }
+
+      p {
+        margin: 0;
+        color: var(--muted);
+        line-height: 1.6;
+      }
+
+      form {
+        display: grid;
+        gap: 18px;
+        margin-top: 28px;
+      }
+
+      .grid {
+        display: grid;
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        gap: 18px;
+      }
+
+      label {
+        display: grid;
+        gap: 8px;
+        color: var(--ink);
+        font-size: 0.94rem;
+        font-weight: 700;
+      }
+
+      input,
+      textarea {
+        width: 100%;
+        border: 1px solid var(--line);
+        border-radius: var(--radius);
+        padding: 12px 13px;
+        color: var(--ink);
+        font: inherit;
+      }
+
+      textarea {
+        min-height: 108px;
+        resize: vertical;
+      }
+
+      .payment-options {
+        display: grid;
+        gap: 12px;
+      }
+
+      .payment-option {
+        display: grid;
+        grid-template-columns: auto 1fr;
+        gap: 12px;
+        align-items: start;
+        border: 1px solid var(--line);
+        border-radius: var(--radius);
+        background: #f9fcfb;
+        padding: 14px;
+      }
+
+      .payment-option input {
+        width: auto;
+        margin-top: 3px;
+      }
+
+      .payment-option span {
+        display: block;
+        grid-column: 2;
+        color: var(--muted);
+        font-weight: 500;
+        line-height: 1.5;
+      }
+
+      button {
+        width: fit-content;
+        min-height: 46px;
+        border: 0;
+        border-radius: 999px;
+        background: var(--green);
+        color: #ffffff;
+        cursor: pointer;
+        font: inherit;
+        font-weight: 800;
+        padding: 0 22px;
+      }
+
+      button:disabled {
+        cursor: progress;
+        opacity: 0.68;
+      }
+
+      .result {
+        display: none;
+        margin-top: 24px;
+        border: 1px solid var(--line);
+        border-radius: var(--radius);
+        background: #f9fcfb;
+        padding: 18px;
+      }
+
+      .result.show {
+        display: block;
+      }
+
+      .result a {
+        display: inline-block;
+        margin-top: 12px;
+        color: var(--green-dark);
+        font-weight: 800;
+        overflow-wrap: anywhere;
+      }
+
+      .error {
+        color: var(--danger);
+      }
+
+      @media (max-width: 720px) {
+        .grid {
+          grid-template-columns: 1fr;
+        }
+
+        button {
+          width: 100%;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <header>
+      <div class="shell brand">
+        <img src="assets/iman-logo.png" alt="Iman Cleaning Service LLC" />
+        <span>Create Quote Payment</span>
+      </div>
+    </header>
+
+    <main>
+      <section class="shell panel">
+        <h1>Create a payment link</h1>
+        <p>
+          Enter the customer’s final price after reviewing their request. Choose whether to collect
+          the 25% deposit with agreement, or the 75% remaining balance as payment only.
+          Stripe can show card, Apple Pay, or Google Pay when available on the customer’s device.
+        </p>
+
+        <form id="quotePaymentForm">
+          <div class="payment-options" role="radiogroup" aria-label="Payment link type">
+            <label class="payment-option">
+              <input type="radio" name="paymentType" value="deposit_25" checked />
+              <strong>25% deposit link</strong>
+              <span>Customer agrees to the service agreement and pays 25% of the total service price.</span>
+            </label>
+            <label class="payment-option">
+              <input type="radio" name="paymentType" value="remaining_75" />
+              <strong>75% remaining balance link</strong>
+              <span>Customer pays the remaining 75% only. No agreement checkbox.</span>
+            </label>
+          </div>
+
+          <div class="grid">
+            <label>
+              Admin token
+              <input name="adminToken" type="password" autocomplete="off" required />
+            </label>
+            <label>
+              Quote ID
+              <input name="quoteId" placeholder="QUOTE-123456" />
+            </label>
+          </div>
+
+          <div class="grid">
+            <label>
+              Customer name
+              <input name="customerName" autocomplete="name" required />
+            </label>
+            <label>
+              Customer email
+              <input name="customerEmail" type="email" autocomplete="email" required />
+            </label>
+          </div>
+
+          <label>
+            Service location
+            <input name="serviceLocation" autocomplete="street-address" placeholder="Full cleaning address" required />
+          </label>
+
+          <div class="grid">
+            <label>
+              Service
+              <input name="service" placeholder="Deep Cleaning" required />
+            </label>
+            <label>
+              Total service price
+              <input name="amount" type="number" min="1" step="0.01" placeholder="250.00" required />
+            </label>
+          </div>
+
+          <div class="grid">
+            <label>
+              Service date
+              <input name="serviceDate" type="date" required />
+            </label>
+            <label>
+              Service start time
+              <input name="serviceTime" type="time" required />
+            </label>
+          </div>
+
+          <label>
+            Quote description
+            <textarea name="description" placeholder="Example: Deep cleaning for 2 bedroom apartment, including inside oven and fridge."></textarea>
+          </label>
+
+          <label>
+            Agreement URL
+            <input name="agreementUrl" value="https://www.imancleaningservice.com/agreement.html" />
+          </label>
+
+          <button type="submit">Create Payment Link</button>
+        </form>
+
+        <div class="result" id="result"></div>
+      </section>
+    </main>
+
+    <script>
+      const form = document.querySelector("#quotePaymentForm");
+      const result = document.querySelector("#result");
+
+      form.addEventListener("submit", async (event) => {
+        event.preventDefault();
+        const button = form.querySelector("button");
+        const formData = new FormData(form);
+        const adminToken = String(formData.get("adminToken") || "");
+        const paymentType = String(formData.get("paymentType") || "deposit_25");
+        const payload = {
+          quoteId: formData.get("quoteId"),
+          customerName: formData.get("customerName"),
+          customerEmail: formData.get("customerEmail"),
+          serviceLocation: formData.get("serviceLocation"),
+          service: formData.get("service"),
+          amount: formData.get("amount"),
+          serviceDate: formData.get("serviceDate"),
+          serviceTime: formData.get("serviceTime"),
+          description: formData.get("description"),
+          agreementUrl: formData.get("agreementUrl"),
+          paymentType
+        };
+
+        button.disabled = true;
+        button.textContent = "Creating...";
+        result.className = "result";
+        result.textContent = "";
+
+        try {
+          const endpoint = paymentType === "remaining_75"
+            ? "/api/stripe/checkout-session"
+            : "/api/quote/approval-link";
+          const response = await fetch(endpoint, {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+              "x-admin-token": adminToken
+            },
+            body: JSON.stringify(payload)
+          });
+          const data = await response.json();
+
+          if (!response.ok) {
+            throw new Error(data.error || "Could not create Stripe link.");
+          }
+
+          const link = data.approvalUrl || data.checkoutUrl;
+          const title = paymentType === "remaining_75"
+            ? "75% remaining balance payment link created."
+            : "25% deposit approval link created.";
+          const instructions = paymentType === "remaining_75"
+            ? "Send this link to the customer by email or text. They will pay the remaining 75% through Stripe without another agreement checkbox."
+            : "Send this link to the customer by email or text. They will agree to the terms and pay the 25% deposit through Stripe.";
+          result.innerHTML = `
+            <strong>${title}</strong>
+            <p>${instructions}</p>
+            <a href="${link}" target="_blank" rel="noopener">${link}</a>
+          `;
+          result.classList.add("show");
+        } catch (error) {
+          result.innerHTML = `<strong class="error">${error.message}</strong>`;
+          result.classList.add("show");
+        } finally {
+          button.disabled = false;
+          button.textContent = "Create Payment Link";
+        }
+      });
+    </script>
+  </body>
+</html>

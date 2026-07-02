@@ -1,0 +1,12 @@
+{
+  "rewrites": [
+    {
+      "source": "/api/cleaners/:id",
+      "destination": "/api/cleaners?id=:id"
+    },
+    {
+      "source": "/homepage",
+      "destination": "/index.html"
+    }
+  ]
+}

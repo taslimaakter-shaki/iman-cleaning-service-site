@@ -1,0 +1,198 @@
+<!-- @dsCard group="Website" viewport="1280x720" name="Service Detail" subtitle="Deep Cleaning — hero, what's included, FAQ" -->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Deep Cleaning in NYC | Iman Cleaning Service LLC</title>
+<meta name="description" content="Detailed deep cleaning for NYC homes and apartments — high-touch areas, buildup, and seasonal resets. Fully insured. Get a clear quote before you book.">
+<link rel="canonical" href="https://www.imancleaningservice.com/service-detail.html">
+<meta name="robots" content="index, follow, max-image-preview:large">
+<meta name="theme-color" content="#0b6474">
+<meta name="author" content="Iman Cleaning Service LLC">
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="Iman Cleaning Service LLC">
+<meta property="og:locale" content="en_US">
+<meta property="og:title" content="Deep Cleaning in NYC | Iman Cleaning Service LLC">
+<meta property="og:description" content="Detailed deep cleaning for NYC homes and apartments — high-touch areas, buildup, and seasonal resets. Fully insured. Get a clear quote before you book.">
+<meta property="og:url" content="https://www.imancleaningservice.com/service-detail.html">
+<meta property="og:image" content="https://www.imancleaningservice.com/brand-card.png">
+<meta property="og:image:alt" content="Iman Cleaning Service LLC — NYC residential & commercial cleaning">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="Deep Cleaning in NYC | Iman Cleaning Service LLC">
+<meta name="twitter:description" content="Detailed deep cleaning for NYC homes and apartments — high-touch areas, buildup, and seasonal resets. Fully insured. Get a clear quote before you book.">
+<meta name="twitter:image" content="https://www.imancleaningservice.com/brand-card.png">
+<link rel="stylesheet" href="./design-system.css">
+<link rel="stylesheet" href="./site.css">
+
+<!-- SEO: Service + breadcrumb + FAQ structured data. Keep in sync with visible content. -->
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "Service",
+  "serviceType": "Deep Cleaning",
+  "name": "Deep Cleaning in NYC",
+  "description": "Detailed, top-to-bottom deep cleaning for NYC homes and apartments — high-touch areas, buildup, grout, baseboards, and seasonal resets.",
+  "provider": {
+    "@type": "CleaningService",
+    "name": "Iman Cleaning Service LLC",
+    "telephone": "+1-929-803-4053",
+    "url": "https://www.imancleaningservice.com/"
+  },
+  "areaServed": [
+    { "@type": "City", "name": "Manhattan" },
+    { "@type": "City", "name": "Brooklyn" },
+    { "@type": "City", "name": "Queens" },
+    { "@type": "City", "name": "The Bronx" },
+    { "@type": "City", "name": "Staten Island" }
+  ],
+  "offers": {
+    "@type": "Offer",
+    "priceCurrency": "USD",
+    "price": "280",
+    "description": "Starting at $280. Final price confirmed from your space details before booking."
+  }
+}
+</script>
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "BreadcrumbList",
+  "itemListElement": [
+    { "@type": "ListItem", "position": 1, "name": "Services", "item": "https://www.imancleaningservice.com/services-hub.html" },
+    { "@type": "ListItem", "position": 2, "name": "Deep Cleaning", "item": "https://www.imancleaningservice.com/service-detail.html" }
+  ]
+}
+</script>
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "FAQPage",
+  "mainEntity": [
+    { "@type": "Question", "name": "How is a deep clean different from standard?",
+      "acceptedAnswer": { "@type": "Answer", "text": "A deep clean covers buildup and detail work a standard clean skips — grout, baseboards, inside appliances, and high-touch surfaces — and usually takes more time and a larger team." } },
+    { "@type": "Question", "name": "Do you need photos before quoting?",
+      "acceptedAnswer": { "@type": "Answer", "text": "Photos help. For deep cleans they let us estimate time and team size more accurately, so the quote reflects the real condition of the space." } },
+    { "@type": "Question", "name": "Is this a good first appointment?",
+      "acceptedAnswer": { "@type": "Answer", "text": "Yes. Many customers start with a deep clean, then move to standard recurring visits to keep the space fresh." } }
+  ]
+}
+</script>
+</head>
+<body>
+<div id="root"></div>
+<script src="https://unpkg.com/react@18.3.1/umd/react.development.js" integrity="sha384-hD6/rw4ppMLGNu3tX5cjIb+uRZ7UkRJ6BPkLpg4hAu/6onKUg4lLsHAs9EBPT82L" crossorigin="anonymous"></script>
+<script src="https://unpkg.com/react-dom@18.3.1/umd/react-dom.development.js" integrity="sha384-u6aeetuaXnQ38mYT8rp6sbXaQe3NL9t+IBXmnYxwkUI2Hw4bsp2Wvmx4yRQF1uAm" crossorigin="anonymous"></script>
+<script src="https://unpkg.com/@babel/standalone@7.29.0/babel.min.js" integrity="sha384-m08KidiNqLdpJqLq95G/LEi8Qvjl/xUYll3QILypMoQ65QorJ9Lvtp2RXYGBFj1y" crossorigin="anonymous"></script>
+<script src="./_ds_bundle.js"></script>
+<script src="./data.js"></script>
+<script type="text/babel" src="./chrome.jsx"></script>
+<script type="text/babel">
+const mount = () => {
+  if (!window.ImanChrome) return setTimeout(mount, 30);
+  const { Button, Badge, FaqItem } = window.ImanCleaningDesignSystem_5652ad;
+  const { Icon, Header, Footer } = window.ImanChrome;
+  const D = window.IMAN_DATA;
+
+  const included = [
+    ["Kitchen, top to bottom", "Inside microwave, around appliances, backsplash, sinks"],
+    ["Bathrooms, fully detailed", "Tile, grout lines, fixtures, mirrors, and floors"],
+    ["High-touch surfaces", "Switches, handles, baseboards, and trim wiped down"],
+    ["Dusting, including reach", "Vents, sills, ledges, blinds, and ceiling corners"],
+    ["Floors throughout", "Vacuumed and mopped across every room"],
+    ["Buildup & neglected spots", "The areas a standard clean usually skips"],
+  ];
+  const faqs = [
+    { q: "How is a deep clean different from standard?", a: "A deep clean covers buildup and detail work a standard clean skips — grout, baseboards, inside appliances, and high-touch surfaces — and usually takes more time and a larger team.", open: true },
+    { q: "Do you need photos before quoting?", a: "Photos help. For deep cleans they let us estimate time and team size more accurately, so the quote reflects the real condition of the space." },
+    { q: "Is this a good first appointment?", a: "Yes. Many customers start with a deep clean, then move to standard recurring visits to keep the space fresh." },
+  ];
+
+  function Page() {
+    return (<>
+      <Header active="services" onDark />
+      <section className="page-hero on-photo" style={{ "--hero-img": "url('./contact-kitchen-hero.jpg')" }}>
+        <div className="ds-shell page-hero-inner">
+          <div className="breadcrumbs"><a href="./services-hub.html">Services</a><span>/</span><span>Deep Cleaning</span></div>
+          <span className="ds-kicker">Residential · NYC</span>
+          <h1>Deep Cleaning</h1>
+          <p className="ds-lead">For first-time cleanings, seasonal resets, and heavier buildup — a detailed, top-to-bottom clean of every room.</p>
+          <div className="page-hero-badges">
+            <Badge tone="leaf" check size="md">Fully insured</Badge>
+            <Badge tone="solid" size="md">Starting at $280</Badge>
+            <Badge tone="solid" size="md">All 5 boroughs</Badge>
+          </div>
+          <div className="page-hero-actions">
+            <Button href={D.phoneHref} variant="accent" size="lg" iconLeft={<Icon name="phone" size={18} />}>Call us</Button>
+            <Button href={"sms:" + D.phone.replace(/[^0-9]/g, "")} variant="secondary" size="lg" iconLeft={<Icon name="message" size={18} stroke="var(--brand)" />}>Text us</Button>
+          </div>
+        </div>
+      </section>
+
+      <section className="section">
+        <div className="ds-shell content-split">
+          <div className="prose">
+            <span className="ds-kicker">What's included</span>
+            <h2>A detailed clean of the whole space</h2>
+            <p>Deep cleaning goes beyond the weekly reset. Our insured team works through the spots
+              that collect buildup over time, so the home feels genuinely restored — not just tidied.</p>
+            <div className="included-grid">
+              {included.map(([t, s]) => (
+                <div className="included-item" key={t}>
+                  <svg width="20" height="20" viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="11" fill="var(--leaf-100)"/><path d="M17 9l-5.5 5.5L8 11" stroke="var(--leaf-700)" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/></svg>
+                  <div><strong>{t}</strong><span>{s}</span></div>
+                </div>
+              ))}
+            </div>
+            <h3 style={{ marginTop: 22 }}>Good to know</h3>
+            <ul>
+              <li><Icon name="check" size={18} stroke="var(--leaf-600)" />Photos of the space help us size the team and confirm timing.</li>
+              <li><Icon name="check" size={18} stroke="var(--leaf-600)" />Scope and total are reviewed before the appointment is confirmed.</li>
+              <li><Icon name="check" size={18} stroke="var(--leaf-600)" />Available 6:00 AM – 8:00 PM, seven days a week.</li>
+            </ul>
+          </div>
+          <aside className="aside-card brand">
+            <span className="ds-kicker" style={{ color: "var(--leaf-300)" }}>Deep Cleaning</span>
+            <div className="aside-price">Starting at $280</div>
+            <p>Final price is confirmed from your space details before anything is booked — no surprises.</p>
+            <ul className="aside-list">
+              <li><Icon name="check" size={16} stroke="var(--leaf-300)" />Fully insured team</li>
+              <li><Icon name="check" size={16} stroke="var(--leaf-300)" />Clear quote first</li>
+              <li><Icon name="check" size={16} stroke="var(--leaf-300)" />Flexible scheduling</li>
+            </ul>
+            <Button href="./quote.html" variant="accent" fullWidth size="lg">Get a clear quote</Button>
+            <Button href={D.phoneHref} variant="ghost" fullWidth style={{ color: "#fff" }}>Call or text {D.phone}</Button>
+          </aside>
+        </div>
+      </section>
+
+      <section className="section section-wash">
+        <div className="ds-shell faq-wrap">
+          <div className="sec-head sec-head-center">
+            <span className="ds-kicker">Deep cleaning questions</span>
+            <h2>What people ask before booking</h2>
+          </div>
+          <div className="faq-list">
+            {faqs.map((f) => <FaqItem key={f.q} question={f.q} defaultOpen={f.open}>{f.a}</FaqItem>)}
+          </div>
+        </div>
+      </section>
+
+      <section className="final-cta">
+        <div className="ds-shell final-inner">
+          <span className="ds-kicker" style={{ color: "var(--leaf-300)" }}>Ready when you are</span>
+          <h2>Book a deep clean — no commitment until you approve the price.</h2>
+          <div className="final-actions">
+            <Button href={D.phoneHref} variant="accent" size="lg" iconLeft={<Icon name="phone" size={18} />}>Call or text {D.phone}</Button>
+          </div>
+        </div>
+      </section>
+      <Footer />
+    </>);
+  }
+  ReactDOM.createRoot(document.getElementById("root")).render(<Page />);
+};
+mount();
+</script>
+</body>
+</html>

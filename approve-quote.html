@@ -1,0 +1,451 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Approve Quote | Iman Cleaning Service LLC</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap"
+      rel="stylesheet"
+    />
+    <style>
+      :root {
+        --green: #075f5d;
+        --green-dark: #034341;
+        --ink: #1f2933;
+        --muted: #62717f;
+        --paper: #ffffff;
+        --soft: #f4f8f7;
+        --line: #d8e4e2;
+        --danger: #a93131;
+        --radius: 8px;
+      }
+
+      * {
+        box-sizing: border-box;
+      }
+
+      body {
+        margin: 0;
+        background: var(--soft);
+        color: var(--ink);
+        font-family: Inter, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      }
+
+      .shell {
+        width: min(880px, calc(100% - 32px));
+        margin: 0 auto;
+      }
+
+      header {
+        background: var(--green-dark);
+        color: #ffffff;
+        padding: 24px 0;
+      }
+
+      .brand {
+        display: flex;
+        align-items: center;
+        gap: 14px;
+        font-weight: 800;
+      }
+
+      .brand img {
+        width: 116px;
+        height: 52px;
+        border-radius: var(--radius);
+        background: #ffffff;
+        object-fit: contain;
+        padding: 5px 8px;
+      }
+
+      main {
+        padding: clamp(30px, 5vw, 58px) 0;
+      }
+
+      .panel {
+        border: 1px solid var(--line);
+        border-radius: var(--radius);
+        background: var(--paper);
+        padding: clamp(22px, 4vw, 40px);
+      }
+
+      h1 {
+        margin: 0 0 10px;
+        color: var(--green-dark);
+        font-size: clamp(2rem, 5vw, 3.4rem);
+        line-height: 1.05;
+      }
+
+      p {
+        margin: 0;
+        color: var(--muted);
+        line-height: 1.6;
+      }
+
+      .quote-summary {
+        display: grid;
+        gap: 12px;
+        margin: 26px 0;
+        border: 1px solid var(--line);
+        border-radius: var(--radius);
+        background: #f9fcfb;
+        padding: 18px;
+      }
+
+      .summary-row {
+        display: grid;
+        grid-template-columns: 150px 1fr;
+        gap: 12px;
+      }
+
+      .summary-row strong {
+        color: var(--green-dark);
+      }
+
+      form {
+        display: grid;
+        gap: 18px;
+      }
+
+      label {
+        display: grid;
+        gap: 8px;
+        font-weight: 800;
+      }
+
+      input[type="file"] {
+        width: 100%;
+        border: 1px solid var(--line);
+        border-radius: var(--radius);
+        padding: 12px;
+        font: inherit;
+      }
+
+      .agreement-check {
+        display: grid;
+        grid-template-columns: auto 1fr;
+        gap: 12px;
+        align-items: start;
+        border: 1px solid var(--line);
+        border-radius: var(--radius);
+        padding: 16px;
+      }
+
+      .agreement-reader {
+        display: grid;
+        gap: 12px;
+      }
+
+      .agreement-reader h2 {
+        margin: 0;
+        color: var(--green-dark);
+        font-size: 1.05rem;
+      }
+
+      .agreement-scroll {
+        max-height: min(420px, 56vh);
+        overflow-y: auto;
+        border: 1px solid var(--line);
+        border-radius: var(--radius);
+        background: #f9fcfb;
+        padding: 18px;
+        scroll-behavior: smooth;
+      }
+
+      .agreement-scroll .agreement {
+        border: 0;
+        background: transparent;
+        padding: 0;
+      }
+
+      .agreement-scroll:focus {
+        outline: 3px solid rgba(7, 95, 93, 0.18);
+        outline-offset: 2px;
+      }
+
+      .agreement-scroll section + section {
+        margin-top: 22px;
+        padding-top: 18px;
+        border-top: 1px solid var(--line);
+      }
+
+      .agreement-scroll h3 {
+        margin: 0 0 8px;
+        color: var(--green-dark);
+        font-size: 1rem;
+      }
+
+      .agreement-scroll p,
+      .agreement-scroll li {
+        color: var(--ink);
+      }
+
+      .agreement-scroll ul {
+        margin: 0;
+        padding-left: 20px;
+      }
+
+      .agreement-scroll li + li {
+        margin-top: 8px;
+      }
+
+      .agreement-unlock-note {
+        color: var(--muted);
+        font-size: 0.92rem;
+        font-weight: 700;
+      }
+
+      .agreement-unlock-note[data-ready="true"] {
+        color: var(--green-dark);
+      }
+
+      .payment-policy {
+        border: 1px solid rgba(7, 95, 93, 0.18);
+        border-radius: var(--radius);
+        background: #f9fcfb;
+        padding: 16px;
+        color: var(--green-dark);
+        font-weight: 800;
+      }
+
+      .agreement-check input {
+        margin-top: 4px;
+      }
+
+      .agreement-check:has(input:disabled) {
+        opacity: 0.68;
+      }
+
+      .agreement-check a {
+        color: var(--green-dark);
+        font-weight: 900;
+      }
+
+      button {
+        min-height: 48px;
+        width: fit-content;
+        border: 0;
+        border-radius: 999px;
+        background: var(--green);
+        color: #ffffff;
+        cursor: pointer;
+        font: inherit;
+        font-weight: 900;
+        padding: 0 24px;
+      }
+
+      button:disabled {
+        cursor: progress;
+        opacity: 0.7;
+      }
+
+      .status {
+        border: 1px solid var(--line);
+        border-radius: var(--radius);
+        background: #f9fcfb;
+        padding: 14px 16px;
+        color: var(--green-dark);
+        font-weight: 800;
+      }
+
+      .status[data-status="error"] {
+        border-color: rgba(169, 49, 49, 0.28);
+        background: #fff5f5;
+        color: var(--danger);
+      }
+
+      @media (max-width: 680px) {
+        .summary-row {
+          grid-template-columns: 1fr;
+          gap: 2px;
+        }
+
+        button {
+          width: 100%;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <header>
+      <div class="shell brand">
+        <img src="assets/iman-logo.png" alt="Iman Cleaning Service LLC" />
+        <span>Approve Quote</span>
+      </div>
+    </header>
+
+    <main>
+      <section class="shell panel">
+        <h1>Review and approve your cleaning quote</h1>
+        <p>Before payment, please review your quote and agree to the service agreement.</p>
+
+        <div class="quote-summary" id="quoteSummary"></div>
+
+        <form id="approvalForm">
+          <section class="agreement-reader" aria-labelledby="agreementReaderTitle">
+            <h2 id="agreementReaderTitle">Service agreement</h2>
+            <p>Scroll through the agreement below before checking the agreement box. You can also <a id="agreementLink" href="agreement.html" target="_blank" rel="noopener">open the full agreement in a new tab</a>.</p>
+            <div class="agreement-scroll" id="agreementScroll" tabindex="0" aria-label="Scrollable service agreement">
+              <p>Loading service agreement...</p>
+            </div>
+            <p class="agreement-unlock-note" id="agreementUnlockNote">Scroll to the bottom of the agreement to unlock the checkbox.</p>
+          </section>
+
+          <label class="agreement-check">
+            <input name="agreementAccepted" type="checkbox" required disabled />
+            <span>
+              I have read, understood, and agree to the Iman Cleaning Service LLC Service Agreement.
+            </span>
+          </label>
+          <input name="agreementScrolled" type="hidden" value="false" />
+
+          <p class="payment-policy">
+            By continuing, you agree that a 25% deposit of the total service price is collected now to secure the appointment. The appointment is not confirmed until the deposit has been received. The remaining balance is due immediately upon completion of service unless otherwise agreed in writing. If you cancel less than 48 hours before the scheduled appointment, the 25% deposit is non-refundable. Stripe may offer card, Apple Pay, or Google Pay depending on your device and wallet settings.
+          </p>
+
+          <button type="submit">Continue to Secure Payment</button>
+          <div class="status" id="status" role="status" aria-live="polite" hidden></div>
+        </form>
+      </section>
+    </main>
+
+    <script>
+      const params = new URLSearchParams(window.location.search);
+      const token = params.get("token") || "";
+      const summary = document.querySelector("#quoteSummary");
+      const form = document.querySelector("#approvalForm");
+      const statusBox = document.querySelector("#status");
+      const agreementLink = document.querySelector("#agreementLink");
+      const agreementScroll = document.querySelector("#agreementScroll");
+      const agreementUnlockNote = document.querySelector("#agreementUnlockNote");
+
+      function decodeTokenPayload(value) {
+        const encoded = String(value).split(".")[0] || "";
+        const normalized = encoded.replace(/-/g, "+").replace(/_/g, "/");
+        const json = atob(normalized.padEnd(normalized.length + ((4 - normalized.length % 4) % 4), "="));
+        return JSON.parse(json);
+      }
+
+      function money(cents) {
+        return new Intl.NumberFormat("en-US", {
+          style: "currency",
+          currency: "USD"
+        }).format(Number(cents || 0) / 100);
+      }
+
+      function percentAmount(cents, percent) {
+        return Math.max(1, Math.round(Number(cents || 0) * percent));
+      }
+
+      function setStatus(message, type = "info") {
+        statusBox.hidden = false;
+        statusBox.dataset.status = type;
+        statusBox.textContent = message;
+      }
+
+      function unlockAgreementIfScrolled() {
+        if (!agreementScroll || !form) return;
+        const isAtBottom = agreementScroll.scrollTop + agreementScroll.clientHeight >= agreementScroll.scrollHeight - 8;
+        if (!isAtBottom) return;
+
+        form.agreementAccepted.disabled = false;
+        form.agreementScrolled.value = "true";
+        if (agreementUnlockNote) {
+          agreementUnlockNote.dataset.ready = "true";
+          agreementUnlockNote.textContent = "Agreement reviewed. You can now check the box.";
+        }
+      }
+
+      if (agreementScroll) {
+        agreementScroll.addEventListener("scroll", unlockAgreementIfScrolled);
+        window.addEventListener("load", unlockAgreementIfScrolled);
+      }
+
+      async function loadAgreement() {
+        if (!agreementScroll) return;
+        try {
+          const response = await fetch(agreementLink.href);
+          if (!response.ok) throw new Error("Agreement could not be loaded.");
+          const html = await response.text();
+          const doc = new DOMParser().parseFromString(html, "text/html");
+          const agreement = doc.querySelector(".agreement");
+          if (!agreement) throw new Error("Agreement content could not be found.");
+          agreementScroll.innerHTML = "";
+          agreementScroll.appendChild(agreement);
+          agreementScroll.scrollTop = 0;
+          unlockAgreementIfScrolled();
+        } catch (error) {
+          agreementScroll.innerHTML = "<p>Please open the full agreement link above, then return to this page to continue.</p>";
+          setStatus(error.message || "Service agreement could not be loaded.", "error");
+        }
+      }
+
+      let quote = null;
+      try {
+        quote = decodeTokenPayload(token);
+        if (quote.agreementUrl) {
+          agreementLink.href = quote.agreementUrl;
+        }
+        loadAgreement();
+        const depositCents = percentAmount(quote.amountCents, 0.25);
+        const remainingCents = Math.max(0, Number(quote.amountCents || 0) - depositCents);
+        summary.innerHTML = `
+          <div class="summary-row"><strong>Quote ID</strong><span>${quote.quoteId || ""}</span></div>
+          <div class="summary-row"><strong>Customer</strong><span>${quote.customerName || ""}</span></div>
+          <div class="summary-row"><strong>Location</strong><span>${quote.serviceLocation || ""}</span></div>
+          <div class="summary-row"><strong>Service</strong><span>${quote.service || ""}</span></div>
+          <div class="summary-row"><strong>Service date</strong><span>${quote.serviceDate || ""}</span></div>
+          <div class="summary-row"><strong>Start time</strong><span>${quote.serviceTime || ""}</span></div>
+          <div class="summary-row"><strong>Total price</strong><span>${money(quote.amountCents)}</span></div>
+          <div class="summary-row"><strong>Due now</strong><span>${money(depositCents)} 25% deposit</span></div>
+          <div class="summary-row"><strong>Remaining balance</strong><span>${money(remainingCents)} due separately</span></div>
+          <div class="summary-row"><strong>Description</strong><span>${quote.description || "Cleaning service quote"}</span></div>
+        `;
+      } catch (error) {
+        summary.innerHTML = "<strong>This quote link is invalid. Please contact Iman Cleaning Service LLC for a new link.</strong>";
+        form.hidden = true;
+      }
+
+      form.addEventListener("submit", async (event) => {
+        event.preventDefault();
+        if (!form.reportValidity()) return;
+        if (form.agreementScrolled.value !== "true") {
+          setStatus("Please scroll to the bottom of the service agreement before checking out.", "error");
+          agreementScroll?.focus();
+          return;
+        }
+
+        const button = form.querySelector("button");
+
+        button.disabled = true;
+        button.textContent = "Preparing payment...";
+        setStatus("Preparing secure payment...", "info");
+
+        try {
+          const formData = new FormData();
+          formData.append("token", token);
+          formData.append("agreementScrolled", form.agreementScrolled.value);
+          formData.append("agreementAccepted", form.agreementAccepted.checked ? "true" : "false");
+
+          const response = await fetch("/api/quote/approve-checkout", {
+            method: "POST",
+            body: formData
+          });
+          const data = await response.json().catch(() => ({}));
+          if (!response.ok) {
+            throw new Error(data.error || "Payment could not be prepared.");
+          }
+
+          window.location.href = data.checkoutUrl;
+        } catch (error) {
+          setStatus(error.message || "Payment could not be prepared. Please try again.", "error");
+          button.disabled = false;
+          button.textContent = "Continue to Secure Payment";
+        }
+      });
+    </script>
+  </body>
+</html>

@@ -1,0 +1,41 @@
+/* ===========================================================================
+   Iman Cleaning Service — Typography tokens
+   =========================================================================== */
+
+:root {
+  /* Families */
+  --font-display: "Bricolage Grotesque", "DM Sans", system-ui, sans-serif;
+  --font-sans:    "DM Sans", system-ui, -apple-system, Segoe UI, sans-serif;
+
+  /* Weights */
+  --fw-regular: 400; /* @kind font */
+  --fw-medium:  500; /* @kind font */
+  --fw-semibold: 600; /* @kind font */
+  --fw-bold:    700; /* @kind font */
+  --fw-extra:   800; /* @kind font */
+
+  /* Fluid type scale (mobile → desktop) */
+  --text-display: clamp(2.9rem, 6vw, 5rem);   /* hero H1 */
+  --text-h1:      clamp(2.4rem, 4.6vw, 3.6rem);
+  --text-h2:      clamp(1.9rem, 3.4vw, 2.7rem);
+  --text-h3:      clamp(1.3rem, 2vw, 1.6rem);
+  --text-h4:      clamp(1.1rem, 1.5vw, 1.25rem);
+  --text-lead:    clamp(1.08rem, 1.6vw, 1.3rem); /* intro paragraphs */
+  --text-body-lg: 1.0625rem;
+  --text-base:    1rem;
+  --text-sm:      0.9375rem;
+  --text-xs:      0.8125rem;
+  --text-kicker:  0.78rem; /* eyebrow / label */
+
+  /* Line heights */
+  --leading-tight: 1.04;
+  --leading-snug:  1.2;
+  --leading-normal: 1.5;
+  --leading-relaxed: 1.7;
+
+  /* Letter spacing */
+  --tracking-tight: -0.02em;
+  --tracking-normal: 0;
+  --tracking-wide: 0.04em;
+  --tracking-kicker: 0.12em; /* uppercase eyebrows */
+}

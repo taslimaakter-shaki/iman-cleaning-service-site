@@ -1,2 +1,16 @@
 .DS_Store
 .vercel
+node_modules/
+supabase/.temp/
+ios/
+video-edits/
+nyc_apartment_contacts_work/
+*-qa.png
+scripts/
+flyer.svg
+home-hero-cleaners.png
+iman-logo-mark.png
+iman-logo-source.png
+make_cleaning_video.swift
+stripe-quote-workflow.md
+weekly-flyer-01.png
