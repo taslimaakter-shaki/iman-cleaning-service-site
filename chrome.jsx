@@ -32,7 +32,7 @@
     return <svg {...p} aria-hidden="true" style={{ flexShrink: 0 }}>{paths[name]}</svg>;
   };
 
-  function Header({ active, onDark = false }) {
+  function Header({ active, onDark = false, homepage = false }) {
     const [scrolled, setScrolled] = React.useState(false);
     const [open, setOpen] = React.useState(false);
     React.useEffect(() => {
@@ -41,31 +41,60 @@
       onScroll();
       return () => window.removeEventListener("scroll", onScroll);
     }, []);
-    const nav = [
+    const nav = homepage ? [
+      { label: "Services", href: "./services-hub.html", key: "services" },
+      { label: "Why Iman", href: "./why-us.html", key: "why" },
+      { label: "Service Areas", href: "./areas.html", key: "areas" },
+      { label: "Careers", href: "./careers.html", key: "careers" },
+      { label: "FAQs", href: "./faq.html", key: "faq" },
+      { label: "Contact", href: "./contact.html", key: "contact" },
+    ] : [
       { label: "Our Services", href: "./services-hub.html", key: "services" },
       { label: "Why us", href: "./why-us.html", key: "why" },
-      { label: "Service areas", href: "./areas.html", key: "areas" },
-      { label: "Our work", href: "./our-work.html", key: "work" },
-      { label: "Contact", href: "./contact.html", key: "contact" },
+      { label: "Service Areas", href: "./areas.html", key: "areas" },
+      { label: "Careers", href: "./careers.html", key: "careers" },
+      { label: "FAQs", href: "./faq.html", key: "faq" },
+      { label: "Contact us", href: "./contact.html", key: "contact" },
     ];
     return (
-      <header className={"site-header" + (scrolled ? " is-scrolled" : "") + (onDark ? " on-dark" : "")}>
+      <header className={"site-header" + (scrolled ? " is-scrolled" : "") + (onDark ? " on-dark" : "") + (homepage ? " is-homepage" : "")}>
         <div className="hdr-inner ds-shell">
-          <a href="./index.html" className="hdr-brand">
-            <span className="hdr-mark" />
-            <span className="hdr-words"><strong>IMAN</strong><small>Cleaning Service LLC</small></span>
+          <a href="./index.html" className="hdr-brand" aria-label="Iman Cleaning Service LLC home">
+            <img className="hdr-mark" src="./assets/iman-logo-icon.png?v=20260727-clean-header-logo" alt="Iman Cleaning Service LLC" width="46" height="46" decoding="async" />
+            <span className="hdr-words" aria-hidden="true"><strong>IMAN</strong><small>Cleaning Service LLC</small></span>
           </a>
-          <nav className="hdr-nav" data-open={open}>
+          <nav className="hdr-nav" data-open={open} aria-label="Primary navigation">
             {nav.map((n) => (
-              <a key={n.key} href={n.href}
-                style={active === n.key ? { color: "var(--brand)" } : undefined}>{n.label}</a>
+              <a key={n.key} href={n.href} aria-current={active === n.key ? "page" : undefined}
+                onClick={() => setOpen(false)}>{n.label}</a>
             ))}
+            <div className="hdr-mobile-actions">
+              <Button href="./login.html" variant="secondary" size="sm" fullWidth
+                aria-label="Log in to your customer account">Log In</Button>
+              <Button href="./book-now.html" variant="accent" size="sm" fullWidth
+                aria-label="Book cleaning online" data-conv="book">Book Online</Button>
+            </div>
           </nav>
           <div className="hdr-actions">
-            <a className="hdr-phone" href={D.phoneHref}><Icon name="phone" size={18} stroke="var(--brand)" />{D.phone}</a>
-            <Button href={D.phoneHref} variant="primary" size="sm">Call us to book!</Button>
-            <button className="hdr-burger" aria-label="Menu" aria-expanded={open} onClick={() => setOpen(!open)}>
-              <Icon name="menu" stroke={onDark && !scrolled ? "#fff" : "var(--ink)"} />
+            {homepage ? (
+              <>
+                <Button href="./login.html" variant="secondary" size="sm"
+                  aria-label="Log in to your customer account">Log In</Button>
+                <Button href="./book-now.html" variant="accent" size="sm"
+                  aria-label="Book cleaning online" data-conv="book">Book Online</Button>
+              </>
+            ) : (
+              <>
+                <Button href="./login.html" variant="secondary" size="sm"
+                  aria-label="Log in to your customer account">Log In</Button>
+                <Button href="./book-now.html" variant="accent" size="sm"
+                  aria-label="Book cleaning online" data-conv="book">Book Online</Button>
+              </>
+            )}
+            <button className="hdr-burger" aria-label={open ? "Close navigation menu" : "Open navigation menu"}
+              aria-expanded={open} onClick={() => setOpen(!open)}>
+              <span>Menu</span>
+              <Icon name="menu" size={22} stroke="currentColor" />
             </button>
           </div>
         </div>
@@ -75,10 +104,10 @@
 
   function Footer() {
     const contacts = [
-      { icon: "mail", h: "Email us", v: "Info@imancleaningservice.com" },
-      { icon: "pin", h: "Service area", v: "All five NYC boroughs — Manhattan, Queens, Brooklyn, Staten Island and Bronx" },
-      { icon: "phone", h: "Call or text", v: ["929-803-4053", "636-253-2035"] },
-      { icon: "clock", h: "Business hours", v: "6 AM – 8 PM · 7 days" },
+      { icon: "mail", h: "Email us", v: "Info@imancleaningservice.com", href: "mailto:Info@imancleaningservice.com" },
+      { icon: "pin", h: "Service area", v: "Queens, New York City, and select Long Island communities", href: "./areas.html" },
+      { icon: "phone", h: "Call us", v: "929-803-4053", href: "tel:+19298034053" },
+      { icon: "clock", h: "Business hours", v: "8 AM – 8 PM · 7 days" },
     ];
     const socials = [
       { name: "Instagram", href: "https://www.instagram.com/imancleaningservicellc/",
@@ -102,33 +131,43 @@
     );
     return (
       <>
-      <a className="floating-cta" href="./quote.html" aria-label="Get my free estimate">
-        <Icon name="sparkle" size={19} stroke="currentColor" />
-        Get my free estimate
-      </a>
-      <footer className="site-footer">
+      <footer className="site-footer" aria-label="Website footer">
         <div className="ds-shell">
           <div className="footer-brand">
-            <span className="footer-mark" />
+            <span className="footer-mark" aria-hidden="true" />
             <div><strong>Iman Cleaning Service LLC</strong><span>Residential &amp; commercial cleaning</span></div>
           </div>
           <div className="footer-grid">
             {contacts.map((c) => (
               <div key={c.h} className="footer-cell">
-                <span className="footer-ico"><Icon name={c.icon} size={20} stroke="#fff" /></span>
+                <span className="footer-ico" aria-hidden="true"><Icon name={c.icon} size={20} stroke="#fff" /></span>
                 <h4>{c.h}</h4>
-                {Array.isArray(c.v)
-                  ? c.v.map((n) => <p key={n}><a href={"tel:" + n.replace(/[^0-9]/g, "")} style={{ color: "#fff" }}>{n}</a></p>)
-                  : <p>{c.v}</p>}
+                <p>{c.href ? <a href={c.href}>{c.v}</a> : c.v}</p>
               </div>
             ))}
+          </div>
+          <div className="footer-location">
+            <div className="footer-location-map">
+              <iframe
+                title="Map showing Iman Cleaning Service LLC in Queens, New York"
+                src="https://www.google.com/maps?q=Iman%20Cleaning%20Service%20LLC%2C%20Queens%2C%20NY&output=embed"
+                loading="lazy"
+                referrerPolicy="no-referrer-when-downgrade"
+              />
+            </div>
+            <div className="footer-location-copy">
+              <h4>Our location</h4>
+              <address>Queens, New York City, and select Long Island communities</address>
+              <a href="https://www.google.com/maps/search/?api=1&query=Iman%20Cleaning%20Service%20LLC%20Queens%20NY"
+                target="_blank" rel="noopener noreferrer">View on Google Maps</a>
+            </div>
           </div>
           <div className="footer-follow">
             <h4>Follow us for more</h4>
             <div className="social-row">
               {socials.map((s) => (
                 <a key={s.name} className={"social-ico" + (s.google ? " is-google" : "")} href={s.href}
-                  target="_blank" rel="noreferrer" aria-label={s.name}
+                  target="_blank" rel="noopener noreferrer" aria-label={s.name}
                   style={{ background: s.bg, color: s.fg }}>
                   {s.google ? <Google /> : (
                     <svg width="22" height="22" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d={s.path} /></svg>
@@ -139,6 +178,11 @@
           </div>
           <div className="footer-bottom">
             <span>© 2026 Iman Cleaning Service LLC. All rights reserved.</span>
+            <nav className="footer-legal" aria-label="Legal">
+              <a href="./careers.html">Careers</a>
+              <a href="./privacy-policy.html">Privacy Policy</a>
+              <a href="./sms-terms.html">SMS Terms</a>
+            </nav>
           </div>
         </div>
       </footer>

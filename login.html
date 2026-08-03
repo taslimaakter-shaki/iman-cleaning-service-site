@@ -1,526 +1,123 @@
 <!doctype html>
 <html lang="en">
-  <head>
-    <meta charset="utf-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <title>Iman Login | IMAN CLEANING SERVICE LLC</title>
-    <link rel="preconnect" href="https://fonts.googleapis.com" />
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-    <link
-      href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap"
-      rel="stylesheet"
-    />
-    <style>
-      :root {
-        --green: #075f5d;
-        --green-dark: #034341;
-        --green-deep: #022f2e;
-        --green-card: #086b66;
-        --white: #ffffff;
-        --ink: #202124;
-        --muted: rgba(255, 255, 255, 0.78);
-        --line: rgba(255, 255, 255, 0.34);
-        --radius: 8px;
-      }
-
-      * {
-        box-sizing: border-box;
-      }
-
-      body {
-        margin: 0;
-        background: var(--green-deep);
-        color: var(--white);
-        font-family: Inter, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
-      }
-
-      a {
-        color: inherit;
-        text-decoration: none;
-      }
-
-      .shell {
-        width: min(1360px, calc(100% - 48px));
-        margin: 0 auto;
-      }
-
-      .topbar {
-        background: var(--green-dark);
-      }
-
-      .nav {
-        display: grid;
-        grid-template-columns: auto 1fr auto;
-        min-height: 88px;
-        align-items: center;
-        gap: 34px;
-      }
-
-      .brand-logo {
-        display: block;
-        width: 126px;
-        height: 56px;
-        border-radius: var(--radius);
-        background: var(--white);
-        object-fit: contain;
-        padding: 5px 8px;
-      }
-
-      .nav-links,
-      .nav-actions {
-        display: flex;
-        align-items: center;
-        gap: clamp(16px, 2vw, 30px);
-        color: rgba(255, 255, 255, 0.9);
-        font-size: 0.98rem;
-        font-weight: 800;
-        white-space: nowrap;
-      }
-
-      .nav-actions {
-        justify-content: flex-end;
-      }
-
-      .signup {
-        display: inline-flex;
-        min-height: 46px;
-        align-items: center;
-        justify-content: center;
-        border-radius: 999px;
-        padding: 0 22px;
-        color: var(--green-dark);
-        background: var(--white);
-        font-weight: 900;
-      }
-
-      .hero {
-        background: var(--white);
-        color: var(--ink);
-      }
-
-      .hero-grid {
-        display: grid;
-        grid-template-columns: minmax(0, 0.82fr) minmax(420px, 1fr);
-        gap: clamp(44px, 7vw, 116px);
-        min-height: 500px;
-        align-items: center;
-        padding: clamp(70px, 9vw, 124px) 0;
-      }
-
-      h1,
-      h2,
-      h3,
-      p {
-        margin: 0;
-      }
-
-      h1 {
-        max-width: 610px;
-        font-size: clamp(3.1rem, 6vw, 5.8rem);
-        line-height: 1.05;
-        letter-spacing: 0;
-      }
-
-      .hero-art {
-        display: grid;
-        min-height: 240px;
-        place-items: center;
-        border-radius: 999px 999px 16px 16px;
-        background:
-          radial-gradient(circle at 74% 32%, rgba(143, 194, 85, 0.62), transparent 12%),
-          linear-gradient(135deg, #0b7771, #8fc255);
-      }
-
-      .hero-art img {
-        display: block;
-        width: min(390px, 78%);
-        height: auto;
-        border-radius: var(--radius);
-        background: var(--white);
-        object-fit: contain;
-        padding: 16px 20px;
-      }
-
-      .access-band {
-        background: var(--green-deep);
-        padding: clamp(60px, 8vw, 96px) 0 clamp(88px, 10vw, 132px);
-      }
-
-      .access-grid {
-        display: grid;
-        grid-template-columns: repeat(2, minmax(0, 1fr));
-        gap: clamp(28px, 4vw, 64px);
-      }
-
-      .access-link {
-        display: grid;
-        grid-template-columns: 1fr auto;
-        gap: 20px;
-        align-items: start;
-        border-bottom: 2px solid rgba(255, 255, 255, 0.68);
-        padding: 0 0 54px;
-        transition: border-color 180ms ease, transform 180ms ease;
-      }
-
-      .access-link:hover {
-        border-color: var(--white);
-        transform: translateY(-3px);
-      }
-
-      .access-link h2 {
-        font-size: clamp(2.4rem, 5vw, 4.5rem);
-        line-height: 1;
-      }
-
-      .access-link p {
-        max-width: 520px;
-        margin-top: 16px;
-        color: var(--muted);
-        font-size: 1.04rem;
-        line-height: 1.6;
-      }
-
-      .arrow {
-        font-size: clamp(3rem, 5vw, 5rem);
-        line-height: 0.82;
-        transition: transform 180ms ease;
-      }
-
-      .access-link:hover .arrow {
-        transform: translateX(8px);
-      }
-
-      .footer {
-        background: var(--green-deep);
-        padding: clamp(50px, 6vw, 80px) 0 44px;
-      }
-
-      .footer-logo {
-        display: block;
-        width: 185px;
-        height: 90px;
-        border-radius: var(--radius);
-        background: var(--white);
-        object-fit: contain;
-        padding: 10px 14px;
-      }
-
-      .help-link {
-        display: inline-block;
-        margin: 34px 0 clamp(70px, 8vw, 112px);
-        color: rgba(255, 255, 255, 0.9);
-        font-size: 1.18rem;
-        font-weight: 700;
-      }
-
-      .footer-grid {
-        display: grid;
-        grid-template-columns: repeat(4, minmax(0, 1fr));
-        gap: clamp(34px, 7vw, 100px);
-      }
-
-      .footer-column h3 {
-        margin: 0 0 28px;
-        font-size: 1.25rem;
-        line-height: 1.2;
-      }
-
-      .footer-column a {
-        display: block;
-        margin-top: 20px;
-        color: rgba(255, 255, 255, 0.82);
-        font-size: 1rem;
-        font-weight: 600;
-        line-height: 1.35;
-      }
-
-      .footer-meta {
-        display: grid;
-        grid-template-columns: 1fr auto;
-        gap: 24px;
-        align-items: end;
-        margin-top: clamp(80px, 8vw, 122px);
-      }
-
-      .socials,
-      .stores,
-      .locale,
-      .legal {
-        display: flex;
-        flex-wrap: wrap;
-        align-items: center;
-        gap: 22px;
-      }
-
-      .socials a {
-        display: grid;
-        width: 26px;
-        height: 26px;
-        place-items: center;
-        border-radius: 4px;
-        color: var(--green-dark);
-        background: var(--white);
-        font-size: 0.74rem;
-        font-weight: 900;
-      }
-
-      .stores {
-        margin-top: 58px;
-      }
-
-      .store {
-        display: grid;
-        min-width: 164px;
-        min-height: 52px;
-        align-content: center;
-        border: 1px solid rgba(255, 255, 255, 0.62);
-        border-radius: var(--radius);
-        padding: 8px 14px;
-        line-height: 1.05;
-      }
-
-      .store small {
-        color: rgba(255, 255, 255, 0.78);
-        font-size: 0.68rem;
-        font-weight: 800;
-        text-transform: uppercase;
-      }
-
-      .store strong {
-        margin-top: 2px;
-        font-size: 1.12rem;
-      }
-
-      .locale {
-        justify-content: flex-end;
-        color: rgba(255, 255, 255, 0.9);
-        font-weight: 800;
-      }
-
-      .bottom {
-        display: grid;
-        grid-template-columns: 1fr auto;
-        gap: 24px;
-        align-items: center;
-        margin-top: 74px;
-        color: rgba(255, 255, 255, 0.58);
-        font-size: 0.9rem;
-      }
-
-      .legal {
-        gap: 34px;
-      }
-
-      @media (max-width: 980px) {
-        .nav {
-          grid-template-columns: 1fr;
-          gap: 16px;
-          padding: 18px 0;
-        }
-
-        .nav-links,
-        .nav-actions {
-          overflow-x: auto;
-          padding-bottom: 4px;
-        }
-
-        .hero-grid,
-        .access-grid,
-        .footer-meta,
-        .bottom {
-          grid-template-columns: 1fr;
-        }
-
-        .footer-grid {
-          grid-template-columns: repeat(2, minmax(0, 1fr));
-        }
-
-        .locale {
-          justify-content: flex-start;
-        }
-      }
-
-      @media (max-width: 620px) {
-        .shell {
-          width: min(100% - 24px, 1360px);
-        }
-
-        .brand-logo {
-          width: 112px;
-          height: 50px;
-        }
-
-        .nav-links,
-        .nav-actions {
-          gap: 14px;
-          font-size: 0.84rem;
-        }
-
-        .hero-grid {
-          min-height: auto;
-          padding: 54px 0 66px;
-        }
-
-        h1 {
-          font-size: clamp(2.8rem, 15vw, 4.4rem);
-        }
-
-        .hero-art {
-          min-height: 190px;
-        }
-
-        .access-link {
-          padding-bottom: 36px;
-        }
-
-        .footer-grid {
-          grid-template-columns: 1fr;
-        }
-
-        .store {
-          width: 100%;
-        }
-      }
-    </style>
-  </head>
-  <body>
-    <header class="topbar">
-      <nav class="shell nav" aria-label="Iman navigation">
-        <a href="index.html" aria-label="Iman Cleaning Service LLC home">
-          <img class="brand-logo" src="assets/iman-logo.png" alt="Iman Cleaning Service LLC" />
-        </a>
-
-        <div class="nav-links">
-          <a href="https://www.imancleaningservice.com">Client</a>
-          <a href="https://cleaner.imancleaningservice.com/login.html">Cleaner</a>
-          <a href="https://www.imancleaningservice.com">Business</a>
-          <a href="https://www.imancleaningservice.com">Services</a>
-          <a href="#company">About</a>
-        </div>
-
-        <div class="nav-actions">
-          <a href="#language">EN</a>
-          <a href="#support">Help</a>
-          <a href="#access">Log in</a>
-          <a class="signup" href="https://www.imancleaningservice.com">Sign up</a>
-        </div>
-      </nav>
-    </header>
-
-    <main>
-      <section class="hero">
-        <div class="shell hero-grid">
-          <h1>Log in to access your account</h1>
-          <div class="hero-art" aria-label="Iman account access illustration">
-            <img src="assets/iman-logo.png" alt="Iman Cleaning Service LLC" />
-          </div>
-        </div>
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Customer Login | Iman Cleaning Service LLC</title>
+  <meta name="description" content="Log in or create an Iman Cleaning Service customer account to manage appointments and invoices.">
+  <meta name="robots" content="noindex">
+  <link rel="stylesheet" href="./customer-account.css?v=20260730">
+  <script src="./account-auth-callback.js"></script>
+</head>
+<body class="account-page">
+  <header class="account-header">
+    <nav class="account-shell account-nav" aria-label="Account navigation">
+      <a class="account-brand" href="./index.html"><img src="./assets/iman-logo-icon.png" alt=""><span>Iman Cleaning Service LLC</span></a>
+      <div class="account-nav-links"><a href="./index.html">Home</a><a class="account-primary-link" href="./book-now.html">Book Online</a></div>
+    </nav>
+  </header>
+  <main class="account-shell account-main">
+    <div class="account-auth-grid">
+      <section class="account-intro">
+        <h1>Your clean home, organized in one place.</h1>
+        <p>Your account is optional. Use it to view appointments and PDF invoices, reschedule or cancel, and book another service faster.</p>
+        <ul class="account-benefits">
+          <li>Manage upcoming appointments</li>
+          <li>Download PDF invoices</li>
+          <li>Reschedule or cancel securely</li>
+          <li>See your booking history</li>
+        </ul>
       </section>
-
-      <section class="access-band" id="access">
-        <div class="shell access-grid">
-          <a class="access-link" href="https://www.imancleaningservice.com" aria-label="Continue to the Iman website">
-            <div>
-              <h2>Client</h2>
-              <p>Book trusted residential, commercial, Airbnb, deep, move-in, and recurring cleaning services.</p>
-            </div>
-            <span class="arrow" aria-hidden="true">-></span>
-          </a>
-
-          <a class="access-link" href="https://cleaner.imancleaningservice.com/login.html" aria-label="Continue to the Iman cleaner app">
-            <div>
-              <h2>Cleaner</h2>
-              <p>Accept local cleaning jobs, manage your schedule, upload proof, and track earnings.</p>
-            </div>
-            <span class="arrow" aria-hidden="true">-></span>
-          </a>
+      <section class="account-card" aria-labelledby="account-form-title">
+        <h2 id="account-form-title">Customer account</h2>
+        <div class="account-tabs" role="tablist" aria-label="Account action">
+          <button type="button" role="tab" aria-selected="true" data-tab="login">Log in</button>
+          <button type="button" role="tab" aria-selected="false" data-tab="signup">Create account</button>
         </div>
+        <form class="account-form" data-login-form novalidate>
+          <label>Email<input type="email" name="email" autocomplete="email" required></label>
+          <label>Password<input type="password" name="password" autocomplete="current-password" required></label>
+          <div class="account-status" data-login-status role="status"></div>
+          <button class="account-submit" type="submit">Log in</button>
+        </form>
+        <form class="account-form" data-signup-form novalidate hidden>
+          <label>Full name<input name="fullName" autocomplete="name" required></label>
+          <label>Email<input type="email" name="email" autocomplete="email" required></label>
+          <label>Mobile phone<input type="tel" name="phone" autocomplete="tel" required></label>
+          <label>Create password<input type="password" name="password" autocomplete="new-password" minlength="8" required></label>
+          <p class="account-note">Use at least 8 characters. You may need to verify your email before your first login.</p>
+          <div class="account-status" data-signup-status role="status"></div>
+          <button class="account-submit" type="submit">Create account</button>
+        </form>
       </section>
-    </main>
-
-    <footer class="footer" id="support">
-      <div class="shell">
-        <img class="footer-logo" src="assets/iman-logo.png" alt="Iman Cleaning Service LLC" />
-        <a class="help-link" href="#support">Visit Help Center</a>
-
-        <div class="footer-grid">
-          <div class="footer-column" id="company">
-            <h3>Company</h3>
-            <a href="index.html#about">About us</a>
-            <a href="https://www.imancleaningservice.com">Our offerings</a>
-            <a href="#support">Newsroom</a>
-            <a href="#support">Investors</a>
-            <a href="#support">Blog</a>
-            <a href="https://cleaner.imancleaningservice.com/login.html">Careers</a>
-            <a href="login.html">Iman One</a>
-          </div>
-
-          <div class="footer-column">
-            <h3>Products</h3>
-            <a href="https://www.imancleaningservice.com">Main website</a>
-            <a href="https://cleaner.imancleaningservice.com/login.html">Cleaner app</a>
-            <a href="https://www.imancleaningservice.com">Business cleaning</a>
-            <a href="https://www.imancleaningservice.com">Residential cleaning</a>
-            <a href="https://www.imancleaningservice.com">Airbnb cleaning</a>
-            <a href="https://www.imancleaningservice.com">Deep cleaning</a>
-            <a href="https://www.imancleaningservice.com">Marketplace platform</a>
-          </div>
-
-          <div class="footer-column">
-            <h3>Trust</h3>
-            <a href="#support">Safety</a>
-            <a href="#support">Cleaner verification</a>
-            <a href="#support">Background checks</a>
-            <a href="#support">Insurance</a>
-            <a href="#support">Accessibility</a>
-          </div>
-
-          <div class="footer-column">
-            <h3>Locations</h3>
-            <a href="https://www.imancleaningservice.com">New York City</a>
-            <a href="https://www.imancleaningservice.com">Business accounts</a>
-            <a href="https://www.imancleaningservice.com">Boroughs</a>
-            <a href="https://www.imancleaningservice.com">Reserve cleaning</a>
-            <a href="#support">Future cities</a>
-          </div>
-        </div>
-
-        <div class="footer-meta">
-          <div>
-            <div class="socials" aria-label="Social links">
-              <a href="#support" aria-label="LinkedIn">in</a>
-              <a href="#support" aria-label="YouTube">yt</a>
-              <a href="#support" aria-label="Instagram">ig</a>
-              <a href="#support" aria-label="X">x</a>
-            </div>
-
-            <div class="stores">
-              <a class="store" href="https://cleaner.imancleaningservice.com/login.html">
-                <small>Get it on</small>
-                <strong>Google Play</strong>
-              </a>
-              <a class="store" href="https://cleaner.imancleaningservice.com/login.html">
-                <small>Download on the</small>
-                <strong>App Store</strong>
-              </a>
-            </div>
-          </div>
-
-          <div class="locale" id="language">
-            <span>English</span>
-            <span>New York City</span>
-          </div>
-        </div>
-
-        <div class="bottom">
-          <span>(c) 2026 IMAN CLEANING SERVICE LLC.</span>
-          <div class="legal">
-            <a href="#support">Privacy</a>
-            <a href="#support">Accessibility</a>
-            <a href="#support">Terms</a>
-          </div>
-        </div>
-      </div>
-    </footer>
-  </body>
+    </div>
+  </main>
+  <script>
+    (() => {
+      const loginForm = document.querySelector("[data-login-form]");
+      const signupForm = document.querySelector("[data-signup-form]");
+      const tabs = Array.from(document.querySelectorAll("[data-tab]"));
+      const safeReturnTo = () => {
+        const value = new URLSearchParams(location.search).get("return_to") || "./account.html";
+        return value.startsWith("/") || value.startsWith("./") ? value : "./account.html";
+      };
+      const status = (element, message, success = false) => {
+        element.textContent = message;
+        element.className = `account-status${message ? " show" : ""}${success ? " success" : ""}`;
+      };
+      const showTab = (tab) => {
+        const signup = tab === "signup";
+        loginForm.hidden = signup;
+        signupForm.hidden = !signup;
+        tabs.forEach((button) => button.setAttribute("aria-selected", String(button.dataset.tab === tab)));
+      };
+      const request = async (action, body) => {
+        const response = await fetch(`/api/account/${action}`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(body)
+        });
+        const data = await response.json().catch(() => ({}));
+        if (!response.ok) throw new Error(data.error || "Your account request could not be completed.");
+        return data;
+      };
+      tabs.forEach((button) => button.addEventListener("click", () => showTab(button.dataset.tab)));
+      loginForm.addEventListener("submit", async (event) => {
+        event.preventDefault();
+        if (!loginForm.checkValidity()) return loginForm.reportValidity();
+        const button = loginForm.querySelector("button");
+        button.disabled = true;
+        status(document.querySelector("[data-login-status]"), "Logging you in…");
+        try {
+          await request("login", Object.fromEntries(new FormData(loginForm)));
+          location.assign(safeReturnTo());
+        } catch (error) {
+          status(document.querySelector("[data-login-status]"), error.message);
+        } finally {
+          button.disabled = false;
+        }
+      });
+      signupForm.addEventListener("submit", async (event) => {
+        event.preventDefault();
+        if (!signupForm.checkValidity()) return signupForm.reportValidity();
+        const button = signupForm.querySelector("button");
+        button.disabled = true;
+        status(document.querySelector("[data-signup-status]"), "Creating your account…");
+        try {
+          const data = await request("signup", Object.fromEntries(new FormData(signupForm)));
+          if (data.signedIn) location.assign(safeReturnTo());
+          else status(document.querySelector("[data-signup-status]"), "Account created. Check your email and select the verification link. We’ll open your customer dashboard automatically.", true);
+        } catch (error) {
+          status(document.querySelector("[data-signup-status]"), error.message);
+        } finally {
+          button.disabled = false;
+        }
+      });
+      fetch("/api/account/session").then((response) => response.json()).then((data) => {
+        if (data.signedIn) location.replace(safeReturnTo());
+      }).catch(() => {});
+      if (new URLSearchParams(location.search).get("mode") === "signup") showTab("signup");
+    })();
+  </script>
+</body>
 </html>

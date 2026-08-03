@@ -1,0 +1,211 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Manage Your Appointment | Iman Cleaning Service LLC</title>
+  <meta name="robots" content="noindex,nofollow">
+  <link rel="stylesheet" href="./design-system.css">
+  <style>
+    :root{--ink:#082f36;--teal:#0b7282;--teal-dark:#075865;--line:#d7e5e3;--soft:#f2f8f7;--warn:#fff7e8;--danger:#a62b2b}
+    *{box-sizing:border-box}
+    body{min-height:100vh;margin:0;background:linear-gradient(145deg,#eaf5f3,#f9fbfa);color:var(--ink);font-family:Inter,system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif}
+    main{width:min(760px,calc(100% - 28px));margin:clamp(22px,6vw,64px) auto}
+    .brand{display:flex;align-items:center;gap:12px;margin-bottom:20px;font-weight:800}
+    .brand img{width:48px;height:48px;object-fit:contain}
+    .panel{background:#fff;border:1px solid var(--line);border-radius:24px;box-shadow:0 22px 60px rgba(5,61,69,.1);overflow:hidden}
+    .header,.section{padding:clamp(22px,5vw,38px)}
+    .header{background:#073f49;color:#fff}
+    .header h1{margin:0 0 8px;font-size:clamp(2rem,6vw,3.4rem);line-height:1.05}
+    .header p{margin:0;color:#d9eceb}
+    .section+.section{border-top:1px solid var(--line)}
+    .details{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:14px;margin:0}
+    .detail{padding:15px;background:var(--soft);border-radius:14px}
+    .detail dt{font-size:.78rem;font-weight:800;letter-spacing:.08em;text-transform:uppercase;color:#5f777b}
+    .detail dd{margin:5px 0 0;font-weight:750}
+    h2{margin:0 0 10px;font-size:1.45rem}
+    p{line-height:1.6;color:#536a6e}
+    label{display:block;margin:18px 0 8px;font-weight:800}
+    select{width:100%;min-height:54px;padding:0 14px;border:1px solid #adc7c5;border-radius:12px;background:#fff;color:var(--ink);font:inherit}
+    button{min-height:52px;margin-top:15px;padding:0 22px;border:0;border-radius:999px;background:var(--teal);color:#fff;font:inherit;font-weight:850;cursor:pointer}
+    button:hover{background:var(--teal-dark)}
+    button:disabled{cursor:not-allowed;opacity:.55}
+    .cancel-button{background:#fff;color:var(--danger);border:1px solid #d7a4a4}
+    .cancel-button:hover{background:#fff4f4}
+    .policy{padding:16px;border:1px solid #f0d498;border-radius:14px;background:var(--warn);color:#614b1c}
+    .check{display:flex;align-items:flex-start;gap:10px;margin:16px 0 0;font-weight:650}
+    .check input{width:20px;height:20px;margin-top:2px;accent-color:var(--teal);flex:none}
+    .status{display:none;margin:0 0 18px;padding:14px;border-radius:12px;background:#e6f5ed;color:#185d3c;font-weight:750}
+    .status.error{background:#fff0f0;color:#8f2727}
+    .status.show{display:block}
+    .loading{text-align:center;padding:42px}
+    .hidden{display:none!important}
+    .muted{font-size:.92rem}
+    @media(max-width:600px){.details{grid-template-columns:1fr}.header,.section{padding:22px}}
+  </style>
+</head>
+<body>
+  <main>
+    <div class="brand">
+      <img src="./assets/iman-logo-icon.png" alt="">
+      <span>Iman Cleaning Service LLC</span>
+    </div>
+    <div class="panel">
+      <div class="header">
+        <h1>Manage your appointment</h1>
+        <p>Review your booking, choose another available time, or cancel under the policy shown below.</p>
+      </div>
+      <div class="loading" data-loading>Loading your secure booking…</div>
+      <div class="hidden" data-content>
+        <section class="section">
+          <div class="status" role="status" aria-live="polite" data-status></div>
+          <dl class="details">
+            <div class="detail"><dt>Booking</dt><dd data-booking-id></dd></div>
+            <div class="detail"><dt>Status</dt><dd data-booking-status></dd></div>
+            <div class="detail"><dt>Service</dt><dd data-service></dd></div>
+            <div class="detail"><dt>Appointment</dt><dd data-schedule></dd></div>
+            <div class="detail"><dt>Address</dt><dd data-address></dd></div>
+            <div class="detail"><dt>Total paid</dt><dd data-total></dd></div>
+          </dl>
+        </section>
+        <section class="section" data-active-tools>
+          <h2>Request a different appointment</h2>
+          <p>Only currently available dates and times are listed. Your existing appointment stays reserved until the new time is confirmed.</p>
+          <label for="schedule">Available appointment</label>
+          <select id="schedule" data-slot-select>
+            <option value="">Choose an available date and time</option>
+          </select>
+          <button type="button" data-reschedule>Confirm new appointment</button>
+        </section>
+        <section class="section" data-active-tools>
+          <h2>Cancel this appointment</h2>
+          <div class="policy" data-policy></div>
+          <label class="check">
+            <input type="checkbox" data-cancel-confirm>
+            <span data-cancel-confirm-text>I understand the cancellation policy and want to cancel this appointment.</span>
+          </label>
+          <button type="button" class="cancel-button" data-cancel disabled>Cancel appointment and process refund</button>
+          <p class="muted">Approved refunds are sent to the original payment method. Your bank may take several business days to display the credit.</p>
+        </section>
+      </div>
+    </div>
+  </main>
+  <script>
+    (() => {
+      const token = new URLSearchParams(location.search).get("token") || "";
+      const loading = document.querySelector("[data-loading]");
+      const content = document.querySelector("[data-content]");
+      const status = document.querySelector("[data-status]");
+      const slotSelect = document.querySelector("[data-slot-select]");
+      const rescheduleButton = document.querySelector("[data-reschedule]");
+      const cancelButton = document.querySelector("[data-cancel]");
+      const cancelConfirm = document.querySelector("[data-cancel-confirm]");
+      let booking = null;
+
+      const money = (value) => new Intl.NumberFormat("en-US", { style: "currency", currency: "USD" }).format(Number(value || 0));
+      const showStatus = (message, error = false) => {
+        status.textContent = message;
+        status.className = `status show${error ? " error" : ""}`;
+        status.scrollIntoView({ behavior: "smooth", block: "center" });
+      };
+      const setBusy = (busy) => {
+        rescheduleButton.disabled = busy;
+        cancelButton.disabled = busy || !cancelConfirm.checked;
+      };
+      const render = (data) => {
+        booking = data.booking;
+        document.querySelector("[data-booking-id]").textContent = booking.id;
+        document.querySelector("[data-booking-status]").textContent = booking.status;
+        document.querySelector("[data-service]").textContent = booking.service;
+        document.querySelector("[data-schedule]").textContent = booking.scheduleLabel;
+        document.querySelector("[data-address]").textContent = booking.address;
+        document.querySelector("[data-total]").textContent = money(booking.total);
+        const cancellation = booking.cancellation;
+        document.querySelector("[data-policy]").textContent = cancellation.lessThan24Hours
+          ? `Less than 24 hours remain. If you cancel now, ${money(cancellation.retainedCents / 100)} (25%) will be retained and ${money(cancellation.refundCents / 100)} (75%) will be refunded to your original payment method.`
+          : `At least 24 hours remain. If you cancel now, the full ${money(cancellation.refundCents / 100)} payment will be refunded to your original payment method.`;
+        slotSelect.innerHTML = '<option value="">Choose an available date and time</option>';
+        let lastDate = "";
+        let group = null;
+        (data.slots || []).forEach((slot) => {
+          if (slot.date !== lastDate) {
+            group = document.createElement("optgroup");
+            group.label = new Intl.DateTimeFormat("en-US", { weekday: "long", month: "long", day: "numeric" }).format(new Date(`${slot.date}T12:00:00`));
+            slotSelect.append(group);
+            lastDate = slot.date;
+          }
+          const option = document.createElement("option");
+          option.value = slot.value;
+          option.textContent = slot.label;
+          group.append(option);
+        });
+        if (!data.slots?.length) {
+          const option = document.createElement("option");
+          option.textContent = "No online appointments are currently available";
+          option.disabled = true;
+          slotSelect.append(option);
+        }
+        const active = ["Confirmed", "Cleaner assigned"].includes(booking.status);
+        document.querySelectorAll("[data-active-tools]").forEach((section) => section.classList.toggle("hidden", !active));
+        loading.classList.add("hidden");
+        content.classList.remove("hidden");
+      };
+      const request = async (method, body) => {
+        const response = await fetch(`/api/booking/manage?token=${encodeURIComponent(token)}`, {
+          method,
+          headers: { "Content-Type": "application/json" },
+          body: method === "POST" ? JSON.stringify({ token, ...body }) : undefined
+        });
+        const data = await response.json();
+        if (!response.ok) throw new Error(data.error || "Your booking could not be updated.");
+        return data;
+      };
+
+      cancelConfirm.addEventListener("change", () => { cancelButton.disabled = !cancelConfirm.checked; });
+      rescheduleButton.addEventListener("click", async () => {
+        if (!slotSelect.value) return showStatus("Choose an available appointment first.", true);
+        setBusy(true);
+        try {
+          const data = await request("POST", { action: "reschedule", schedule: slotSelect.value });
+          await load(`Your appointment is now scheduled for ${data.booking.scheduleLabel}. We sent confirmation by email and text.`);
+        } catch (error) {
+          showStatus(error.message, true);
+        } finally {
+          setBusy(false);
+        }
+      });
+      cancelButton.addEventListener("click", async () => {
+        if (!cancelConfirm.checked) return;
+        const policy = booking.cancellation.lessThan24Hours
+          ? `Cancel this appointment and receive a ${money(booking.cancellation.refundCents / 100)} refund? ${money(booking.cancellation.retainedCents / 100)} will be retained.`
+          : `Cancel this appointment and issue a full ${money(booking.cancellation.refundCents / 100)} refund?`;
+        if (!window.confirm(policy)) return;
+        setBusy(true);
+        try {
+          const data = await request("POST", { action: "cancel" });
+          const amount = money(data.refund.amountCents / 100);
+          await load(`Your appointment was cancelled. A ${data.refund.percent}% refund of ${amount} is being returned to your original payment method.`);
+        } catch (error) {
+          showStatus(error.message, true);
+        } finally {
+          setBusy(false);
+        }
+      });
+      async function load(message = "") {
+        try {
+          const data = await request("GET");
+          render(data);
+          if (message) showStatus(message);
+        } catch (error) {
+          loading.textContent = error.message;
+        }
+      }
+      if (!token) {
+        loading.textContent = "This booking-management link is missing or invalid.";
+      } else {
+        load();
+      }
+    })();
+  </script>
+</body>
+</html>

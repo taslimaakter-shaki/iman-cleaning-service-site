@@ -23,7 +23,8 @@
 <meta name="twitter:description" content="Explore Iman Cleaning Service LLC's full range of NYC cleaning services — standard, deep, move-in/move-out, Airbnb, office, retail, restaurant, clinic, and post-construction. Fully insured.">
 <meta name="twitter:image" content="https://www.imancleaningservice.com/brand-card.png">
 <link rel="stylesheet" href="./design-system.css">
-<link rel="stylesheet" href="./site.css">
+<link rel="stylesheet" href="./site.css?v=20260727-premium-services-hero">
+<link rel="stylesheet" href="./homepage-footer.css?v=20260727-footer-location">
 
 <!-- SEO: LocalBusiness. Keep in sync with visible content. -->
 <script type="application/ld+json">
@@ -62,7 +63,7 @@
 <script src="https://unpkg.com/@babel/standalone@7.29.0/babel.min.js" integrity="sha384-m08KidiNqLdpJqLq95G/LEi8Qvjl/xUYll3QILypMoQ65QorJ9Lvtp2RXYGBFj1y" crossorigin="anonymous"></script>
 <script src="./_ds_bundle.js"></script>
 <script src="./data.js"></script>
-<script type="text/babel" src="./chrome.jsx"></script>
+<script type="text/babel" src="./chrome.jsx?v=20260729-book-online"></script>
 <script type="text/babel">
 const mount = () => {
   if (!window.ImanChrome) return setTimeout(mount, 30);
@@ -73,23 +74,42 @@ const mount = () => {
   function Page() {
     return (<>
       <Header active="services" onDark />
-      <section className="page-hero on-photo center" style={{ "--hero-img": "url('./home-hero-clean-living-room.jpg')" }}>
+      <section className="page-hero on-photo center services-hub-hero" style={{ "--hero-img": "url('./home-hero-clean-living-room.jpg')" }}>
         <div className="ds-shell page-hero-inner">
-          <span className="ds-kicker">All NYC cleaning services</span>
-          <h1>One team for every kind of clean</h1>
-          <p className="ds-lead">Residential and commercial cleaning across all five boroughs — each quote built around your space, condition, and timing.</p>
-          <div className="page-hero-actions">
-            <Button href="./quote.html" variant="accent" size="lg" iconRight={<Icon name="arrow" size={18} />}>Get a free quote</Button>
+          <span className="services-hero-eyebrow">Professional Cleaning Services</span>
+          <h1>
+            <span>Professional House,</span>
+            <span>Commercial &amp;</span>
+            <span>Window Cleaning</span>
+          </h1>
+          <p className="services-hero-location">Serving NYC &amp; Long Island</p>
+          <p className="ds-lead">Residential, commercial, move-in/move-out, deep cleaning, Airbnb, janitorial, and professional window cleaning with transparent pricing and fully insured professionals.</p>
+          <a className="services-hero-reviews" href={D.googleReviewsHref} target="_blank" rel="noopener noreferrer"
+            aria-label="Read Iman Cleaning Service reviews on Google" data-conv="google_reviews">
+            <span className="services-hero-google-mark" aria-hidden="true"><span>G</span></span>
+            <span>Read our Google Reviews <span aria-hidden="true">→</span></span>
+          </a>
+          <div className="services-hero-trust" aria-label="Service benefits">
+            <span>✓ Fully Insured</span>
+            <span>✓ Free Estimates</span>
+            <span>✓ Same-Day Availability</span>
+          </div>
+          <div className="page-hero-actions services-hero-actions">
+            <a className="services-hero-button services-hero-button-primary" href="./book-now.html"
+              aria-label="Get an instant cleaning quote" data-conv="book">Get an Instant Quote</a>
+            <a className="services-hero-button services-hero-button-secondary" href={D.phoneHref}
+              aria-label="Call Iman Cleaning Service at 929-803-4053" data-conv="call">
+              <Icon name="phone" size={18} /> Call Now
+            </a>
           </div>
         </div>
       </section>
 
       <section className="section">
         <div className="ds-shell">
-          <div className="sec-head sec-head-split">
-            <div><span className="ds-kicker">Two ways we help</span><h2>Residential &amp; commercial cleaning</h2></div>
-            <p>Pick a category to see every service and its starting price. Each one links to the details and a clear quote.</p>
-          </div>
+    <div className="sec-head sec-head-split">
+      <div><span className="ds-kicker">Two ways we help</span><h2>Residential &amp; commercial cleaning</h2></div>
+    </div>
           <div className="two-cards">
             {D.serviceCategories.map((c) => <ServiceListCard key={c.title} {...c} />)}
           </div>
@@ -98,12 +118,16 @@ const mount = () => {
 
       <section className="final-cta">
         <div className="ds-shell final-inner">
-          <span className="ds-kicker" style={{ color: "var(--leaf-300)" }}>Not sure which one?</span>
-          <h2>Pick the closest option — we confirm the details before booking.</h2>
-          <p>Start a quote and add a note. We'll review and recommend the right service for your space.</p>
+          <span className="ds-kicker">Need a custom quote?</span>
+          <h2>Tell us about your cleaning needs.</h2>
+          <p>Share details about your space, what needs cleaning, and your preferred date. We’ll review everything and prepare the right quote for you.</p>
           <div className="final-actions">
-            <Button href="./quote.html" variant="accent" size="lg">Start a quote</Button>
-            <Button href={D.phoneHref} variant="secondary" size="lg" iconLeft={<Icon name="phone" size={18} stroke="var(--brand)" />}>Call or text {D.phone}</Button>
+            <Button href="./quote.html" variant="accent" size="lg"
+              aria-label="Get a custom cleaning quote from Iman Cleaning Service" data-conv="quote"
+              iconRight={<Icon name="arrow" size={18} />}>Get a Custom Quote</Button>
+            <Button href={D.phoneHref} variant="secondary" size="lg"
+              aria-label="Call Iman Cleaning Service at 929-803-4053" data-conv="call"
+              iconLeft={<Icon name="phone" size={18} stroke="var(--brand)" />}>Call Now</Button>
           </div>
         </div>
       </section>

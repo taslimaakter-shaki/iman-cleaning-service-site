@@ -5,7 +5,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Contact Iman Cleaning Service LLC | NYC Cleaning</title>
-<meta name="description" content="Call, text, or message Iman Cleaning Service LLC. Fully insured cleaning across all five NYC boroughs, open 6 AM to 8 PM, seven days a week.">
+<meta name="description" content="Call, text, or use the quote form to reach Iman Cleaning Service LLC. Fully insured cleaning across New York City and Long Island, open 8 AM to 8 PM, seven days a week.">
 <link rel="canonical" href="https://www.imancleaningservice.com/contact.html">
 <meta name="robots" content="index, follow, max-image-preview:large">
 <meta name="theme-color" content="#0b6474">
@@ -14,16 +14,17 @@
 <meta property="og:site_name" content="Iman Cleaning Service LLC">
 <meta property="og:locale" content="en_US">
 <meta property="og:title" content="Contact Iman Cleaning Service LLC | NYC Cleaning">
-<meta property="og:description" content="Call, text, or message Iman Cleaning Service LLC. Fully insured cleaning across all five NYC boroughs, open 6 AM to 8 PM, seven days a week.">
+<meta property="og:description" content="Call, text, or use the quote form to reach Iman Cleaning Service LLC. Fully insured cleaning across New York City and Long Island, open 8 AM to 8 PM, seven days a week.">
 <meta property="og:url" content="https://www.imancleaningservice.com/contact.html">
 <meta property="og:image" content="https://www.imancleaningservice.com/brand-card.png">
 <meta property="og:image:alt" content="Iman Cleaning Service LLC — NYC residential & commercial cleaning">
 <meta name="twitter:card" content="summary_large_image">
 <meta name="twitter:title" content="Contact Iman Cleaning Service LLC | NYC Cleaning">
-<meta name="twitter:description" content="Call, text, or message Iman Cleaning Service LLC. Fully insured cleaning across all five NYC boroughs, open 6 AM to 8 PM, seven days a week.">
+<meta name="twitter:description" content="Call, text, or use the quote form to reach Iman Cleaning Service LLC. Fully insured cleaning across New York City and Long Island, open 8 AM to 8 PM, seven days a week.">
 <meta name="twitter:image" content="https://www.imancleaningservice.com/brand-card.png">
 <link rel="stylesheet" href="./design-system.css">
-<link rel="stylesheet" href="./site.css">
+<link rel="stylesheet" href="./site.css?v=20260727-location-map">
+<link rel="stylesheet" href="./homepage-footer.css?v=20260727-footer-location">
 
 <!-- SEO: LocalBusiness with contact points. Keep in sync with visible content. -->
 <script type="application/ld+json">
@@ -37,22 +38,27 @@
   "email": "Info@imancleaningservice.com",
   "telephone": "+1-929-803-4053",
   "priceRange": "$$",
-  "address": { "@type": "PostalAddress", "addressLocality": "New York", "addressRegion": "NY", "addressCountry": "US" },
+  "address": {
+    "@type": "PostalAddress",
+    "addressLocality": "Queens",
+    "addressRegion": "NY",
+    "addressCountry": "US"
+  },
   "areaServed": [
     { "@type": "City", "name": "Manhattan" },
     { "@type": "City", "name": "Brooklyn" },
     { "@type": "City", "name": "Queens" },
     { "@type": "City", "name": "The Bronx" },
-    { "@type": "City", "name": "Staten Island" }
+    { "@type": "City", "name": "Staten Island" },
+    { "@type": "AdministrativeArea", "name": "Long Island" }
   ],
   "openingHoursSpecification": [{
     "@type": "OpeningHoursSpecification",
     "dayOfWeek": ["Monday","Tuesday","Wednesday","Thursday","Friday","Saturday","Sunday"],
-    "opens": "06:00", "closes": "20:00"
+    "opens": "08:00", "closes": "20:00"
   }],
   "contactPoint": [
-    { "@type": "ContactPoint", "telephone": "+1-929-803-4053", "contactType": "customer service", "areaServed": "US", "availableLanguage": "English" },
-    { "@type": "ContactPoint", "telephone": "+1-636-253-2035", "contactType": "customer service", "areaServed": "US", "availableLanguage": "English" }
+    { "@type": "ContactPoint", "telephone": "+1-929-803-4053", "contactType": "customer service", "areaServed": "US", "availableLanguage": "English" }
   ]
 }
 </script>
@@ -64,71 +70,56 @@
 <script src="https://unpkg.com/@babel/standalone@7.29.0/babel.min.js" integrity="sha384-m08KidiNqLdpJqLq95G/LEi8Qvjl/xUYll3QILypMoQ65QorJ9Lvtp2RXYGBFj1y" crossorigin="anonymous"></script>
 <script src="./_ds_bundle.js"></script>
 <script src="./data.js"></script>
-<script type="text/babel" src="./chrome.jsx"></script>
+<script type="text/babel" src="./chrome.jsx?v=20260729-book-online"></script>
 <script type="text/babel">
 const mount = () => {
   if (!window.ImanChrome) return setTimeout(mount, 30);
-  const { Button, Badge, Field } = window.ImanCleaningDesignSystem_5652ad;
   const { Icon, Header, Footer } = window.ImanChrome;
   const D = window.IMAN_DATA;
 
   const cards = [
-    { icon: "phone", h: "Call or text", v: D.phone, href: D.phoneHref },
+    { icon: "phone", h: "Call us", v: D.phone, href: D.phoneHref },
     { icon: "mail", h: "Email", v: "Info@imancleaningservice.com", href: "mailto:Info@imancleaningservice.com" },
-    { icon: "clock", h: "Hours", v: "6 AM – 8 PM · 7 days" },
-    { icon: "pin", h: "Service area", v: "All five NYC boroughs" },
+    { icon: "clock", h: "Hours", v: "8 AM – 8 PM · 7 days" },
   ];
 
   function Page() {
-    const [goal, setGoal] = React.useState(0);
-    const goals = ["Keep my home clean", "Extra attention", "Turnover / commercial"];
+    React.useEffect(() => {
+      const handleQuoteFrameMessage = (event) => {
+        if (event.origin !== window.location.origin) return;
+        if (!event.data || event.data.type !== "imanQuoteFrameHeight") return;
+        const frame = document.querySelector(".contact-quote-frame");
+        const height = Math.max(560, Math.min(Number(event.data.height) || 0, 5000));
+        if (frame) frame.style.height = `${height}px`;
+      };
+      window.addEventListener("message", handleQuoteFrameMessage);
+      return () => window.removeEventListener("message", handleQuoteFrameMessage);
+    }, []);
+
     return (<>
       <Header active="contact" onDark />
       <section className="page-hero on-photo" style={{ "--hero-img": "url('./assets/contact-office-hero.png')" }}>
         <div className="ds-shell page-hero-inner">
-          <span className="ds-kicker">We're easy to reach</span>
-          <h1>Get in touch</h1>
-          <p className="ds-lead">Questions about a clean, or ready to book? Call, text, or send a message — a real person gets back to you.</p>
+          <span className="ds-kicker">Contact Iman Cleaning Service LLC</span>
+          <h1>Get in Touch</h1>
+          <p className="ds-lead">Have questions, need a free cleaning quote, or want to schedule a service? Contact our team by phone, text, email, or the quote form below. We're committed to providing prompt, friendly support for homes and businesses throughout New York City and Long Island.</p>
         </div>
       </section>
 
       <section className="section-tight">
         <div className="ds-shell contact-grid">
-          <form className="quote-panel" onSubmit={(e) => e.preventDefault()}>
-            <span className="ds-kicker">Request a quote</span>
-            <h2 style={{ margin: "6px 0 18px" }}>Tell us what you need</h2>
-            <div className="quote-steps">
-              <div className="qstep active"><span className="qnum">1</span> Service &amp; space</div>
-              <div className="qstep"><span className="qnum">2</span> Details &amp; timing</div>
-              <div className="qstep"><span className="qnum">3</span> Contact</div>
+          <div className="contact-quote-embed" aria-label="Cleaning quote request form">
+            <div className="contact-quote-intro">
+              <h2>Get a Detailed Quote by Answering a Few Questions</h2>
             </div>
-
-            <h3 style={{ marginBottom: 14 }}>What do you need cleaned?</h3>
-            <div className="choice-row" style={{ marginBottom: 24 }}>
-              {goals.map((g, i) => (
-                <label key={g} className={"choice-chip" + (goal === i ? " selected" : "")}>
-                  <input type="radio" name="goal" checked={goal === i} onChange={() => setGoal(i)} />
-                  {g}
-                </label>
-              ))}
-            </div>
-
-            <div className="form-grid">
-              <Field label="Service type" as="select" options={["Standard cleaning", "Deep cleaning", "Move-in / Move-out", "Airbnb turnover", "Office & commercial"]} />
-              <Field label="Property type" as="select" options={["Apartment", "House", "Studio", "Office", "Retail / restaurant"]} />
-              <Field label="Bedrooms" as="select" options={["Studio", "1", "2", "3", "4+"]} />
-              <Field label="Bathrooms" as="select" options={["1", "2", "3", "4+"]} />
-              <Field label="Approx. square footage" placeholder="e.g. 850" />
-              <Field label="How often?" as="select" options={["One-time", "Weekly", "Biweekly", "Monthly"]} />
-              <Field className="wide" style={{ gridColumn: "1 / -1" }} label="Anything we should know?" as="textarea"
-                placeholder="Condition, pets, parking, photos to follow…" hint="Photos help us size the team for deeper jobs." />
-            </div>
-
-            <div className="form-actions">
-              <span style={{ alignSelf: "center", color: "var(--text-faint)", fontSize: ".85rem" }}>Step 1 of 3</span>
-              <Button variant="primary" size="lg" iconRight={<Icon name="arrow" size={18} />}>Continue</Button>
-            </div>
-          </form>
+            <iframe
+              className="contact-quote-frame"
+              title="Cleaning quote request form"
+              src="./quote.html?embed=contact"
+              loading="eager"
+              scrolling="no"
+            ></iframe>
+          </div>
 
           <aside style={{ display: "grid", gap: 16 }}>
             <div className="contact-cards">
@@ -140,16 +131,10 @@ const mount = () => {
                 </div>
               ))}
             </div>
-            <div className="aside-card brand">
-              <span className="ds-kicker" style={{ color: "var(--leaf-300)" }}>Follow along</span>
-              <p>See recent cleaning work on our social profiles and Google Business Profile.</p>
-              <div className="footer-socials" style={{ flexWrap: "wrap" }}>
-                {["Instagram", "Facebook", "YouTube", "TikTok", "Google"].map((s) => <a key={s} href="#" style={{ color: "rgba(255,255,255,.85)" }}>{s}</a>)}
-              </div>
-            </div>
           </aside>
         </div>
       </section>
+
       <Footer />
     </>);
   }
@@ -157,5 +142,6 @@ const mount = () => {
 };
 mount();
 </script>
+
 </body>
 </html>

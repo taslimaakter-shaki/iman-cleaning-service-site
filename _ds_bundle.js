@@ -987,62 +987,69 @@ function _extends() { return _extends = Object.assign ? Object.assign.bind() : f
       return () => window.removeEventListener("scroll", onScroll);
     }, []);
     const nav = [{
-      label: "Our Services",
+      label: "Services",
       href: "./services-hub.html",
       key: "services"
     }, {
-      label: "Why us",
+      label: "Why Iman",
       href: "./why-us.html",
       key: "why"
     }, {
-      label: "Service areas",
+      label: "Areas We Serve",
       href: "./areas.html",
       key: "areas"
     }, {
-      label: "Our work",
-      href: "./our-work.html",
-      key: "work"
+      label: "FAQs",
+      href: "./faq.html",
+      key: "faq"
     }, {
       label: "Contact",
       href: "./contact.html",
       key: "contact"
     }];
     return /*#__PURE__*/React.createElement("header", {
-      className: "site-header" + (scrolled ? " is-scrolled" : "") + (onDark ? " on-dark" : "")
+      className: "site-header is-homepage" + (scrolled ? " is-scrolled" : "") + (onDark ? " on-dark" : "")
     }, /*#__PURE__*/React.createElement("div", {
       className: "hdr-inner ds-shell"
     }, /*#__PURE__*/React.createElement("a", {
       href: "./index.html",
-      className: "hdr-brand"
-    }, /*#__PURE__*/React.createElement("span", {
-      className: "hdr-mark"
+      className: "hdr-brand",
+      "aria-label": "Iman Cleaning Service LLC home"
+    }, /*#__PURE__*/React.createElement("img", {
+      className: "hdr-mark",
+      src: "./iman-logo-icon.png",
+      alt: "Iman Cleaning Service LLC",
+      width: "46",
+      height: "46"
     }), /*#__PURE__*/React.createElement("span", {
-      className: "hdr-words"
+      className: "hdr-words",
+      "aria-hidden": "true"
     }, /*#__PURE__*/React.createElement("strong", null, "IMAN"), /*#__PURE__*/React.createElement("small", null, "Cleaning Service LLC"))), /*#__PURE__*/React.createElement("nav", {
       className: "hdr-nav",
-      "data-open": open
+      "data-open": open,
+      "aria-label": "Primary navigation"
     }, nav.map(n => /*#__PURE__*/React.createElement("a", {
       key: n.key,
       href: n.href,
-      style: active === n.key ? {
-        color: "var(--brand)"
-      } : undefined
+      "aria-current": active === n.key ? "page" : undefined
     }, n.label))), /*#__PURE__*/React.createElement("div", {
       className: "hdr-actions"
-    }, /*#__PURE__*/React.createElement("a", {
-      className: "hdr-phone",
-      href: D.phoneHref
-    }, /*#__PURE__*/React.createElement(Icon, {
-      name: "phone",
-      size: 18,
-      stroke: "var(--brand)"
-    }), D.phone), /*#__PURE__*/React.createElement(Button, {
+    }, /*#__PURE__*/React.createElement(Button, {
       href: D.phoneHref,
-      variant: "primary",
-      size: "sm"
-    }, "Call us to book!"), /*#__PURE__*/React.createElement("button", {
+      variant: "secondary",
+      size: "sm",
+      "aria-label": "Call Iman Cleaning Service",
+      "data-conv": "call"
+    }, "Call Us"), /*#__PURE__*/React.createElement(Button, {
+      href: "./book-now.html",
+      variant: "accent",
+      size: "sm",
+      "aria-label": "Book a cleaning service online",
+      "data-conv": "book"
+    }, "Book Online"), /*#__PURE__*/React.createElement("button", {
       className: "hdr-burger",
-      "aria-label": "Menu",
+      "aria-label": open ? "Close menu" : "Open menu",
+      "aria-expanded": open,
       onClick: () => setOpen(!open)
     }, /*#__PURE__*/React.createElement(Icon, {
       name: "menu",
@@ -1053,19 +1060,22 @@ function _extends() { return _extends = Object.assign ? Object.assign.bind() : f
     const contacts = [{
       icon: "mail",
       h: "Email us",
-      v: "Info@imancleaningservice.com"
+      v: "Info@imancleaningservice.com",
+      href: "mailto:Info@imancleaningservice.com"
     }, {
       icon: "pin",
       h: "Service area",
-      v: "All five NYC boroughs — Manhattan, Queens, Brooklyn, Staten Island and Bronx"
+      v: "Manhattan, Brooklyn, Queens, The Bronx, Staten Island, and Long Island",
+      href: "./areas.html"
     }, {
       icon: "phone",
-      h: "Call or text",
-      v: ["929-803-4053", "636-253-2035"]
+      h: "Call us",
+      v: "929-803-4053",
+      href: "tel:+19298034053"
     }, {
       icon: "clock",
       h: "Business hours",
-      v: "6 AM – 8 PM · 7 days"
+      v: "8 AM – 8 PM · 7 days"
     }];
     const socials = [{
       name: "Instagram",
@@ -1116,41 +1126,31 @@ function _extends() { return _extends = Object.assign ? Object.assign.bind() : f
       fill: "#EA4335",
       d: "M12 4.8c1.7 0 3.2.6 4.4 1.7l3.3-3.3C17.9 1.1 15.2 0 12 0A12 12 0 0 0 1.5 6.7l3.9 3.1c.9-2.8 3.5-5 6.6-5Z"
     }));
-    return /*#__PURE__*/React.createElement(React.Fragment, null, /*#__PURE__*/React.createElement("a", {
-      className: "floating-cta",
-      href: "./quote.html",
-      "aria-label": "Get my free estimate"
-    }, /*#__PURE__*/React.createElement(Icon, {
-      name: "sparkle",
-      size: 19,
-      stroke: "currentColor"
-    }), "Get my free estimate"), /*#__PURE__*/React.createElement("footer", {
-      className: "site-footer"
+    return /*#__PURE__*/React.createElement(React.Fragment, null, /*#__PURE__*/React.createElement("footer", {
+      className: "site-footer",
+      "aria-label": "Website footer"
     }, /*#__PURE__*/React.createElement("div", {
       className: "ds-shell"
     }, /*#__PURE__*/React.createElement("div", {
       className: "footer-brand"
     }, /*#__PURE__*/React.createElement("span", {
-      className: "footer-mark"
+      className: "footer-mark",
+      "aria-hidden": "true"
     }), /*#__PURE__*/React.createElement("div", null, /*#__PURE__*/React.createElement("strong", null, "Iman Cleaning Service LLC"), /*#__PURE__*/React.createElement("span", null, "Residential & commercial cleaning"))), /*#__PURE__*/React.createElement("div", {
       className: "footer-grid"
     }, contacts.map(c => /*#__PURE__*/React.createElement("div", {
       key: c.h,
       className: "footer-cell"
     }, /*#__PURE__*/React.createElement("span", {
-      className: "footer-ico"
+      className: "footer-ico",
+      "aria-hidden": "true"
     }, /*#__PURE__*/React.createElement(Icon, {
       name: c.icon,
       size: 20,
       stroke: "#fff"
-    })), /*#__PURE__*/React.createElement("h4", null, c.h), Array.isArray(c.v) ? c.v.map(n => /*#__PURE__*/React.createElement("p", {
-      key: n
-    }, /*#__PURE__*/React.createElement("a", {
-      href: "tel:" + n.replace(/[^0-9]/g, ""),
-      style: {
-        color: "#fff"
-      }
-    }, n))) : /*#__PURE__*/React.createElement("p", null, c.v)))), /*#__PURE__*/React.createElement("div", {
+    })), /*#__PURE__*/React.createElement("h4", null, c.h), /*#__PURE__*/React.createElement("p", null, c.href ? /*#__PURE__*/React.createElement("a", {
+      href: c.href
+    }, c.v) : c.v))), /*#__PURE__*/React.createElement("div", {
       className: "footer-follow"
     }, /*#__PURE__*/React.createElement("h4", null, "Follow us for more"), /*#__PURE__*/React.createElement("div", {
       className: "social-row"
@@ -1159,7 +1159,7 @@ function _extends() { return _extends = Object.assign ? Object.assign.bind() : f
       className: "social-ico" + (s.google ? " is-google" : ""),
       href: s.href,
       target: "_blank",
-      rel: "noreferrer",
+      rel: "noopener noreferrer",
       "aria-label": s.name,
       style: {
         background: s.bg,
@@ -1175,7 +1175,16 @@ function _extends() { return _extends = Object.assign ? Object.assign.bind() : f
       d: s.path
     })))))), /*#__PURE__*/React.createElement("div", {
       className: "footer-bottom"
-    }, /*#__PURE__*/React.createElement("span", null, "\xA9 2026 Iman Cleaning Service LLC. All rights reserved.")))));
+    }, /*#__PURE__*/React.createElement("span", null, "\xA9 2026 Iman Cleaning Service LLC. All rights reserved."), /*#__PURE__*/React.createElement("nav", {
+      className: "footer-legal",
+      "aria-label": "Legal"
+    }, /*#__PURE__*/React.createElement("a", {
+      href: "./careers.html"
+    }, "Careers"), /*#__PURE__*/React.createElement("a", {
+      href: "./privacy-policy.html"
+    }, "Privacy Policy"), /*#__PURE__*/React.createElement("a", {
+      href: "./sms-terms.html"
+    }, "SMS Terms")))))));
   }
   window.ImanChrome = {
     Icon,
@@ -1205,19 +1214,19 @@ window.IMAN_DATA = {
     label: "Service areas",
     href: "#areas"
   }, {
-    label: "FAQ",
-    href: "#faq"
+    label: "FAQs",
+    href: "./faq.html"
   }],
   services: [{
     title: "Standard Cleaning",
-    price: "Starting at $180",
+    price: "Starting at $200",
     image: "../../home-hero-clean-living-room.jpg",
     blurb: "Regular upkeep that keeps your home reliably fresh between visits.",
     points: ["Kitchens, baths, bedrooms & living areas", "Weekly, biweekly, monthly, or one-time"],
     href: "#"
   }, {
     title: "Deep Cleaning",
-    price: "Starting at $280",
+    price: "Starting at $300",
     image: "../../contact-kitchen-hero.jpg",
     blurb: "First-time cleanings, seasonal resets, and heavier buildup.",
     points: ["Detailed high-touch & neglected areas", "Photos help us size the team accurately"],
@@ -1225,7 +1234,7 @@ window.IMAN_DATA = {
     featured: true
   }, {
     title: "Move-In / Move-Out",
-    price: "Starting at $280",
+    price: "Starting at $300",
     image: "../../home-hero-team.jpg",
     blurb: "A clean handoff for apartments, homes, and rental turnovers.",
     points: ["Empty-space cleaning for leases", "Ideal before photos, staging, or keys"],
@@ -1241,7 +1250,7 @@ window.IMAN_DATA = {
   steps: [{
     n: "01",
     title: "Request your quote",
-    body: "Send your details online or call or text us. Add photos of the space so we can quote accurately."
+    body: "Send your details online or call us. Add photos of the space so we can quote accurately."
   }, {
     n: "02",
     title: "We confirm everything",
@@ -1272,19 +1281,6 @@ window.IMAN_DATA = {
     title: "Satisfaction Guaranteed",
     body: "If we missed something, let us know before we leave and we'll make it right."
   }],
-  reviews: [{
-    stars: 5,
-    text: "Professional, thorough, and affordable.",
-    author: "Ishita V."
-  }, {
-    stars: 5,
-    text: "Spotless every time.",
-    author: "Ammarah L."
-  }, {
-    stars: 5,
-    text: "Highly recommend.",
-    author: "Danish M."
-  }],
   serviceCategories: [{
     title: "Residential Cleaning",
     kicker: "Homes & apartments",
@@ -1300,10 +1296,6 @@ window.IMAN_DATA = {
     }, {
       name: "Move-In / Move-Out",
       price: "$280",
-      href: "./service-detail.html"
-    }, {
-      name: "Airbnb / Short-Term Rental",
-      price: "Custom quote",
       href: "./service-detail.html"
     }, {
       name: "Detailed Cleaning",
@@ -1325,27 +1317,48 @@ window.IMAN_DATA = {
     services: [{
       name: "Office Cleaning",
       price: "Custom quote",
-      href: "./service-detail.html"
+      href: "./office-cleaning.html"
     }, {
       name: "Retail Store Cleaning",
       price: "Custom quote",
-      href: "./service-detail.html"
+      href: "./retail-store-cleaning.html"
     }, {
       name: "Restaurant Cleaning",
       price: "Custom quote",
-      href: "./service-detail.html"
+      href: "./restaurant-cleaning.html"
     }, {
       name: "Medical & Clinic Cleaning",
       price: "Custom quote",
-      href: "./service-detail.html"
+      href: "./medical-clinic-cleaning.html"
     }, {
       name: "Post-Construction Cleaning",
       price: "Custom quote",
-      href: "./service-detail.html"
+      href: "./post-construction-cleaning.html"
     }, {
       name: "Janitorial / Recurring Cleaning",
       price: "Custom quote",
-      href: "./service-detail.html"
+      href: "./janitorial-recurring-cleaning.html"
+    }]
+  }, {
+    title: "Window Cleaning",
+    kicker: "Homes & businesses",
+    image: "../../assets/window-cleaning-card.jpg",
+    services: [{
+      name: "Interior & Exterior Glass",
+      price: "Custom quote",
+      href: "./quote.html?service=window-cleaning"
+    }, {
+      name: "Frames, Sills & Tracks",
+      price: "Custom quote",
+      href: "./quote.html?service=window-cleaning"
+    }, {
+      name: "Homes & Apartments",
+      price: "Custom quote",
+      href: "./quote.html?service=window-cleaning"
+    }, {
+      name: "Offices & Storefronts",
+      price: "Custom quote",
+      href: "./quote.html?service=window-cleaning"
     }]
   }],
   boroughs: ["Manhattan", "Brooklyn", "Queens", "The Bronx", "Staten Island"],
@@ -1364,7 +1377,7 @@ window.IMAN_DATA = {
     a: "Share your service type, address, preferred dates, space details, and photos if the job needs deeper review."
   }, {
     q: "What hours are available?",
-    a: "Cleaning can be scheduled between 6:00 AM and 8:00 PM, seven days a week, based on availability."
+    a: "Cleaning can be scheduled between 8:00 AM and 8:00 PM, seven days a week, based on availability."
   }, {
     q: "Why is Iman priced higher than a typical cleaning service?",
     a: "Because we don't cut the corners that cheaper services do. Iman Cleaning Service LLC is fully licensed and insured, our cleaners are trained professionals (not gig fill-ins), and we use top-quality, professional-grade supplies and equipment. We never rush a job — every clean is thorough and detailed, and we ask up front what you'd like us to pay extra attention to. You're paying for work done right by a team that keeps its word."
@@ -1374,8 +1387,8 @@ window.IMAN_DATA = {
   }],
   review: {
     name: "Verified Google review",
-    text: "They showed up on time, gave me a clear price first, and the apartment looked better than move-in day. Easiest booking I've had with any cleaner in the city.",
-    author: "NYC homeowner · Google Business Profile"
+    text: "They did a great job cleaning my house. They showed up on time, were friendly, and paid attention to the little things. My place looked and smelled so much better when they were done. Definitely worth it, and I’d use them again.",
+    author: "Mahin Muhtasimul"
   }
 };
 })(); } catch (e) { __ds_ns.__errors.push({ path: "design_handoff_website_redesign/ui_kits/website/data.js", error: String((e && e.message) || e) }); }
@@ -1405,65 +1418,49 @@ const D = window.IMAN_DATA;
 function Hero() {
   return /*#__PURE__*/React.createElement("section", {
     className: "page-hero on-photo home-hero-photo",
-    id: "top",
-    style: {
-      "--hero-img": "url('../../assets/home-hero-bedroom.png')"
-    }
+    id: "top"
   }, /*#__PURE__*/React.createElement("div", {
     className: "ds-shell page-hero-inner"
   }, /*#__PURE__*/React.createElement(Badge, {
     tone: "leaf",
     check: true,
     size: "sm"
-  }, "Fully insured \xB7 NYC"), /*#__PURE__*/React.createElement("h1", null, "Spotless spaces, without the hassle."), /*#__PURE__*/React.createElement("p", {
+  }, "Fully Insured \u2022 Background-Checked Cleaners"), /*#__PURE__*/React.createElement("h1", null, "Reliable Cleaning Services in NYC & Long Island"), /*#__PURE__*/React.createElement("p", {
     className: "ds-lead"
-  }, "Detail-obsessed cleaning for homes, apartments, offices, and businesses across all five NYC boroughs. Know your price up front, then book in minutes."), /*#__PURE__*/React.createElement("div", {
+  }, "Residential and commercial cleaning with clear quotes, flexible scheduling, and easy online booking."), /*#__PURE__*/React.createElement("div", {
     className: "page-hero-actions"
   }, /*#__PURE__*/React.createElement(Button, {
     href: D.phoneHref,
     variant: "accent",
     size: "lg",
-    iconLeft: /*#__PURE__*/React.createElement(Icon, {
-      name: "phone",
-      size: 18
-    })
-  }, "Call us"), /*#__PURE__*/React.createElement(Button, {
-    href: "sms:" + D.phone.replace(/[^0-9]/g, ""),
+    "aria-label": "Call Iman Cleaning Service",
+    "data-conv": "call"
+  }, "Call Us"), /*#__PURE__*/React.createElement(Button, {
+    href: "./book-now.html",
     variant: "secondary",
     size: "lg",
-    iconLeft: /*#__PURE__*/React.createElement(Icon, {
-      name: "message",
-      size: 18,
-      stroke: "var(--brand)"
-    })
-  }, "Text us")), /*#__PURE__*/React.createElement("div", {
-    className: "hero-trust on-dark"
-  }, /*#__PURE__*/React.createElement("span", null, /*#__PURE__*/React.createElement(Icon, {
-    name: "check",
-    size: 16,
-    stroke: "var(--leaf-500)"
-  }), " 5-star Google reviews"), /*#__PURE__*/React.createElement("span", null, /*#__PURE__*/React.createElement(Icon, {
-    name: "check",
-    size: 16,
-    stroke: "var(--leaf-500)"
-  }), " Background-checked cleaners"), /*#__PURE__*/React.createElement("span", null, /*#__PURE__*/React.createElement(Icon, {
-    name: "check",
-    size: 16,
-    stroke: "var(--leaf-500)"
-  }), " Open 6 AM\u20138 PM daily"), /*#__PURE__*/React.createElement("span", null, /*#__PURE__*/React.createElement(Icon, {
-    name: "check",
-    size: 16,
-    stroke: "var(--leaf-500)"
-  }), " Serving all five NYC boroughs"), /*#__PURE__*/React.createElement("span", null, /*#__PURE__*/React.createElement(Icon, {
-    name: "check",
-    size: 16,
-    stroke: "var(--leaf-500)"
-  }), " Residential & commercial cleaning"))));
+    "aria-label": "Book a cleaning service online",
+    "data-conv": "book"
+  }, "Book Online")), /*#__PURE__*/React.createElement("div", {
+    className: "hero-trust-line",
+    "aria-label": "Reviews and business hours"
+  }, /*#__PURE__*/React.createElement("a", {
+    href: "https://share.google/EAX7wC22J4PyMKcNx",
+    target: "_blank",
+    rel: "noopener noreferrer",
+    "aria-label": "Read Iman Cleaning Service Google reviews",
+    "data-conv": "google_reviews"
+  }, /*#__PURE__*/React.createElement("span", {
+    "aria-hidden": "true"
+  }, "\u2605\u2605\u2605\u2605\u2605"), " Read Our Reviews"), /*#__PURE__*/React.createElement("span", {
+    className: "hero-trust-divider",
+    "aria-hidden": "true"
+  }, "\u2022"), /*#__PURE__*/React.createElement("span", null, "Open Daily, 8 AM\u20138 PM"))));
 }
 
 /* ---- Proof strip ------------------------------------------------------- */
 function ProofStrip() {
-  const items = [["Fully insured", "Homes & businesses"], ["All 5 boroughs", "Across New York City"], ["Clear quote first", "Reviewed before booking"], ["Open daily", "6:00 AM – 8:00 PM"]];
+  const items = [["Fully insured", "Homes & businesses"], ["All 5 boroughs", "Across New York City"], ["Clear quote first", "Reviewed before booking"], ["Open daily", "8:00 AM – 8:00 PM"]];
   return /*#__PURE__*/React.createElement("section", {
     className: "proof"
   }, /*#__PURE__*/React.createElement("div", {
@@ -1547,49 +1544,37 @@ function WhyUs() {
     name: r.icon,
     size: 24,
     stroke: "var(--leaf-300)"
-  })), /*#__PURE__*/React.createElement("h3", null, r.title), /*#__PURE__*/React.createElement("p", null, r.body)))), /*#__PURE__*/React.createElement("div", {
-    className: "why-reviews"
-  }, /*#__PURE__*/React.createElement("div", {
-    className: "why-reviews-stars",
-    "aria-label": "5 out of 5 stars"
-  }, [0, 1, 2, 3, 4].map(i => /*#__PURE__*/React.createElement(Icon, {
-    key: i,
-    name: "star",
-    size: 22,
-    stroke: "var(--leaf-400)"
-  })), /*#__PURE__*/React.createElement("span", null, "Rated 5.0 on Google")), /*#__PURE__*/React.createElement("div", {
-    className: "why-reviews-grid"
-  }, D.reviews.map(rv => /*#__PURE__*/React.createElement("figure", {
-    className: "why-review",
-    key: rv.author
-  }, /*#__PURE__*/React.createElement("blockquote", null, "\u201C", rv.text, "\u201D"), /*#__PURE__*/React.createElement("figcaption", null, "\u2014 ", rv.author)))))));
+  })), /*#__PURE__*/React.createElement("h3", null, r.title), /*#__PURE__*/React.createElement("p", null, r.body))))));
 }
 
 /* ---- Service areas ----------------------------------------------------- */
 function Areas() {
+  const areas = [{
+    name: "Manhattan"
+  }, {
+    name: "Brooklyn"
+  }, {
+    name: "Queens"
+  }, {
+    name: "The Bronx"
+  }, {
+    name: "Staten Island"
+  }, {
+    name: "Long Island"
+  }];
   return /*#__PURE__*/React.createElement("section", {
     className: "areas-band",
     id: "areas"
   }, /*#__PURE__*/React.createElement("div", {
     className: "ds-shell areas-band-inner"
-  }, /*#__PURE__*/React.createElement("span", {
-    className: "ds-kicker",
-    style: {
-      color: "var(--leaf-300)"
-    }
-  }, "Service areas"), /*#__PURE__*/React.createElement("h2", null, "Cleaning across all five NYC boroughs"), /*#__PURE__*/React.createElement("p", {
-    className: "ds-lead"
-  }, "From apartments and brownstones to Airbnbs, offices, and retail spaces, Iman Cleaning Service LLC covers the whole city."), /*#__PURE__*/React.createElement("div", {
-    className: "areas-badges"
-  }, D.boroughs.map(b => /*#__PURE__*/React.createElement(Badge, {
-    key: b,
-    tone: "solid",
-    size: "md"
-  }, b))), /*#__PURE__*/React.createElement(Button, {
-    href: "./areas.html",
-    variant: "accent",
-    size: "lg"
-  }, "View service areas")));
+  }, /*#__PURE__*/React.createElement("h2", null, "Areas We Serve"), /*#__PURE__*/React.createElement("ul", {
+    className: "areas-links",
+    "aria-label": "Cleaning service areas"
+  }, areas.map(area => /*#__PURE__*/React.createElement("li", {
+    key: area.name
+  }, area.href ? /*#__PURE__*/React.createElement("a", {
+    href: area.href
+  }, area.name) : /*#__PURE__*/React.createElement("span", null, area.name))))));
 }
 
 /* ---- Review band (dark teal) ------------------------------------------- */
@@ -1605,7 +1590,15 @@ function ReviewBand() {
     name: "star",
     size: 26,
     stroke: "var(--leaf-500)"
-  }))), /*#__PURE__*/React.createElement("blockquote", null, "\u201C", D.review.text, "\u201D"), /*#__PURE__*/React.createElement("cite", null, D.review.author)));
+  }))), /*#__PURE__*/React.createElement("blockquote", null, "\u201C", D.review.text, "\u201D"), /*#__PURE__*/React.createElement("cite", null, /*#__PURE__*/React.createElement("span", null, "Mahin Muhtasimul"), /*#__PURE__*/React.createElement("span", {
+    "aria-hidden": "true"
+  }, " \xB7 "), /*#__PURE__*/React.createElement("a", {
+    href: D.googleReviewsHref,
+    target: "_blank",
+    rel: "noopener noreferrer",
+    "aria-label": "Read Iman Cleaning Service reviews on Google",
+    "data-conv": "google_reviews"
+  }, "Read Our Google Reviews"))));
 }
 
 /* ---- FAQ --------------------------------------------------------------- */
@@ -1640,33 +1633,37 @@ function FinalCta() {
     style: {
       color: "var(--leaf-300)"
     }
-  }, "Ready when you are"), /*#__PURE__*/React.createElement("h2", null, "Get a clear quote \u2014 no commitment until you approve the price."), /*#__PURE__*/React.createElement("p", null, "Send your details in a few minutes. We review the scope, confirm timing and team size, then follow up before anything is booked."), /*#__PURE__*/React.createElement("div", {
+  }, "Need a custom quote?"), /*#__PURE__*/React.createElement("h2", null, "Tell us about your cleaning needs."), /*#__PURE__*/React.createElement("p", null, "Share details about your space, what needs cleaning, and your preferred date. We\u2019ll review everything and prepare the right quote for you."), /*#__PURE__*/React.createElement("div", {
     className: "final-actions"
   }, /*#__PURE__*/React.createElement(Button, {
     href: "./quote.html",
     variant: "accent",
     size: "lg",
+    "aria-label": "Get a custom cleaning quote from Iman Cleaning Service",
+    "data-conv": "quote",
     iconRight: /*#__PURE__*/React.createElement(Icon, {
       name: "arrow",
       size: 18
     })
-  }, "Request a quote"), /*#__PURE__*/React.createElement(Button, {
-    href: D.phoneHref,
+  }, "Get a Custom Quote"), /*#__PURE__*/React.createElement(Button, {
+    href: "tel:+19298034053",
     variant: "secondary",
     size: "lg",
+    "aria-label": "Call Iman Cleaning Service at 929-803-4053",
+    "data-conv": "call",
     iconLeft: /*#__PURE__*/React.createElement(Icon, {
       name: "phone",
       size: 18,
       stroke: "var(--brand)"
     })
-  }, "Call or text ", D.phone))));
+  }, "Call Now"))));
 }
 function App() {
   return /*#__PURE__*/React.createElement("div", {
     className: "site-scroll"
   }, /*#__PURE__*/React.createElement(Header, {
     onDark: true
-  }), /*#__PURE__*/React.createElement("main", null, /*#__PURE__*/React.createElement(Hero, null), /*#__PURE__*/React.createElement(Services, null), /*#__PURE__*/React.createElement(HowItWorks, null), /*#__PURE__*/React.createElement(WhyUs, null), /*#__PURE__*/React.createElement(Areas, null), /*#__PURE__*/React.createElement(ReviewBand, null), /*#__PURE__*/React.createElement(Faq, null), /*#__PURE__*/React.createElement(FinalCta, null)), /*#__PURE__*/React.createElement(Footer, null));
+  }), /*#__PURE__*/React.createElement("main", null, /*#__PURE__*/React.createElement(Hero, null), /*#__PURE__*/React.createElement(Services, null), /*#__PURE__*/React.createElement(Areas, null), /*#__PURE__*/React.createElement(WhyUs, null), /*#__PURE__*/React.createElement(ReviewBand, null), /*#__PURE__*/React.createElement(FinalCta, null)), /*#__PURE__*/React.createElement(Footer, null));
 }
 window.ImanSite = {
   App
@@ -1843,62 +1840,69 @@ function _extends() { return _extends = Object.assign ? Object.assign.bind() : f
       return () => window.removeEventListener("scroll", onScroll);
     }, []);
     const nav = [{
-      label: "Our Services",
+      label: "Services",
       href: "./services-hub.html",
       key: "services"
     }, {
-      label: "Why us",
+      label: "Why Iman",
       href: "./why-us.html",
       key: "why"
     }, {
-      label: "Service areas",
+      label: "Areas We Serve",
       href: "./areas.html",
       key: "areas"
     }, {
-      label: "Our work",
-      href: "./our-work.html",
-      key: "work"
+      label: "FAQs",
+      href: "./faq.html",
+      key: "faq"
     }, {
       label: "Contact",
       href: "./contact.html",
       key: "contact"
     }];
     return /*#__PURE__*/React.createElement("header", {
-      className: "site-header" + (scrolled ? " is-scrolled" : "") + (onDark ? " on-dark" : "")
+      className: "site-header is-homepage" + (scrolled ? " is-scrolled" : "") + (onDark ? " on-dark" : "")
     }, /*#__PURE__*/React.createElement("div", {
       className: "hdr-inner ds-shell"
     }, /*#__PURE__*/React.createElement("a", {
       href: "./index.html",
-      className: "hdr-brand"
-    }, /*#__PURE__*/React.createElement("span", {
-      className: "hdr-mark"
+      className: "hdr-brand",
+      "aria-label": "Iman Cleaning Service LLC home"
+    }, /*#__PURE__*/React.createElement("img", {
+      className: "hdr-mark",
+      src: "./iman-logo-icon.png",
+      alt: "Iman Cleaning Service LLC",
+      width: "46",
+      height: "46"
     }), /*#__PURE__*/React.createElement("span", {
-      className: "hdr-words"
+      className: "hdr-words",
+      "aria-hidden": "true"
     }, /*#__PURE__*/React.createElement("strong", null, "IMAN"), /*#__PURE__*/React.createElement("small", null, "Cleaning Service LLC"))), /*#__PURE__*/React.createElement("nav", {
       className: "hdr-nav",
-      "data-open": open
+      "data-open": open,
+      "aria-label": "Primary navigation"
     }, nav.map(n => /*#__PURE__*/React.createElement("a", {
       key: n.key,
       href: n.href,
-      style: active === n.key ? {
-        color: "var(--brand)"
-      } : undefined
+      "aria-current": active === n.key ? "page" : undefined
     }, n.label))), /*#__PURE__*/React.createElement("div", {
       className: "hdr-actions"
-    }, /*#__PURE__*/React.createElement("a", {
-      className: "hdr-phone",
-      href: D.phoneHref
-    }, /*#__PURE__*/React.createElement(Icon, {
-      name: "phone",
-      size: 18,
-      stroke: "var(--brand)"
-    }), D.phone), /*#__PURE__*/React.createElement(Button, {
+    }, /*#__PURE__*/React.createElement(Button, {
       href: D.phoneHref,
-      variant: "primary",
-      size: "sm"
-    }, "Call us to book!"), /*#__PURE__*/React.createElement("button", {
+      variant: "secondary",
+      size: "sm",
+      "aria-label": "Call Iman Cleaning Service",
+      "data-conv": "call"
+    }, "Call Us"), /*#__PURE__*/React.createElement(Button, {
+      href: "./book-now.html",
+      variant: "accent",
+      size: "sm",
+      "aria-label": "Book a cleaning service online",
+      "data-conv": "book"
+    }, "Book Online"), /*#__PURE__*/React.createElement("button", {
       className: "hdr-burger",
-      "aria-label": "Menu",
+      "aria-label": open ? "Close menu" : "Open menu",
+      "aria-expanded": open,
       onClick: () => setOpen(!open)
     }, /*#__PURE__*/React.createElement(Icon, {
       name: "menu",
@@ -1909,19 +1913,22 @@ function _extends() { return _extends = Object.assign ? Object.assign.bind() : f
     const contacts = [{
       icon: "mail",
       h: "Email us",
-      v: "Info@imancleaningservice.com"
+      v: "Info@imancleaningservice.com",
+      href: "mailto:Info@imancleaningservice.com"
     }, {
       icon: "pin",
       h: "Service area",
-      v: "All five NYC boroughs — Manhattan, Queens, Brooklyn, Staten Island and Bronx"
+      v: "Manhattan, Brooklyn, Queens, The Bronx, Staten Island, and Long Island",
+      href: "./areas.html"
     }, {
       icon: "phone",
-      h: "Call or text",
-      v: ["929-803-4053", "636-253-2035"]
+      h: "Call us",
+      v: "929-803-4053",
+      href: "tel:+19298034053"
     }, {
       icon: "clock",
       h: "Business hours",
-      v: "6 AM – 8 PM · 7 days"
+      v: "8 AM – 8 PM · 7 days"
     }];
     const socials = [{
       name: "Instagram",
@@ -1972,41 +1979,31 @@ function _extends() { return _extends = Object.assign ? Object.assign.bind() : f
       fill: "#EA4335",
       d: "M12 4.8c1.7 0 3.2.6 4.4 1.7l3.3-3.3C17.9 1.1 15.2 0 12 0A12 12 0 0 0 1.5 6.7l3.9 3.1c.9-2.8 3.5-5 6.6-5Z"
     }));
-    return /*#__PURE__*/React.createElement(React.Fragment, null, /*#__PURE__*/React.createElement("a", {
-      className: "floating-cta",
-      href: "./quote.html",
-      "aria-label": "Get my free estimate"
-    }, /*#__PURE__*/React.createElement(Icon, {
-      name: "sparkle",
-      size: 19,
-      stroke: "currentColor"
-    }), "Get my free estimate"), /*#__PURE__*/React.createElement("footer", {
-      className: "site-footer"
+    return /*#__PURE__*/React.createElement(React.Fragment, null, /*#__PURE__*/React.createElement("footer", {
+      className: "site-footer",
+      "aria-label": "Website footer"
     }, /*#__PURE__*/React.createElement("div", {
       className: "ds-shell"
     }, /*#__PURE__*/React.createElement("div", {
       className: "footer-brand"
     }, /*#__PURE__*/React.createElement("span", {
-      className: "footer-mark"
+      className: "footer-mark",
+      "aria-hidden": "true"
     }), /*#__PURE__*/React.createElement("div", null, /*#__PURE__*/React.createElement("strong", null, "Iman Cleaning Service LLC"), /*#__PURE__*/React.createElement("span", null, "Residential & commercial cleaning"))), /*#__PURE__*/React.createElement("div", {
       className: "footer-grid"
     }, contacts.map(c => /*#__PURE__*/React.createElement("div", {
       key: c.h,
       className: "footer-cell"
     }, /*#__PURE__*/React.createElement("span", {
-      className: "footer-ico"
+      className: "footer-ico",
+      "aria-hidden": "true"
     }, /*#__PURE__*/React.createElement(Icon, {
       name: c.icon,
       size: 20,
       stroke: "#fff"
-    })), /*#__PURE__*/React.createElement("h4", null, c.h), Array.isArray(c.v) ? c.v.map(n => /*#__PURE__*/React.createElement("p", {
-      key: n
-    }, /*#__PURE__*/React.createElement("a", {
-      href: "tel:" + n.replace(/[^0-9]/g, ""),
-      style: {
-        color: "#fff"
-      }
-    }, n))) : /*#__PURE__*/React.createElement("p", null, c.v)))), /*#__PURE__*/React.createElement("div", {
+    })), /*#__PURE__*/React.createElement("h4", null, c.h), /*#__PURE__*/React.createElement("p", null, c.href ? /*#__PURE__*/React.createElement("a", {
+      href: c.href
+    }, c.v) : c.v))), /*#__PURE__*/React.createElement("div", {
       className: "footer-follow"
     }, /*#__PURE__*/React.createElement("h4", null, "Follow us for more"), /*#__PURE__*/React.createElement("div", {
       className: "social-row"
@@ -2015,7 +2012,7 @@ function _extends() { return _extends = Object.assign ? Object.assign.bind() : f
       className: "social-ico" + (s.google ? " is-google" : ""),
       href: s.href,
       target: "_blank",
-      rel: "noreferrer",
+      rel: "noopener noreferrer",
       "aria-label": s.name,
       style: {
         background: s.bg,
@@ -2031,7 +2028,16 @@ function _extends() { return _extends = Object.assign ? Object.assign.bind() : f
       d: s.path
     })))))), /*#__PURE__*/React.createElement("div", {
       className: "footer-bottom"
-    }, /*#__PURE__*/React.createElement("span", null, "\xA9 2026 Iman Cleaning Service LLC. All rights reserved.")))));
+    }, /*#__PURE__*/React.createElement("span", null, "\xA9 2026 Iman Cleaning Service LLC. All rights reserved."), /*#__PURE__*/React.createElement("nav", {
+      className: "footer-legal",
+      "aria-label": "Legal"
+    }, /*#__PURE__*/React.createElement("a", {
+      href: "./careers.html"
+    }, "Careers"), /*#__PURE__*/React.createElement("a", {
+      href: "./privacy-policy.html"
+    }, "Privacy Policy"), /*#__PURE__*/React.createElement("a", {
+      href: "./sms-terms.html"
+    }, "SMS Terms")))))));
   }
   window.ImanChrome = {
     Icon,
@@ -2061,19 +2067,19 @@ window.IMAN_DATA = {
     label: "Service areas",
     href: "#areas"
   }, {
-    label: "FAQ",
-    href: "#faq"
+    label: "FAQs",
+    href: "./faq.html"
   }],
   services: [{
     title: "Standard Cleaning",
-    price: "Starting at $180",
+    price: "Starting at $200",
     image: "../../home-hero-clean-living-room.jpg",
     blurb: "Regular upkeep that keeps your home reliably fresh between visits.",
     points: ["Kitchens, baths, bedrooms & living areas", "Weekly, biweekly, monthly, or one-time"],
     href: "#"
   }, {
     title: "Deep Cleaning",
-    price: "Starting at $280",
+    price: "Starting at $300",
     image: "../../contact-kitchen-hero.jpg",
     blurb: "First-time cleanings, seasonal resets, and heavier buildup.",
     points: ["Detailed high-touch & neglected areas", "Photos help us size the team accurately"],
@@ -2081,7 +2087,7 @@ window.IMAN_DATA = {
     featured: true
   }, {
     title: "Move-In / Move-Out",
-    price: "Starting at $280",
+    price: "Starting at $300",
     image: "../../home-hero-team.jpg",
     blurb: "A clean handoff for apartments, homes, and rental turnovers.",
     points: ["Empty-space cleaning for leases", "Ideal before photos, staging, or keys"],
@@ -2097,7 +2103,7 @@ window.IMAN_DATA = {
   steps: [{
     n: "01",
     title: "Request your quote",
-    body: "Send your details online or call or text us. Add photos of the space so we can quote accurately."
+    body: "Send your details online or call us. Add photos of the space so we can quote accurately."
   }, {
     n: "02",
     title: "We confirm everything",
@@ -2128,19 +2134,6 @@ window.IMAN_DATA = {
     title: "Satisfaction Guaranteed",
     body: "If we missed something, let us know before we leave and we'll make it right."
   }],
-  reviews: [{
-    stars: 5,
-    text: "Professional, thorough, and affordable.",
-    author: "Ishita V."
-  }, {
-    stars: 5,
-    text: "Spotless every time.",
-    author: "Ammarah L."
-  }, {
-    stars: 5,
-    text: "Highly recommend.",
-    author: "Danish M."
-  }],
   serviceCategories: [{
     title: "Residential Cleaning",
     kicker: "Homes & apartments",
@@ -2156,10 +2149,6 @@ window.IMAN_DATA = {
     }, {
       name: "Move-In / Move-Out",
       price: "$280",
-      href: "./service-detail.html"
-    }, {
-      name: "Airbnb / Short-Term Rental",
-      price: "Custom quote",
       href: "./service-detail.html"
     }, {
       name: "Detailed Cleaning",
@@ -2181,27 +2170,48 @@ window.IMAN_DATA = {
     services: [{
       name: "Office Cleaning",
       price: "Custom quote",
-      href: "./service-detail.html"
+      href: "./office-cleaning.html"
     }, {
       name: "Retail Store Cleaning",
       price: "Custom quote",
-      href: "./service-detail.html"
+      href: "./retail-store-cleaning.html"
     }, {
       name: "Restaurant Cleaning",
       price: "Custom quote",
-      href: "./service-detail.html"
+      href: "./restaurant-cleaning.html"
     }, {
       name: "Medical & Clinic Cleaning",
       price: "Custom quote",
-      href: "./service-detail.html"
+      href: "./medical-clinic-cleaning.html"
     }, {
       name: "Post-Construction Cleaning",
       price: "Custom quote",
-      href: "./service-detail.html"
+      href: "./post-construction-cleaning.html"
     }, {
       name: "Janitorial / Recurring Cleaning",
       price: "Custom quote",
-      href: "./service-detail.html"
+      href: "./janitorial-recurring-cleaning.html"
+    }]
+  }, {
+    title: "Window Cleaning",
+    kicker: "Homes & businesses",
+    image: "../../assets/window-cleaning-card.jpg",
+    services: [{
+      name: "Interior & Exterior Glass",
+      price: "Custom quote",
+      href: "./quote.html?service=window-cleaning"
+    }, {
+      name: "Frames, Sills & Tracks",
+      price: "Custom quote",
+      href: "./quote.html?service=window-cleaning"
+    }, {
+      name: "Homes & Apartments",
+      price: "Custom quote",
+      href: "./quote.html?service=window-cleaning"
+    }, {
+      name: "Offices & Storefronts",
+      price: "Custom quote",
+      href: "./quote.html?service=window-cleaning"
     }]
   }],
   boroughs: ["Manhattan", "Brooklyn", "Queens", "The Bronx", "Staten Island"],
@@ -2220,7 +2230,7 @@ window.IMAN_DATA = {
     a: "Share your service type, address, preferred dates, space details, and photos if the job needs deeper review."
   }, {
     q: "What hours are available?",
-    a: "Cleaning can be scheduled between 6:00 AM and 8:00 PM, seven days a week, based on availability."
+    a: "Cleaning can be scheduled between 8:00 AM and 8:00 PM, seven days a week, based on availability."
   }, {
     q: "Why is Iman priced higher than a typical cleaning service?",
     a: "Because we don't cut the corners that cheaper services do. Iman Cleaning Service LLC is fully licensed and insured, our cleaners are trained professionals (not gig fill-ins), and we use top-quality, professional-grade supplies and equipment. We never rush a job — every clean is thorough and detailed, and we ask up front what you'd like us to pay extra attention to. You're paying for work done right by a team that keeps its word."
@@ -2230,8 +2240,8 @@ window.IMAN_DATA = {
   }],
   review: {
     name: "Verified Google review",
-    text: "They showed up on time, gave me a clear price first, and the apartment looked better than move-in day. Easiest booking I've had with any cleaner in the city.",
-    author: "NYC homeowner · Google Business Profile"
+    text: "They did a great job cleaning my house. They showed up on time, were friendly, and paid attention to the little things. My place looked and smelled so much better when they were done. Definitely worth it, and I’d use them again.",
+    author: "Mahin Muhtasimul"
   }
 };
 })(); } catch (e) { __ds_ns.__errors.push({ path: "ui_kits/website/data.js", error: String((e && e.message) || e) }); }
@@ -2261,65 +2271,49 @@ const D = window.IMAN_DATA;
 function Hero() {
   return /*#__PURE__*/React.createElement("section", {
     className: "page-hero on-photo home-hero-photo",
-    id: "top",
-    style: {
-      "--hero-img": "url('../../assets/home-hero-bedroom.png')"
-    }
+    id: "top"
   }, /*#__PURE__*/React.createElement("div", {
     className: "ds-shell page-hero-inner"
   }, /*#__PURE__*/React.createElement(Badge, {
     tone: "leaf",
     check: true,
     size: "sm"
-  }, "Fully insured \xB7 NYC"), /*#__PURE__*/React.createElement("h1", null, "Spotless spaces, without the hassle."), /*#__PURE__*/React.createElement("p", {
+  }, "Fully Insured \u2022 Background-Checked Cleaners"), /*#__PURE__*/React.createElement("h1", null, "Reliable Cleaning Services in NYC & Long Island"), /*#__PURE__*/React.createElement("p", {
     className: "ds-lead"
-  }, "Detail-obsessed cleaning for homes, apartments, offices, and businesses across all five NYC boroughs. Know your price up front, then book in minutes."), /*#__PURE__*/React.createElement("div", {
+  }, "Residential and commercial cleaning with clear quotes, flexible scheduling, and easy online booking."), /*#__PURE__*/React.createElement("div", {
     className: "page-hero-actions"
   }, /*#__PURE__*/React.createElement(Button, {
     href: D.phoneHref,
     variant: "accent",
     size: "lg",
-    iconLeft: /*#__PURE__*/React.createElement(Icon, {
-      name: "phone",
-      size: 18
-    })
-  }, "Call us"), /*#__PURE__*/React.createElement(Button, {
-    href: "sms:" + D.phone.replace(/[^0-9]/g, ""),
+    "aria-label": "Call Iman Cleaning Service",
+    "data-conv": "call"
+  }, "Call Us"), /*#__PURE__*/React.createElement(Button, {
+    href: "./book-now.html",
     variant: "secondary",
     size: "lg",
-    iconLeft: /*#__PURE__*/React.createElement(Icon, {
-      name: "message",
-      size: 18,
-      stroke: "var(--brand)"
-    })
-  }, "Text us")), /*#__PURE__*/React.createElement("div", {
-    className: "hero-trust on-dark"
-  }, /*#__PURE__*/React.createElement("span", null, /*#__PURE__*/React.createElement(Icon, {
-    name: "check",
-    size: 16,
-    stroke: "var(--leaf-500)"
-  }), " 5-star Google reviews"), /*#__PURE__*/React.createElement("span", null, /*#__PURE__*/React.createElement(Icon, {
-    name: "check",
-    size: 16,
-    stroke: "var(--leaf-500)"
-  }), " Background-checked cleaners"), /*#__PURE__*/React.createElement("span", null, /*#__PURE__*/React.createElement(Icon, {
-    name: "check",
-    size: 16,
-    stroke: "var(--leaf-500)"
-  }), " Open 6 AM\u20138 PM daily"), /*#__PURE__*/React.createElement("span", null, /*#__PURE__*/React.createElement(Icon, {
-    name: "check",
-    size: 16,
-    stroke: "var(--leaf-500)"
-  }), " Serving all five NYC boroughs"), /*#__PURE__*/React.createElement("span", null, /*#__PURE__*/React.createElement(Icon, {
-    name: "check",
-    size: 16,
-    stroke: "var(--leaf-500)"
-  }), " Residential & commercial cleaning"))));
+    "aria-label": "Book a cleaning service online",
+    "data-conv": "book"
+  }, "Book Online")), /*#__PURE__*/React.createElement("div", {
+    className: "hero-trust-line",
+    "aria-label": "Reviews and business hours"
+  }, /*#__PURE__*/React.createElement("a", {
+    href: "https://share.google/EAX7wC22J4PyMKcNx",
+    target: "_blank",
+    rel: "noopener noreferrer",
+    "aria-label": "Read Iman Cleaning Service Google reviews",
+    "data-conv": "google_reviews"
+  }, /*#__PURE__*/React.createElement("span", {
+    "aria-hidden": "true"
+  }, "\u2605\u2605\u2605\u2605\u2605"), " Read Our Reviews"), /*#__PURE__*/React.createElement("span", {
+    className: "hero-trust-divider",
+    "aria-hidden": "true"
+  }, "\u2022"), /*#__PURE__*/React.createElement("span", null, "Open Daily, 8 AM\u20138 PM"))));
 }
 
 /* ---- Proof strip ------------------------------------------------------- */
 function ProofStrip() {
-  const items = [["Fully insured", "Homes & businesses"], ["All 5 boroughs", "Across New York City"], ["Clear quote first", "Reviewed before booking"], ["Open daily", "6:00 AM – 8:00 PM"]];
+  const items = [["Fully insured", "Homes & businesses"], ["All 5 boroughs", "Across New York City"], ["Clear quote first", "Reviewed before booking"], ["Open daily", "8:00 AM – 8:00 PM"]];
   return /*#__PURE__*/React.createElement("section", {
     className: "proof"
   }, /*#__PURE__*/React.createElement("div", {
@@ -2403,49 +2397,37 @@ function WhyUs() {
     name: r.icon,
     size: 24,
     stroke: "var(--leaf-300)"
-  })), /*#__PURE__*/React.createElement("h3", null, r.title), /*#__PURE__*/React.createElement("p", null, r.body)))), /*#__PURE__*/React.createElement("div", {
-    className: "why-reviews"
-  }, /*#__PURE__*/React.createElement("div", {
-    className: "why-reviews-stars",
-    "aria-label": "5 out of 5 stars"
-  }, [0, 1, 2, 3, 4].map(i => /*#__PURE__*/React.createElement(Icon, {
-    key: i,
-    name: "star",
-    size: 22,
-    stroke: "var(--leaf-400)"
-  })), /*#__PURE__*/React.createElement("span", null, "Rated 5.0 on Google")), /*#__PURE__*/React.createElement("div", {
-    className: "why-reviews-grid"
-  }, D.reviews.map(rv => /*#__PURE__*/React.createElement("figure", {
-    className: "why-review",
-    key: rv.author
-  }, /*#__PURE__*/React.createElement("blockquote", null, "\u201C", rv.text, "\u201D"), /*#__PURE__*/React.createElement("figcaption", null, "\u2014 ", rv.author)))))));
+  })), /*#__PURE__*/React.createElement("h3", null, r.title), /*#__PURE__*/React.createElement("p", null, r.body))))));
 }
 
 /* ---- Service areas ----------------------------------------------------- */
 function Areas() {
+  const areas = [{
+    name: "Manhattan"
+  }, {
+    name: "Brooklyn"
+  }, {
+    name: "Queens"
+  }, {
+    name: "The Bronx"
+  }, {
+    name: "Staten Island"
+  }, {
+    name: "Long Island"
+  }];
   return /*#__PURE__*/React.createElement("section", {
     className: "areas-band",
     id: "areas"
   }, /*#__PURE__*/React.createElement("div", {
     className: "ds-shell areas-band-inner"
-  }, /*#__PURE__*/React.createElement("span", {
-    className: "ds-kicker",
-    style: {
-      color: "var(--leaf-300)"
-    }
-  }, "Service areas"), /*#__PURE__*/React.createElement("h2", null, "Cleaning across all five NYC boroughs"), /*#__PURE__*/React.createElement("p", {
-    className: "ds-lead"
-  }, "From apartments and brownstones to Airbnbs, offices, and retail spaces, Iman Cleaning Service LLC covers the whole city."), /*#__PURE__*/React.createElement("div", {
-    className: "areas-badges"
-  }, D.boroughs.map(b => /*#__PURE__*/React.createElement(Badge, {
-    key: b,
-    tone: "solid",
-    size: "md"
-  }, b))), /*#__PURE__*/React.createElement(Button, {
-    href: "./areas.html",
-    variant: "accent",
-    size: "lg"
-  }, "View service areas")));
+  }, /*#__PURE__*/React.createElement("h2", null, "Areas We Serve"), /*#__PURE__*/React.createElement("ul", {
+    className: "areas-links",
+    "aria-label": "Cleaning service areas"
+  }, areas.map(area => /*#__PURE__*/React.createElement("li", {
+    key: area.name
+  }, area.href ? /*#__PURE__*/React.createElement("a", {
+    href: area.href
+  }, area.name) : /*#__PURE__*/React.createElement("span", null, area.name))))));
 }
 
 /* ---- Review band (dark teal) ------------------------------------------- */
@@ -2461,7 +2443,15 @@ function ReviewBand() {
     name: "star",
     size: 26,
     stroke: "var(--leaf-500)"
-  }))), /*#__PURE__*/React.createElement("blockquote", null, "\u201C", D.review.text, "\u201D"), /*#__PURE__*/React.createElement("cite", null, D.review.author)));
+  }))), /*#__PURE__*/React.createElement("blockquote", null, "\u201C", D.review.text, "\u201D"), /*#__PURE__*/React.createElement("cite", null, /*#__PURE__*/React.createElement("span", null, "Mahin Muhtasimul"), /*#__PURE__*/React.createElement("span", {
+    "aria-hidden": "true"
+  }, " \xB7 "), /*#__PURE__*/React.createElement("a", {
+    href: D.googleReviewsHref,
+    target: "_blank",
+    rel: "noopener noreferrer",
+    "aria-label": "Read Iman Cleaning Service reviews on Google",
+    "data-conv": "google_reviews"
+  }, "Read Our Google Reviews"))));
 }
 
 /* ---- FAQ --------------------------------------------------------------- */
@@ -2496,33 +2486,37 @@ function FinalCta() {
     style: {
       color: "var(--leaf-300)"
     }
-  }, "Ready when you are"), /*#__PURE__*/React.createElement("h2", null, "Get a clear quote \u2014 no commitment until you approve the price."), /*#__PURE__*/React.createElement("p", null, "Send your details in a few minutes. We review the scope, confirm timing and team size, then follow up before anything is booked."), /*#__PURE__*/React.createElement("div", {
+  }, "Need a custom quote?"), /*#__PURE__*/React.createElement("h2", null, "Tell us about your cleaning needs."), /*#__PURE__*/React.createElement("p", null, "Share details about your space, what needs cleaning, and your preferred date. We\u2019ll review everything and prepare the right quote for you."), /*#__PURE__*/React.createElement("div", {
     className: "final-actions"
   }, /*#__PURE__*/React.createElement(Button, {
     href: "./quote.html",
     variant: "accent",
     size: "lg",
+    "aria-label": "Get a custom cleaning quote from Iman Cleaning Service",
+    "data-conv": "quote",
     iconRight: /*#__PURE__*/React.createElement(Icon, {
       name: "arrow",
       size: 18
     })
-  }, "Request a quote"), /*#__PURE__*/React.createElement(Button, {
-    href: D.phoneHref,
+  }, "Get a Custom Quote"), /*#__PURE__*/React.createElement(Button, {
+    href: "tel:+19298034053",
     variant: "secondary",
     size: "lg",
+    "aria-label": "Call Iman Cleaning Service at 929-803-4053",
+    "data-conv": "call",
     iconLeft: /*#__PURE__*/React.createElement(Icon, {
       name: "phone",
       size: 18,
       stroke: "var(--brand)"
     })
-  }, "Call or text ", D.phone))));
+  }, "Call Now"))));
 }
 function App() {
   return /*#__PURE__*/React.createElement("div", {
     className: "site-scroll"
   }, /*#__PURE__*/React.createElement(Header, {
     onDark: true
-  }), /*#__PURE__*/React.createElement("main", null, /*#__PURE__*/React.createElement(Hero, null), /*#__PURE__*/React.createElement(Services, null), /*#__PURE__*/React.createElement(HowItWorks, null), /*#__PURE__*/React.createElement(WhyUs, null), /*#__PURE__*/React.createElement(Areas, null), /*#__PURE__*/React.createElement(ReviewBand, null), /*#__PURE__*/React.createElement(Faq, null), /*#__PURE__*/React.createElement(FinalCta, null)), /*#__PURE__*/React.createElement(Footer, null));
+  }), /*#__PURE__*/React.createElement("main", null, /*#__PURE__*/React.createElement(Hero, null), /*#__PURE__*/React.createElement(Services, null), /*#__PURE__*/React.createElement(Areas, null), /*#__PURE__*/React.createElement(WhyUs, null), /*#__PURE__*/React.createElement(ReviewBand, null), /*#__PURE__*/React.createElement(FinalCta, null)), /*#__PURE__*/React.createElement(Footer, null));
 }
 window.ImanSite = {
   App

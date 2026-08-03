@@ -1,4 +1,5 @@
 const {
+  cleanText,
   json,
   centsToDollars,
   verifyQuoteToken
@@ -17,6 +18,11 @@ function getSiteUrl(request) {
   const proto = request.headers["x-forwarded-proto"] || "https";
   const host = request.headers["x-forwarded-host"] || request.headers.host;
   return `${proto}://${host}`;
+}
+
+function getClientIp(request) {
+  const forwardedFor = String(request.headers["x-forwarded-for"] || "").split(",")[0].trim();
+  return cleanText(forwardedFor || request.socket?.remoteAddress || "");
 }
 
 function parseMultipartFields(request) {
@@ -50,7 +56,7 @@ async function readFields(request) {
       headers: request.headers,
       limits: {
         files: 0,
-        fields: 8
+        fields: 10
       }
     });
 
@@ -128,6 +134,11 @@ module.exports = async function handler(request, response) {
       return json(response, 400, { error: "Please scroll through the service agreement before payment." });
     }
 
+    const agreementSignature = cleanText(fields.agreementSignature);
+    if (agreementSignature.length < 2) {
+      return json(response, 400, { error: "Please type your full legal name to sign the service agreement." });
+    }
+
     const quote = verifyQuoteToken(fields.token);
 
     const siteUrl = getSiteUrl(request);
@@ -135,6 +146,8 @@ module.exports = async function handler(request, response) {
     const scheduleText = [quote.serviceDate, quote.serviceTime].filter(Boolean).join(" at ");
     const paymentAmountCents = depositCents(totalAmountCents);
     const remainingAmountCents = Math.max(0, totalAmountCents - paymentAmountCents);
+    const agreementSignedAt = new Date().toISOString();
+    const agreementIp = getClientIp(request);
     const productDescription = [
       quote.description,
       quote.serviceLocation ? `Service location: ${quote.serviceLocation}.` : "",
@@ -168,6 +181,10 @@ module.exports = async function handler(request, response) {
       "payment_intent_data[metadata][payment_amount_cents]": paymentAmountCents,
       "payment_intent_data[metadata][remaining_amount_cents]": remainingAmountCents,
       "payment_intent_data[metadata][payment_type]": "deposit_25",
+      "payment_intent_data[metadata][agreement_accepted]": "true",
+      "payment_intent_data[metadata][agreement_signature]": agreementSignature,
+      "payment_intent_data[metadata][agreement_signed_at]": agreementSignedAt,
+      "payment_intent_data[metadata][agreement_ip]": agreementIp,
       "metadata[quote_id]": quote.quoteId,
       "metadata[customer_name]": quote.customerName,
       "metadata[service_location]": quote.serviceLocation,
@@ -179,6 +196,10 @@ module.exports = async function handler(request, response) {
       "metadata[payment_amount_cents]": paymentAmountCents,
       "metadata[remaining_amount_cents]": remainingAmountCents,
       "metadata[payment_type]": "deposit_25",
+      "metadata[agreement_accepted]": "true",
+      "metadata[agreement_signature]": agreementSignature,
+      "metadata[agreement_signed_at]": agreementSignedAt,
+      "metadata[agreement_ip]": agreementIp,
       "invoice_creation[enabled]": "true",
       "invoice_creation[invoice_data][description]": productDescription,
       "invoice_creation[invoice_data][metadata][quote_id]": quote.quoteId,
@@ -187,6 +208,9 @@ module.exports = async function handler(request, response) {
       "invoice_creation[invoice_data][metadata][service]": quote.service,
       "invoice_creation[invoice_data][metadata][service_date]": quote.serviceDate,
       "invoice_creation[invoice_data][metadata][service_time]": quote.serviceTime,
+      "invoice_creation[invoice_data][metadata][agreement_accepted]": "true",
+      "invoice_creation[invoice_data][metadata][agreement_signature]": agreementSignature,
+      "invoice_creation[invoice_data][metadata][agreement_signed_at]": agreementSignedAt,
       success_url: `${siteUrl}/quote-paid.html?session_id={CHECKOUT_SESSION_ID}`,
       cancel_url: `${siteUrl}/approve-quote.html?token=${encodeURIComponent(fields.token)}`
     });

@@ -137,7 +137,12 @@ function decodeBase64Url(value) {
 }
 
 function getQuoteApprovalSecret() {
-  return process.env.QUOTE_APPROVAL_SECRET || process.env.ADMIN_TOKEN || process.env.STRIPE_SECRET_KEY || "";
+  return process.env.QUOTE_APPROVAL_SECRET
+    || process.env.ADMIN_TOKEN
+    || process.env.Admin_Token
+    || process.env.admin_token
+    || process.env.STRIPE_SECRET_KEY
+    || "";
 }
 
 function signQuotePayload(payload) {
@@ -200,14 +205,15 @@ function attachmentFromDataUrl(item) {
   };
 }
 
-function buildQuoteEmail({ quoteId, formFields, folderLink, photos, attachments }) {
+function buildQuoteEmail({ quoteId, formFields, folderLink, photos, attachments, attachmentBatchLabel = "", attachmentFailureCount = 0 }) {
   const boundary = `iman_quote_${Date.now().toString(36)}`;
   const safeQuoteId = cleanText(quoteId, makeQuoteId());
   const firstName = cleanText(formFields["First Name"]);
   const lastName = cleanText(formFields["Last Name"]);
   const customerName = cleanText(`${firstName} ${lastName}`, "Customer");
   const customerEmail = cleanText(formFields.Email || formFields.email);
-  const subject = `New cleaning quote request from www.imancleaningservice.com - ${safeQuoteId}`;
+  const subject = `New cleaning quote request from www.imancleaningservice.com - ${safeQuoteId}${attachmentBatchLabel ? ` - ${attachmentBatchLabel}` : ""}`;
+  const attachmentStatus = `${attachmentBatchLabel ? `${attachmentBatchLabel}: ` : ""}${(attachments || []).length} photo attachment${(attachments || []).length === 1 ? "" : "s"}${attachmentFailureCount ? `; ${attachmentFailureCount} photo${attachmentFailureCount === 1 ? "" : "s"} could not be attached and remain available in Google Drive` : ""}`;
 
   const fieldRows = Object.entries(formFields || {})
     .filter(([key, value]) => key && value !== "" && value !== null && typeof value !== "undefined")
@@ -225,6 +231,7 @@ function buildQuoteEmail({ quoteId, formFields, folderLink, photos, attachments 
     `<p><strong>Customer:</strong> ${escapeHtml(customerName)}</p>`,
     `<p><strong>Google Drive folder:</strong> <a href="${escapeHtml(folderLink)}">${escapeHtml(folderLink)}</a></p>`,
     `<p><strong>Total uploaded photos:</strong> ${(photos || []).length}</p>`,
+    `<p><strong>Email attachments:</strong> ${escapeHtml(attachmentStatus)}</p>`,
     "<h3>Quote details</h3>",
     `<table cellpadding="8" cellspacing="0" border="1">${fieldRows}</table>`,
     "<h3>Photo links</h3>",
@@ -237,6 +244,7 @@ function buildQuoteEmail({ quoteId, formFields, folderLink, photos, attachments 
     `Customer: ${customerName}`,
     `Google Drive folder: ${folderLink}`,
     `Total uploaded photos: ${(photos || []).length}`,
+    `Email attachments: ${attachmentStatus}`,
     "",
     "Quote details:",
     ...Object.entries(formFields || {}).map(([key, value]) => `${key}: ${Array.isArray(value) ? value.join(", ") : value}`),

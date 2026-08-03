@@ -10,6 +10,7 @@
       href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap"
       rel="stylesheet"
     />
+    <link rel="stylesheet" href="./homepage-footer.css?v=20260727-footer-location" />
     <style>
       :root {
         --green: #075f5d;
@@ -301,6 +302,8 @@
       </section>
     </main>
 
+    <div data-site-footer></div>
+    <script src="./site-footer.js?v=20260727-footer-location"></script>
     <script>
       const form = document.querySelector("#quotePaymentForm");
       const result = document.querySelector("#result");
@@ -309,7 +312,7 @@
         event.preventDefault();
         const button = form.querySelector("button");
         const formData = new FormData(form);
-        const adminToken = String(formData.get("adminToken") || "");
+        const adminToken = String(formData.get("adminToken") || "").trim();
         const paymentType = String(formData.get("paymentType") || "deposit_25");
         const payload = {
           quoteId: formData.get("quoteId"),

@@ -1,0 +1,67 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Confirming Your Account | Iman Cleaning Service LLC</title>
+  <meta name="robots" content="noindex,nofollow">
+  <link rel="stylesheet" href="./customer-account.css?v=20260730">
+</head>
+<body class="account-page">
+  <header class="account-header">
+    <nav class="account-shell account-nav" aria-label="Account navigation">
+      <a class="account-brand" href="./index.html"><img src="./assets/iman-logo-icon.png" alt=""><span>Iman Cleaning Service LLC</span></a>
+      <div class="account-nav-links"><a href="./index.html">Home</a><a class="account-primary-link" href="./book-now.html">Book Online</a></div>
+    </nav>
+  </header>
+  <main class="account-shell account-main">
+    <section class="account-card" style="max-width:620px;margin:40px auto;text-align:center;">
+      <h1 style="font-size:clamp(2rem,5vw,3rem);">Confirming your account…</h1>
+      <p class="account-note" data-confirmation-message>Please wait while we securely finish your email confirmation and open your dashboard.</p>
+      <div class="account-status show" data-confirmation-status role="status">Connecting your verified email…</div>
+      <a class="account-primary-link" href="./login.html" data-login-link hidden style="display:inline-flex;margin-top:20px;">Go to customer login</a>
+    </section>
+  </main>
+  <script>
+    (() => {
+      const status = document.querySelector("[data-confirmation-status]");
+      const message = document.querySelector("[data-confirmation-message]");
+      const loginLink = document.querySelector("[data-login-link]");
+      const params = new URLSearchParams(location.hash.replace(/^#/, ""));
+      const fail = (text) => {
+        history.replaceState(null, "", location.pathname);
+        status.textContent = text;
+        message.textContent = "Your email may already be verified. Log in to open your customer dashboard.";
+        loginLink.hidden = false;
+        loginLink.style.display = "inline-flex";
+      };
+      const accessToken = params.get("access_token");
+      const refreshToken = params.get("refresh_token");
+      if (params.get("error") || params.get("error_description")) {
+        fail(params.get("error_description") || "This confirmation link could not be completed.");
+        return;
+      }
+      if (!accessToken || !refreshToken) {
+        fetch("/api/account/session")
+          .then((response) => response.json())
+          .then((data) => data.signedIn ? location.replace("./account.html") : fail("This confirmation link is incomplete or has expired."))
+          .catch(() => fail("This confirmation link could not be completed."));
+        return;
+      }
+      const expiresIn = Number(params.get("expires_in") || 3600);
+      history.replaceState(null, "", location.pathname);
+      fetch("/api/account/confirm", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ accessToken, refreshToken, expiresIn })
+      })
+        .then(async (response) => {
+          const data = await response.json().catch(() => ({}));
+          if (!response.ok) throw new Error(data.error || "Your confirmation could not be completed.");
+          location.replace("./account.html");
+        })
+        .catch((error) => fail(error.message));
+    })();
+  </script>
+</body>
+</html>

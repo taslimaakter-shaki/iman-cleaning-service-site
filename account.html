@@ -1,0 +1,110 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>My Cleaning Account | Iman Cleaning Service LLC</title>
+  <meta name="robots" content="noindex,nofollow">
+  <link rel="stylesheet" href="./customer-account.css?v=20260730">
+  <script src="./account-auth-callback.js"></script>
+</head>
+<body class="account-page">
+  <header class="account-header">
+    <nav class="account-shell account-nav" aria-label="Account navigation">
+      <a class="account-brand" href="./index.html"><img src="./assets/iman-logo-icon.png" alt=""><span>Iman Cleaning Service LLC</span></a>
+      <div class="account-nav-links">
+        <a href="./index.html">Home</a>
+        <button class="account-link-button" type="button" data-logout>Log out</button>
+        <a class="account-primary-link" href="./book-now.html">Book Online</a>
+      </div>
+    </nav>
+  </header>
+  <main class="account-shell account-main">
+    <div class="account-loading" data-loading>Loading your account…</div>
+    <div hidden data-dashboard>
+      <header class="account-dashboard-head">
+        <div><h1>My cleaning account</h1><p data-welcome></p></div>
+        <a class="account-primary-link" href="./book-now.html" style="padding:14px 20px;border-radius:999px;background:#0b7282;color:#fff;font-weight:900;text-decoration:none;">Book another service</a>
+      </header>
+      <section class="account-summary" aria-label="Account summary">
+        <div class="account-summary-card"><small>Upcoming appointments</small><strong data-upcoming-count>0</strong></div>
+        <div class="account-summary-card"><small>Past appointments</small><strong data-past-count>0</strong></div>
+        <div class="account-summary-card"><small>Account email</small><strong data-account-email style="font-size:1rem;word-break:break-word;"></strong></div>
+      </section>
+      <section class="account-bookings" data-bookings aria-label="Your appointments"></section>
+    </div>
+  </main>
+  <script>
+    (() => {
+      const loading = document.querySelector("[data-loading]");
+      const dashboard = document.querySelector("[data-dashboard]");
+      const bookingsRoot = document.querySelector("[data-bookings]");
+      const money = (value) => new Intl.NumberFormat("en-US", { style: "currency", currency: "USD" }).format(Number(value || 0));
+      const bookingCard = (booking) => {
+        const article = document.createElement("article");
+        article.className = "account-booking";
+        const top = document.createElement("div");
+        top.className = "account-booking-top";
+        const title = document.createElement("h2");
+        title.textContent = booking.service;
+        const badge = document.createElement("span");
+        badge.className = "account-booking-status";
+        badge.textContent = booking.status;
+        top.append(title, badge);
+        const details = document.createElement("div");
+        details.className = "account-booking-details";
+        [["Appointment", booking.scheduleLabel], ["Address", booking.address], ["Total", money(booking.total)]].forEach(([label, value]) => {
+          const item = document.createElement("div");
+          const small = document.createElement("small");
+          small.textContent = label;
+          const strong = document.createElement("strong");
+          strong.textContent = value || "—";
+          item.append(small, strong);
+          details.append(item);
+        });
+        const actions = document.createElement("div");
+        actions.className = "account-booking-actions";
+        const manage = Object.assign(document.createElement("a"), { href: booking.manageUrl, textContent: "Manage appointment" });
+        actions.append(manage);
+        if (booking.invoiceUrl) {
+          const invoice = Object.assign(document.createElement("a"), { href: booking.invoiceUrl, textContent: "Download invoice", target: "_blank", rel: "noopener" });
+          actions.append(invoice);
+        }
+        const rebook = Object.assign(document.createElement("a"), { href: booking.rebookUrl, textContent: "Book again" });
+        actions.append(rebook);
+        article.append(top, details, actions);
+        return article;
+      };
+      const load = async () => {
+        const response = await fetch("/api/account/dashboard");
+        const data = await response.json().catch(() => ({}));
+        if (response.status === 401) return location.replace("./login.html?return_to=./account.html");
+        if (!response.ok) throw new Error(data.error || "Your account could not be loaded.");
+        const now = Date.now();
+        const upcoming = data.bookings.filter((booking) => new Date(booking.schedule).getTime() >= now && booking.status !== "Cancelled");
+        const past = data.bookings.filter((booking) => !upcoming.includes(booking));
+        document.querySelector("[data-welcome]").textContent = `Welcome${data.user.fullName ? `, ${data.user.fullName}` : ""}. View your bookings, invoices, and appointment options below.`;
+        document.querySelector("[data-upcoming-count]").textContent = String(upcoming.length);
+        document.querySelector("[data-past-count]").textContent = String(past.length);
+        document.querySelector("[data-account-email]").textContent = data.user.email;
+        bookingsRoot.replaceChildren();
+        if (!data.bookings.length) {
+          const empty = document.createElement("div");
+          empty.className = "account-empty";
+          empty.innerHTML = "<h2>No bookings yet</h2><p>Book as a signed-in customer or use the same verified email to connect an existing guest booking.</p>";
+          bookingsRoot.append(empty);
+        } else {
+          [...upcoming, ...past].forEach((booking) => bookingsRoot.append(bookingCard(booking)));
+        }
+        loading.hidden = true;
+        dashboard.hidden = false;
+      };
+      document.querySelector("[data-logout]").addEventListener("click", async () => {
+        await fetch("/api/account/logout", { method: "POST", headers: { "Content-Type": "application/json" }, body: "{}" }).catch(() => {});
+        location.replace("./login.html");
+      });
+      load().catch((error) => { loading.textContent = error.message; });
+    })();
+  </script>
+</body>
+</html>

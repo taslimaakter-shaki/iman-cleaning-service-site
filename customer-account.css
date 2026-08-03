@@ -1,0 +1,58 @@
+:root{--account-ink:#07343d;--account-teal:#0b7282;--account-teal-dark:#075662;--account-green:#8bc34f;--account-line:#d4e3e1;--account-soft:#f2f8f7;--account-muted:#607579}
+*{box-sizing:border-box}
+body.account-page{min-height:100vh;margin:0;background:linear-gradient(145deg,#e8f4f2,#fbfcfb);color:var(--account-ink);font-family:Inter,system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif}
+.account-shell{width:min(1120px,calc(100% - 30px));margin:0 auto}
+.account-header{padding:18px 0}
+.account-nav{display:flex;align-items:center;justify-content:space-between;gap:20px}
+.account-brand{display:flex;align-items:center;gap:11px;color:var(--account-ink);font-weight:900;text-decoration:none}
+.account-brand img{width:50px;height:50px;object-fit:contain}
+.account-nav-links{display:flex;align-items:center;gap:18px}
+.account-nav-links a,.account-link-button{border:0;background:transparent;color:#36555b;font:inherit;font-weight:800;text-decoration:none;cursor:pointer}
+.account-nav-links .account-primary-link{padding:12px 19px;border-radius:999px;background:var(--account-teal);color:#fff}
+.account-main{padding:clamp(22px,6vw,66px) 0 80px}
+.account-auth-grid{display:grid;grid-template-columns:minmax(0,.9fr) minmax(420px,1fr);gap:clamp(32px,7vw,88px);align-items:center}
+.account-intro h1,.account-dashboard-head h1{margin:0;color:var(--account-ink);font-size:clamp(2.6rem,6vw,5.3rem);line-height:1.02;letter-spacing:-.04em}
+.account-intro p,.account-dashboard-head p{max-width:620px;color:var(--account-muted);font-size:1.08rem;line-height:1.7}
+.account-benefits{display:grid;gap:14px;margin-top:28px;padding:0;list-style:none}
+.account-benefits li{display:flex;gap:12px;align-items:center;color:#35565c;font-weight:750}
+.account-benefits li::before{content:"✓";display:grid;width:28px;height:28px;place-items:center;border-radius:50%;background:#e7f5d8;color:#4b7c25}
+.account-card{padding:clamp(24px,5vw,40px);border:1px solid var(--account-line);border-radius:25px;background:#fff;box-shadow:0 24px 64px rgba(5,54,64,.11)}
+.account-tabs{display:grid;grid-template-columns:1fr 1fr;gap:7px;margin-bottom:24px;padding:5px;border-radius:999px;background:var(--account-soft)}
+.account-tabs button{min-height:44px;border:0;border-radius:999px;background:transparent;color:#5c7175;font:inherit;font-weight:850;cursor:pointer}
+.account-tabs button[aria-selected="true"]{background:#fff;color:var(--account-ink);box-shadow:0 3px 15px rgba(5,54,64,.1)}
+.account-form{display:grid;gap:16px}
+.account-form[hidden]{display:none}
+.account-form label{display:grid;gap:7px;color:#284b52;font-weight:800}
+.account-form input{width:100%;min-height:52px;padding:0 14px;border:1px solid #bcd2cf;border-radius:12px;font:inherit}
+.account-form input:focus{outline:3px solid rgba(11,114,130,.16);border-color:var(--account-teal)}
+.account-submit{min-height:54px;border:0;border-radius:999px;background:var(--account-teal);color:#fff;font:inherit;font-weight:900;cursor:pointer}
+.account-submit:hover{background:var(--account-teal-dark)}
+.account-submit:disabled{opacity:.6;cursor:wait}
+.account-note{margin:0;color:var(--account-muted);font-size:.86rem;line-height:1.55}
+.account-status{display:none;padding:13px;border-radius:12px;background:#fff0f0;color:#8a2828;font-weight:700;line-height:1.45}
+.account-status.show{display:block}
+.account-status.success{background:#e9f7ef;color:#246142}
+.account-dashboard-head{display:flex;align-items:end;justify-content:space-between;gap:26px;margin-bottom:32px}
+.account-dashboard-head h1{font-size:clamp(2.5rem,5vw,4.5rem)}
+.account-summary{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:14px;margin-bottom:28px}
+.account-summary-card{padding:20px;border:1px solid var(--account-line);border-radius:17px;background:#fff}
+.account-summary-card small{display:block;color:var(--account-muted);font-weight:750}
+.account-summary-card strong{display:block;margin-top:7px;font-size:1.6rem}
+.account-bookings{display:grid;gap:18px}
+.account-booking{padding:clamp(20px,4vw,28px);border:1px solid var(--account-line);border-radius:21px;background:#fff;box-shadow:0 12px 34px rgba(5,54,64,.07)}
+.account-booking-top{display:flex;align-items:start;justify-content:space-between;gap:18px}
+.account-booking h2{margin:0;font-size:1.35rem}
+.account-booking-status{padding:6px 10px;border-radius:999px;background:#e8f5f4;color:#075f6c;font-size:.75rem;font-weight:900}
+.account-booking-details{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:14px;margin:20px 0}
+.account-booking-details div{padding:13px;border-radius:12px;background:var(--account-soft)}
+.account-booking-details small{display:block;color:var(--account-muted);font-weight:700}
+.account-booking-details strong{display:block;margin-top:4px}
+.account-booking-actions{display:flex;flex-wrap:wrap;gap:10px}
+.account-booking-actions a{padding:11px 16px;border:1px solid #b9cfcc;border-radius:999px;color:var(--account-teal-dark);font-weight:850;text-decoration:none}
+.account-booking-actions a:first-child{border-color:var(--account-teal);background:var(--account-teal);color:#fff}
+.account-empty{padding:50px 24px;border:1px dashed #abc5c1;border-radius:22px;background:rgba(255,255,255,.7);text-align:center}
+.account-empty h2{margin:0}
+.account-empty p{color:var(--account-muted)}
+.account-loading{padding:50px;text-align:center;color:var(--account-muted);font-weight:800}
+@media(max-width:800px){.account-auth-grid{grid-template-columns:1fr}.account-dashboard-head{align-items:start;flex-direction:column}.account-summary{grid-template-columns:1fr}.account-booking-details{grid-template-columns:1fr}.account-nav-links a:not(.account-primary-link),.account-link-button{display:none}}
+@media(max-width:520px){.account-card{padding:22px}.account-intro h1{font-size:2.8rem}.account-booking-top{flex-direction:column}}

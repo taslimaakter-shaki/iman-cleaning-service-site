@@ -7,30 +7,139 @@ const D = window.IMAN_DATA;
 
 /* ---- Hero -------------------------------------------------------------- */
 function Hero() {
+  const videoRef = React.useRef(null);
+  const [videoEnabled, setVideoEnabled] = React.useState(false);
+  const [showVideoPlayButton, setShowVideoPlayButton] = React.useState(false);
+
+  const playHeroVideo = React.useCallback(() => {
+    const video = videoRef.current;
+    if (!video) return Promise.resolve();
+
+    video.muted = true;
+    video.defaultMuted = true;
+    video.playsInline = true;
+    video.setAttribute("muted", "");
+    video.setAttribute("playsinline", "");
+    video.setAttribute("webkit-playsinline", "");
+
+    const attempt = video.play();
+    if (!attempt || typeof attempt.then !== "function") {
+      setShowVideoPlayButton(false);
+      return Promise.resolve();
+    }
+
+    return attempt
+      .then(() => setShowVideoPlayButton(false))
+      .catch(() => setShowVideoPlayButton(true));
+  }, []);
+
+  React.useEffect(() => {
+    const reducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)");
+    const smallScreen = window.matchMedia("(max-width: 620px)");
+    const updateVideoPreference = () => {
+      const enabled = !reducedMotion.matches && !smallScreen.matches;
+      setVideoEnabled(enabled);
+      if (!enabled) setShowVideoPlayButton(false);
+    };
+    const addChangeListener = (query) => {
+      if (query.addEventListener) query.addEventListener("change", updateVideoPreference);
+      else query.addListener(updateVideoPreference);
+    };
+    const removeChangeListener = (query) => {
+      if (query.removeEventListener) query.removeEventListener("change", updateVideoPreference);
+      else query.removeListener(updateVideoPreference);
+    };
+
+    updateVideoPreference();
+    addChangeListener(reducedMotion);
+    addChangeListener(smallScreen);
+    return () => {
+      removeChangeListener(reducedMotion);
+      removeChangeListener(smallScreen);
+    };
+  }, []);
+
+  React.useEffect(() => {
+    if (!videoEnabled) return undefined;
+    const video = videoRef.current;
+    if (!video) return undefined;
+
+    const handleVisibility = () => {
+      if (document.hidden) {
+        video.pause();
+        return;
+      }
+      playHeroVideo();
+    };
+
+    video.addEventListener("canplay", playHeroVideo);
+    document.addEventListener("visibilitychange", handleVisibility);
+    playHeroVideo();
+
+    return () => {
+      video.removeEventListener("canplay", playHeroVideo);
+      document.removeEventListener("visibilitychange", handleVisibility);
+    };
+  }, [playHeroVideo, videoEnabled]);
+
   return (
-    <section className="page-hero on-photo home-hero-photo" id="top"
-      style={{ "--hero-img": "url('./assets/home-hero-bedroom.png')" }}>
+    <section className="page-hero on-photo home-hero-photo" id="top">
+      <picture className="home-hero-poster" aria-hidden="true">
+        <source type="image/avif"
+          srcSet="./assets/home-hero-video-poster-768w.avif 768w, ./assets/home-hero-video-poster.avif 1280w"
+          sizes="100vw" />
+        <img src="./assets/home-hero-video-poster.jpg" alt="" width="1280" height="720"
+          fetchPriority="high" decoding="async" />
+      </picture>
+      {videoEnabled && (
+        <video
+          ref={videoRef}
+          className="home-hero-video"
+          width="1280"
+          height="720"
+          autoPlay
+          muted
+          loop
+          playsInline
+          preload="metadata"
+          poster="./assets/home-hero-video-poster.jpg"
+          aria-hidden="true"
+          tabIndex="-1"
+          src="./assets/home-hero-video-fast.mp4"
+        />
+      )}
+      {showVideoPlayButton && (
+        <button
+          className="home-hero-video-play"
+          type="button"
+          onClick={playHeroVideo}
+          aria-label="Play homepage background video"
+        >
+          <span aria-hidden="true" />
+          Play video
+        </button>
+      )}
       <div className="ds-shell page-hero-inner">
-        <Badge tone="leaf" check size="sm">Fully insured · NYC</Badge>
-        <h1>Spotless spaces, without the hassle.</h1>
+        <Badge tone="leaf" check size="sm">Fully Insured • Background-Checked Cleaners</Badge>
+        <h1>Reliable Cleaning Services in NYC &amp; Long Island</h1>
         <p className="ds-lead">
-          Detail-obsessed cleaning for homes, apartments, offices, and businesses across
-          all five NYC boroughs. Know your price up front, then book in minutes.
+          Residential and commercial cleaning with clear quotes, flexible scheduling, and easy online booking.
         </p>
         <div className="page-hero-actions">
-          <Button href={D.phoneHref} variant="accent" size="lg" iconLeft={<Icon name="phone" size={18} />}>
-            Call us
+          <Button href={D.phoneHref} variant="accent" size="lg"
+            aria-label="Call Iman Cleaning Service" data-conv="call">
+            Call Us
           </Button>
-          <Button href={"sms:" + D.phone.replace(/[^0-9]/g, "")} variant="secondary" size="lg" iconLeft={<Icon name="message" size={18} stroke="var(--brand)" />}>
-            Text us
-          </Button>
+          <Button href="./book-now.html" variant="secondary" size="lg"
+            aria-label="Get an instant cleaning quote" data-conv="book">Get an Instant Quote</Button>
         </div>
-        <div className="hero-trust on-dark">
-          <span><Icon name="check" size={16} stroke="var(--leaf-500)" /> 5-star Google reviews</span>
-          <span><Icon name="check" size={16} stroke="var(--leaf-500)" /> Background-checked cleaners</span>
-          <span><Icon name="check" size={16} stroke="var(--leaf-500)" /> Open 6 AM–8 PM daily</span>
-          <span><Icon name="check" size={16} stroke="var(--leaf-500)" /> Serving all five NYC boroughs</span>
-          <span><Icon name="check" size={16} stroke="var(--leaf-500)" /> Residential &amp; commercial cleaning</span>
+        <div className="hero-trust-line" aria-label="Reviews and business hours">
+          <a href={D.googleReviewsHref} target="_blank" rel="noopener noreferrer"
+            aria-label="Read Iman Cleaning Service Google reviews" data-conv="google_reviews">
+            <span aria-hidden="true">★★★★★</span> Read Our Google Reviews
+          </a>
+          <span className="hero-trust-divider" aria-hidden="true">•</span>
+          <span>Open Daily, 8 AM–8 PM</span>
         </div>
       </div>
     </section>
@@ -43,7 +152,7 @@ function ProofStrip() {
     ["Fully insured", "Homes & businesses"],
     ["All 5 boroughs", "Across New York City"],
     ["Clear quote first", "Reviewed before booking"],
-    ["Open daily", "6:00 AM – 8:00 PM"],
+    ["Open daily", "8:00 AM – 8:00 PM"],
   ];
   return (
     <section className="proof">
@@ -60,6 +169,62 @@ function ProofStrip() {
 }
 
 /* ---- Services ---------------------------------------------------------- */
+function ServiceCategoryAccordion({ category }) {
+  const [isOpen, setIsOpen] = React.useState(false);
+  const panelId = `service-category-${category.title.toLowerCase().replace(/[^a-z0-9]+/g, "-")}`;
+  const displayPrice = (price) => {
+    if (!price) return "Custom quote";
+    return /^\d|^\$/.test(String(price).trim()) ? `Starts at ${price}` : price;
+  };
+
+  return (
+    <article className={`service-category-accordion${isOpen ? " is-open" : ""}`}>
+      <button
+        className="service-category-toggle"
+        type="button"
+        aria-expanded={isOpen}
+        aria-controls={panelId}
+        onClick={() => setIsOpen((open) => !open)}
+      >
+        <img
+          src={category.image}
+          alt={category.imageAlt}
+          width={category.imageWidth}
+          height={category.imageHeight}
+          loading="lazy"
+          decoding="async"
+        />
+        <span className="service-category-shade" aria-hidden="true" />
+        <span className="service-category-toggle-copy">
+          <span className="service-category-kicker">{category.kicker}</span>
+          <strong>{category.title}</strong>
+          <span className="service-category-action">
+            {isOpen ? "Hide services & pricing" : "View services & pricing"}
+          </span>
+        </span>
+        <span className="service-category-symbol" aria-hidden="true">
+          {isOpen ? "−" : "+"}
+        </span>
+      </button>
+      <div className="service-category-panel" id={panelId} hidden={!isOpen}>
+        <ul>
+          {category.services.map((service) => (
+            <li key={service.name}>
+              <a href={service.href || "#"}>
+                <span>
+                  <strong>{service.name}</strong>
+                  <small>{displayPrice(service.price)}</small>
+                </span>
+                <Icon name="arrow" size={18} />
+              </a>
+            </li>
+          ))}
+        </ul>
+      </div>
+    </article>
+  );
+}
+
 function Services() {
   return (
     <section className="section" id="services">
@@ -69,7 +234,9 @@ function Services() {
           <h2>Choose the cleaning you need today</h2>
         </div>
         <div className="two-cards">
-          {D.serviceCategories.map((c) => <ServiceListCard key={c.title} {...c} />)}
+          {D.serviceCategories.map((category) => (
+            <ServiceCategoryAccordion key={category.title} category={category} />
+          ))}
         </div>
       </div>
     </section>
@@ -96,7 +263,7 @@ function HowItWorks() {
           ))}
         </ol>
         <div className="steps-cta">
-          <Button href="./quote.html" variant="primary" size="lg">Get a clear quote</Button>
+          <Button href="./book-now.html" variant="primary" size="lg">Book residential cleaning</Button>
         </div>
       </div>
     </section>
@@ -106,35 +273,27 @@ function HowItWorks() {
 /* ---- Why us (split: photo + reasons) ----------------------------------- */
 function WhyUs() {
   return (
-    <section className="why-band" id="why">
+    <section className="why-band" id="why" aria-labelledby="why-iman-title">
       <div className="ds-shell">
-        <div className="why-band-head">
-          <span className="ds-kicker" style={{ color: "var(--leaf-300)" }}>Why neighbors choose Iman</span>
-          <h2>Why NYC homeowners &amp; businesses trust Iman</h2>
-          <p>Trusted in homes and businesses across all five NYC boroughs — here's what you get with every visit.</p>
-        </div>
+        <header className="why-band-head">
+          <p className="ds-kicker">Why customers choose Iman</p>
+          <h2 id="why-iman-title">Cleaning you can book with confidence.</h2>
+        </header>
         <div className="why-band-grid">
           {D.reasons.map((r) => (
-            <div className="why-band-card" key={r.title}>
-              <span className="why-band-ico"><Icon name={r.icon} size={24} stroke="var(--leaf-300)" /></span>
+            <article className="why-band-card" key={r.title}>
+              <span className="why-band-ico" aria-hidden="true"><Icon name={r.icon} size={24} stroke="var(--leaf-300)" /></span>
               <h3>{r.title}</h3>
               <p>{r.body}</p>
-            </div>
+            </article>
           ))}
         </div>
-        <div className="why-reviews">
-          <div className="why-reviews-stars" aria-label="5 out of 5 stars">
-            {[0,1,2,3,4].map((i) => <Icon key={i} name="star" size={22} stroke="var(--leaf-400)" />)}
-            <span>Rated 5.0 on Google</span>
-          </div>
-          <div className="why-reviews-grid">
-            {D.reviews.map((rv) => (
-              <figure className="why-review" key={rv.author}>
-                <blockquote>&ldquo;{rv.text}&rdquo;</blockquote>
-                <figcaption>— {rv.author}</figcaption>
-              </figure>
-            ))}
-          </div>
+        <div className="why-band-actions">
+          <a className="why-learn-more" href="./why-us.html"
+            aria-label="Learn more about why customers choose Iman Cleaning Service">
+            Learn More
+            <Icon name="arrow" size={18} stroke="currentColor" />
+          </a>
         </div>
       </div>
     </section>
@@ -146,14 +305,19 @@ function Areas() {
   return (
     <section className="areas-band" id="areas">
       <div className="ds-shell areas-band-inner">
-        <span className="ds-kicker" style={{ color: "var(--leaf-300)" }}>Service areas</span>
-        <h2>Cleaning across all five NYC boroughs</h2>
-        <p className="ds-lead">From apartments and brownstones to Airbnbs, offices, and retail
-          spaces, Iman Cleaning Service LLC covers the whole city.</p>
-        <div className="areas-badges">
-          {D.boroughs.map((b) => <Badge key={b} tone="solid" size="md">{b}</Badge>)}
-        </div>
-        <Button href="./areas.html" variant="accent" size="lg">View service areas</Button>
+        <h2>Areas We Serve</h2>
+        <ul className="areas-links" aria-label="Cleaning service areas">
+          {D.serviceAreas.map((area) => (
+            <li key={area.name}>
+              {area.href ? <a href={area.href}>{area.name}</a> : <span>{area.name}</span>}
+            </li>
+          ))}
+        </ul>
+        <a className="areas-learn-more" href="./areas.html"
+          aria-label="Learn more about Iman Cleaning Service areas">
+          Learn More
+          <Icon name="arrow" size={18} stroke="currentColor" />
+        </a>
       </div>
     </section>
   );
@@ -168,7 +332,14 @@ function ReviewBand() {
           {[0,1,2,3,4].map((i) => <Icon key={i} name="star" size={26} stroke="var(--leaf-500)" />)}
         </div>
         <blockquote>&ldquo;{D.review.text}&rdquo;</blockquote>
-        <cite>{D.review.author}</cite>
+        <cite>
+          <span>Mahin Muhtasimul</span>
+          <span aria-hidden="true"> · </span>
+          <a href={D.googleReviewsHref} target="_blank" rel="noopener noreferrer"
+            aria-label="Read Iman Cleaning Service reviews on Google" data-conv="google_reviews">
+            Read Our Google Reviews
+          </a>
+        </cite>
       </div>
     </section>
   );
@@ -188,6 +359,10 @@ function Faq() {
             <FaqItem key={f.q} question={f.q} defaultOpen={f.open}>{f.a}</FaqItem>
           ))}
         </div>
+        <p className="faq-more">
+          <strong>Have more questions?</strong>{" "}
+          <a href="./faq.html">Get your answers in our FAQs</a>.
+        </p>
       </div>
     </section>
   );
@@ -198,14 +373,16 @@ function FinalCta() {
   return (
     <section className="final-cta" id="quote">
       <div className="ds-shell final-inner">
-        <span className="ds-kicker" style={{ color: "var(--leaf-300)" }}>Ready when you are</span>
-        <h2>Get a clear quote — no commitment until you approve the price.</h2>
-        <p>Send your details in a few minutes. We review the scope, confirm timing and team size,
-          then follow up before anything is booked.</p>
+        <span className="ds-kicker">Need a custom quote?</span>
+        <h2>Tell us about your cleaning needs.</h2>
+        <p>Share details about your space, what needs cleaning, and your preferred date. We’ll review everything and prepare the right quote for you.</p>
         <div className="final-actions">
-          <Button href="./quote.html" variant="accent" size="lg" iconRight={<Icon name="arrow" size={18} />}>Request a quote</Button>
-          <Button href={D.phoneHref} variant="secondary" size="lg"
-            iconLeft={<Icon name="phone" size={18} stroke="var(--brand)" />}>Call or text {D.phone}</Button>
+          <Button href="./quote.html" variant="accent" size="lg"
+            aria-label="Get a custom cleaning quote from Iman Cleaning Service" data-conv="quote"
+            iconRight={<Icon name="arrow" size={18} />}>Get a Custom Quote</Button>
+          <Button href="tel:+19298034053" variant="secondary" size="lg"
+            aria-label="Call Iman Cleaning Service at 929-803-4053" data-conv="call"
+            iconLeft={<Icon name="phone" size={18} stroke="var(--brand)" />}>Call Now</Button>
         </div>
       </div>
     </section>
@@ -215,15 +392,13 @@ function FinalCta() {
 function App() {
   return (
     <div className="site-scroll">
-      <Header onDark />
+      <Header onDark homepage />
       <main>
         <Hero />
         <Services />
-        <HowItWorks />
-        <WhyUs />
         <Areas />
+        <WhyUs />
         <ReviewBand />
-        <Faq />
         <FinalCta />
       </main>
       <Footer />

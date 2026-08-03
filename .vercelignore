@@ -8,6 +8,10 @@ scripts
 test
 supabase
 supabase-schema.sql
+api/ai/cleaning-estimate.js
+api/bookings.js
+api/bookings/**
+api/cleaners.js
 *.md
 *.swift
 *-qa.png

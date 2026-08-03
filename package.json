@@ -1,24 +1,24 @@
 {
   "name": "playground",
   "version": "1.0.0",
-  "description": "IMAN APP is the early booking marketplace prototype for IMAN CLEANING SERVICE LLC.",
-  "main": "chatbot.js",
+  "description": "Production website for IMAN CLEANING SERVICE LLC.",
   "scripts": {
-    "test": "node test/quote-workflow.test.js"
+    "test": "node test/quote-workflow.test.js && node test/booking-system.test.js && node test/booking-reminders.test.js && node test/booking-management.test.js && node test/customer-account.test.js"
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/taslimaakter-shaki/Iman-customer-app.git"
+    "url": "git+https://github.com/taslimaakter-shaki/iman-cleaning-service-site.git"
   },
   "keywords": [],
   "author": "",
   "license": "ISC",
   "type": "commonjs",
   "bugs": {
-    "url": "https://github.com/taslimaakter-shaki/Iman-customer-app/issues"
+    "url": "https://github.com/taslimaakter-shaki/iman-cleaning-service-site/issues"
   },
-  "homepage": "https://github.com/taslimaakter-shaki/Iman-customer-app#readme",
+  "homepage": "https://github.com/taslimaakter-shaki/iman-cleaning-service-site#readme",
   "dependencies": {
+    "@elevenlabs/elevenlabs-js": "^2.56.0",
     "busboy": "^1.6.0",
     "googleapis": "^173.0.0"
   }

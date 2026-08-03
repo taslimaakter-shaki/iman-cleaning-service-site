@@ -23,7 +23,8 @@
 <meta name="twitter:description" content="Detailed deep cleaning for NYC homes and apartments — high-touch areas, buildup, and seasonal resets. Fully insured. Get a clear quote before you book.">
 <meta name="twitter:image" content="https://www.imancleaningservice.com/brand-card.png">
 <link rel="stylesheet" href="./design-system.css">
-<link rel="stylesheet" href="./site.css">
+<link rel="stylesheet" href="./site.css?v=20260727-clean-header-logo">
+<link rel="stylesheet" href="./homepage-footer.css?v=20260727-footer-location">
 
 <!-- SEO: Service + breadcrumb + FAQ structured data. Keep in sync with visible content. -->
 <script type="application/ld+json">
@@ -49,8 +50,8 @@
   "offers": {
     "@type": "Offer",
     "priceCurrency": "USD",
-    "price": "280",
-    "description": "Starting at $280. Final price confirmed from your space details before booking."
+    "price": "480",
+    "description": "Starting at $480. Final price confirmed from your space details before booking."
   }
 }
 </script>
@@ -86,7 +87,7 @@
 <script src="https://unpkg.com/@babel/standalone@7.29.0/babel.min.js" integrity="sha384-m08KidiNqLdpJqLq95G/LEi8Qvjl/xUYll3QILypMoQ65QorJ9Lvtp2RXYGBFj1y" crossorigin="anonymous"></script>
 <script src="./_ds_bundle.js"></script>
 <script src="./data.js"></script>
-<script type="text/babel" src="./chrome.jsx"></script>
+<script type="text/babel" src="./chrome.jsx?v=20260729-book-online"></script>
 <script type="text/babel">
 const mount = () => {
   if (!window.ImanChrome) return setTimeout(mount, 30);
@@ -119,12 +120,11 @@ const mount = () => {
           <p className="ds-lead">For first-time cleanings, seasonal resets, and heavier buildup — a detailed, top-to-bottom clean of every room.</p>
           <div className="page-hero-badges">
             <Badge tone="leaf" check size="md">Fully insured</Badge>
-            <Badge tone="solid" size="md">Starting at $280</Badge>
+            <Badge tone="solid" size="md">Starting at $480</Badge>
             <Badge tone="solid" size="md">All 5 boroughs</Badge>
           </div>
           <div className="page-hero-actions">
             <Button href={D.phoneHref} variant="accent" size="lg" iconLeft={<Icon name="phone" size={18} />}>Call us</Button>
-            <Button href={"sms:" + D.phone.replace(/[^0-9]/g, "")} variant="secondary" size="lg" iconLeft={<Icon name="message" size={18} stroke="var(--brand)" />}>Text us</Button>
           </div>
         </div>
       </section>
@@ -148,12 +148,12 @@ const mount = () => {
             <ul>
               <li><Icon name="check" size={18} stroke="var(--leaf-600)" />Photos of the space help us size the team and confirm timing.</li>
               <li><Icon name="check" size={18} stroke="var(--leaf-600)" />Scope and total are reviewed before the appointment is confirmed.</li>
-              <li><Icon name="check" size={18} stroke="var(--leaf-600)" />Available 6:00 AM – 8:00 PM, seven days a week.</li>
+              <li><Icon name="check" size={18} stroke="var(--leaf-600)" />Available 8:00 AM – 8:00 PM, seven days a week.</li>
             </ul>
           </div>
           <aside className="aside-card brand">
             <span className="ds-kicker" style={{ color: "var(--leaf-300)" }}>Deep Cleaning</span>
-            <div className="aside-price">Starting at $280</div>
+            <div className="aside-price">Starting at $480</div>
             <p>Final price is confirmed from your space details before anything is booked — no surprises.</p>
             <ul className="aside-list">
               <li><Icon name="check" size={16} stroke="var(--leaf-300)" />Fully insured team</li>
@@ -161,7 +161,7 @@ const mount = () => {
               <li><Icon name="check" size={16} stroke="var(--leaf-300)" />Flexible scheduling</li>
             </ul>
             <Button href="./quote.html" variant="accent" fullWidth size="lg">Get a clear quote</Button>
-            <Button href={D.phoneHref} variant="ghost" fullWidth style={{ color: "#fff" }}>Call or text {D.phone}</Button>
+            <Button href={D.phoneHref} variant="ghost" fullWidth style={{ color: "#fff" }}>Call us {D.phone}</Button>
           </aside>
         </div>
       </section>
@@ -183,7 +183,7 @@ const mount = () => {
           <span className="ds-kicker" style={{ color: "var(--leaf-300)" }}>Ready when you are</span>
           <h2>Book a deep clean — no commitment until you approve the price.</h2>
           <div className="final-actions">
-            <Button href={D.phoneHref} variant="accent" size="lg" iconLeft={<Icon name="phone" size={18} />}>Call or text {D.phone}</Button>
+            <Button href={D.phoneHref} variant="accent" size="lg" iconLeft={<Icon name="phone" size={18} />}>Call us {D.phone}</Button>
           </div>
         </div>
       </section>
@@ -194,5 +194,6 @@ const mount = () => {
 };
 mount();
 </script>
+
 </body>
 </html>

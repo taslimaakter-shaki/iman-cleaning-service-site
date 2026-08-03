@@ -1,0 +1,172 @@
+.home-booking-promo {
+  position: fixed;
+  right: clamp(16px, 3vw, 32px);
+  bottom: clamp(16px, 3vw, 30px);
+  z-index: 190;
+  display: grid;
+  grid-template-columns: 42px minmax(0, 1fr);
+  gap: 14px;
+  width: min(410px, calc(100% - 32px));
+  padding: 23px;
+  color: #fff;
+  background:
+    radial-gradient(circle at 100% 0, rgba(194, 220, 160, .2), transparent 34%),
+    linear-gradient(145deg, #053640, #0b6474);
+  border: 1px solid rgba(255, 255, 255, .14);
+  border-radius: 24px;
+  box-shadow: 0 24px 68px rgba(4, 40, 49, .3);
+  animation: homePromoIn .38s cubic-bezier(.22, .61, .36, 1) both;
+}
+
+.home-booking-promo[hidden] {
+  display: none;
+}
+
+@keyframes homePromoIn {
+  from { opacity: 0; transform: translateY(18px) scale(.98); }
+  to { opacity: 1; transform: translateY(0) scale(1); }
+}
+
+.home-booking-promo-close {
+  position: absolute;
+  top: 9px;
+  right: 10px;
+  display: grid;
+  width: 34px;
+  height: 34px;
+  place-items: center;
+  color: rgba(255, 255, 255, .8);
+  background: transparent;
+  border: 0;
+  border-radius: 50%;
+  font: inherit;
+  font-size: 1.25rem;
+  cursor: pointer;
+}
+
+.home-booking-promo-close:hover,
+.home-booking-promo-close:focus-visible {
+  color: #fff;
+  background: rgba(255, 255, 255, .09);
+  outline: 0;
+}
+
+.home-booking-promo-icon {
+  display: grid;
+  width: 42px;
+  height: 42px;
+  place-items: center;
+  color: #053640;
+  background: #c2dca0;
+  border-radius: 13px;
+  font-weight: 900;
+}
+
+.home-booking-promo-copy {
+  min-width: 0;
+}
+
+.home-booking-promo-copy > span {
+  color: #c2dca0;
+  font-size: .68rem;
+  font-weight: 900;
+  letter-spacing: .11em;
+  text-transform: uppercase;
+}
+
+.home-booking-promo h2 {
+  margin: 5px 28px 6px 0;
+  color: #fff;
+  font-size: 1.45rem;
+  line-height: 1.12;
+  letter-spacing: -.03em;
+}
+
+.home-booking-promo p {
+  color: rgba(255, 255, 255, .78);
+  font-size: .82rem;
+  line-height: 1.5;
+}
+
+.home-booking-promo-trust {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 5px 12px;
+  margin-top: 12px;
+  color: rgba(255, 255, 255, .86);
+  font-size: .66rem;
+  font-weight: 750;
+}
+
+.home-booking-promo-trust span::before {
+  margin-right: 4px;
+  color: #c2dca0;
+  content: "✓";
+}
+
+.home-booking-promo a {
+  display: inline-flex;
+  min-height: 46px;
+  align-items: center;
+  justify-content: center;
+  margin-top: 16px;
+  padding: 0 20px;
+  color: #053640;
+  background: #c2dca0;
+  border-radius: 999px;
+  box-shadow: 0 10px 24px rgba(0, 0, 0, .12);
+  font-size: .82rem;
+  font-weight: 900;
+}
+
+.home-booking-promo a:hover,
+.home-booking-promo a:focus-visible {
+  background: #d5e8bc;
+  outline: 3px solid rgba(255, 255, 255, .22);
+  outline-offset: 2px;
+}
+
+@media (max-width: 620px) {
+  .home-booking-promo {
+    right: 10px;
+    bottom: 10px;
+    left: 10px;
+    grid-template-columns: 36px minmax(0, 1fr);
+    width: auto;
+    max-height: 34vh;
+    overflow: auto;
+    gap: 11px;
+    padding: 18px;
+    border-radius: 20px;
+  }
+
+  .home-booking-promo-icon {
+    width: 36px;
+    height: 36px;
+    border-radius: 11px;
+  }
+
+  .home-booking-promo h2 {
+    font-size: 1.25rem;
+  }
+
+  .home-booking-promo p {
+    font-size: .76rem;
+  }
+
+  .home-booking-promo-trust {
+    display: none;
+  }
+
+  .home-booking-promo a {
+    width: 100%;
+    min-height: 44px;
+    margin-top: 12px;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .home-booking-promo {
+    animation: none;
+  }
+}

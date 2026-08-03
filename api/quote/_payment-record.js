@@ -6,6 +6,9 @@ const {
   json,
   readJsonBody
 } = require("./_shared");
+const { confirmBooking, updateBooking } = require("../booking/_shared");
+const { createBookingManagementToken } = require("../booking/_manage");
+const { sendCustomerSms } = require("../booking/_notifications");
 
 function base64Url(value) {
   return Buffer.from(value)
@@ -48,11 +51,14 @@ function getSiteUrl(request) {
   return `${proto}://${host}`;
 }
 
-async function stripeRequest(secretKey, url) {
+async function stripeRequest(secretKey, url, options = {}) {
   const response = await fetch(url, {
+    method: options.method || "GET",
     headers: {
-      Authorization: `Bearer ${secretKey}`
-    }
+      Authorization: `Bearer ${secretKey}`,
+      ...(options.body ? { "Content-Type": "application/x-www-form-urlencoded" } : {})
+    },
+    body: options.body
   });
   const text = await response.text();
   const data = text ? JSON.parse(text) : {};
@@ -65,6 +71,20 @@ async function stripeRequest(secretKey, url) {
   }
 
   return data;
+}
+
+async function stripePost(secretKey, url, params) {
+  const encoded = new URLSearchParams();
+  Object.entries(params || {}).forEach(([key, value]) => {
+    if (value !== undefined && value !== null && value !== "") {
+      encoded.append(key, String(value));
+    }
+  });
+
+  return stripeRequest(secretKey, url, {
+    method: "POST",
+    body: encoded.toString()
+  });
 }
 
 async function twilioRequest({ accountSid, authToken, from, to, body }) {
@@ -104,13 +124,18 @@ function stripeTime(seconds) {
   return new Date(value * 1000).toISOString();
 }
 
+function agreementTime(value, fallbackSeconds) {
+  const cleaned = cleanText(value);
+  return cleaned || stripeTime(fallbackSeconds);
+}
+
 function extractDriveFolderId(link) {
   const value = String(link || "");
   const match = value.match(/\/folders\/([^/?#]+)/);
   return match ? decodeURIComponent(match[1]) : "";
 }
 
-function buildRecord({ session, siteUrl }) {
+function buildRecord({ session, siteUrl, source = "success_page" }) {
   const metadata = session.metadata || {};
   const paymentIntent = typeof session.payment_intent === "object" ? session.payment_intent : null;
   const invoice = typeof session.invoice === "object" ? session.invoice : null;
@@ -121,9 +146,11 @@ function buildRecord({ session, siteUrl }) {
 
   return {
     recordCreatedAt,
+    recordSource: source,
     quoteId: cleanText(metadata.quote_id, session.client_reference_id || session.id),
     customerName: cleanText(metadata.customer_name || session.customer_details?.name),
     customerEmail: cleanText(session.customer_details?.email || session.customer_email),
+    customerPhone: cleanText(session.customer_details?.phone),
     serviceLocation: cleanText(metadata.service_location),
     service: cleanText(metadata.service, "Cleaning Service Quote"),
     serviceDate: cleanText(metadata.service_date),
@@ -136,7 +163,9 @@ function buildRecord({ session, siteUrl }) {
     checkoutSessionId: session.id,
     paymentIntentId: cleanText(paymentIntent?.id || session.payment_intent),
     paidAt: stripeTime(paymentIntent?.created || session.created),
-    agreementAcceptedAt: stripeTime(session.created),
+    agreementAcceptedAt: agreementTime(metadata.agreement_signed_at, session.created),
+    agreementSignature: cleanText(metadata.agreement_signature),
+    agreementIp: cleanText(metadata.agreement_ip),
     agreementUrl,
     termsAcceptanceRequired: "Yes",
     approvalPageAgreementRequired: "Yes",
@@ -154,6 +183,7 @@ function recordText(record) {
     "Iman Cleaning Service LLC - Quote Approval, Agreement, and Payment Record",
     "",
     `Record created: ${record.recordCreatedAt}`,
+    `Record source: ${record.recordSource}`,
     `Quote ID: ${record.quoteId}`,
     `Customer: ${record.customerName}`,
     `Customer email: ${record.customerEmail}`,
@@ -172,7 +202,9 @@ function recordText(record) {
     "",
     "Agreement record:",
     `Agreement accepted before payment: ${record.approvalPageAgreementRequired}`,
+    record.agreementSignature ? `Electronic signature: ${record.agreementSignature}` : "",
     `Agreement accepted timestamp: ${record.agreementAcceptedAt}`,
+    record.agreementIp ? `Agreement IP address: ${record.agreementIp}` : "",
     `Agreement URL: ${record.agreementUrl}`,
     `Stripe terms acceptance required: ${record.termsAcceptanceRequired}`,
     "",
@@ -184,7 +216,7 @@ function recordText(record) {
     record.stripeInvoiceUrl ? `Stripe invoice: ${record.stripeInvoiceUrl}` : "",
     record.stripeInvoicePdf ? `Stripe invoice PDF: ${record.stripeInvoicePdf}` : "",
     "",
-    "This record was generated after Stripe redirected the customer to the quote paid confirmation page."
+    "This record was generated after Stripe confirmed the payment."
   ];
 
   return lines.filter((line) => line !== "").join("\n");
@@ -238,11 +270,11 @@ function buildEmail({ record, text, html, recordFileLink }) {
   };
 }
 
-function buildCustomerEmail({ record }) {
+function buildCustomerEmail({ record, invoicePdf, managementUrl }) {
   if (!record.customerEmail) return null;
 
   const from = process.env.QUOTE_EMAIL_FROM || "Info@imancleaningservice.com";
-  const subject = `Your Iman Cleaning Service payment confirmation - ${record.quoteId}`;
+  const subject = `Booking confirmed and PDF invoice - ${record.quoteId}`;
   const details = [
     ["Customer", record.customerName],
     ["Location", record.serviceLocation],
@@ -259,10 +291,14 @@ function buildCustomerEmail({ record }) {
   const text = [
     `Hi ${record.customerName || "there"},`,
     "",
-    "Thank you. Your payment was received and your cleaning appointment is approved.",
+    "Thank you for booking with Iman Cleaning Service LLC. Your full payment was received and your cleaning appointment is confirmed.",
     "",
     ...details.map(([label, value]) => `${label}: ${value}`),
     "",
+    invoicePdf ? "Your PDF invoice is attached to this email." : "Your PDF invoice is available from the invoice link above.",
+    managementUrl ? `Reschedule or cancel: ${managementUrl}` : "",
+    "Cancellation policy: cancel at least 24 hours before the appointment for a full refund. If less than 24 hours remain, 25% is retained and 75% is refunded to the original payment method.",
+    "We will send email and text reminders about 6 hours and 1 hour before your appointment.",
     "Iman Cleaning Service LLC will follow up if any additional appointment details are needed.",
     "",
     "Thank you,",
@@ -280,8 +316,12 @@ function buildCustomerEmail({ record }) {
 <html>
   <body style="font-family:Arial,sans-serif;color:#1f2933;line-height:1.5;">
     <p>Hi ${escapeHtml(record.customerName || "there")},</p>
-    <p>Thank you. Your payment was received and your cleaning appointment is approved.</p>
+    <p>Thank you for booking with Iman Cleaning Service LLC. Your full payment was received and your cleaning appointment is confirmed.</p>
     <table>${rows}</table>
+    <p><strong>${invoicePdf ? "Your PDF invoice is attached to this email." : "Your PDF invoice is available from the invoice link above."}</strong></p>
+    ${managementUrl ? `<p><a href="${escapeHtml(managementUrl)}" style="display:inline-block;padding:13px 20px;background:#0b6474;color:#fff;text-decoration:none;border-radius:10px;font-weight:bold;">Reschedule or cancel my appointment</a></p>` : ""}
+    <p>Cancellation policy: cancel at least 24 hours before the appointment for a full refund. If less than 24 hours remain, 25% is retained and 75% is refunded to the original payment method.</p>
+    <p>We will send email and text reminders about 6 hours and 1 hour before your appointment.</p>
     <p>Iman Cleaning Service LLC will follow up if any additional appointment details are needed.</p>
     <p>Thank you,<br>Iman Cleaning Service LLC</p>
   </body>
@@ -292,11 +332,14 @@ function buildCustomerEmail({ record }) {
     `To: ${record.customerEmail}`,
     `Subject: ${encodeMimeWord(subject)}`,
     "MIME-Version: 1.0",
-    "Content-Type: multipart/alternative; boundary=\"customer_payment_alt\""
+    "Content-Type: multipart/mixed; boundary=\"customer_payment_mixed\""
   ];
 
   const parts = [
     headers.join("\r\n"),
+    "",
+    "--customer_payment_mixed",
+    "Content-Type: multipart/alternative; boundary=\"customer_payment_alt\"",
     "",
     "--customer_payment_alt",
     "Content-Type: text/plain; charset=\"UTF-8\"",
@@ -307,6 +350,17 @@ function buildCustomerEmail({ record }) {
     "",
     html,
     "--customer_payment_alt--",
+    "",
+    ...(invoicePdf ? [
+      "--customer_payment_mixed",
+      "Content-Type: application/pdf; name=\"Iman-Cleaning-Invoice.pdf\"",
+      "Content-Disposition: attachment; filename=\"Iman-Cleaning-Invoice.pdf\"",
+      "Content-Transfer-Encoding: base64",
+      "",
+      (Buffer.from(invoicePdf).toString("base64").match(/.{1,76}/g) || [""]).join("\r\n"),
+      ""
+    ] : []),
+    "--customer_payment_mixed--",
     ""
   ];
 
@@ -314,6 +368,29 @@ function buildCustomerEmail({ record }) {
     raw: base64Url(parts.join("\r\n")),
     subject
   };
+}
+
+async function fetchInvoicePdf(record) {
+  if (!record.stripeInvoicePdf) return null;
+  try {
+    const response = await fetch(record.stripeInvoicePdf);
+    if (!response.ok) return null;
+    return Buffer.from(await response.arrayBuffer());
+  } catch {
+    return null;
+  }
+}
+
+function buildCustomerConfirmationSms(record, managementUrl) {
+  const invoiceUrl = record.stripeInvoicePdf || record.stripeInvoiceUrl || record.stripeReceiptUrl;
+  return [
+    `IMAN Cleaning Service: Payment received and booking ${record.quoteId} is confirmed.`,
+    `${record.service}: ${record.serviceDate} at ${record.serviceTime}.`,
+    `Paid: ${record.paidAmount}.`,
+    invoiceUrl ? `Invoice PDF: ${invoiceUrl}` : "",
+    managementUrl ? `Reschedule/cancel: ${managementUrl}` : "",
+    "We’ll remind you about 6 hours and 1 hour before. Reply STOP to opt out."
+  ].filter(Boolean).join(" ");
 }
 
 function buildOwnerSmsMessage(record) {
@@ -365,7 +442,166 @@ async function saveRecordFile(drive, record, text) {
   return created.data.webViewLink || driveWebViewLink(created.data.id);
 }
 
-module.exports = async function handler(request, response) {
+function getPaymentRecordSentAt(session) {
+  const metadata = session.metadata || {};
+  const paymentIntent = typeof session.payment_intent === "object" ? session.payment_intent : null;
+  return cleanText(metadata.agreement_record_sent_at || paymentIntent?.metadata?.agreement_record_sent_at);
+}
+
+async function markPaymentRecordSent(secretKey, record, source) {
+  if (!record.paymentIntentId || !record.paymentIntentId.startsWith("pi_")) {
+    return { status: "skipped", error: "" };
+  }
+
+  try {
+    await stripePost(
+      secretKey,
+      `https://api.stripe.com/v1/payment_intents/${encodeURIComponent(record.paymentIntentId)}`,
+      {
+        "metadata[agreement_record_sent_at]": new Date().toISOString(),
+        "metadata[agreement_record_source]": source
+      }
+    );
+    return { status: "marked", error: "" };
+  } catch (error) {
+    return { status: "failed", error: cleanText(error.message) };
+  }
+}
+
+async function retrieveCheckoutSession(secretKey, sessionId) {
+  return stripeRequest(
+    secretKey,
+    `https://api.stripe.com/v1/checkout/sessions/${encodeURIComponent(sessionId)}?expand[]=payment_intent.latest_charge&expand[]=invoice`
+  );
+}
+
+async function sendPaymentRecordForSession({ session, siteUrl, source = "success_page", secretKey = getStripeSecretKey() }) {
+  if (session.payment_status !== "paid") {
+    const error = new Error("Payment is not marked paid yet.");
+    error.statusCode = 400;
+    throw error;
+  }
+
+  const alreadySentAt = getPaymentRecordSentAt(session);
+  if (alreadySentAt) {
+    const existingRecord = buildRecord({ session, siteUrl, source });
+    return {
+      message: "Payment and agreement record was already sent.",
+      alreadySent: true,
+      alreadySentAt,
+      quoteId: existingRecord.quoteId,
+      gmailMessageId: "",
+      customerGmailMessageId: "",
+      customerInvoicePdfAttached: false,
+      customerSmsStatus: "skipped",
+      customerSmsMessageId: "",
+      customerSmsError: "",
+      ownerSmsStatus: "skipped",
+      ownerSmsMessageId: "",
+      ownerSmsError: "",
+      stripeRecordMarkerStatus: "already_marked",
+      stripeRecordMarkerError: "",
+      recordFileLink: ""
+    };
+  }
+
+  const record = buildRecord({ session, siteUrl, source });
+  const text = recordText(record);
+  const html = recordHtml(record, text);
+  const { drive, gmail } = getGoogleClients();
+  const recordFileLink = await saveRecordFile(drive, record, text);
+  const bookingId = cleanText(session.metadata?.booking_id);
+  const managementUrl = bookingId && record.customerEmail
+    ? `${siteUrl}/manage-booking.html?token=${encodeURIComponent(createBookingManagementToken({
+      bookingId,
+      email: record.customerEmail
+    }))}`
+    : "";
+  const invoicePdf = await fetchInvoicePdf(record);
+  const email = buildEmail({ record, text, html, recordFileLink });
+  const sent = await gmail.users.messages.send({
+    userId: "me",
+    requestBody: {
+      raw: email.raw
+    }
+  });
+  const customerEmail = buildCustomerEmail({ record, invoicePdf, managementUrl });
+  const customerSent = customerEmail
+    ? await gmail.users.messages.send({
+      userId: "me",
+      requestBody: {
+        raw: customerEmail.raw
+      }
+    })
+    : null;
+  const [ownerSms, customerSms] = await Promise.all([
+    sendOwnerSmsNotification(record),
+    sendCustomerSms(record.customerPhone, buildCustomerConfirmationSms(record, managementUrl))
+  ]);
+  const marker = await markPaymentRecordSent(secretKey, record, source);
+
+  return {
+    message: "Payment and agreement record sent.",
+    alreadySent: false,
+    quoteId: record.quoteId,
+    gmailMessageId: sent.data.id,
+    customerGmailMessageId: customerSent?.data?.id || "",
+    customerInvoicePdfAttached: Boolean(invoicePdf),
+    customerSmsStatus: customerSms.status,
+    customerSmsMessageId: customerSms.messageId,
+    customerSmsError: customerSms.error,
+    ownerSmsStatus: ownerSms.status,
+    ownerSmsMessageId: ownerSms.messageId,
+    ownerSmsError: ownerSms.error,
+    stripeRecordMarkerStatus: marker.status,
+    stripeRecordMarkerError: marker.error,
+    recordFileLink,
+    managementUrl
+  };
+}
+
+async function sendPaymentRecordForSessionId({ sessionId, siteUrl, source = "success_page" }) {
+  const secretKey = getStripeSecretKey();
+  if (!secretKey) {
+    const error = new Error("Stripe is not configured yet.");
+    error.statusCode = 503;
+    error.setup = "Add STRIPE_SECRET_KEY in Vercel.";
+    throw error;
+  }
+
+  const session = await retrieveCheckoutSession(secretKey, sessionId);
+  const result = await sendPaymentRecordForSession({ session, siteUrl, source, secretKey });
+  const bookingId = cleanText(session.metadata?.booking_id);
+  let bookingConfirmation = null;
+  if (bookingId) {
+    bookingConfirmation = await confirmBooking(bookingId);
+    if (bookingConfirmation?.booking) {
+      const paymentIntent = typeof session.payment_intent === "object" ? session.payment_intent : null;
+      const invoice = typeof session.invoice === "object" ? session.invoice : null;
+      const estimate = {
+        ...(bookingConfirmation.booking.estimate || {}),
+        payment: {
+          paymentIntentId: cleanText(paymentIntent?.id || session.payment_intent),
+          paidCents: Number(session.amount_total || 0),
+          invoiceId: cleanText(invoice?.id || session.invoice),
+          invoiceUrl: cleanText(invoice?.hosted_invoice_url),
+          invoicePdf: cleanText(invoice?.invoice_pdf),
+          receiptUrl: cleanText(paymentIntent?.latest_charge?.receipt_url),
+          paidAt: stripeTime(paymentIntent?.created || session.created)
+        }
+      };
+      bookingConfirmation.booking = await updateBooking(bookingId, { estimate });
+    }
+  }
+  return {
+    ...result,
+    bookingConfirmed: Boolean(bookingId),
+    bookingId,
+    calendarStatus: bookingConfirmation?.calendarSync?.status || ""
+  };
+}
+
+async function handler(request, response) {
   try {
     if (request.method !== "POST") {
       return json(response, 405, { error: "Method not allowed." });
@@ -385,48 +621,13 @@ module.exports = async function handler(request, response) {
       return json(response, 400, { error: "A valid Stripe Checkout Session ID is required." });
     }
 
-    const session = await stripeRequest(
-      secretKey,
-      `https://api.stripe.com/v1/checkout/sessions/${encodeURIComponent(sessionId)}?expand[]=payment_intent.latest_charge&expand[]=invoice`
-    );
-
-    if (session.payment_status !== "paid") {
-      return json(response, 400, { error: "Payment is not marked paid yet." });
-    }
-
-    const record = buildRecord({ session, siteUrl: getSiteUrl(request) });
-    const text = recordText(record);
-    const html = recordHtml(record, text);
-    const { drive, gmail } = getGoogleClients();
-    const recordFileLink = await saveRecordFile(drive, record, text);
-    const email = buildEmail({ record, text, html, recordFileLink });
-    const sent = await gmail.users.messages.send({
-      userId: "me",
-      requestBody: {
-        raw: email.raw
-      }
+    const result = await sendPaymentRecordForSessionId({
+      sessionId,
+      siteUrl: getSiteUrl(request),
+      source: "success_page"
     });
-    const customerEmail = buildCustomerEmail({ record });
-    const customerSent = customerEmail
-      ? await gmail.users.messages.send({
-        userId: "me",
-        requestBody: {
-          raw: customerEmail.raw
-        }
-      })
-      : null;
-    const ownerSms = await sendOwnerSmsNotification(record);
 
-    return json(response, 200, {
-      message: "Payment and agreement record sent.",
-      quoteId: record.quoteId,
-      gmailMessageId: sent.data.id,
-      customerGmailMessageId: customerSent?.data?.id || "",
-      ownerSmsStatus: ownerSms.status,
-      ownerSmsMessageId: ownerSms.messageId,
-      ownerSmsError: ownerSms.error,
-      recordFileLink
-    });
+    return json(response, 200, result);
   } catch (error) {
     return json(response, error.statusCode || 500, {
       error: error.message || "Payment and agreement record could not be sent.",
@@ -434,4 +635,10 @@ module.exports = async function handler(request, response) {
       setup: error.setup
     });
   }
-};
+}
+
+module.exports = handler;
+module.exports.sendPaymentRecordForSession = sendPaymentRecordForSession;
+module.exports.sendPaymentRecordForSessionId = sendPaymentRecordForSessionId;
+module.exports.buildCustomerEmail = buildCustomerEmail;
+module.exports.buildCustomerConfirmationSms = buildCustomerConfirmationSms;

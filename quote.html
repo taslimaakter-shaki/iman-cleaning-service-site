@@ -29,9 +29,15 @@
   gtag('config', 'G-6MEJH73E0H');
 </script>
 <link rel="stylesheet" href="./design-system.css">
-<link rel="stylesheet" href="./site.css">
+<link rel="stylesheet" href="./site.css?v=20260727-booking-handoff">
+<link rel="stylesheet" href="./homepage-footer.css?v=20260727-footer-location">
 </head>
 <body class="quote-page redesigned-quote-page">
+<script>
+  if (new URLSearchParams(window.location.search).has("embed")) {
+    document.body.classList.add("quote-embed");
+  }
+</script>
 <div id="quote-header-root"></div>
 <main>
   <section class="page-hero on-photo" style="--hero-img: url('./assets/quote-retail-hero.png')">
@@ -54,6 +60,7 @@
                     class="quote-form live-quote-form"
                     method="POST"
                     enctype="multipart/form-data"
+                    autocomplete="off"
                     novalidate
                   >
                     <input type="text" name="_honey" class="hp-field" tabindex="-1" autocomplete="off">
@@ -70,13 +77,48 @@
                         <span>3</span>
                         Contact
                       </button>
+                      <button class="quote-step-indicator" type="button" data-wizard-jump="4">
+                        <span>4</span>
+                        Review
+                      </button>
                     </div>
                     <div class="quote-wizard-head" data-wizard-head>
-                      <p class="eyebrow">Step 1 of 3</p>
-                      <h2>Choose your service</h2>
-                      <p>Start with the type of cleaning you need. More detailed questions appear only when they are useful for your quote.</p>
+                      <p class="eyebrow">Step 1 of 4</p>
+                      <h2>Let's Find the Right Cleaning Service</h2>
+                      <p>Answer a few quick questions so we can recommend the best service and provide an accurate, no-obligation quote.</p>
                     </div>
+                    <div class="quote-referral-notice" data-package-referral hidden>
+                      <strong>Your home needs a custom quote</strong>
+                      <span data-package-referral-reason></span>
+                    </div>
+                    <section class="quote-qualification-handoff" data-qualification-handoff hidden aria-live="polite">
+                      <span class="quote-qualification-kicker">Residential booking review</span>
+                      <h2 data-qualification-title></h2>
+                      <p data-qualification-description></p>
+                      <button class="quote-qualification-action" type="button" data-qualification-continue></button>
+                    </section>
                     <div class="field-grid">
+                      <label>
+                        <span>Referral</span>
+                        <select name="Referral Source" required>
+                          <option value="" selected disabled>Select option</option>
+                          <option>Tiktok</option>
+                          <option>Instagram</option>
+                          <option>Facebook</option>
+                          <option>Youtube</option>
+                          <option>Google</option>
+                          <option>Friends or family</option>
+                          <option>Other</option>
+                        </select>
+                      </label>
+                      <label>
+                        <span>Repeat client?</span>
+                        <select name="Repeat Client" required>
+                          <option value="" selected disabled>Select option</option>
+                          <option>Yes</option>
+                          <option>No</option>
+                        </select>
+                      </label>
                       <label>
                         <span>First name</span>
                         <input type="text" name="First Name" placeholder="Your first name" required>
@@ -92,27 +134,6 @@
                       <label>
                         <span>Phone number</span>
                         <input type="tel" name="Phone" placeholder="Best number to reach you" required>
-                      </label>
-                      <label>
-                        <span>Repeat client?</span>
-                        <select name="Repeat Client" required>
-                          <option value="" selected disabled>Have you worked with us before?</option>
-                          <option>Yes</option>
-                          <option>No</option>
-                        </select>
-                      </label>
-                      <label>
-                        <span>Referral</span>
-                        <select name="Referral Source" required>
-                          <option value="" selected disabled>Please tell us how you found out about us</option>
-                          <option>Tiktok</option>
-                          <option>Instagram</option>
-                          <option>Facebook</option>
-                          <option>Youtube</option>
-                          <option>Google</option>
-                          <option>Friends or family</option>
-                          <option>Other</option>
-                        </select>
                       </label>
                       <fieldset class="field-wide address-fieldset">
                         <legend>Address</legend>
@@ -137,16 +158,17 @@
                       </fieldset>
                       <label>
                         <span>What kind of service are you looking for?</span>
-                        <select name="Service Category" required>
-                          <option value="" selected disabled>Select one</option>
-                          <option>Residential</option>
-                          <option>Commercial</option>
+                        <select name="Service Category" required aria-required="true" data-required-message="Please choose Residential cleaning, Commercial cleaning, or Window cleaning.">
+                          <option value="" selected disabled>Select option</option>
+                          <option value="Residential">Residential cleaning</option>
+                          <option value="Commercial">Commercial cleaning</option>
+                          <option value="Window Cleaning">Window cleaning</option>
                         </select>
                       </label>
                       <label data-commercial-field hidden>
                         <span>What kind of a space is it?</span>
-                        <select name="Commercial Space Type" data-commercial-space-select required disabled>
-                          <option value="" selected disabled>Select one</option>
+                        <select name="Commercial Space Type" data-commercial-space-select required aria-required="true" data-required-message="Please choose what kind of commercial space it is." disabled>
+                          <option value="" selected disabled>Select option</option>
                           <option>Office</option>
                           <option>Retail Store</option>
                           <option>Restaurant</option>
@@ -156,15 +178,61 @@
                       </label>
                       <label data-commercial-other-field hidden>
                         <span>Please enter your space name</span>
-                        <input type="text" name="Other Commercial Space" placeholder="Example: salon, studio, warehouse" data-commercial-other-input required disabled>
+                        <input type="text" name="Other Commercial Space" placeholder="Example: salon, studio, warehouse" data-commercial-other-input required aria-required="true" data-required-message="Please enter your space name." disabled>
                       </label>
                       <div class="commercial-quote-note field-wide" data-commercial-message hidden>
                         <p>Commercial cleaning quotes are provided after a brief phone consultation and, if needed, an on-site walkthrough. After you submit this form, we will contact you shortly by phone. Thank you.</p>
                       </div>
+                      <label data-window-cleaning-field hidden>
+                        <span>What type of property needs window cleaning?</span>
+                        <select name="Window Cleaning Property Type" required disabled>
+                          <option value="" selected disabled>Select option</option>
+                          <option>Home / Apartment</option>
+                          <option>Office</option>
+                          <option>Storefront / Retail</option>
+                          <option>Restaurant</option>
+                          <option>Other Commercial Property</option>
+                        </select>
+                      </label>
+                      <label class="optional-field" data-window-cleaning-field hidden>
+                        <span>What is the square footage of the place? (optional)</span>
+                        <input type="number" name="Window Cleaning Square Footage" min="0" step="50" placeholder="Example: 1,200" disabled>
+                      </label>
+                      <label data-window-cleaning-field hidden>
+                        <span>Which windows need cleaning?</span>
+                        <select name="Window Cleaning Scope" required disabled>
+                          <option value="" selected disabled>Select option</option>
+                          <option>Interior only</option>
+                          <option>Exterior only</option>
+                          <option>Interior and exterior</option>
+                        </select>
+                      </label>
+                      <label data-window-cleaning-field hidden>
+                        <span>Approximately how many windows?</span>
+                        <input type="number" name="Window Cleaning Count" min="1" step="1" placeholder="Enter window count" required disabled>
+                      </label>
+                      <label data-window-cleaning-field hidden>
+                        <span>What floor are the windows on?</span>
+                        <select name="Window Cleaning Floor" required disabled>
+                          <option value="" selected disabled>Select option</option>
+                          <option>Ground floor</option>
+                          <option>2nd floor</option>
+                          <option>3rd floor</option>
+                          <option>4th floor or higher</option>
+                          <option>Multiple floors</option>
+                        </select>
+                      </label>
+                      <label class="field-wide optional-field" data-window-cleaning-field hidden>
+                        <span>Tell us about window access, screens, tracks, or other details. (optional)</span>
+                        <textarea name="Window Cleaning Details" rows="4" placeholder="Example: removable screens, storefront glass, ladder access, or hard-to-reach windows" disabled></textarea>
+                      </label>
+                      <div class="commercial-quote-note field-wide" data-window-cleaning-field hidden>
+                        <p>Window cleaning options depend on access, property type, window count, and condition. We will review your details and confirm the scope and price before booking.</p>
+                      </div>
                       <label data-residential-field>
                         <span>What type of space is it?</span>
                         <select name="Property Type" required>
-                          <option value="" selected disabled>Select one</option>
+                          <option value="" selected disabled>Select option</option>
                           <option>Apartment</option>
                           <option>House</option>
                           <option>Condo / Co-op</option>
@@ -173,21 +241,49 @@
                       </label>
                       <label data-residential-field>
                         <span>What service are you interested in?</span>
-                        <small class="field-note">We will need photos of your space to confirm eligibility for this type of cleaning, estimate how long the service will take, and determine how many team members will be required.</small>
+                        <small class="field-note"><a href="./services.html">Review our services</a> before choosing if you are not sure which cleaning fits your needs. We'll use your selections to provide a fast, accurate, and personalized quote.</small>
                         <select name="Service Type" required>
-                          <option value="" selected disabled>Choose an option</option>
+                          <option value="" selected disabled>Select option</option>
                           <option>Deep Cleaning</option>
                           <option>Standard Cleaning</option>
                           <option>Move-In and Move Out Cleaning</option>
+                          <option>Airbnb / Short-Term Rental Cleaning</option>
                           <option>Post Construction/Renovations Cleaning</option>
+                          <option>Hourly Cleaning Service</option>
                           <option>Organization</option>
                           <option>Extreme Cleaning</option>
                           <option>Details Cleaning</option>
                           <option>Weekly/BiWeekly/Monthly Cleaning</option>
                         </select>
                       </label>
+                      <label data-hourly-cleaning-hours-field hidden>
+                        <span>Hourly Cleaning Service has a 2-hour minimum. How many hours do you need us for?</span>
+                        <input
+                          type="number"
+                          name="Hourly Cleaning Hours Needed"
+                          min="2"
+                          step="1"
+                          placeholder="Minimum 2 hours"
+                          data-hourly-cleaning-hours-input
+                          required
+                          disabled
+                        >
+                      </label>
+                      <label data-hourly-cleaning-team-field hidden>
+                        <span>How many team members?</span>
+                        <input
+                          type="number"
+                          name="Hourly Cleaning Team Members"
+                          min="1"
+                          step="1"
+                          placeholder="Enter number of team members"
+                          data-hourly-cleaning-team-input
+                          required
+                          disabled
+                        >
+                      </label>
                       <label data-organizing-hours-field hidden>
-                        <span>The hourly rate for Organization is $60 per person / per hour. A 3-hour minimum is required. How many hours do you need us for?</span>
+                        <span>The hourly rate for Organization is $60 per hour per person. A 3-hour minimum is required. How many hours do you need us for?</span>
                         <input
                           type="number"
                           name="Organization Hours Needed"
@@ -213,7 +309,7 @@
                         >
                       </label>
                       <label data-detailed-hours-field hidden>
-                        <span>The hourly rate for Details Cleaning is $80 per person / per hour. A 2-hour minimum is required. How many hours do you need us for?</span>
+                        <span>Details Cleaning has a 2-hour minimum. How many hours do you need us for?</span>
                         <input
                           type="number"
                           name="Details Cleaning Hours Needed"
@@ -239,7 +335,7 @@
                         >
                       </label>
                       <label data-extreme-hours-field hidden>
-                        <span>The hourly rate for Extreme Cleaning is $100 per person / per hour. A 4-hour minimum is required. How many hours do you need us for?</span>
+                        <span>The hourly rate for Extreme Cleaning is $100 per hour per person. A 4-hour minimum is required. How many hours do you need us for?</span>
                         <input
                           type="number"
                           name="Extreme Cleaning Hours Needed"
@@ -265,7 +361,7 @@
                         >
                       </label>
                       <label data-post-construction-hours-field hidden>
-                        <span>Post-construction cleaning is billed hourly at $70 per hour. Flat-rate estimates require photo review. How many hours do you think may be needed?</span>
+                        <span>Post-construction cleaning starts at $400. Photos are required to confirm the final quote. How many hours do you think may be needed?</span>
                         <input
                           type="number"
                           name="Post Construction Cleaning Hours Needed"
@@ -277,7 +373,7 @@
                           disabled
                         >
                       </label>
-                      <fieldset class="field-wide priority-date-fieldset" data-residential-field>
+                      <fieldset class="field-wide priority-date-fieldset" data-schedulable-field>
                         <legend>Which days are you available?</legend>
                         <div class="priority-date-grid">
                           <div class="priority-date-card">
@@ -295,7 +391,7 @@
                             <label class="priority-required">
                               <span>1st priority start time</span>
                               <select name="1st Priority Start Time" required>
-                                <option value="" selected disabled>Select time</option>
+                                <option value="" selected disabled>Select option</option>
                                 <option>8:00 AM</option>
                                 <option>9:00 AM</option>
                                 <option>10:00 AM</option>
@@ -326,38 +422,7 @@
                             <label>
                               <span>2nd priority start time</span>
                               <select name="2nd Priority Start Time">
-                                <option value="" selected disabled>Select time</option>
-                                <option>8:00 AM</option>
-                                <option>9:00 AM</option>
-                                <option>10:00 AM</option>
-                                <option>11:00 AM</option>
-                                <option>12:00 PM</option>
-                                <option>1:00 PM</option>
-                                <option>2:00 PM</option>
-                                <option>3:00 PM</option>
-                                <option>4:00 PM</option>
-                                <option>5:00 PM</option>
-                                <option>6:00 PM</option>
-                                <option>Flexible</option>
-                              </select>
-                            </label>
-                          </div>
-                          <div class="priority-date-card">
-                            <label>
-                              <span>3rd priority day</span>
-                              <span class="date-picker-wrap">
-                                <input class="date-picker-input" type="date" name="3rd Priority Available Day" data-date-picker>
-                                <button class="date-picker-button" type="button" data-date-picker-button aria-label="Open 3rd priority calendar">
-                                  <svg viewBox="0 0 24 24" aria-hidden="true">
-                                    <path d="M7 2a1 1 0 0 1 1 1v1h8V3a1 1 0 1 1 2 0v1h1.5A2.5 2.5 0 0 1 22 6.5v13A2.5 2.5 0 0 1 19.5 22h-15A2.5 2.5 0 0 1 2 19.5v-13A2.5 2.5 0 0 1 4.5 4H6V3a1 1 0 0 1 1-1Zm12.5 8h-15v9.5a.5.5 0 0 0 .5.5h14.5a.5.5 0 0 0 .5-.5V10ZM5 6a.5.5 0 0 0-.5.5V8h15V6.5A.5.5 0 0 0 19 6H5Zm2 7h3v3H7v-3Zm5 0h3v3h-3v-3Z"/>
-                                  </svg>
-                                </button>
-                              </span>
-                            </label>
-                            <label>
-                              <span>3rd priority start time</span>
-                              <select name="3rd Priority Start Time">
-                                <option value="" selected disabled>Select time</option>
+                                <option value="" selected disabled>Select option</option>
                                 <option>8:00 AM</option>
                                 <option>9:00 AM</option>
                                 <option>10:00 AM</option>
@@ -375,14 +440,14 @@
                           </div>
                         </div>
                       </fieldset>
-                      <label data-cleaning-detail-field>
-                        <span>Approximate square footage</span>
-                        <input type="number" name="Square Footage" min="0" step="50" placeholder="Example: 850" required>
+                      <label class="optional-field" data-cleaning-detail-field>
+                        <span>Approximate square footage (optional)</span>
+                        <input type="number" name="Square Footage" min="0" step="50" placeholder="Example: 850">
                       </label>
                       <label data-cleaning-detail-field>
                         <span>Bedrooms</span>
                         <select name="Bedrooms" required>
-                          <option value="" selected disabled>Select one</option>
+                          <option value="" selected disabled>Select option</option>
                           <option value="0">No bedrooms</option>
                           <option value="studio">Studio</option>
                           <option value="1">1 bedroom</option>
@@ -395,7 +460,7 @@
                       <label data-cleaning-detail-field>
                         <span>Full bathrooms</span>
                         <select name="Full Bathrooms" required>
-                          <option value="" selected disabled>Select one</option>
+                          <option value="" selected disabled>Select option</option>
                           <option value="0">No full bathrooms</option>
                           <option value="1">1 full bathroom</option>
                           <option value="2">2 full bathrooms</option>
@@ -406,7 +471,7 @@
                       <label data-cleaning-detail-field>
                         <span>Half bathrooms</span>
                         <select name="Half Bathrooms" required>
-                          <option value="" selected disabled>Select one</option>
+                          <option value="" selected disabled>Select option</option>
                           <option value="0">No half bathrooms</option>
                           <option value="1">1 half bathroom</option>
                           <option value="2">2 half bathrooms</option>
@@ -414,19 +479,29 @@
                         </select>
                       </label>
                       <label data-cleaning-detail-field>
-                        <span>Kitchen + dining room</span>
-                        <select name="Kitchen and Dining Rooms" required>
-                          <option value="" selected disabled>Select one</option>
-                          <option value="0">No kitchen + dining room</option>
-                          <option value="1">1 kitchen + dining room</option>
-                          <option value="2">2 kitchen + dining rooms</option>
-                          <option value="3">3+ kitchen + dining rooms</option>
+                        <span>Kitchens</span>
+                        <select name="Kitchens" required>
+                          <option value="" selected disabled>Select option</option>
+                          <option value="0">No kitchen</option>
+                          <option value="1">1 kitchen</option>
+                          <option value="2">2 kitchens</option>
+                          <option value="3">3+ kitchens</option>
+                        </select>
+                      </label>
+                      <label data-cleaning-detail-field>
+                        <span>Dining rooms</span>
+                        <select name="Dining Rooms" required>
+                          <option value="" selected disabled>Select option</option>
+                          <option value="0">No dining room</option>
+                          <option value="1">1 dining room</option>
+                          <option value="2">2 dining rooms</option>
+                          <option value="3">3+ dining rooms</option>
                         </select>
                       </label>
                       <label data-cleaning-detail-field>
                         <span>Living rooms</span>
                         <select name="Living Rooms" required>
-                          <option value="" selected disabled>Select one</option>
+                          <option value="" selected disabled>Select option</option>
                           <option value="0">No living room</option>
                           <option value="1">1 living room</option>
                           <option value="2">2 living rooms</option>
@@ -434,18 +509,38 @@
                         </select>
                       </label>
                       <label data-cleaning-detail-field>
-                        <span>Do you live there?</span>
-                        <select name="Do You Live There?" required>
-                          <option value="" selected disabled>Select one</option>
+                        <span>How are the kitchen, dining, and living areas set up?</span>
+                        <select name="Kitchen Dining Living Setup" required>
+                          <option value="" selected disabled>Select option</option>
+                          <option>Dining and kitchen together</option>
+                          <option>Dining and living together</option>
+                          <option>Kitchen, dining, and living are all separate</option>
+                        </select>
+                      </label>
+                      <label data-cleaning-detail-field>
+                        <span>Will water and electricity be available during the cleaning?</span>
+                        <select name="Water and Electricity Available" required>
+                          <option value="" selected disabled>Select option</option>
                           <option>Yes</option>
                           <option>No</option>
-                          <option>Sometimes / part-time</option>
+                        </select>
+                      </label>
+                      <label data-cleaning-detail-field>
+                        <span>What best describes the property?</span>
+                        <select name="Property Status" required>
+                          <option value="" selected disabled>Select option</option>
+                          <option>Occupied</option>
+                          <option>Vacant</option>
+                          <option>Tenant moving out</option>
+                          <option>Just purchased</option>
+                          <option>Rental property</option>
+                          <option>Airbnb</option>
                         </select>
                       </label>
                       <label data-cleaning-detail-field>
                         <span>How often do you need cleaning?</span>
                         <select name="Cleaning Frequency" required>
-                          <option value="" selected disabled>Select one</option>
+                          <option value="" selected disabled>Select option</option>
                           <option>One-time</option>
                           <option>Weekly</option>
                           <option>Biweekly</option>
@@ -456,7 +551,7 @@
                       <label data-cleaning-detail-field>
                         <span>Do you need any additional areas cleaned outside of the bedrooms, bathrooms, kitchen, living room, and dining area?</span>
                         <select name="Additional Areas Needed?" data-additional-areas-select required>
-                          <option value="" selected disabled>Select one</option>
+                          <option value="" selected disabled>Select option</option>
                           <option>No</option>
                           <option>Yes</option>
                         </select>
@@ -473,8 +568,8 @@
                       </label>
                       <label data-cleaning-detail-field>
                         <span>Do you have pets?</span>
-                        <select name="Do You Have Pets?" required>
-                          <option value="" selected disabled>Select one</option>
+                        <select name="Do You Have Pets?" data-pets-select required>
+                          <option value="" selected disabled>Select option</option>
                           <option>No pets</option>
                           <option>One pet</option>
                           <option>Two pets</option>
@@ -482,10 +577,27 @@
                           <option>Not sure if you are moving in and you do not know</option>
                         </select>
                       </label>
+                      <label data-cleaning-detail-field data-pets-secured-field hidden>
+                        <span>Will pets be secured during the cleaning?</span>
+                        <select name="Pets Secured During Cleaning" data-pets-secured-select required disabled>
+                          <option value="" selected disabled>Select option</option>
+                          <option>Yes</option>
+                          <option>No</option>
+                          <option>No pets</option>
+                        </select>
+                      </label>
+                      <label data-cleaning-detail-field>
+                        <span>Is this your first professional cleaning?</span>
+                        <select name="First Professional Cleaning" required>
+                          <option value="" selected disabled>Select option</option>
+                          <option>Yes</option>
+                          <option>No</option>
+                        </select>
+                      </label>
                       <label data-cleaning-detail-field>
                         <span>When was it last professionally or thoroughly cleaned?</span>
                         <select name="Last Professional Cleaning" required>
-                          <option value="" selected disabled>Select one</option>
+                          <option value="" selected disabled>Select option</option>
                           <option>Less than two weeks ago</option>
                           <option>Less than a month ago</option>
                           <option>Less than a 3 months ago</option>
@@ -497,7 +609,7 @@
                       <label data-cleaning-detail-field>
                         <span>Will everything be ready for cleaning?</span>
                         <select name="Clutter or Ready for Cleaning" required>
-                          <option value="" selected disabled>Select one</option>
+                          <option value="" selected disabled>Select option</option>
                           <option>No clutter</option>
                           <option>Some clutter</option>
                           <option>Heavy clutter</option>
@@ -506,11 +618,37 @@
                       <label data-cleaning-detail-field>
                         <span>Are there any heavy buildup areas?</span>
                         <select name="Heavy Buildup Areas" required>
-                          <option value="" selected disabled>Select one</option>
+                          <option value="" selected disabled>Select option</option>
                           <option>No major buildup</option>
                           <option>Some buildup in a few areas</option>
                           <option>Heavy grease, soap scum, or mold</option>
                         </select>
+                      </label>
+                      <label class="field-wide" data-cleaning-detail-field>
+                        <span>Are there any of the following?</span>
+                        <small class="field-note">Mold or biohazards are important for safety and liability.</small>
+                        <div class="choice-grid">
+                          <label class="choice-chip">
+                            <input type="checkbox" name="Mold or Biohazards[]" value="Mold" data-biohazard-option required>
+                            <span>Mold</span>
+                          </label>
+                          <label class="choice-chip">
+                            <input type="checkbox" name="Mold or Biohazards[]" value="Pest infestation" data-biohazard-option>
+                            <span>Pest infestation</span>
+                          </label>
+                          <label class="choice-chip">
+                            <input type="checkbox" name="Mold or Biohazards[]" value="Animal waste" data-biohazard-option>
+                            <span>Animal waste</span>
+                          </label>
+                          <label class="choice-chip">
+                            <input type="checkbox" name="Mold or Biohazards[]" value="Human waste" data-biohazard-option>
+                            <span>Human waste</span>
+                          </label>
+                          <label class="choice-chip">
+                            <input type="checkbox" name="Mold or Biohazards[]" value="None" data-biohazard-option>
+                            <span>None</span>
+                          </label>
+                        </div>
                       </label>
                       <label class="field-wide" data-cleaning-detail-field>
                         <span>Would you like any add-ons cleaned thoroughly?</span>
@@ -526,10 +664,6 @@
                           <label class="choice-chip">
                             <input type="checkbox" name="Add-Ons[]" value="Inside oven" data-addon-option>
                             <span>Inside oven</span>
-                          </label>
-                          <label class="choice-chip">
-                            <input type="checkbox" name="Add-Ons[]" value="Inside microwave" data-addon-option>
-                            <span>Inside microwave</span>
                           </label>
                           <label class="choice-chip">
                             <input type="checkbox" name="Add-Ons[]" value="Interior windows" data-addon-option>
@@ -553,52 +687,63 @@
                           </label>
                         </div>
                       </label>
-                      <label class="field-wide" data-cleaning-detail-field>
-                        <span>List any other appliances or add-ons you want cleaned thoroughly. If not applicable, please enter N/A.</span>
+                      <label class="field-wide optional-field" data-cleaning-detail-field>
+                        <span>List any other appliances or add-ons you want cleaned thoroughly. (optional)</span>
                         <textarea
                           name="Cabinets and Appliances Add-Ons"
                           rows="3"
-                          placeholder="Example: inside dishwasher, inside freezer, or any other detailed add-on work. If not applicable, please enter N/A."
-                          required
+                          placeholder="Example: inside dishwasher, inside freezer, or any other detailed add-on work."
                         ></textarea>
                       </label>
-                      <label class="field-wide" data-cleaning-detail-field>
-                        <span>Tell us more about any clutter or heavy buildup we should expect. If not applicable, please enter N/A.</span>
+                      <label class="field-wide optional-field" data-cleaning-detail-field>
+                        <span>Tell us more about any clutter or heavy buildup we should expect. (optional)</span>
                         <textarea
                           name="Condition Notes"
                           rows="4"
-                          placeholder="You can mention grease in the kitchen, soap scum, mold, heavy dust, packed closets, or anything else that might affect the quote. If not applicable, please enter N/A."
-                          required
+                          placeholder="You can mention grease in the kitchen, soap scum, mold, heavy dust, packed closets, or anything else that might affect the quote."
                         ></textarea>
                       </label>
-                      <label class="field-wide" data-cleaning-detail-field>
-                        <span>Anything else we should know? If not applicable, please enter N/A.</span>
+                      <label class="field-wide optional-field" data-cleaning-detail-field>
+                        <span>Anything else we should know? (optional)</span>
                         <textarea
                           name="Project Details"
                           rows="5"
-                          placeholder="Share any extra details about the space, schedule, access, or cleaning priorities. If not applicable, please enter N/A."
-                          required
+                          placeholder="Share any extra details about the space, schedule, access, or cleaning priorities."
                         ></textarea>
                       </label>
-                      <label class="field-wide" data-residential-field>
-                        <span>Please upload clear photos of the space you’d like us to clean so we can assess it properly.</span>
+                      <label data-schedulable-field>
+                        <span>Do you want to upload photos?</span>
+                        <small class="field-note">Clear photos help us assess the space properly. If photos are not handy right now, choose Later and we will send a link so you can send them with your name.</small>
+                        <select name="Photo Upload Preference" data-photo-choice required>
+                          <option value="" selected disabled>Select option</option>
+                          <option>Now</option>
+                          <option>Later</option>
+                        </select>
+                      </label>
+                      <label class="field-wide optional-field" data-schedulable-field data-photo-upload-field hidden>
+                        <span>Please upload clear photos of the space you’d like us to clean so we can assess it properly. (optional)</span>
                         <input
                           type="file"
                           name="Work Images[]"
                           data-work-images
                           accept="image/*"
                           multiple
-                          required
+                          disabled
                         >
                         <small class="field-note">Maximum 100 photos per quote request.</small>
                       </label>
+                    </div>
+                    <div class="quote-review-panel" data-quote-review data-quote-step="4">
+                      <h3>Review Your Request</h3>
+                      <p>Check every answer below before sending your quote request.</p>
+                      <dl class="quote-review-list" data-review-summary></dl>
                     </div>
                     <div class="quote-wizard-actions" data-wizard-actions>
                       <button class="button button-secondary" type="button" data-wizard-prev>Back</button>
                       <button class="button button-primary" type="button" data-wizard-next>Continue</button>
                     </div>
                     <div class="quote-actions">
-                      <button class="button button-primary" type="submit" data-submit-quote>Request a Quote</button>
+                      <button class="button button-primary" type="submit" data-submit-quote>Submit Request</button>
                       <a class="button button-secondary" href="tel:9298034053">Or Call Now</a>
                       <button class="button button-secondary" type="button" onclick="if (window.history.length > 1) { window.history.back(); } else { window.location.href = './index.html'; }">Go Back</button>
                     </div>
@@ -614,7 +759,6 @@
             <li><span class="aside-check">✓</span>You approve before the appointment is booked</li>
           </ul>
         </div>
-        <div class="quote-note"><p>Prefer to talk it through? Call or text 929-803-4053. Iman Cleaning Service LLC serves all five NYC boroughs.</p></div>
         <div class="aside-card">
           <div class="static-stars" aria-label="5 out of 5 stars"><span>★</span><span>★</span><span>★</span><span>★</span><span>★</span></div>
           <p style="color: var(--text-body)">Clear price first, on time, spotless result. Easiest cleaner I've booked in NYC.</p>
@@ -624,19 +768,18 @@
     </div>
   </section>
 </main>
-<div id="quote-footer-root"></div>
 <script src="https://unpkg.com/react@18.3.1/umd/react.development.js" integrity="sha384-hD6/rw4ppMLGNu3tX5cjIb+uRZ7UkRJ6BPkLpg4hAu/6onKUg4lLsHAs9EBPT82L" crossorigin="anonymous"></script>
 <script src="https://unpkg.com/react-dom@18.3.1/umd/react-dom.development.js" integrity="sha384-u6aeetuaXnQ38mYT8rp6sbXaQe3NL9t+IBXmnYxwkUI2Hw4bsp2Wvmx4yRQF1uAm" crossorigin="anonymous"></script>
 <script src="https://unpkg.com/@babel/standalone@7.29.0/babel.min.js" integrity="sha384-m08KidiNqLdpJqLq95G/LEi8Qvjl/xUYll3QILypMoQ65QorJ9Lvtp2RXYGBFj1y" crossorigin="anonymous"></script>
 <script src="./_ds_bundle.js"></script>
 <script src="./data.js"></script>
-<script type="text/babel" src="./chrome.jsx"></script>
+<script type="text/babel" src="./chrome.jsx?v=20260729-book-online"></script>
 <script type="text/babel">
   const mountQuoteChrome = () => {
     if (!window.ImanChrome) return setTimeout(mountQuoteChrome, 30);
-    const { Header, Footer } = window.ImanChrome;
+    if (document.body.classList.contains("quote-embed")) return;
+    const { Header } = window.ImanChrome;
     ReactDOM.createRoot(document.getElementById("quote-header-root")).render(<Header active="services" onDark />);
-    ReactDOM.createRoot(document.getElementById("quote-footer-root")).render(<Footer />);
   };
   mountQuoteChrome();
 </script>
@@ -644,12 +787,16 @@
       (() => {
         const addOns = Array.from(document.querySelectorAll("[data-addon-option]"));
         if (!addOns.length) return;
+        const biohazardOptions = Array.from(document.querySelectorAll("[data-biohazard-option]"));
         const windowAddOn = addOns.find((input) => input.value === "Interior windows");
         const windowCount = document.querySelector("[data-window-count]");
         const windowCountField = document.querySelector("[data-window-count-field]");
         const additionalAreasSelect = document.querySelector("[data-additional-areas-select]");
         const additionalAreasField = document.querySelector("[data-additional-areas-field]");
         const additionalAreasInput = document.querySelector("[data-additional-areas-input]");
+        const petsSelect = document.querySelector("[data-pets-select]");
+        const petsSecuredField = document.querySelector("[data-pets-secured-field]");
+        const petsSecuredSelect = document.querySelector("[data-pets-secured-select]");
         const serviceCategory = document.querySelector('[name="Service Category"]');
         const serviceCategoryField = serviceCategory ? serviceCategory.closest("label") : null;
         const progressiveQuoteFields = serviceCategoryField
@@ -657,6 +804,8 @@
           : [];
         const quoteActions = document.querySelector(".quote-actions");
         const residentialFields = Array.from(document.querySelectorAll("[data-residential-field]"));
+        const windowCleaningFields = Array.from(document.querySelectorAll("[data-window-cleaning-field]"));
+        const schedulableFields = Array.from(document.querySelectorAll("[data-schedulable-field]"));
         const commercialFields = Array.from(document.querySelectorAll("[data-commercial-field]"));
         const commercialSpaceSelect = document.querySelector("[data-commercial-space-select]");
         const commercialOtherField = document.querySelector("[data-commercial-other-field]");
@@ -664,6 +813,7 @@
         const commercialMessage = document.querySelector("[data-commercial-message]");
         const serviceType = document.querySelector('[name="Service Type"]');
         const cleaningDetailFields = Array.from(document.querySelectorAll("[data-cleaning-detail-field]"));
+        const hourlyCleaningFields = Array.from(document.querySelectorAll("[data-hourly-cleaning-hours-field], [data-hourly-cleaning-team-field]"));
         const organizingFields = Array.from(document.querySelectorAll("[data-organizing-hours-field], [data-organizing-team-field]"));
         const detailedCleaningFields = Array.from(document.querySelectorAll("[data-detailed-hours-field], [data-detailed-team-field]"));
         const extremeCleaningFields = Array.from(document.querySelectorAll("[data-extreme-hours-field], [data-extreme-team-field]"));
@@ -672,9 +822,12 @@
         const datePickerButtons = Array.from(document.querySelectorAll("[data-date-picker-button]"));
         const quoteForm = document.querySelector(".quote-form");
         const workImages = document.querySelector("[data-work-images]");
+        const photoChoice = document.querySelector("[data-photo-choice]");
+        const photoUploadField = document.querySelector("[data-photo-upload-field]");
+        const reviewSummary = document.querySelector("[data-review-summary]");
         const maxWorkImages = 100;
-        const maxCompressedImageBytes = 3.5 * 1024 * 1024;
-        const maxAttachmentBytes = 2.5 * 1024 * 1024;
+        const maxCompressedImageBytes = 2.5 * 1024 * 1024;
+        const maxConcurrentPhotoUploads = 3;
         const quoteStatus = document.querySelector("[data-quote-status]");
         const submitQuote = document.querySelector("[data-submit-quote]");
         function hasSelectedServiceCategory() {
@@ -689,8 +842,20 @@
           return serviceCategory && serviceCategory.value === "Commercial";
         }
 
+        function isWindowCleaningService() {
+          return serviceCategory && serviceCategory.value === "Window Cleaning";
+        }
+
+        function isSchedulableService() {
+          return isResidentialService() || isWindowCleaningService();
+        }
+
         function shouldShowCleaningDetails() {
-          return isResidentialService() && (!serviceType || !serviceType.value || !["Organization", "Details Cleaning", "Extreme Cleaning", "Post Construction/Renovations Cleaning"].includes(serviceType.value));
+          return isResidentialService() && (!serviceType || !serviceType.value || !["Hourly Cleaning Service", "Organization", "Details Cleaning", "Extreme Cleaning", "Post Construction/Renovations Cleaning"].includes(serviceType.value));
+        }
+
+        function shouldShowHourlyCleaningFields() {
+          return isResidentialService() && serviceType && serviceType.value === "Hourly Cleaning Service";
         }
 
         function shouldShowOrganizingFields() {
@@ -709,6 +874,14 @@
           return isResidentialService() && serviceType && serviceType.value === "Post Construction/Renovations Cleaning";
         }
 
+        function shouldAskPetsSecured() {
+          return shouldShowCleaningDetails() && petsSelect && ["One pet", "Two pets", "More than two pets"].includes(petsSelect.value);
+        }
+
+        function shouldShowPhotoUpload() {
+          return isSchedulableService() && photoChoice && photoChoice.value === "Now";
+        }
+
         function syncFieldAvailability(field, isAvailable) {
           field.hidden = !isAvailable;
           field.querySelectorAll("input, select, textarea").forEach((control) => {
@@ -721,7 +894,7 @@
         }
 
         function isConditionalDetailField(field) {
-          return field.matches("[data-cleaning-detail-field], [data-organizing-hours-field], [data-organizing-team-field], [data-detailed-hours-field], [data-detailed-team-field], [data-extreme-hours-field], [data-extreme-team-field], [data-post-construction-hours-field]");
+          return field.matches("[data-cleaning-detail-field], [data-window-cleaning-field], [data-hourly-cleaning-hours-field], [data-hourly-cleaning-team-field], [data-organizing-hours-field], [data-organizing-team-field], [data-detailed-hours-field], [data-detailed-team-field], [data-extreme-hours-field], [data-extreme-team-field], [data-post-construction-hours-field]");
         }
 
         function syncCommercialFields() {
@@ -751,6 +924,12 @@
           residentialFields.forEach((field) => {
             syncFieldAvailability(field, isResidentialService());
           });
+          windowCleaningFields.forEach((field) => {
+            syncFieldAvailability(field, isWindowCleaningService());
+          });
+          schedulableFields.forEach((field) => {
+            syncFieldAvailability(field, isSchedulableService());
+          });
           syncCommercialFields();
           if (quoteActions) {
             syncFieldAvailability(quoteActions, showRemainingQuestions);
@@ -765,6 +944,9 @@
           const showDetails = shouldShowCleaningDetails();
           cleaningDetailFields.forEach((field) => {
             syncFieldAvailability(field, showDetails);
+          });
+          hourlyCleaningFields.forEach((field) => {
+            syncFieldAvailability(field, shouldShowHourlyCleaningFields());
           });
           organizingFields.forEach((field) => {
             syncFieldAvailability(field, shouldShowOrganizingFields());
@@ -782,8 +964,11 @@
             additionalAreasInput.value = "";
           }
           syncAdditionalAreas();
+          syncPetsSecured();
           syncAddOnRequirement();
+          syncBiohazardRequirement();
           syncWindowCount();
+          syncPhotoUpload();
           if (typeof syncQuoteWizard === "function") {
             syncQuoteWizard();
           }
@@ -798,6 +983,19 @@
           }
           const hasSelection = addOns.some((input) => input.checked);
           addOns.forEach((input, index) => {
+            input.required = index === 0 && !hasSelection;
+          });
+        }
+
+        function syncBiohazardRequirement() {
+          if (!shouldShowCleaningDetails()) {
+            biohazardOptions.forEach((input) => {
+              input.required = false;
+            });
+            return;
+          }
+          const hasSelection = biohazardOptions.some((input) => input.checked);
+          biohazardOptions.forEach((input, index) => {
             input.required = index === 0 && !hasSelection;
           });
         }
@@ -827,6 +1025,18 @@
           }
         }
 
+        function syncNoBiohazards(input) {
+          const none = biohazardOptions.find((option) => option.value === "None");
+          if (!none || !input.checked) return;
+          if (input === none) {
+            biohazardOptions.forEach((option) => {
+              if (option !== none) option.checked = false;
+            });
+          } else {
+            none.checked = false;
+          }
+        }
+
         function syncAdditionalAreas() {
           if (!additionalAreasSelect || !additionalAreasInput) return;
           const needsDetails = shouldShowCleaningDetails() && additionalAreasSelect.value === "Yes";
@@ -840,9 +1050,300 @@
           }
         }
 
+        function syncPetsSecured() {
+          if (!petsSecuredField || !petsSecuredSelect) return;
+          const needsPetsSecured = shouldAskPetsSecured();
+          syncFieldAvailability(petsSecuredField, needsPetsSecured);
+          if (!needsPetsSecured) {
+            petsSecuredSelect.value = "";
+          }
+        }
+
+        function syncPhotoUpload() {
+          if (!photoUploadField || !workImages) return;
+          const showUpload = shouldShowPhotoUpload();
+          syncFieldAvailability(photoUploadField, showUpload);
+          workImages.required = false;
+          if (!showUpload) {
+            workImages.value = "";
+            workImages.setCustomValidity("");
+          }
+        }
+
         function applyQuoteServicePrefill() {
           const params = new URLSearchParams(window.location.search);
           const requestedService = (params.get("service") || "").toLowerCase();
+          const requestedCategory = (params.get("category") || "").toLowerCase();
+          const referralSource = params.get("source") || "";
+          const qualificationReason = params.get("qualification_reason") || "";
+          const qualificationCopy = {
+            commercial_service: {
+              title: "Commercial Cleaning Requires a Custom Quote",
+              description: "Commercial cleaning is customized for each business and may require a brief consultation or walkthrough before we confirm the scope and price.",
+              buttonLabel: "Request a Walkthrough"
+            },
+            window_service: {
+              title: "Let’s Prepare Your Window Cleaning Quote",
+              description: "Window cleaning is quoted according to the number and type of windows, accessibility, and whether interior or exterior cleaning is needed.",
+              buttonLabel: "Request a Window Cleaning Quote"
+            },
+            water_damage: {
+              title: "Water Damage Requires a Custom Quote",
+              description: "Properties affected by flooding or water damage require additional information before we can provide an accurate estimate.",
+              buttonLabel: "Request a Custom Quote"
+            },
+            post_construction: {
+              title: "Post-Construction Cleaning Required",
+              description: "Recently renovated properties typically require specialized post-construction cleaning due to construction dust, debris, and fine particles.",
+              buttonLabel: "Request a Post-Construction Cleaning Quote"
+            },
+            excessive_belongings: {
+              title: "Additional Information Required",
+              description: "Belongings or storage that limit access require a custom assessment so we can estimate the cleaning time, access needs, and staffing.",
+              buttonLabel: "Request a Custom Quote"
+            },
+            utilities_unavailable: {
+              title: "Utilities Are Required",
+              description: "Electricity and running water are required to perform most cleaning services. Please request a custom quote so we can review your situation and determine whether we can accommodate your request.",
+              buttonLabel: "Request a Custom Quote"
+            },
+            limited_property_access: {
+              title: "Additional Assessment Required",
+              description: "Some access limitations may require additional time, equipment, or a walkthrough before we can confirm your booking. Please request a custom quote so we can review your property and provide an accurate estimate.",
+              buttonLabel: "Request a Custom Quote"
+            },
+            heavy_clutter: {
+              title: "Clutter Requires a Custom Quote",
+              description: "Any clutter that requires our team to work around belongings needs a custom assessment so we can estimate the cleaning time, access, and staffing.",
+              buttonLabel: "Request a Custom Quote"
+            },
+            heavy_buildup: {
+              title: "Heavy Buildup Requires a Custom Quote",
+              description: "Heavy grease, soap scum, dust, or residue may require additional time and specialized cleaning. Please request a custom quote so we can review the condition accurately.",
+              buttonLabel: "Request a Custom Quote"
+            },
+            safety_concern: {
+              title: "Safety Review Required",
+              description: "Possible mold, active pests, or human or animal waste must be reviewed before we can confirm a cleaning appointment.",
+              buttonLabel: "Request a Custom Quote"
+            },
+            large_property: {
+              title: "Large Property Requires a Custom Quote",
+              description: "Properties larger than 2,000 square feet need a custom quote so we can confirm the cleaning scope, time, and staffing.",
+              buttonLabel: "Request a Custom Quote"
+            }
+          };
+          const bookingAnswerKeys = [
+            "propertyStatus",
+            "requestedService",
+            "cleaningCategory",
+            "propertyOver2000",
+            "waterDamage",
+            "recentRenovation",
+            "excessiveBelongings",
+            "utilitiesAvailable",
+            "propertyAccess",
+            "clutter",
+            "buildup",
+            "hazards",
+            "tier",
+            "squareFootage",
+            "serviceZip"
+          ];
+          const bookingAnswers = Object.fromEntries(
+            bookingAnswerKeys
+              .map((key) => [key, params.get(`booking_${key}`) || ""])
+              .filter(([, answer]) => answer)
+          );
+          if (referralSource === "package-check") {
+            try {
+              const savedDraft = JSON.parse(window.sessionStorage.getItem("imanBookingQualificationDraft") || "null");
+              if (savedDraft?.answers && (!qualificationReason || savedDraft.internalReason === qualificationReason)) {
+                Object.entries(savedDraft.answers).forEach(([key, answer]) => {
+                  if (!bookingAnswers[key] && answer !== "" && answer !== 0 && answer !== null && answer !== undefined) {
+                    bookingAnswers[key] = String(answer);
+                  }
+                });
+              }
+            } catch {
+              // URL parameters still preserve the answers when browser storage is unavailable.
+            }
+          }
+          const bookingAnswerLabels = {
+            propertyStatus: {
+              label: "Property situation",
+              values: { occupied: "Occupied and furnished", moving: "Vacant for move-in or move-out" }
+            },
+            requestedService: {
+              label: "Requested service",
+              values: { details: "Detail Cleaning", deep: "Deep Cleaning", standard: "Standard Cleaning" }
+            },
+            cleaningCategory: {
+              label: "Cleaning category",
+              values: { residential: "Residential cleaning", commercial: "Commercial cleaning", window: "Window cleaning service" }
+            },
+            propertyOver2000: {
+              label: "Property larger than 2,000 sq ft",
+              values: { yes: "Yes", no: "No" }
+            },
+            waterDamage: {
+              label: "Flooding or water damage",
+              values: { yes: "Yes", no: "No" }
+            },
+            recentRenovation: {
+              label: "Recent renovation or construction",
+              values: { yes: "Yes", no: "No" }
+            },
+            excessiveBelongings: {
+              label: "Belongings limiting access",
+              values: { no: "No", few: "A few areas", most: "Most rooms" }
+            },
+            utilitiesAvailable: {
+              label: "Electricity and running water available",
+              values: { yes: "Yes", no: "No" }
+            },
+            propertyAccess: {
+              label: "Safe access to all cleaning areas",
+              values: { yes: "Yes", no: "No" }
+            },
+            clutter: {
+              label: "Clutter",
+              values: { low: "Little or no clutter", moderate: "Some items need to be worked around", heavy: "Heavy clutter limits safe movement" }
+            },
+            buildup: {
+              label: "Heavy buildup",
+              values: { none: "No unusual or heavy buildup", heavy: "Heavy grease, soap scum, dust, or residue" }
+            },
+            hazards: {
+              label: "Safety concerns",
+              values: { none: "None reported", mold: "Possible mold", pests: "Active pest infestation", waste: "Human or significant animal waste" }
+            },
+            tier: {
+              label: "Property size",
+              values: {
+                studio_1bath: "Studio / 1 Bathroom",
+                "1bed_1bath": "1 Bedroom / 1 Bathroom",
+                "2bed_1bath": "2 Bedrooms / 1 Bathroom",
+                "3bed_1bath": "3 Bedrooms / 1 Bathroom",
+                "3bed_2bath": "3 Bedrooms / 2 Bathrooms"
+              }
+            },
+            squareFootage: { label: "Approximate square footage", values: {} },
+            serviceZip: { label: "Service ZIP", values: {} }
+          };
+          const displayBookingAnswer = (key, answer) => bookingAnswerLabels[key]?.values?.[answer] || answer;
+          const ensureHiddenBookingField = (name, answer) => {
+            if (!quoteForm || !answer) return;
+            let input = quoteForm.querySelector(`input[type="hidden"][data-booking-prefill="${name}"]`);
+            if (!input) {
+              input = document.createElement("input");
+              input.type = "hidden";
+              input.name = name;
+              input.dataset.bookingPrefill = name;
+              quoteForm.append(input);
+            }
+            input.value = answer;
+          };
+          const prefillReferredResidentialDetails = () => {
+            const squareFootage = document.querySelector('[name="Square Footage"]');
+            const bedrooms = document.querySelector('[name="Bedrooms"]');
+            const fullBathrooms = document.querySelector('[name="Full Bathrooms"]');
+            const zipCode = document.querySelector('[name="ZIP Code"]');
+            const conditionNotes = document.querySelector('[name="Condition Notes"]');
+            const clutter = document.querySelector('[name="Clutter or Ready for Cleaning"]');
+            const buildup = document.querySelector('[name="Heavy Buildup Areas"]');
+            const referralNotice = document.querySelector("[data-package-referral]");
+            const referralReason = document.querySelector("[data-package-referral-reason]");
+            const handoff = document.querySelector("[data-qualification-handoff]");
+            const handoffTitle = document.querySelector("[data-qualification-title]");
+            const handoffDescription = document.querySelector("[data-qualification-description]");
+            const handoffContinue = document.querySelector("[data-qualification-continue]");
+            const referredSqft = Number(bookingAnswers.squareFootage || params.get("sqft"));
+            const reason = (params.get("reason") || "").trim();
+            if (squareFootage && Number.isFinite(referredSqft) && referredSqft > 0) {
+              squareFootage.value = String(referredSqft);
+            }
+            if (zipCode && bookingAnswers.serviceZip) {
+              zipCode.value = bookingAnswers.serviceZip;
+            }
+            const tierMap = {
+              studio_1bath: ["studio", "1"],
+              "1bed_1bath": ["1", "1"],
+              "2bed_1bath": ["2", "1"],
+              "3bed_1bath": ["3", "1"],
+              "3bed_2bath": ["3", "2"]
+            };
+            const tierDetails = tierMap[bookingAnswers.tier];
+            if (tierDetails && bedrooms && fullBathrooms) {
+              bedrooms.value = tierDetails[0];
+              fullBathrooms.value = tierDetails[1];
+            }
+            const answerSummary = bookingAnswerKeys
+              .filter((key) => bookingAnswers[key])
+              .map((key) => `${bookingAnswerLabels[key].label}: ${displayBookingAnswer(key, bookingAnswers[key])}`);
+            if (conditionNotes && (reason || answerSummary.length)) {
+              conditionNotes.value = [
+                reason ? `Referred from residential booking: ${reason}` : "",
+                answerSummary.length ? `Booking answers: ${answerSummary.join("; ")}` : ""
+              ].filter(Boolean).join("\n");
+            }
+            if (qualificationReason) {
+              ensureHiddenBookingField("Booking Qualification Reason", qualificationReason);
+            }
+            bookingAnswerKeys.forEach((key) => {
+              if (bookingAnswers[key]) {
+                ensureHiddenBookingField(
+                  `Booking ${bookingAnswerLabels[key].label}`,
+                  displayBookingAnswer(key, bookingAnswers[key])
+                );
+              }
+            });
+            if (clutter) {
+              const clutterMap = { low: "No clutter", moderate: "Some clutter", heavy: "Heavy clutter" };
+              if (clutterMap[bookingAnswers.clutter]) clutter.value = clutterMap[bookingAnswers.clutter];
+            }
+            if (buildup) {
+              const buildupMap = { none: "No major buildup", heavy: "Heavy grease, soap scum, or mold" };
+              if (buildupMap[bookingAnswers.buildup]) buildup.value = buildupMap[bookingAnswers.buildup];
+            }
+            const hazardMap = {
+              mold: "Mold",
+              pests: "Pest infestation",
+              waste: "Animal waste"
+            };
+            const referredHazard = hazardMap[params.get("hazard")];
+            const hazardOption = biohazardOptions.find((input) => input.value === referredHazard);
+            if (hazardOption) {
+              hazardOption.checked = true;
+              syncNoBiohazards(hazardOption);
+              syncBiohazardRequirement();
+            }
+            const handoffCopy = qualificationCopy[qualificationReason];
+            if (handoff && handoffTitle && handoffDescription && handoffContinue && handoffCopy) {
+              handoffTitle.textContent = handoffCopy.title;
+              handoffDescription.textContent = handoffCopy.description;
+              handoffContinue.textContent = handoffCopy.buttonLabel;
+              handoff.hidden = false;
+              handoffContinue.addEventListener("click", () => {
+                handoff.hidden = true;
+                const firstIncompleteControl = quoteForm?.querySelector('[data-quote-step="1"] select:enabled, [data-quote-step="1"] input:enabled');
+                wizardHead?.scrollIntoView({ behavior: "smooth", block: "start" });
+                window.setTimeout(() => firstIncompleteControl?.focus({ preventScroll: true }), 350);
+              }, { once: true });
+            } else if (referralNotice && referralReason && referralSource === "package-check" && reason) {
+              referralReason.textContent = `${reason} Please complete the details below so we can review the property and confirm the correct scope and price.`;
+              referralNotice.hidden = false;
+            }
+          };
+          if (requestedCategory === "commercial" && serviceCategory) {
+            serviceCategory.value = "Commercial";
+            syncProgressiveQuoteFields();
+            return;
+          }
+          if (requestedCategory === "residential" && serviceCategory) {
+            serviceCategory.value = "Residential";
+            syncProgressiveQuoteFields();
+          }
           const serviceMap = {
             organization: "Organization",
             organizing: "Organization",
@@ -851,6 +1352,12 @@
             "move-in-move-out": "Move-In and Move Out Cleaning",
             "move-out": "Move-In and Move Out Cleaning",
             "move-in": "Move-In and Move Out Cleaning",
+            "airbnb": "Airbnb / Short-Term Rental Cleaning",
+            "airbnb-cleaning": "Airbnb / Short-Term Rental Cleaning",
+            "short-term-rental": "Airbnb / Short-Term Rental Cleaning",
+            "hourly-cleaning-service": "Hourly Cleaning Service",
+            "hourly-cleaning": "Hourly Cleaning Service",
+            hourly: "Hourly Cleaning Service",
             "extreme-cleaning": "Extreme Cleaning",
             "post-construction": "Post Construction/Renovations Cleaning",
             "post-construction-cleaning": "Post Construction/Renovations Cleaning",
@@ -859,12 +1366,22 @@
             "details-cleaning": "Details Cleaning",
             "detailed-cleaning": "Details Cleaning"
           };
+          if (["window-cleaning", "windows", "window"].includes(requestedService)) {
+            if (!serviceCategory) return;
+            serviceCategory.value = "Window Cleaning";
+            syncProgressiveQuoteFields();
+            return;
+          }
           const mappedService = serviceMap[requestedService];
-          if (!mappedService || !serviceCategory || !serviceType) return;
-          serviceCategory.value = "Residential";
-          syncProgressiveQuoteFields();
-          serviceType.value = mappedService;
-          syncProgressiveQuoteFields();
+          if (mappedService && serviceCategory && serviceType) {
+            serviceCategory.value = "Residential";
+            syncProgressiveQuoteFields();
+            serviceType.value = mappedService;
+            syncProgressiveQuoteFields();
+          }
+          if (requestedCategory === "residential" || mappedService) {
+            prefillReferredResidentialDetails();
+          }
         }
 
         const wizardHead = document.querySelector("[data-wizard-head]");
@@ -875,19 +1392,24 @@
         const quoteDraftKey = "imanCleaningQuoteDraft";
         const wizardCopy = {
           1: {
-            eyebrow: "Step 1 of 3",
-            title: "Choose your service",
-            body: "Start with the type of cleaning you need. More detailed questions appear only when they are useful for your quote."
+            eyebrow: "Step 1 of 4",
+            title: "Let's Find the Right Cleaning Service",
+            body: "Answer a few quick questions so we can recommend the best service and provide an accurate, no-obligation quote."
           },
           2: {
-            eyebrow: "Step 2 of 3",
+            eyebrow: "Step 2 of 4",
             title: "Tell us about the space",
             body: "Share the details that help us estimate time, team size, condition, add-ons, and availability."
           },
           3: {
-            eyebrow: "Step 3 of 3",
+            eyebrow: "Step 3 of 4",
             title: "Where should we send your quote?",
-            body: "Add your contact and address details so our team can review the request and follow up with the next step."
+            body: "Share your contact and property information so we can prepare your estimate and get back to you as quickly as possible."
+          },
+          4: {
+            eyebrow: "Step 4 of 4",
+            title: "Review Your Request",
+            body: "Make sure everything looks right before submitting your quote request."
           }
         };
         let activeWizardStep = 1;
@@ -901,7 +1423,7 @@
         function getFieldStep(field) {
           const controls = Array.from(field.querySelectorAll("input, select, textarea"));
           const names = controls.map((control) => control.name);
-          if (names.some((name) => ["Service Category", "Commercial Space Type", "Other Commercial Space", "Property Type", "Service Type"].includes(name))) {
+          if (names.some((name) => ["Service Category", "Commercial Space Type", "Other Commercial Space", "Property Type", "Service Type", "Window Cleaning Property Type", "Window Cleaning Scope"].includes(name))) {
             return 1;
           }
           if (names.some((name) => ["First Name", "Last Name", "Email", "Phone", "Repeat Client", "Referral Source", "Street Address", "City", "State", "ZIP Code"].includes(name))) {
@@ -916,7 +1438,7 @@
             field.dataset.quoteStep = String(getFieldStep(field));
           });
           if (quoteActions) {
-            quoteActions.dataset.quoteStep = "3";
+            quoteActions.dataset.quoteStep = "4";
           }
         }
 
@@ -924,13 +1446,134 @@
           return Array.from(quoteForm?.querySelectorAll(`[data-quote-step="${step}"]`) || []);
         }
 
+        function getFieldControls(fields) {
+          return fields.flatMap((field) => Array.from(field.querySelectorAll("input, select, textarea")));
+        }
+
+        function hasBlankRequiredValue(control) {
+          if (!control.required || control.disabled) return false;
+          if (control.type === "checkbox" || control.type === "radio") {
+            return !control.checked;
+          }
+          if (control.type === "file") {
+            return !control.files || control.files.length === 0;
+          }
+          return !String(control.value || "").trim();
+        }
+
+        function applyRequiredMessages(controls) {
+          controls.forEach((control) => {
+            if (!control.dataset.requiredMessage) return;
+            control.setCustomValidity("");
+            if (hasBlankRequiredValue(control)) {
+              control.setCustomValidity(control.dataset.requiredMessage);
+            }
+          });
+        }
+
+        function getInvalidControls(fields) {
+          const controls = getFieldControls(fields)
+            .filter((control) => !control.disabled);
+          applyRequiredMessages(controls);
+          return controls.filter((control) => !control.checkValidity());
+        }
+
+        function getReviewQuestion(control, cleanName) {
+          const field = getDirectFieldChild(control);
+          if (control.name.endsWith("[]") && field) {
+            const groupPrompt = Array.from(field.children).find((child) => child.matches("legend, span"));
+            if (groupPrompt?.textContent.trim()) {
+              return groupPrompt.textContent.trim().replace(/\s*\(optional\)\s*/i, "");
+            }
+          }
+          const label = control.closest("label");
+          const prompt = label && Array.from(label.children).find((child) => child.matches("span") && !child.classList.contains("date-picker-wrap"));
+          return (prompt?.textContent || cleanName).trim().replace(/\s*\(optional\)\s*/i, "");
+        }
+
+        function getReviewAnswer(control) {
+          if (control.type === "file") {
+            const count = control.files?.length || 0;
+            return count ? `${count} photo${count === 1 ? "" : "s"} selected` : "";
+          }
+          if ((control.type === "checkbox" || control.type === "radio") && !control.checked) {
+            return "";
+          }
+          if (control instanceof HTMLSelectElement) {
+            return Array.from(control.selectedOptions)
+              .map((option) => option.textContent.trim())
+              .filter((value) => value && value !== "Select option")
+              .join(", ");
+          }
+          const value = String(control.value || "").trim();
+          if (control.type === "date" && /^\d{4}-\d{2}-\d{2}$/.test(value)) {
+            return new Date(`${value}T00:00:00`).toLocaleDateString("en-US", {
+              year: "numeric",
+              month: "long",
+              day: "numeric"
+            });
+          }
+          return value;
+        }
+
+        function renderQuoteReview() {
+          if (!reviewSummary || !quoteForm) return;
+          const entries = new Map();
+          const controls = [1, 2, 3]
+            .flatMap((step) => getFieldControls(getStepFields(step)));
+
+          controls.forEach((control) => {
+            if (!control.name || control.name.startsWith("_") || control.disabled || control.type === "hidden") return;
+            const answer = getReviewAnswer(control);
+            if (!answer) return;
+            const cleanName = control.name.replace(/\[\]$/, "");
+            if (!entries.has(cleanName)) {
+              const field = getDirectFieldChild(control);
+              entries.set(cleanName, {
+                question: getReviewQuestion(control, cleanName),
+                answers: [],
+                control,
+                step: Number(field?.dataset.quoteStep) || 1
+              });
+            }
+            const entry = entries.get(cleanName);
+            if (!entry.answers.includes(answer)) {
+              entry.answers.push(answer);
+            }
+          });
+
+          reviewSummary.replaceChildren(...Array.from(entries.values()).map((entry) => {
+            const row = document.createElement("div");
+            const term = document.createElement("dt");
+            const description = document.createElement("dd");
+            const editButton = document.createElement("button");
+            row.className = "quote-review-row";
+            term.textContent = entry.question;
+            description.textContent = entry.answers.join(", ");
+            editButton.type = "button";
+            editButton.className = "quote-review-edit";
+            editButton.textContent = "Edit";
+            editButton.setAttribute("aria-label", `Edit ${entry.question}`);
+            editButton.addEventListener("click", () => {
+              goToWizardStep(entry.step);
+              window.setTimeout(() => {
+                const target = getFieldHighlightTarget(entry.control) || entry.control;
+                target.scrollIntoView({ behavior: "smooth", block: "center" });
+                entry.control.focus({ preventScroll: true });
+              }, 100);
+            });
+            row.append(term, description, editButton);
+            return row;
+          }));
+        }
+
         function syncQuoteWizard() {
           if (!quoteForm) return;
-          getStepFields(1).concat(getStepFields(2), getStepFields(3)).forEach((field) => {
+          getStepFields(1).concat(getStepFields(2), getStepFields(3), getStepFields(4)).forEach((field) => {
             field.classList.toggle("quote-step-hidden", field.dataset.quoteStep !== String(activeWizardStep));
           });
           if (quoteActions) {
-            quoteActions.classList.toggle("quote-step-hidden", activeWizardStep !== 3);
+            quoteActions.classList.toggle("quote-step-hidden", activeWizardStep !== 4);
           }
           if (wizardActions) {
             wizardActions.hidden = false;
@@ -939,7 +1582,7 @@
             wizardPrev.hidden = activeWizardStep === 1;
           }
           if (wizardNext) {
-            wizardNext.hidden = activeWizardStep === 3;
+            wizardNext.hidden = activeWizardStep === 4;
           }
           wizardIndicators.forEach((button) => {
             button.classList.toggle("is-active", Number(button.dataset.wizardJump) === activeWizardStep);
@@ -950,14 +1593,18 @@
             wizardHead.querySelector("h2").textContent = copy.title;
             wizardHead.querySelector("p:not(.eyebrow)").textContent = copy.body;
           }
+          if (activeWizardStep === 4) {
+            renderQuoteReview();
+          }
         }
 
         function validateWizardStep(step) {
+          if (step !== activeWizardStep) {
+            activeWizardStep = step;
+            syncQuoteWizard();
+          }
           clearMissingFieldHighlights();
-          const invalidControls = getStepFields(step)
-            .filter((field) => !field.hidden)
-            .flatMap((field) => Array.from(field.querySelectorAll("input, select, textarea")))
-            .filter((control) => !control.disabled && !control.checkValidity());
+          const invalidControls = getInvalidControls(getStepFields(step).filter((field) => !field.hidden));
 
           invalidControls.forEach((control) => {
             getFieldHighlightTarget(control)?.classList.add("is-missing");
@@ -977,7 +1624,7 @@
         }
 
         function goToWizardStep(step) {
-          const targetStep = Math.max(1, Math.min(3, step));
+          const targetStep = Math.max(1, Math.min(4, step));
           if (targetStep > activeWizardStep) {
             for (let stepIndex = activeWizardStep; stepIndex < targetStep; stepIndex += 1) {
               if (!validateWizardStep(stepIndex)) return;
@@ -988,49 +1635,25 @@
           wizardHead?.scrollIntoView({ behavior: "smooth", block: "start" });
         }
 
-        function saveQuoteDraft() {
-          if (!quoteForm) return;
-          const draft = {};
-          Array.from(quoteForm.querySelectorAll("input, select, textarea")).forEach((control) => {
-            if (!control.name || control.type === "file" || control.classList.contains("hp-field")) return;
-            if (control.type === "checkbox") {
-              draft[control.name] = Array.from(quoteForm.querySelectorAll(`[name="${CSS.escape(control.name)}"]:checked`)).map((input) => input.value);
-              return;
-            }
-            draft[control.name] = control.value;
-          });
+        function clearQuoteDraft() {
           try {
-            localStorage.setItem(quoteDraftKey, JSON.stringify(draft));
+            localStorage.removeItem(quoteDraftKey);
           } catch (error) {
-            // Draft saving is helpful, but the quote form should still work if storage is unavailable.
+            // The form should still work if storage is unavailable.
           }
         }
 
-        function restoreQuoteDraft() {
-          if (!quoteForm || new URLSearchParams(window.location.search).has("service")) return;
-          let draft;
-          try {
-            const rawDraft = localStorage.getItem(quoteDraftKey);
-            if (!rawDraft) return;
-            draft = JSON.parse(rawDraft);
-          } catch (error) {
-            return;
-          }
-          Object.entries(draft).forEach(([name, value]) => {
-            const controls = Array.from(quoteForm.querySelectorAll(`[name="${CSS.escape(name)}"]`));
-            controls.forEach((control) => {
-              if (control.type === "file") return;
-              if (control.type === "checkbox") {
-                control.checked = Array.isArray(value) && value.includes(control.value);
-                return;
-              }
-              control.value = value;
-            });
+        function resetQuoteSelects() {
+          if (!quoteForm) return;
+          quoteForm.querySelectorAll("select").forEach((select) => {
+            select.value = "";
           });
         }
 
         assignWizardSteps();
-        restoreQuoteDraft();
+        clearQuoteDraft();
+        resetQuoteSelects();
+        applyQuoteServicePrefill();
 
         wizardPrev?.addEventListener("click", () => {
           goToWizardStep(activeWizardStep - 1);
@@ -1043,9 +1666,6 @@
             goToWizardStep(Number(button.dataset.wizardJump));
           });
         });
-        quoteForm?.addEventListener("input", saveQuoteDraft);
-        quoteForm?.addEventListener("change", saveQuoteDraft);
-
         addOns.forEach((input) => {
           input.addEventListener("change", () => {
             syncNoAddOns(input);
@@ -1053,8 +1673,20 @@
             syncWindowCount();
           });
         });
+        biohazardOptions.forEach((input) => {
+          input.addEventListener("change", () => {
+            syncNoBiohazards(input);
+            syncBiohazardRequirement();
+          });
+        });
         if (additionalAreasSelect) {
           additionalAreasSelect.addEventListener("change", syncAdditionalAreas);
+        }
+        if (petsSelect) {
+          petsSelect.addEventListener("change", syncPetsSecured);
+        }
+        if (photoChoice) {
+          photoChoice.addEventListener("change", syncPhotoUpload);
         }
         if (serviceType) {
           serviceType.addEventListener("change", syncCleaningDetailFields);
@@ -1091,7 +1723,7 @@
 
         function getFieldHighlightTarget(control) {
           if (!control) return null;
-          if (control.matches("[data-addon-option]")) {
+          if (control.matches("[data-addon-option], [data-biohazard-option]")) {
             return control.closest(".choice-grid");
           }
           return control.closest(".priority-date-card, label, fieldset");
@@ -1107,8 +1739,7 @@
           if (!quoteForm) return false;
           clearMissingFieldHighlights();
 
-          const invalidControls = Array.from(quoteForm.querySelectorAll("input, select, textarea"))
-            .filter((control) => !control.disabled && !control.hidden && !control.checkValidity());
+          const invalidControls = getInvalidControls(Array.from(quoteForm.querySelectorAll("[data-quote-step]")));
 
           invalidControls.forEach((control) => {
             getFieldHighlightTarget(control)?.classList.add("is-missing");
@@ -1117,6 +1748,11 @@
           if (!invalidControls.length) return true;
 
           const firstInvalid = invalidControls[0];
+          const firstInvalidStep = Number(getDirectFieldChild(firstInvalid)?.dataset.quoteStep);
+          if (firstInvalidStep && firstInvalidStep !== activeWizardStep) {
+            activeWizardStep = firstInvalidStep;
+            syncQuoteWizard();
+          }
           const firstTarget = getFieldHighlightTarget(firstInvalid) || firstInvalid;
           setQuoteStatus("Please complete the highlighted required fields before submitting your quote request.", "error");
           firstTarget.scrollIntoView({ behavior: "smooth", block: "center" });
@@ -1178,15 +1814,17 @@
           const objectUrl = URL.createObjectURL(file);
           try {
             const image = await loadImage(objectUrl);
-            const scale = Math.min(1, 1600 / Math.max(image.naturalWidth || image.width, image.naturalHeight || image.height));
+            const scale = Math.min(1, 1280 / Math.max(image.naturalWidth || image.width, image.naturalHeight || image.height));
             const width = Math.max(1, Math.round((image.naturalWidth || image.width) * scale));
             const height = Math.max(1, Math.round((image.naturalHeight || image.height) * scale));
             const canvas = document.createElement("canvas");
             canvas.width = width;
             canvas.height = height;
             const context = canvas.getContext("2d");
+            context.imageSmoothingEnabled = true;
+            context.imageSmoothingQuality = "medium";
             context.drawImage(image, 0, 0, width, height);
-            const blob = await canvasToBlob(canvas, "image/jpeg", 0.75);
+            const blob = await canvasToBlob(canvas, "image/jpeg", 0.7);
             const filename = file.name.replace(/\.[^.]+$/, "") + ".jpg";
             if (blob.size > maxCompressedImageBytes) {
               throw new Error(`${file.name} is still too large after compression. Please upload a smaller photo.`);
@@ -1195,15 +1833,6 @@
           } finally {
             URL.revokeObjectURL(objectUrl);
           }
-        }
-
-        function fileToDataUrl(file) {
-          return new Promise((resolve, reject) => {
-            const reader = new FileReader();
-            reader.onload = () => resolve(reader.result);
-            reader.onerror = () => reject(new Error("Photo attachment preview could not be prepared."));
-            reader.readAsDataURL(file);
-          });
         }
 
         async function uploadPhoto({ quoteId, folderId, file, photoIndex }) {
@@ -1250,30 +1879,31 @@
             const formFields = getQuoteFields(quoteForm);
             setQuoteStatus("Creating your quote request...", "info");
             const started = await postJson("/api/quote/start", { formFields });
-            const photos = [];
-            const attachments = [];
-            let attachmentBytes = 0;
+            const photos = new Array(files.length);
+            let nextPhotoIndex = 0;
+            let uploadedPhotoCount = 0;
 
-            for (let index = 0; index < files.length; index += 1) {
-              setQuoteStatus(`Compressing photo ${index + 1} of ${files.length}...`, "info");
-              const compressed = await compressImage(files[index]);
-              setQuoteStatus(`Uploading photo ${index + 1} of ${files.length}...`, "info");
-              const uploaded = await uploadPhoto({
-                quoteId: started.quoteId,
-                folderId: started.folderId,
-                file: compressed,
-                photoIndex: index + 1
-              });
-              photos.push(uploaded);
-
-              if (attachments.length < 3 && attachmentBytes + compressed.size <= maxAttachmentBytes) {
-                attachments.push({
-                  filename: compressed.name,
-                  dataUrl: await fileToDataUrl(compressed)
+            if (files.length) {
+              setQuoteStatus(`Optimizing and uploading ${files.length} photo${files.length === 1 ? "" : "s"}...`, "info");
+            }
+            async function processPhotoQueue() {
+              while (nextPhotoIndex < files.length) {
+                const index = nextPhotoIndex;
+                nextPhotoIndex += 1;
+                const compressed = await compressImage(files[index]);
+                photos[index] = await uploadPhoto({
+                  quoteId: started.quoteId,
+                  folderId: started.folderId,
+                  file: compressed,
+                  photoIndex: index + 1
                 });
-                attachmentBytes += compressed.size;
+                uploadedPhotoCount += 1;
+                setQuoteStatus(`Uploaded ${uploadedPhotoCount} of ${files.length} photo${files.length === 1 ? "" : "s"}...`, "info");
               }
             }
+
+            const workerCount = Math.min(maxConcurrentPhotoUploads, files.length);
+            await Promise.all(Array.from({ length: workerCount }, () => processPhotoQueue()));
 
             setQuoteStatus("Sending your quote request email...", "info");
             await postJson("/api/quote/finish", {
@@ -1281,11 +1911,14 @@
               folderId: started.folderId,
               folderLink: started.folderLink,
               formFields,
-              photos,
-              attachments
+              photos
             });
 
-            window.location.href = "./thanks.html";
+            if (document.body.classList.contains("quote-embed") && window.parent !== window) {
+              window.top.location.href = "./thanks.html";
+            } else {
+              window.location.href = "./thanks.html";
+            }
           } catch (error) {
             setQuoteStatus(error.message || "Quote request could not be sent. Please call us or try again.", "error");
             if (submitQuote) {
@@ -1311,10 +1944,78 @@
         }
 
         syncProgressiveQuoteFields();
-        applyQuoteServicePrefill();
         syncQuoteWizard();
       })();
     </script>
-<script src="./chatbot.js" defer></script>
+<script>
+      (() => {
+        if (!document.body.classList.contains("quote-embed") || window.parent === window) return;
+        const sendHeight = () => {
+          window.parent.postMessage({
+            type: "imanQuoteFrameHeight",
+            height: Math.ceil(document.documentElement.scrollHeight)
+          }, window.location.origin);
+        };
+        window.addEventListener("load", sendHeight);
+        window.addEventListener("resize", sendHeight);
+        if ("ResizeObserver" in window) {
+          new ResizeObserver(sendHeight).observe(document.body);
+        }
+        window.setTimeout(sendHeight, 100);
+        window.setTimeout(sendHeight, 500);
+      })();
+    </script>
+<footer id="quote-footer-root" class="site-footer" aria-label="Website footer">
+  <div class="ds-shell">
+    <div class="footer-brand">
+      <span class="footer-mark" aria-hidden="true"></span>
+      <div><strong>Iman Cleaning Service LLC</strong><span>Residential &amp; commercial cleaning</span></div>
+    </div>
+    <div class="footer-grid">
+      <div class="footer-cell">
+        <span class="footer-ico" aria-hidden="true"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="5" width="18" height="14" rx="2"/><path d="M4 7l8 6 8-6"/></svg></span>
+        <h4>Email us</h4>
+        <p><a href="mailto:Info@imancleaningservice.com">Info@imancleaningservice.com</a></p>
+      </div>
+      <div class="footer-cell">
+        <span class="footer-ico" aria-hidden="true"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 21s7-5.6 7-11a7 7 0 1 0-14 0c0 5.4 7 11 7 11z"/><circle cx="12" cy="10" r="2.6"/></svg></span>
+        <h4>Service area</h4>
+        <p><a href="./areas.html">Manhattan, Brooklyn, Queens, The Bronx, Staten Island, and Long Island</a></p>
+      </div>
+      <div class="footer-cell">
+        <span class="footer-ico" aria-hidden="true"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M5 4h3l1.5 4.5L7.5 10a12 12 0 0 0 6 6l1.5-2 4.5 1.5V19a2 2 0 0 1-2 2A16 16 0 0 1 4 6a2 2 0 0 1 1-2z"/></svg></span>
+        <h4>Call us</h4>
+        <p><a href="tel:+19298034053">929-803-4053</a></p>
+      </div>
+      <div class="footer-cell">
+        <span class="footer-ico" aria-hidden="true"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3.5 2"/></svg></span>
+        <h4>Business hours</h4>
+        <p>8 AM – 8 PM · 7 days</p>
+      </div>
+    </div>
+    <div class="footer-location">
+      <div class="footer-location-map">
+        <iframe title="Map showing Iman Cleaning Service LLC in Queens, New York" src="https://www.google.com/maps?q=Iman%20Cleaning%20Service%20LLC%2C%20Queens%2C%20NY&amp;output=embed" loading="lazy" referrerpolicy="no-referrer-when-downgrade"></iframe>
+      </div>
+      <div class="footer-location-copy">
+        <h4>Our location</h4>
+        <address>Queens, New York City, and select Long Island communities</address>
+        <a href="https://www.google.com/maps/search/?api=1&amp;query=Iman%20Cleaning%20Service%20LLC%20Queens%20NY" target="_blank" rel="noopener noreferrer">View on Google Maps</a>
+      </div>
+    </div>
+    <div class="footer-follow">
+      <h4>Follow us for more</h4>
+      <div class="social-row">
+        <a class="social-ico" href="https://www.instagram.com/imancleaningservicellc/" target="_blank" rel="noopener noreferrer" aria-label="Instagram" style="background: radial-gradient(circle at 30% 110%, #ffd35c 0%, #ff9a4d 22%, #fd3f6c 46%, #d534b8 70%, #3f5cff 100%); color: #fff;"><svg width="22" height="22" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M7.8 3h8.4A4.8 4.8 0 0 1 21 7.8v8.4A4.8 4.8 0 0 1 16.2 21H7.8A4.8 4.8 0 0 1 3 16.2V7.8A4.8 4.8 0 0 1 7.8 3Zm0 1.8A3 3 0 0 0 4.8 7.8v8.4a3 3 0 0 0 3 3h8.4a3 3 0 0 0 3-3V7.8a3 3 0 0 0-3-3H7.8Zm8.9 1.3a1.1 1.1 0 1 1 0 2.2 1.1 1.1 0 0 1 0-2.2ZM12 7a5 5 0 1 1 0 10 5 5 0 0 1 0-10Zm0 1.8a3.2 3.2 0 1 0 0 6.4 3.2 3.2 0 0 0 0-6.4Z"/></svg></a>
+        <a class="social-ico" href="https://www.facebook.com/Imancleaningservicellc/" target="_blank" rel="noopener noreferrer" aria-label="Facebook" style="background: #1877f2; color: #fff;"><svg width="22" height="22" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M13.5 21v-7h2.4l.4-3h-2.8V9.1c0-.9.3-1.6 1.6-1.6H16V4.8c-.2 0-.9-.1-1.8-.1-2.7 0-4.3 1.6-4.3 4.5V11H7.5v3h2.4v7h3.6Z"/></svg></a>
+        <a class="social-ico" href="https://www.youtube.com/@ImanCleaningServiceLLC" target="_blank" rel="noopener noreferrer" aria-label="YouTube" style="background: #ff0000; color: #fff;"><svg width="22" height="22" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M21.6 7.2a2.9 2.9 0 0 0-2-2A34.6 34.6 0 0 0 12 4.8a34.6 34.6 0 0 0-7.6.4 2.9 2.9 0 0 0-2 2A31 31 0 0 0 2 12a31 31 0 0 0 .4 4.8 2.9 2.9 0 0 0 2 2 34.6 34.6 0 0 0 7.6.4 34.6 34.6 0 0 0 7.6-.4 2.9 2.9 0 0 0 2-2A31 31 0 0 0 22 12a31 31 0 0 0-.4-4.8ZM10 15.5v-7l6 3.5-6 3.5Z"/></svg></a>
+        <a class="social-ico" href="https://www.tiktok.com/@imancleaningservicellc" target="_blank" rel="noopener noreferrer" aria-label="TikTok" style="background: #111; color: #fff;"><svg width="22" height="22" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M14.6 3c.3 2 1.5 3.5 3.4 4.1v2.7a6.7 6.7 0 0 1-3.4-1.1v6.3a5 5 0 1 1-4.1-4.9v2.8a2.2 2.2 0 1 0 1.4 2V3h2.7Z"/></svg></a>
+        <a class="social-ico is-google" href="https://share.google/EAX7wC22J4PyMKcNx" target="_blank" rel="noopener noreferrer" aria-label="Google Business Profile" style="background: #fff; color: #fff;"><svg width="22" height="22" viewBox="0 0 24 24" aria-hidden="true"><path fill="#4285F4" d="M23.5 12.3c0-.8-.1-1.5-.2-2.2H12v4.2h6.5c-.3 1.4-1.1 2.7-2.4 3.6v3h3.8c2.2-2.1 3.6-5.1 3.6-8.6Z"/><path fill="#34A853" d="M12 24c3.2 0 5.9-1.1 7.8-3.1l-3.8-3c-1 .7-2.3 1.2-4 1.2-3.1 0-5.7-2.1-6.6-4.9H1.5v3.1A12 12 0 0 0 12 24Z"/><path fill="#FBBC04" d="M5.4 14.2c-.2-.7-.4-1.4-.4-2.2s.1-1.5.4-2.2V6.7H1.5A12 12 0 0 0 0 12c0 1.9.5 3.7 1.5 5.3l3.9-3.1Z"/><path fill="#EA4335" d="M12 4.8c1.7 0 3.2.6 4.4 1.7l3.3-3.3C17.9 1.1 15.2 0 12 0A12 12 0 0 0 1.5 6.7l3.9 3.1c.9-2.8 3.5-5 6.6-5Z"/></svg></a>
+      </div>
+    </div>
+    <div class="footer-bottom"><span>© 2026 Iman Cleaning Service LLC. All rights reserved.</span><nav class="footer-legal" aria-label="Legal"><a href="./careers.html">Careers</a><a href="./privacy-policy.html">Privacy Policy</a><a href="./sms-terms.html">SMS Terms</a></nav></div>
+  </div>
+</footer>
+
 </body>
 </html>

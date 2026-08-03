@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Cleaning Services in NYC | House, Deep &amp; Move-Out Cleaning | Iman Cleaning Service</title>
-<meta name="description" content="House cleaning, deep cleaning, move-out &amp; office cleaning in Queens, Manhattan &amp; Brooklyn (plus the Bronx &amp; Staten Island). Insured cleaners, flat-rate quotes, same-week booking. Call or text 929-803-4053.">
+<meta name="description" content="House cleaning, deep cleaning, move-out &amp; office cleaning in Queens, Manhattan &amp; Brooklyn (plus the Bronx &amp; Staten Island). Insured cleaners, flat-rate quotes, same-week booking. Call us 929-803-4053.">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,400;12..96,500;12..96,700;12..96,800&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
@@ -54,11 +54,13 @@
   .logo-text b{font-family:'Bricolage Grotesque';font-weight:800;font-size:1.25rem;color:var(--green-deep);letter-spacing:.02em}
   .logo-text small{font-size:.62rem;font-weight:600;letter-spacing:.06em;color:var(--slate);margin-top:2px}
   .nav-links{display:flex;gap:1.6rem;font-weight:500;font-size:.95rem;color:var(--slate)}
-  .nav-links a:hover{color:var(--green)}
+  .nav-links a{-webkit-tap-highlight-color:transparent}
+  .nav-links a:hover,.nav-links a:focus,.nav-links a:active,.nav-links a:visited{color:var(--slate)}
   .nav-links a[aria-current]{color:var(--green-deep);font-weight:700}
   .nav-cta{display:flex;align-items:center;gap:.6rem}
-  .nav-phone{font-weight:700;color:var(--green-deep);font-size:1rem}
-  @media(max-width:880px){.nav-links,.nav-phone{display:none}}
+  .nav-cta .btn{min-height:42px;padding:0 18px;font-size:.9rem;white-space:nowrap}
+  .nav-cta .btn-text{background:#fff;color:var(--green-deep);border:1.5px solid var(--line);box-shadow:0 10px 22px rgba(12,58,29,.08)}
+  @media(max-width:880px){.nav-links{display:none}}
 
   /* HERO split with image */
   .hero{position:relative;overflow:hidden;background:linear-gradient(135deg,var(--green-deep),var(--green))}
@@ -90,19 +92,6 @@
 	  .sec-head{max-width:620px;margin-bottom:14px}
   .sec-head h2{font-size:clamp(1.9rem,3.6vw,2.6rem);font-weight:700;margin:.5rem 0 .6rem}
   .sec-head p{color:var(--slate);font-size:1.05rem}
-
-  .work-band{background:#fff;border-bottom:1px solid var(--line)}
-  .work-head{display:flex;align-items:end;justify-content:space-between;gap:24px;margin-bottom:22px}
-  .work-head .sec-head{margin-bottom:0}
-  .work-link{font-weight:800;color:var(--green);white-space:nowrap}
-  .work-grid{display:grid;grid-template-columns:1.1fr 1fr 1fr;gap:16px}
-  .work-card{position:relative;min-height:230px;border-radius:18px;overflow:hidden;background:#dfe7df;border:1px solid var(--line);box-shadow:0 14px 32px -22px rgba(12,58,29,.45)}
-  .work-card:first-child{grid-row:span 2;min-height:476px}
-  .work-card img,.work-card video{width:100%;height:100%;object-fit:cover;position:absolute;inset:0}
-  .work-card::after{content:"";position:absolute;inset:0;background:linear-gradient(180deg,transparent 42%,rgba(12,58,29,.82))}
-	  .work-card span{position:absolute;left:18px;right:18px;bottom:16px;z-index:1;color:#fff;font-weight:800;text-shadow:0 1px 10px rgba(0,0,0,.35)}
-	  @media(max-width:860px){.work-head{display:block}.work-link{display:inline-flex;margin-top:12px}.work-grid{grid-template-columns:1fr 1fr}.work-card:first-child{grid-column:1/-1;grid-row:auto;min-height:280px}}
-	  @media(max-width:560px){.work-grid{grid-template-columns:1fr}.work-card,.work-card:first-child{min-height:230px}}
 
 	  .chooser{background:#fff;border-bottom:1px solid var(--line)}
 	  .chooser-grid{display:grid;grid-template-columns:.9fr 1.1fr;gap:28px;align-items:start}
@@ -202,42 +191,37 @@
   @media(max-width:900px){.foot-grid{grid-template-columns:1fr 1fr}}
   @media(max-width:560px){.foot-grid{grid-template-columns:1fr}}
 
-  .floating-quote{position:fixed;right:22px;bottom:22px;z-index:65;display:inline-flex;align-items:center;justify-content:center;gap:.5rem;padding:.78rem 1rem;border-radius:999px;background:var(--green);color:#fff;font-weight:800;box-shadow:0 18px 42px -18px rgba(12,58,29,.62);border:1px solid rgba(255,255,255,.3);opacity:0;pointer-events:none;transform:translateY(10px);transition:opacity .18s ease,transform .18s ease,box-shadow .15s ease}
-  body.scrolled .floating-quote{opacity:1;pointer-events:auto;transform:none}
-  .floating-quote:hover{transform:translateY(-2px);box-shadow:0 18px 42px -16px rgba(12,58,29,.7)}
-  .floating-quote svg{width:19px;height:19px;fill:currentColor;flex:0 0 auto}
-
   .mobile-bar{display:none}
   @media(max-width:880px){
     .mobile-bar{display:grid;grid-template-columns:1fr 1fr;gap:10px;position:fixed;bottom:0;left:0;right:0;z-index:60;padding:10px 14px;background:rgba(247,246,241,.96);backdrop-filter:blur(10px);border-top:1px solid var(--line)}
     .mobile-bar .btn{width:100%;padding:.95rem}
-    .floating-quote{right:14px;bottom:82px;padding:.9rem 1.1rem;font-size:.92rem;opacity:1;pointer-events:auto;transform:none}
   }
-  @media(max-width:420px){.floating-quote{left:14px;right:14px;width:auto}}
   @media(prefers-reduced-motion:reduce){*{transition:none!important;animation:none!important;scroll-behavior:auto}.js .reveal{opacity:1;transform:none}}
   :focus-visible{outline:3px solid var(--lime);outline-offset:2px;border-radius:6px}
   .scard .content{display:contents}
 </style>
     <link rel="stylesheet" href="./design-refresh.css">
-</head>
+    <link rel="stylesheet" href="./homepage-footer.css?v=20260727-footer-location" />
+  </head>
 <body class="services-page services-hub-page">
-<header>
-  <div class="wrap nav">
-    <a class="logo" href="/index.html">
-      <span class="mark" aria-hidden="true"><img src="/iman-logo-icon.png" alt=""></span>
-      <span class="logo-text"><b>IMAN</b><small>Cleaning Service LLC</small></span>
+<header class="home-nav">
+  <div class="home-shell home-nav-inner">
+    <a class="brand home-brand" href="/index.html" aria-label="Iman Cleaning Service LLC home">
+      <span class="brand-logo" aria-hidden="true"></span>
+      <span class="brand-text"><span class="brand-mark">IMAN</span><span class="brand-copy">Cleaning Service LLC</span></span>
     </a>
-    <nav class="nav-links">
-      <a href="/services.html" aria-current="page">Services</a><a href="https://app.imancleaningservice.com/">Our App</a>
-      <a href="/our-work.html">Our Work</a>
-      <a href="/why-us.html">Why Us</a>
-      <a href="/areas.html">Service Areas</a>
+    <nav class="home-nav-links" aria-label="Primary">
+      <a href="/services-hub.html">Our Services</a>
+      <a href="/why-us.html">Why us</a>
+      <a href="/areas.html">Service areas</a>
+
       <a href="/careers.html">Careers</a>
-      <a href="/contact.html">Contact</a>
+      <a href="/faq.html">FAQs</a>
+      <a href="/contact.html">Contact us</a>
     </nav>
-    <div class="nav-cta">
-      <a class="nav-phone" href="tel:9298034053">929-803-4053</a>
-      <a class="btn btn-call" href="tel:9298034053">Call now</a>
+    <div class="home-nav-actions">
+      <a class="home-nav-action home-nav-action-secondary" href="./login.html" aria-label="Log in to your customer account">Log In</a>
+      <a class="home-nav-action home-nav-action-primary" href="./book-now.html" aria-label="Book cleaning online">Book Online</a>
     </div>
   </div>
 </header>
@@ -247,17 +231,16 @@
     <div class="hero-copy">
       <div class="rating-badge"><span class="stars">&#9733;&#9733;&#9733;&#9733;&#9733;</span> <b>4.9</b> <span>&middot; 100+ New Yorkers served</span></div>
       <h1>NYC house, deep &amp; move-out cleaning <em>with flat quotes.</em></h1>
-      <p class="sub">Insured, detail-focused residential and commercial cleaning across all five boroughs. NYC-based team, call or text 929-803-4053.</p>
+      <p class="sub">Insured, detail-focused residential and commercial cleaning across all five boroughs. NYC-based team—call 929-803-4053.</p>
       <div class="hero-cta">
         <a class="btn btn-call" href="/quote.html">Get a Free Quote</a>
-        <a class="btn btn-text" href="tel:9298034053">&#128222; Call us</a>
-        <a class="btn btn-ghost" href="sms:9298034053?&body=Hi! I'd like a cleaning quote.">&#128172; Text us</a>
+        <a class="btn btn-text" href="tel:+19298034053">&#128222; Call us</a>
       </div>
     </div>
     <div class="hero-stats">
       <div class="hs"><b>100+</b><span>homes &amp; businesses served</span></div>
       <div class="hs"><b>4.9&#9733;</b><span>average Google rating</span></div>
-      <div class="hs"><b>7 days</b><span>6AM to 11PM, including weekends</span></div>
+      <div class="hs"><b>7 days</b><span>8 AM to 8 PM, including weekends</span></div>
       <div class="hs"><b>5</b><span>boroughs covered</span></div>
     </div>
   </div>
@@ -290,32 +273,12 @@
   </div>
 </section>
 
-<section class="block work-band">
-  <div class="wrap">
-    <div class="work-head reveal">
-      <div class="sec-head">
-        <span class="eyebrow">Real job examples</span>
-        <h2>See the kind of clean we deliver</h2>
-        <p>Actual service photos help customers understand the level of detail before they book. These examples show the kinds of spaces our team handles across NYC.</p>
-      </div>
-      <a class="work-link" href="/our-work.html">View more work &rarr;</a>
-    </div>
-    <div class="work-grid">
-      <a class="work-card reveal" href="/our-work.html"><img src="/service-deep-cleaning.jpg" alt="Deep-cleaned kitchen and home surface"><span>Detailed deep cleans</span></a>
-      <a class="work-card reveal" href="/our-work.html"><img src="/service-standard-cleaning.jpg" alt="Freshly cleaned home interior"><span>Regular home resets</span></a>
-      <a class="work-card reveal" href="/our-work.html"><img src="/service-move-cleaning.jpg" alt="Move-out cleaning example"><span>Move-in and move-out cleaning</span></a>
-      <a class="work-card reveal" href="/our-work.html"><img src="/service-office-cleaning.jpg" alt="Clean office and workspace"><span>Commercial spaces</span></a>
-      <a class="work-card reveal" href="/our-work.html"><img src="/service-airbnb-cleaning.jpg" alt="Guest-ready Airbnb cleaning"><span>Guest-ready turnovers</span></a>
-    </div>
-  </div>
-</section>
-
 <section class="block">
   <div class="wrap">
     <div class="sec-head reveal">
       <span class="eyebrow">Residential &amp; commercial</span>
       <h2>House &amp; office cleaning for every NYC space</h2>
-      <p>Every service has its own page with exactly what's included and a flat price, no surprise fees. Use the quick links below or text us a photo of your space and we'll tell you in minutes.</p>
+      <p>Every service has its own page with exactly what's included and a flat price, no surprise fees. Use the quick links below or send your details and photos through our quote form.</p>
     </div>
     <nav class="service-jumps reveal" aria-label="Jump to cleaning services">
       <a href="#standard-cleaning">Standard</a>
@@ -338,7 +301,7 @@
             <h3>Standard Cleaning</h3>
             <p>Your regular home reset for weekly, biweekly, or one-time cleaning.</p>
             <ul class="card-includes"><li>Kitchen and bathrooms</li><li>Floors and surfaces</li><li>Dusting and trash removal</li></ul>
-            <span class="price">Starting at $180</span>
+            <span class="price">Starting at $200</span>
             <span class="best">Best for weekly, biweekly, or one-time refreshes.</span>
             <span class="seep">See pricing &amp; details &rarr;</span>
           </div>
@@ -349,7 +312,7 @@
             <h3>Deep Cleaning</h3>
             <p>The top-to-bottom clean for grime, buildup, and missed areas.</p>
             <ul class="card-includes"><li>Baseboards and buildup</li><li>Inside reachable corners</li><li>Detailed kitchen and baths</li></ul>
-            <span class="price">Starting at $280</span>
+            <span class="price">Starting at $300</span>
             <span class="best">Best for first-time cleans, seasonal resets, and buildup.</span>
             <span class="seep">See pricing &amp; details &rarr;</span>
           </div>
@@ -360,7 +323,7 @@
             <h3>Move-In / Move-Out</h3>
             <p>A lease-handoff clean for empty apartments, inspections, and new homes.</p>
             <ul class="card-includes"><li>Cabinets and drawers</li><li>Oven and appliance exterior</li><li>Bathrooms, floors, and trim</li></ul>
-            <span class="price">Starting at $280</span>
+            <span class="price">Starting at $300</span>
             <span class="best">Best for empty apartments, lease handoffs, and move days.</span>
             <span class="seep">See pricing &amp; details &rarr;</span>
           </div>
@@ -371,9 +334,20 @@
             <h3>Airbnb / Short-Term</h3>
             <p>Guest-ready turnovers between stays, handled on your host schedule.</p>
             <ul class="card-includes"><li>Fresh linens and beds</li><li>Kitchen and bathroom reset</li><li>Restock and final check</li></ul>
-            <span class="price">Flat quote before we arrive</span>
+            <span class="price">Starting at $150</span>
             <span class="best">Best for guest-ready turnovers and recurring host schedules.</span>
             <span class="seep">See pricing &amp; details &rarr;</span>
+          </div>
+        </a>
+        <a class="scard reveal" id="hourly-cleaning-service" href="/quote.html?service=hourly-cleaning-service">
+          <div class="content">
+            <span class="ic"><svg viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="8" stroke="#14502a" stroke-width="1.8"/><path d="M12 7v5l3 2" stroke="#14502a" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg></span>
+            <h3>Hourly Cleaning Service</h3>
+            <p>Flexible residential cleaning for custom task lists and time-based help.</p>
+            <ul class="card-includes"><li>Custom task priorities</li><li>Flexible hours</li><li>Priced per cleaner and hour</li></ul>
+            <span class="price">Custom quote based on requested labor time</span>
+            <span class="best">Best when you know the amount of time you want booked.</span>
+            <span class="seep">Start hourly quote &rarr;</span>
           </div>
         </a>
         <a class="scard reveal" id="post-construction" href="/post-construction-cleaning.html">
@@ -382,7 +356,7 @@
             <h3>Post-Construction</h3>
             <p>Post-renovation dust, residue, and debris cleared from finished spaces.</p>
             <ul class="card-includes"><li>Dust on surfaces and fixtures</li><li>Floors and visible debris</li><li>Photo-based flat estimates</li></ul>
-            <span class="price">$70 / hour, quote before work starts</span>
+            <span class="price">Residential packages from $400</span>
             <span class="best">Most projects get a flat estimate after photo review.</span>
             <span class="seep">See pricing &amp; details &rarr;</span>
           </div>
@@ -393,7 +367,7 @@
             <h3>Organizing</h3>
             <p>Clutter sorted into a simple system you can keep up with.</p>
             <ul class="card-includes"><li>Closets and cabinets</li><li>Room resets</li><li>Sorting and grouping</li></ul>
-            <span class="price">Starting at $180</span>
+            <span class="price">$60 per hour per person · 3-hour minimum per person</span>
             <span class="best">Best for closets, cabinets, clutter, and room resets.</span>
             <span class="seep">See pricing &amp; details &rarr;</span>
           </div>
@@ -404,7 +378,7 @@
             <h3>Extreme Cleaning</h3>
             <p>Heavy-duty help for spaces that need a full reset.</p>
             <ul class="card-includes"><li>Heavy buildup</li><li>Neglected rooms</li><li>No-judgment walkthrough</li></ul>
-            <span class="price">$100 / person / hour, scope reviewed first</span>
+            <span class="price">Custom quote available</span>
             <span class="best">Best for heavy buildup, neglected spaces, and major resets. We estimate the team size before booking.</span>
             <span class="seep">See pricing &amp; details &rarr;</span>
           </div>
@@ -415,7 +389,7 @@
             <h3>Detailed Cleaning</h3>
             <p>Focused detail work for the spots that usually get missed.</p>
             <ul class="card-includes"><li>Fixtures and handles</li><li>Vents and trim</li><li>Custom task lists</li></ul>
-            <span class="price">$80 / person / hour, scope reviewed first</span>
+            <span class="price">Custom quote available</span>
             <span class="best">Best for custom task lists and specific problem areas. We confirm priorities before the visit.</span>
             <span class="seep">See pricing &amp; details &rarr;</span>
           </div>
@@ -492,7 +466,7 @@
       <h2>Featured Google reviews</h2>
     </div>
     <div class="review-proof reveal">
-      <a class="google-pill" href="https://share.google/EAX7wC22J4PyMKcNx" target="_blank" rel="noreferrer"><svg viewBox="0 0 24 24" aria-hidden="true"><path fill="#4285F4" d="M23.5 12.3c0-.8-.1-1.5-.2-2.2H12v4.2h6.5c-.3 1.4-1.1 2.7-2.4 3.6v3h3.8c2.2-2.1 3.6-5.1 3.6-8.6Z"/><path fill="#34A853" d="M12 24c3.2 0 5.9-1.1 7.8-3.1l-3.8-3c-1 .7-2.3 1.2-4 1.2-3.1 0-5.7-2.1-6.6-4.9H1.5v3.1A12 12 0 0 0 12 24Z"/><path fill="#FBBC04" d="M5.4 14.2c-.2-.7-.4-1.4-.4-2.2s.1-1.5.4-2.2V6.7H1.5A12 12 0 0 0 0 12c0 1.9.5 3.7 1.5 5.3l3.9-3.1Z"/><path fill="#EA4335" d="M12 4.8c1.7 0 3.2.6 4.4 1.7l3.3-3.3C17.9 1.1 15.2 0 12 0A12 12 0 0 0 1.5 6.7l3.9 3.1c.9-2.8 3.5-5 6.6-5Z"/></svg> Google reviews</a>
+      <a class="google-pill" href="https://share.google/EAX7wC22J4PyMKcNx" target="_blank" rel="noopener noreferrer"><svg viewBox="0 0 24 24" aria-hidden="true"><path fill="#4285F4" d="M23.5 12.3c0-.8-.1-1.5-.2-2.2H12v4.2h6.5c-.3 1.4-1.1 2.7-2.4 3.6v3h3.8c2.2-2.1 3.6-5.1 3.6-8.6Z"/><path fill="#34A853" d="M12 24c3.2 0 5.9-1.1 7.8-3.1l-3.8-3c-1 .7-2.3 1.2-4 1.2-3.1 0-5.7-2.1-6.6-4.9H1.5v3.1A12 12 0 0 0 12 24Z"/><path fill="#FBBC04" d="M5.4 14.2c-.2-.7-.4-1.4-.4-2.2s.1-1.5.4-2.2V6.7H1.5A12 12 0 0 0 0 12c0 1.9.5 3.7 1.5 5.3l3.9-3.1Z"/><path fill="#EA4335" d="M12 4.8c1.7 0 3.2.6 4.4 1.7l3.3-3.3C17.9 1.1 15.2 0 12 0A12 12 0 0 0 1.5 6.7l3.9 3.1c.9-2.8 3.5-5 6.6-5Z"/></svg> Google reviews</a>
       <span>4.9 average rating from 100+ New Yorkers served.</span>
     </div>
     <div class="rev-grid">
@@ -567,10 +541,10 @@
     <div class="faq-grid">
       <details class="faq-card reveal"><summary>Do you bring cleaning supplies?</summary><p>Yes. Our team brings the cleaning supplies needed for your booked service. If you prefer a specific product, tell us before the visit.</p></details>
       <details class="faq-card reveal"><summary>Are you insured?</summary><p>Yes. Iman Cleaning Service is insured and handles residential and commercial cleaning with a professional, detail-focused team.</p></details>
-	      <details class="faq-card reveal"><summary>How much does cleaning cost in NYC?</summary><p>Standard cleaning starts at $180, deep cleaning starts at $280, and move-in or move-out cleaning starts at $280. Hourly specialty services are scoped before booking so you are not guessing at an open-ended total.</p></details>
+	      <details class="faq-card reveal"><summary>How much does cleaning cost in NYC?</summary><p>Standard cleaning starts at $200, and both deep cleaning and move-in or move-out cleaning start at $300. Hourly specialty services are scoped before booking so you are not guessing at an open-ended total.</p></details>
       <details class="faq-card reveal"><summary>How long does a deep cleaning take?</summary><p>Deep cleaning time depends on the size and condition of the space. We review the details first and stay focused until the agreed scope is done right.</p></details>
       <details class="faq-card reveal"><summary>Do you clean apartments before moving out?</summary><p>Yes. Move-out cleaning is one of our core services and can include cabinets, kitchen areas, bathrooms, floors, trim, and other landlord-ready details.</p></details>
-      <details class="faq-card reveal"><summary>Can I book same-day or weekend cleaning?</summary><p>We work 7 days a week from 6AM to 11PM. Same-day and weekend availability depends on the schedule, so calling or texting is fastest.</p></details>
+      <details class="faq-card reveal"><summary>Can I book same-day or weekend cleaning?</summary><p>We work 7 days a week from 8 AM to 8 PM. Same-day and weekend availability depends on the schedule, so calling or texting is fastest.</p></details>
       <details class="faq-card reveal"><summary>Do you serve all five boroughs?</summary><p>Yes. We clean homes and businesses in Queens, Manhattan, Brooklyn, the Bronx, and Staten Island.</p></details>
       <details class="faq-card reveal"><summary>Can I text photos for a quote?</summary><p>Yes. Photos help us understand the size, condition, and priorities so we can send a clearer quote faster.</p></details>
     </div>
@@ -581,81 +555,72 @@
   <div class="wrap">
     <div class="final reveal">
       <h2>Find out what it'll cost today</h2>
-      <p>Call or text us and you'll usually have a clear price back within the hour. We're pet- and family-friendly, and there's no commitment until you say go.</p>
+      <p>Call us and you'll usually have a clear price back within the hour. We're pet- and family-friendly, and there's no commitment until you say go.</p>
       <div class="hero-cta">
-        <a class="btn btn-text" href="tel:9298034053">&#128222; Call us</a>
-        <a class="btn btn-text" href="sms:9298034053?&body=Hi! I'd like a cleaning quote.">&#128172; Text us</a>
+        <a class="btn btn-text" href="tel:+19298034053">&#128222; Call us</a>
         <a class="btn btn-ghost" href="/quote.html">Get My Cleaning Quote</a>
       </div>
     </div>
   </div>
 </section>
 
-<footer>
-  <div class="wrap">
-    <div class="foot-grid">
-      <div>
-        <a class="logo" href="/index.html" style="margin-bottom:.8rem">
-          <span class="mark" aria-hidden="true"><img src="/iman-logo-icon.png" alt=""></span>
-          <span class="logo-text"><b>IMAN</b><small>Cleaning Service LLC</small></span>
-        </a>
-        <p>Residential &amp; Commercial Cleaning Service Company</p>
-        <div class="socials">
-          <a href="https://www.instagram.com/imancleaningservicellc/" target="_blank" rel="noreferrer" aria-label="Instagram"><svg viewBox="0 0 24 24" aria-hidden="true"><defs><radialGradient id="igGlow" cx="30%" cy="110%" r="115%"><stop offset="0" stop-color="#feda75"/><stop offset=".32" stop-color="#fa7e1e"/><stop offset=".56" stop-color="#d62976"/><stop offset=".78" stop-color="#962fbf"/><stop offset="1" stop-color="#4f5bd5"/></radialGradient></defs><rect width="24" height="24" rx="6" fill="url(#igGlow)"/><path fill="#fff" d="M7.5 5.8h9A1.8 1.8 0 0 1 18.2 7.5v9a1.8 1.8 0 0 1-1.7 1.7h-9a1.8 1.8 0 0 1-1.7-1.7v-9a1.8 1.8 0 0 1 1.7-1.7Zm0 1.7v9h9v-9h-9Zm8.1.8a.9.9 0 1 1 0 1.8.9.9 0 0 1 0-1.8ZM12 9a3 3 0 1 1 0 6 3 3 0 0 1 0-6Zm0 1.6a1.4 1.4 0 1 0 0 2.8 1.4 1.4 0 0 0 0-2.8Z"/></svg></a>
-          <a href="https://www.youtube.com/@ImanCleaningServiceLLC" target="_blank" rel="noreferrer" aria-label="YouTube"><svg viewBox="0 0 24 24" aria-hidden="true"><path fill="#ff0000" d="M21.6 7.2a2.9 2.9 0 0 0-2-2A34.6 34.6 0 0 0 12 4.8a34.6 34.6 0 0 0-7.6.4 2.9 2.9 0 0 0-2 2A31 31 0 0 0 2 12a31 31 0 0 0 .4 4.8 2.9 2.9 0 0 0 2 2 34.6 34.6 0 0 0 7.6.4 34.6 34.6 0 0 0 7.6-.4 2.9 2.9 0 0 0 2-2A31 31 0 0 0 22 12a31 31 0 0 0-.4-4.8Z"/><path fill="#fff" d="M10 15.5v-7l6 3.5-6 3.5Z"/></svg></a>
-          <a href="https://www.tiktok.com/@imancleaningservicellc" target="_blank" rel="noreferrer" aria-label="TikTok"><svg viewBox="0 0 24 24" aria-hidden="true"><path fill="#25f4ee" d="M15.3 3c.3 2 1.5 3.5 3.4 4.1v2.7a6.7 6.7 0 0 1-3.4-1.1v6.3a5 5 0 1 1-4.1-4.9v2.8a2.2 2.2 0 1 0 1.4 2V3h2.7Z"/><path fill="#fe2c55" d="M14.1 3.8c.3 2 1.5 3.5 3.4 4.1v2.7a6.7 6.7 0 0 1-3.4-1.1v6.3a5 5 0 1 1-4.1-4.9v2.8a2.2 2.2 0 1 0 1.4 2v-12h2.7Z"/><path fill="#010101" d="M14.6 3c.3 2 1.5 3.5 3.4 4.1v2.7a6.7 6.7 0 0 1-3.4-1.1v6.3a5 5 0 1 1-4.1-4.9v2.8a2.2 2.2 0 1 0 1.4 2V3h2.7Z"/></svg></a>
-          <a href="https://www.facebook.com/Imancleaningservicellc/" target="_blank" rel="noreferrer" aria-label="Facebook"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="11" fill="#1877f2"/><path fill="#fff" d="M13.3 19v-6.2h2.1l.3-2.5h-2.4V8.8c0-.7.2-1.3 1.4-1.3h1.1V5.2c-.2 0-1-.1-1.9-.1-2.4 0-3.8 1.4-3.8 4v1.2H8v2.5h2.1V19h3.2Z"/></svg></a>
-          <a href="https://share.google/EAX7wC22J4PyMKcNx" target="_blank" rel="noreferrer" aria-label="Google Business Profile"><svg viewBox="0 0 24 24" aria-hidden="true"><path fill="#4285F4" d="M23.5 12.3c0-.8-.1-1.5-.2-2.2H12v4.2h6.5c-.3 1.4-1.1 2.7-2.4 3.6v3h3.8c2.2-2.1 3.6-5.1 3.6-8.6Z"/><path fill="#34A853" d="M12 24c3.2 0 5.9-1.1 7.8-3.1l-3.8-3c-1 .7-2.3 1.2-4 1.2-3.1 0-5.7-2.1-6.6-4.9H1.5v3.1A12 12 0 0 0 12 24Z"/><path fill="#FBBC04" d="M5.4 14.2c-.2-.7-.4-1.4-.4-2.2s.1-1.5.4-2.2V6.7H1.5A12 12 0 0 0 0 12c0 1.9.5 3.7 1.5 5.3l3.9-3.1Z"/><path fill="#EA4335" d="M12 4.8c1.7 0 3.2.6 4.4 1.7l3.3-3.3C17.9 1.1 15.2 0 12 0A12 12 0 0 0 1.5 6.7l3.9 3.1c.9-2.8 3.5-5 6.6-5Z"/></svg></a>
-        </div>
+<footer class="site-footer" aria-label="Website footer">
+  <div class="ds-shell">
+    <div class="footer-brand">
+      <span class="footer-mark" aria-hidden="true"></span>
+      <div><strong>Iman Cleaning Service LLC</strong><span>Residential &amp; commercial cleaning</span></div>
+    </div>
+    <div class="footer-grid">
+      <div class="footer-cell">
+        <span class="footer-ico" aria-hidden="true"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="5" width="18" height="14" rx="2"/><path d="M4 7l8 6 8-6"/></svg></span>
+        <h4>Email us</h4>
+        <p><a href="mailto:Info@imancleaningservice.com">Info@imancleaningservice.com</a></p>
       </div>
-      <div>
-        <h4>Residential</h4>
-        <a href="/standard-cleaning.html">Standard Cleaning</a>
-        <a href="/deep-cleaning.html">Deep Cleaning</a>
-        <a href="/move-in-move-out-cleaning.html">Move-In / Move-Out</a>
-        <a href="/airbnb-cleaning.html">Airbnb Cleaning</a>
-        <a href="/post-construction-cleaning.html">Post-Construction</a>
+      <div class="footer-cell">
+        <span class="footer-ico" aria-hidden="true"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 21s7-5.6 7-11a7 7 0 1 0-14 0c0 5.4 7 11 7 11z"/><circle cx="12" cy="10" r="2.6"/></svg></span>
+        <h4>Service area</h4>
+        <p><a href="./areas.html">Manhattan, Brooklyn, Queens, The Bronx, Staten Island, and Long Island</a></p>
       </div>
-      <div>
-        <h4>Commercial</h4>
-        <a href="/office-cleaning.html">Office Cleaning</a>
-        <a href="/restaurant-cleaning.html">Restaurant Cleaning</a>
-        <a href="/retail-store-cleaning.html">Retail Store Cleaning</a>
-        <a href="/medical-clinic-cleaning.html">Medical / Clinic Cleaning</a>
-        <a href="/janitorial-recurring-cleaning.html">Recurring Janitorial</a>
+      <div class="footer-cell">
+        <span class="footer-ico" aria-hidden="true"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M5 4h3l1.5 4.5L7.5 10a12 12 0 0 0 6 6l1.5-2 4.5 1.5V19a2 2 0 0 1-2 2A16 16 0 0 1 4 6a2 2 0 0 1 1-2z"/></svg></span>
+        <h4>Call us</h4>
+        <p><a href="tel:+19298034053">929-803-4053</a></p>
       </div>
-      <div>
-        <h4>Contact</h4>
-        <a href="tel:9298034053">929-803-4053</a>
-        <a href="mailto:Info@imancleaningservice.com">Info@imancleaningservice.com</a>
-        <a href="https://share.google/EAX7wC22J4PyMKcNx" target="_blank" rel="noreferrer">Read Google reviews</a>
-        <a href="/areas.html">NYC service areas</a>
-        <a href="/sitemap.xml">Sitemap</a>
-        <p>6AM to 11PM &middot; 7 days a week</p>
+      <div class="footer-cell">
+        <span class="footer-ico" aria-hidden="true"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3.5 2"/></svg></span>
+        <h4>Business hours</h4>
+        <p>8 AM – 8 PM · 7 days</p>
       </div>
     </div>
-    <div class="foot-bottom">&copy; 2026 Iman Cleaning Service LLC. All rights reserved.</div>
+    <div class="footer-location">
+      <div class="footer-location-map">
+        <iframe title="Map showing Iman Cleaning Service LLC in Queens, New York" src="https://www.google.com/maps?q=Iman%20Cleaning%20Service%20LLC%2C%20Queens%2C%20NY&amp;output=embed" loading="lazy" referrerpolicy="no-referrer-when-downgrade"></iframe>
+      </div>
+      <div class="footer-location-copy">
+        <h4>Our location</h4>
+        <address>Queens, New York City, and select Long Island communities</address>
+        <a href="https://www.google.com/maps/search/?api=1&amp;query=Iman%20Cleaning%20Service%20LLC%20Queens%20NY" target="_blank" rel="noopener noreferrer">View on Google Maps</a>
+      </div>
+    </div>
+    <div class="footer-follow">
+      <h4>Follow us for more</h4>
+      <div class="social-row">
+        <a class="social-ico" href="https://www.instagram.com/imancleaningservicellc/" target="_blank" rel="noopener noreferrer" aria-label="Instagram" style="background: radial-gradient(circle at 30% 110%, #ffd35c 0%, #ff9a4d 22%, #fd3f6c 46%, #d534b8 70%, #3f5cff 100%); color: #fff;"><svg width="22" height="22" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M7.8 3h8.4A4.8 4.8 0 0 1 21 7.8v8.4A4.8 4.8 0 0 1 16.2 21H7.8A4.8 4.8 0 0 1 3 16.2V7.8A4.8 4.8 0 0 1 7.8 3Zm0 1.8A3 3 0 0 0 4.8 7.8v8.4a3 3 0 0 0 3 3h8.4a3 3 0 0 0 3-3V7.8a3 3 0 0 0-3-3H7.8Zm8.9 1.3a1.1 1.1 0 1 1 0 2.2 1.1 1.1 0 0 1 0-2.2ZM12 7a5 5 0 1 1 0 10 5 5 0 0 1 0-10Zm0 1.8a3.2 3.2 0 1 0 0 6.4 3.2 3.2 0 0 0 0-6.4Z"/></svg></a>
+        <a class="social-ico" href="https://www.facebook.com/Imancleaningservicellc/" target="_blank" rel="noopener noreferrer" aria-label="Facebook" style="background: #1877f2; color: #fff;"><svg width="22" height="22" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M13.5 21v-7h2.4l.4-3h-2.8V9.1c0-.9.3-1.6 1.6-1.6H16V4.8c-.2 0-.9-.1-1.8-.1-2.7 0-4.3 1.6-4.3 4.5V11H7.5v3h2.4v7h3.6Z"/></svg></a>
+        <a class="social-ico" href="https://www.youtube.com/@ImanCleaningServiceLLC" target="_blank" rel="noopener noreferrer" aria-label="YouTube" style="background: #ff0000; color: #fff;"><svg width="22" height="22" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M21.6 7.2a2.9 2.9 0 0 0-2-2A34.6 34.6 0 0 0 12 4.8a34.6 34.6 0 0 0-7.6.4 2.9 2.9 0 0 0-2 2A31 31 0 0 0 2 12a31 31 0 0 0 .4 4.8 2.9 2.9 0 0 0 2 2 34.6 34.6 0 0 0 7.6.4 34.6 34.6 0 0 0 7.6-.4 2.9 2.9 0 0 0 2-2A31 31 0 0 0 22 12a31 31 0 0 0-.4-4.8ZM10 15.5v-7l6 3.5-6 3.5Z"/></svg></a>
+        <a class="social-ico" href="https://www.tiktok.com/@imancleaningservicellc" target="_blank" rel="noopener noreferrer" aria-label="TikTok" style="background: #111; color: #fff;"><svg width="22" height="22" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M14.6 3c.3 2 1.5 3.5 3.4 4.1v2.7a6.7 6.7 0 0 1-3.4-1.1v6.3a5 5 0 1 1-4.1-4.9v2.8a2.2 2.2 0 1 0 1.4 2V3h2.7Z"/></svg></a>
+        <a class="social-ico is-google" href="https://share.google/EAX7wC22J4PyMKcNx" target="_blank" rel="noopener noreferrer" aria-label="Google Business Profile" style="background: #fff; color: #fff;"><svg width="22" height="22" viewBox="0 0 24 24" aria-hidden="true"><path fill="#4285F4" d="M23.5 12.3c0-.8-.1-1.5-.2-2.2H12v4.2h6.5c-.3 1.4-1.1 2.7-2.4 3.6v3h3.8c2.2-2.1 3.6-5.1 3.6-8.6Z"/><path fill="#34A853" d="M12 24c3.2 0 5.9-1.1 7.8-3.1l-3.8-3c-1 .7-2.3 1.2-4 1.2-3.1 0-5.7-2.1-6.6-4.9H1.5v3.1A12 12 0 0 0 12 24Z"/><path fill="#FBBC04" d="M5.4 14.2c-.2-.7-.4-1.4-.4-2.2s.1-1.5.4-2.2V6.7H1.5A12 12 0 0 0 0 12c0 1.9.5 3.7 1.5 5.3l3.9-3.1Z"/><path fill="#EA4335" d="M12 4.8c1.7 0 3.2.6 4.4 1.7l3.3-3.3C17.9 1.1 15.2 0 12 0A12 12 0 0 0 1.5 6.7l3.9 3.1c.9-2.8 3.5-5 6.6-5Z"/></svg></a>
+      </div>
+    </div>
+    <div class="footer-bottom"><span>© 2026 Iman Cleaning Service LLC. All rights reserved.</span><nav class="footer-legal" aria-label="Legal"><a href="./careers.html">Careers</a><a href="./privacy-policy.html">Privacy Policy</a><a href="./sms-terms.html">SMS Terms</a></nav></div>
   </div>
 </footer>
 
 <div class="mobile-bar">
-  <a class="btn btn-call" href="tel:9298034053">&#128222; Call</a>
-  <a class="btn btn-text" href="sms:9298034053?&body=Hi! I'd like a cleaning quote.">&#128172; Text quote</a>
+  <a class="btn btn-call" href="tel:+19298034053">&#128222; Call</a>
 </div>
-
-<a class="floating-quote" href="/quote.html" aria-label="Request a quote online">
-  <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M7 2h10a2 2 0 0 1 2 2v16a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2Zm0 2v16h10V4H7Zm2 3h6v2H9V7Zm0 4h6v2H9v-2Zm0 4h4v2H9v-2Z"/></svg>
-  Get quote
-</a>
-
 <script>
-  function updateFloatingQuote(){
-    document.body.classList.toggle('scrolled', window.scrollY > 420);
-  }
-  updateFloatingQuote();
-  window.addEventListener('scroll', updateFloatingQuote, {passive:true});
-
-	  function showPane(paneId){
+		  function showPane(paneId){
 	    var btn=document.querySelector('.toggle button[data-pane="'+paneId+'"]');
 	    var pane=document.getElementById(paneId);
 	    if(!btn||!pane)return;
@@ -697,7 +662,7 @@
     });
   }
 </script>
-<script src="/chatbot.js" defer></script>
+
 <script type="application/ld+json">
 {
   "@context": "https://schema.org",
@@ -705,10 +670,10 @@
   "mainEntity": [
     {"@type":"Question","name":"Do you bring cleaning supplies?","acceptedAnswer":{"@type":"Answer","text":"Yes. Our team brings the cleaning supplies needed for your booked service. If you prefer a specific product, tell us before the visit."}},
     {"@type":"Question","name":"Are you insured?","acceptedAnswer":{"@type":"Answer","text":"Yes. Iman Cleaning Service is insured and handles residential and commercial cleaning with a professional, detail-focused team."}},
-    {"@type":"Question","name":"How much does cleaning cost in NYC?","acceptedAnswer":{"@type":"Answer","text":"Standard cleaning starts at $180, deep cleaning starts at $280, and move-in or move-out cleaning starts at $280. Hourly specialty services are scoped before booking so you are not guessing at an open-ended total."}},
+    {"@type":"Question","name":"How much does cleaning cost in NYC?","acceptedAnswer":{"@type":"Answer","text":"Standard cleaning starts at $200, and both deep cleaning and move-in or move-out cleaning start at $300. Hourly specialty services are scoped before booking so you are not guessing at an open-ended total."}},
     {"@type":"Question","name":"How long does a deep cleaning take?","acceptedAnswer":{"@type":"Answer","text":"Deep cleaning time depends on the size and condition of the space. We review the details first and stay focused until the agreed scope is done right."}},
     {"@type":"Question","name":"Do you clean apartments before moving out?","acceptedAnswer":{"@type":"Answer","text":"Yes. Move-out cleaning is one of our core services and can include cabinets, kitchen areas, bathrooms, floors, trim, and other landlord-ready details."}},
-    {"@type":"Question","name":"Can I book same-day or weekend cleaning?","acceptedAnswer":{"@type":"Answer","text":"We work 7 days a week from 6AM to 11PM. Same-day and weekend availability depends on the schedule, so calling or texting is fastest."}},
+    {"@type":"Question","name":"Can I book same-day or weekend cleaning?","acceptedAnswer":{"@type":"Answer","text":"We work 7 days a week from 8 AM to 8 PM. Same-day and weekend availability depends on the schedule, so calling or texting is fastest."}},
     {"@type":"Question","name":"Do you serve all five boroughs?","acceptedAnswer":{"@type":"Answer","text":"Yes. We clean homes and businesses in Queens, Manhattan, Brooklyn, the Bronx, and Staten Island."}},
     {"@type":"Question","name":"Can I text photos for a quote?","acceptedAnswer":{"@type":"Answer","text":"Yes. Photos help us understand the size, condition, and priorities so we can send a clearer quote faster."}}
   ]

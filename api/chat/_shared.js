@@ -2,6 +2,7 @@ const crypto = require("crypto");
 
 const MAX_JSON_BODY = 64 * 1024;
 const CHAT_MESSAGE_LIMIT = 1600;
+const DEFAULT_OWNER_SMS_TO = "+19298034053";
 
 function json(response, statusCode, body) {
   response.statusCode = statusCode;
@@ -82,7 +83,12 @@ function normalizePhoneNumber(value) {
 }
 
 function getOwnerPhoneNumbers() {
-  const raw = process.env.OWNER_SMS_TO || process.env.ADMIN_SMS_TO || "";
+  const raw = process.env.OWNER_SMS_TO
+    || process.env.ADMIN_SMS_TO
+    || process.env.AGENT_NOTIFY_TO
+    || process.env.LIVE_AGENT_PHONE
+    || process.env.TRANSFER_PHONE_NUMBER
+    || DEFAULT_OWNER_SMS_TO;
   return raw
     .split(/[;,]+/)
     .map(normalizePhoneNumber)
@@ -340,7 +346,7 @@ async function sendOwnerSmsNotifications({ session, message, siteUrl }) {
     return {
       status: "not_configured",
       sent: [],
-      error: "Add TWILIO_ACCOUNT_SID, TWILIO_AUTH_TOKEN, TWILIO_FROM_NUMBER, and OWNER_SMS_TO in Vercel."
+      error: "Add TWILIO_ACCOUNT_SID, TWILIO_AUTH_TOKEN, and TWILIO_FROM_NUMBER in Vercel. Add OWNER_SMS_TO if the alerts should go somewhere other than 929-803-4053."
     };
   }
 

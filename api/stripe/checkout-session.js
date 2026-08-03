@@ -22,8 +22,8 @@ function readBody(request) {
 }
 
 function assertAdmin(request) {
-  const adminToken = process.env.ADMIN_TOKEN;
-  const providedToken = request.headers["x-admin-token"];
+  const adminToken = String(process.env.ADMIN_TOKEN || process.env.Admin_Token || process.env.admin_token || "").trim();
+  const providedToken = String(request.headers["x-admin-token"] || "").trim();
 
   return Boolean(adminToken && providedToken && providedToken === adminToken);
 }

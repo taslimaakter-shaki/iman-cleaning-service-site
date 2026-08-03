@@ -1,8 +1,8 @@
 const { cleanText, json, readJsonBody, signQuotePayload } = require("./_shared");
 
 function assertAdmin(request) {
-  const adminToken = process.env.ADMIN_TOKEN;
-  const providedToken = request.headers["x-admin-token"];
+  const adminToken = cleanText(process.env.ADMIN_TOKEN || process.env.Admin_Token || process.env.admin_token);
+  const providedToken = cleanText(request.headers["x-admin-token"]);
   return Boolean(adminToken && providedToken && providedToken === adminToken);
 }
 

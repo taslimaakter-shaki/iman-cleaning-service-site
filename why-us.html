@@ -23,7 +23,8 @@
 <meta name="twitter:description" content="Why NYC chooses Iman Cleaning Service LLC: fully insured, a clear price before booking, all five boroughs, and a detail-focused team you can trust in your space.">
 <meta name="twitter:image" content="https://www.imancleaningservice.com/brand-card.png">
 <link rel="stylesheet" href="./design-system.css">
-<link rel="stylesheet" href="./site.css">
+<link rel="stylesheet" href="./site.css?v=20260727-clean-header-logo">
+<link rel="stylesheet" href="./homepage-footer.css?v=20260727-footer-location">
 </head>
 <body>
 <div id="root"></div>
@@ -32,7 +33,7 @@
 <script src="https://unpkg.com/@babel/standalone@7.29.0/babel.min.js" integrity="sha384-m08KidiNqLdpJqLq95G/LEi8Qvjl/xUYll3QILypMoQ65QorJ9Lvtp2RXYGBFj1y" crossorigin="anonymous"></script>
 <script src="./_ds_bundle.js"></script>
 <script src="./data.js"></script>
-<script type="text/babel" src="./chrome.jsx"></script>
+<script type="text/babel" src="./chrome.jsx?v=20260729-book-online"></script>
 <script type="text/babel">
 const mount = () => {
   if (!window.ImanChrome) return setTimeout(mount, 30);
@@ -72,7 +73,7 @@ const mount = () => {
           <div className="proof-item"><strong>Fully insured</strong><span>Homes &amp; businesses</span></div>
           <div className="proof-item"><strong>All 5 boroughs</strong><span>Across New York City</span></div>
           <div className="proof-item"><strong>5-star reviews</strong><span>Verified on Google</span></div>
-          <div className="proof-item"><strong>Open daily</strong><span>6:00 AM – 8:00 PM</span></div>
+          <div className="proof-item"><strong>Open daily</strong><span>8:00 AM – 8:00 PM</span></div>
         </div>
       </section>
 
@@ -127,10 +128,16 @@ const mount = () => {
 
       <section className="final-cta">
         <div className="ds-shell final-inner">
-          <span className="ds-kicker" style={{ color: "var(--leaf-300)" }}>Ready when you are</span>
-          <h2>Experience the difference on your next clean.</h2>
+          <span className="ds-kicker">Need a custom quote?</span>
+          <h2>Tell us about your cleaning needs.</h2>
+          <p>Share details about your space, what needs cleaning, and your preferred date. We’ll review everything and prepare the right quote for you.</p>
           <div className="final-actions">
-            <Button href={D.phoneHref} variant="accent" size="lg" iconLeft={<Icon name="phone" size={18} />}>Call or text {D.phone}</Button>
+            <Button href="./quote.html" variant="accent" size="lg"
+              aria-label="Get a custom cleaning quote from Iman Cleaning Service" data-conv="quote"
+              iconRight={<Icon name="arrow" size={18} />}>Get a Custom Quote</Button>
+            <Button href={D.phoneHref} variant="secondary" size="lg"
+              aria-label="Call Iman Cleaning Service at 929-803-4053" data-conv="call"
+              iconLeft={<Icon name="phone" size={18} stroke="var(--brand)" />}>Call Now</Button>
           </div>
         </div>
       </section>
@@ -141,5 +148,6 @@ const mount = () => {
 };
 mount();
 </script>
+
 </body>
 </html>

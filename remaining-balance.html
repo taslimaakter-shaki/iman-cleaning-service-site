@@ -4,12 +4,13 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <title>Full Payment Active | Iman Cleaning Service LLC</title>
+    <link rel="stylesheet" href="./homepage-footer.css?v=20260727-footer-location" />
     <style>
       body {
-        display: grid;
+        display: flex;
+        flex-direction: column;
         min-height: 100vh;
         margin: 0;
-        place-items: center;
         background: #f4f8f7;
         color: #1f2933;
         font-family: Inter, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
@@ -17,6 +18,7 @@
 
       main {
         width: min(720px, calc(100% - 32px));
+        margin: auto;
         border: 1px solid #d8e4e2;
         border-radius: 8px;
         background: #ffffff;
@@ -36,7 +38,7 @@
         line-height: 1.6;
       }
 
-      a {
+      main > a {
         display: inline-block;
         margin-top: 22px;
         color: #075f5d;
@@ -53,5 +55,7 @@
       </p>
       <a href="./quote-payment.html">Create a quote approval link</a>
     </main>
+    <div data-site-footer></div>
+    <script src="./site-footer.js?v=20260727-footer-location"></script>
   </body>
 </html>
