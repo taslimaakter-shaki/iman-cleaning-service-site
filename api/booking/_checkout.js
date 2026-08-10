@@ -14,7 +14,12 @@ const {
 } = require("./_shared");
 const { authenticatedUser } = require("../account/_shared");
 
-const AGREEMENT_VERSION = "2026-07-27-residential-instant-pricing-v1";
+const AGREEMENT_VERSION = "2026-08-09-deposit-and-balance-authorization-v1";
+const DEPOSIT_PERCENT = 25;
+
+function depositCents(totalCents) {
+  return Math.max(1, Math.round((Number(totalCents) || 0) * DEPOSIT_PERCENT / 100));
+}
 
 function getSiteUrl(request) {
   const configuredUrl = process.env.PUBLIC_SITE_URL || process.env.SITE_URL;
@@ -212,6 +217,10 @@ module.exports = async function handler(request, response) {
       ? body.priorities.map((item) => cleanText(item, 60)).filter(Boolean).slice(0, 6)
       : [];
     const notes = cleanText(body.notes, 1200);
+    const depositAmountCents = depositCents(pkg.priceCents);
+    const remainingAmountCents = Math.max(0, pkg.priceCents - depositAmountCents);
+    const depositSubtotalCents = Math.min(depositAmountCents, Math.round(pkg.subtotalCents * DEPOSIT_PERCENT / 100));
+    const depositTaxCents = depositAmountCents - depositSubtotalCents;
     const unitSummary = organizationMode
       ? `${pkg.manHours} hours of organization / decluttering with one professional organizer, $${pkg.total.toFixed(2)} including tax.`
       : unitDetails
@@ -284,7 +293,21 @@ module.exports = async function handler(request, response) {
           conditionConfirmed: true,
           termsAccepted: true
         },
-        paymentStatus: "pending",
+        paymentStatus: "deposit_pending",
+        payment: {
+          paymentType: "deposit_25",
+          balanceCollection: "automatic_48h_authorization",
+          status: "deposit_pending",
+          totalCents: pkg.priceCents,
+          paidCents: 0,
+          depositCents: depositAmountCents,
+          remainingCents: remainingAmountCents,
+          remaining: {
+            status: "pending",
+            amountCents: remainingAmountCents,
+            authorizationDueHours: 48
+          }
+        },
         accountUserId: cleanText(accountSession?.user?.id, 120),
         accountEmail: accountEmail
       }
@@ -301,21 +324,23 @@ module.exports = async function handler(request, response) {
     );
     const stripeLineItems = {
       "line_items[0][price_data][currency]": "usd",
-      "line_items[0][price_data][unit_amount]": pkg.subtotalCents,
-      "line_items[0][price_data][product_data][name]": `${pkg.serviceLabel} — ${pkg.tierLabel}`,
-      "line_items[0][price_data][product_data][description]": description,
+      "line_items[0][price_data][unit_amount]": depositSubtotalCents,
+      "line_items[0][price_data][product_data][name]": `${pkg.serviceLabel} — 25% booking deposit`,
+      "line_items[0][price_data][product_data][description]": `${description} Total service price: $${pkg.price.toFixed(2)}.`,
       "line_items[0][quantity]": 1,
       "line_items[1][price_data][currency]": "usd",
-      "line_items[1][price_data][unit_amount]": pkg.taxCents,
-      "line_items[1][price_data][product_data][name]": "NY Sales Tax included (8.875%)",
+      "line_items[1][price_data][unit_amount]": depositTaxCents,
+      "line_items[1][price_data][product_data][name]": "Deposit tax portion (NY sales tax included)",
       "line_items[1][quantity]": 1
     };
     const checkout = await createStripeCheckout(secretKey, {
       mode: "payment",
+      "payment_method_types[0]": "card",
       customer_email: email,
       customer_creation: "always",
       "phone_number_collection[enabled]": "true",
       ...stripeLineItems,
+      "payment_intent_data[setup_future_usage]": "off_session",
       "payment_intent_data[description]": `${pkg.serviceLabel} for ${customerName}`,
       "payment_intent_data[receipt_email]": email,
       "payment_intent_data[metadata][booking_id]": bookingId,
@@ -325,9 +350,10 @@ module.exports = async function handler(request, response) {
       "payment_intent_data[metadata][service_date]": slot.date,
       "payment_intent_data[metadata][service_time]": slot.time,
       "payment_intent_data[metadata][total_amount_cents]": pkg.priceCents,
-      "payment_intent_data[metadata][payment_amount_cents]": pkg.priceCents,
-      "payment_intent_data[metadata][remaining_amount_cents]": 0,
-      "payment_intent_data[metadata][payment_type]": "full",
+      "payment_intent_data[metadata][payment_amount_cents]": depositAmountCents,
+      "payment_intent_data[metadata][remaining_amount_cents]": remainingAmountCents,
+      "payment_intent_data[metadata][payment_type]": "deposit_25",
+      "payment_intent_data[metadata][balance_collection]": "automatic_48h_authorization",
       "metadata[booking_id]": bookingId,
       "metadata[quote_id]": bookingId,
       "metadata[customer_name]": customerName,
@@ -347,15 +373,16 @@ module.exports = async function handler(request, response) {
       "metadata[agreement_version]": AGREEMENT_VERSION,
       "metadata[agreement_url]": `${siteUrl}/agreement.html`,
       "metadata[total_amount_cents]": pkg.priceCents,
-      "metadata[payment_amount_cents]": pkg.priceCents,
-      "metadata[remaining_amount_cents]": 0,
-      "metadata[payment_type]": "full",
+      "metadata[payment_amount_cents]": depositAmountCents,
+      "metadata[remaining_amount_cents]": remainingAmountCents,
+      "metadata[payment_type]": "deposit_25",
+      "metadata[balance_collection]": "automatic_48h_authorization",
       "metadata[account_user_id]": cleanText(accountSession?.user?.id, 120),
       "consent_collection[terms_of_service]": "required",
       "custom_text[terms_of_service_acceptance][message]": organizationMode
-        ? "I agree to the Iman Cleaning Service LLC Service Agreement and understand this organization or decluttering booking is billed at $60 per hour for one professional organizer."
-        : "I agree to the Iman Cleaning Service LLC Service Agreement and understand that this package includes a fixed number of total labor-hours. Completion depends on the property’s actual condition.",
-      "custom_text[submit][message]": "Your appointment is confirmed only after the full payment is successfully completed.",
+        ? "I agree to the Service Agreement, the 25% deposit, and authorization of the remaining balance about 48 hours before service for capture after completion."
+        : "I agree to the Service Agreement, the 25% deposit, and authorization of the remaining balance about 48 hours before service for capture after completion.",
+      "custom_text[submit][message]": "The 25% deposit is charged now. The remaining 75% will be authorized about 48 hours before the appointment and captured after service is completed.",
       "invoice_creation[enabled]": "true",
       expires_at: Math.floor(Date.now() / 1000) + HOLD_MINUTES * 60,
       success_url: `${siteUrl}/booking-confirmed.html?session_id={CHECKOUT_SESSION_ID}&booking_id=${encodeURIComponent(bookingId)}`,

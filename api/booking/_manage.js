@@ -12,6 +12,7 @@ const {
   formatAppointment,
   sendCustomerSms
 } = require("./_notifications");
+const { cancelRemainingAuthorization } = require("./_payments");
 
 const TOKEN_LIFETIME_MS = 90 * 24 * 60 * 60 * 1000;
 
@@ -65,12 +66,16 @@ function decodeBookingManagementToken(token) {
 function safeBooking(booking) {
   const appointment = new Date(booking.schedule);
   const hoursRemaining = (appointment.getTime() - Date.now()) / 3600000;
-  const lateCancellation = hoursRemaining < 24;
+  const lateCancellation = hoursRemaining < 48;
+  const totalCents = Math.round(Number(
+    booking.estimate?.total || booking.estimate?.high || booking.estimate?.low || 0
+  ) * 100);
   const paidCents = Number(
     booking.estimate?.payment?.paidCents
-    || Math.round(Number(booking.estimate?.total || booking.estimate?.high || booking.estimate?.low || 0) * 100)
+    || totalCents
   );
-  const refundCents = lateCancellation ? Math.round(paidCents * 0.75) : paidCents;
+  const retainedCents = lateCancellation ? Math.min(paidCents, Math.round(totalCents * 0.25)) : 0;
+  const refundCents = Math.max(0, paidCents - retainedCents);
   return {
     id: booking.id,
     status: booking.status,
@@ -80,12 +85,12 @@ function safeBooking(booking) {
     address: booking.address,
     total: Number(booking.estimate?.total || booking.estimate?.high || booking.estimate?.low || 0),
     cancellation: {
-      lessThan24Hours: lateCancellation,
-      refundPercent: lateCancellation ? 75 : 100,
-      retainedPercent: lateCancellation ? 25 : 0,
+      lessThan48Hours: lateCancellation,
+      refundPercent: paidCents ? Math.round((refundCents / paidCents) * 100) : 0,
+      retainedPercentOfTotal: totalCents ? Math.round((retainedCents / totalCents) * 100) : 0,
       paidCents,
       refundCents,
-      retainedCents: Math.max(0, paidCents - refundCents)
+      retainedCents
     }
   };
 }
@@ -142,6 +147,7 @@ async function notifyManagementChange(booking, subject, message) {
 }
 
 async function createRefund(booking, amountCents) {
+  if (amountCents <= 0) return { id: "", status: "not_refunded" };
   const secretKey = process.env.STRIPE_SECRET_KEY || process.env.Stripe_Secret_Key || "";
   const paymentIntentId = cleanText(booking.estimate?.payment?.paymentIntentId, 120);
   if (!secretKey || !paymentIntentId) {
@@ -155,7 +161,7 @@ async function createRefund(booking, amountCents) {
     reason: "requested_by_customer",
     "metadata[booking_id]": booking.id,
     "metadata[cancellation_policy]": amountCents < Number(booking.estimate?.payment?.paidCents || 0)
-      ? "less_than_24_hours_75_percent_refund"
+      ? "less_than_48_hours_deposit_retained"
       : "full_refund"
   });
   const response = await fetch("https://api.stripe.com/v1/refunds", {
@@ -211,6 +217,8 @@ async function handler(request, response) {
           requestedAt: new Date().toISOString()
         }
       };
+      await cancelRemainingAuthorization({ booking, resetForReschedule: true });
+      estimate.payment = booking.estimate?.payment;
       const updated = await updateBooking(booking.id, {
         schedule: slot.value,
         schedule_label: slot.label,
@@ -230,17 +238,21 @@ async function handler(request, response) {
         return json(response, 409, { error: "This booking can no longer be cancelled online." });
       }
       const appointment = new Date(booking.schedule);
-      const lessThan24Hours = appointment.getTime() - Date.now() < 24 * 3600000;
-      const paidCents = Number(booking.estimate?.payment?.paidCents || Math.round(Number(booking.estimate?.total || 0) * 100));
-      const refundCents = lessThan24Hours ? Math.round(paidCents * 0.75) : paidCents;
+      const lessThan48Hours = appointment.getTime() - Date.now() < 48 * 3600000;
+      const totalCents = Math.round(Number(booking.estimate?.total || 0) * 100);
+      const paidCents = Number(booking.estimate?.payment?.paidCents || totalCents);
+      const retainedCents = lessThan48Hours ? Math.min(paidCents, Math.round(totalCents * 0.25)) : 0;
+      const refundCents = Math.max(0, paidCents - retainedCents);
+      await cancelRemainingAuthorization({ booking });
       const refund = await createRefund(booking, refundCents);
       const estimate = {
         ...(booking.estimate || {}),
         cancellation: {
           cancelledAt: new Date().toISOString(),
-          lessThan24Hours,
-          retainedPercent: lessThan24Hours ? 25 : 0,
-          refundPercent: lessThan24Hours ? 75 : 100,
+          lessThan48Hours,
+          retainedPercentOfTotal: totalCents ? Math.round((retainedCents / totalCents) * 100) : 0,
+          refundPercentOfPaid: paidCents ? Math.round((refundCents / paidCents) * 100) : 0,
+          retainedCents,
           refundCents,
           refundId: refund.id || "",
           refundStatus: refund.status || ""
@@ -249,15 +261,20 @@ async function handler(request, response) {
       const updated = await updateBooking(booking.id, { status: "Cancelled", estimate });
       const calendar = await updateBookingGoogleCalendar(updated, "cancel").catch(() => ({ status: "error" }));
       const refundAmount = `$${(refundCents / 100).toFixed(2)}`;
-      const message = lessThan24Hours
-        ? `Your appointment was cancelled. A 75% refund of ${refundAmount} is being returned to your original payment method; 25% was retained under the less-than-24-hours cancellation policy.`
+      const message = lessThan48Hours
+        ? `Your appointment was cancelled. The 25% booking deposit was retained under the less-than-48-hours cancellation policy${refundCents ? `, and ${refundAmount} is being returned to your original payment method` : ""}. Any uncaptured authorization for the remaining balance was released.`
         : `Your appointment was cancelled. A full refund of ${refundAmount} is being returned to your original payment method.`;
       const delivery = await notifyManagementChange(updated, "Your appointment was cancelled", message);
       return json(response, 200, {
         ok: true,
         action,
         booking: safeBooking(updated),
-        refund: { amountCents: refundCents, percent: lessThan24Hours ? 75 : 100, status: refund.status || "" },
+        refund: {
+          amountCents: refundCents,
+          percent: paidCents ? Math.round((refundCents / paidCents) * 100) : 0,
+          retainedCents,
+          status: refund.status || ""
+        },
         calendar,
         delivery
       });

@@ -2,6 +2,7 @@ const handlers = {
   availability: () => require("./_availability"),
   checkout: () => require("./_checkout"),
   manage: () => require("./_manage"),
+  payments: () => require("./_payments"),
   "saved-quote": () => require("./_saved-quote"),
   reminders: () => require("./_reminders")
 };

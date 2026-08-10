@@ -21,7 +21,7 @@
   <main>
     <div class="check" aria-hidden="true">✓</div>
     <h1>Your cleaning is confirmed.</h1>
-    <p data-confirmation-status>Your full payment was received. We are finalizing your appointment and sending your confirmation and PDF invoice.</p>
+    <p data-confirmation-status>Your 25% deposit was received. We are finalizing your appointment and sending your confirmation and receipt.</p>
     <div class="id" data-booking-id></div>
     <a href="./index.html">Return to the homepage</a>
   </main>
@@ -46,10 +46,10 @@
         .then(async (response) => {
           const data = await response.json();
           if (!response.ok) throw new Error(data.error || "Confirmation could not be finalized.");
-          statusBox.textContent = "Your full payment was received and your appointment is reserved. Your confirmation, PDF invoice, and private rescheduling or cancellation link have been sent by email and text.";
+          statusBox.textContent = "Your 25% deposit was received and your appointment is reserved. The remaining 75% will be authorized about 48 hours before service and captured after the work is completed. Your confirmation and private management link have been sent.";
         })
         .catch(() => {
-          statusBox.textContent = "Your payment was received. Keep your booking reference below; if your email is delayed, please call us so we can confirm the details.";
+          statusBox.textContent = "Your deposit was received. Keep your booking reference below; if your confirmation is delayed, please call us.";
         });
     }
   </script>

@@ -65,7 +65,7 @@
             <div class="detail"><dt>Service</dt><dd data-service></dd></div>
             <div class="detail"><dt>Appointment</dt><dd data-schedule></dd></div>
             <div class="detail"><dt>Address</dt><dd data-address></dd></div>
-            <div class="detail"><dt>Total paid</dt><dd data-total></dd></div>
+            <div class="detail"><dt>Total service price</dt><dd data-total></dd></div>
           </dl>
         </section>
         <section class="section" data-active-tools>
@@ -121,9 +121,9 @@
         document.querySelector("[data-address]").textContent = booking.address;
         document.querySelector("[data-total]").textContent = money(booking.total);
         const cancellation = booking.cancellation;
-        document.querySelector("[data-policy]").textContent = cancellation.lessThan24Hours
-          ? `Less than 24 hours remain. If you cancel now, ${money(cancellation.retainedCents / 100)} (25%) will be retained and ${money(cancellation.refundCents / 100)} (75%) will be refunded to your original payment method.`
-          : `At least 24 hours remain. If you cancel now, the full ${money(cancellation.refundCents / 100)} payment will be refunded to your original payment method.`;
+        document.querySelector("[data-policy]").textContent = cancellation.lessThan48Hours
+          ? `Less than 48 hours remain. If you cancel now, the ${money(cancellation.retainedCents / 100)} booking deposit will be retained and any uncaptured authorization will be released.`
+          : `At least 48 hours remain. If you cancel now, the full ${money(cancellation.refundCents / 100)} amount charged will be refunded and any uncaptured authorization will be released.`;
         slotSelect.innerHTML = '<option value="">Choose an available date and time</option>';
         let lastDate = "";
         let group = null;
@@ -176,15 +176,17 @@
       });
       cancelButton.addEventListener("click", async () => {
         if (!cancelConfirm.checked) return;
-        const policy = booking.cancellation.lessThan24Hours
-          ? `Cancel this appointment and receive a ${money(booking.cancellation.refundCents / 100)} refund? ${money(booking.cancellation.retainedCents / 100)} will be retained.`
+        const policy = booking.cancellation.lessThan48Hours
+          ? `Cancel this appointment? ${money(booking.cancellation.retainedCents / 100)} will be retained and any uncaptured authorization will be released.`
           : `Cancel this appointment and issue a full ${money(booking.cancellation.refundCents / 100)} refund?`;
         if (!window.confirm(policy)) return;
         setBusy(true);
         try {
           const data = await request("POST", { action: "cancel" });
           const amount = money(data.refund.amountCents / 100);
-          await load(`Your appointment was cancelled. A ${data.refund.percent}% refund of ${amount} is being returned to your original payment method.`);
+          await load(data.refund.amountCents
+            ? `Your appointment was cancelled. A refund of ${amount} is being returned to your original payment method.`
+            : "Your appointment was cancelled. The booking deposit was retained under the cancellation policy, and any uncaptured authorization was released.");
         } catch (error) {
           showStatus(error.message, true);
         } finally {

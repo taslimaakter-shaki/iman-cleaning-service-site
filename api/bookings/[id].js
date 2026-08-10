@@ -6,6 +6,10 @@ const allowedStatuses = new Set([
   "Completed",
   "Cancelled"
 ]);
+const {
+  cancelRemainingAuthorization,
+  captureRemainingBalance
+} = require("../booking/_payments");
 
 function json(response, statusCode, body) {
   response.statusCode = statusCode;
@@ -84,6 +88,11 @@ async function supabaseRequest(path, options = {}) {
   return data;
 }
 
+async function getBookingRecord(id) {
+  const rows = await supabaseRequest(`?id=eq.${encodeURIComponent(id)}&select=*`);
+  return Array.isArray(rows) ? rows[0] || null : null;
+}
+
 module.exports = async function handler(request, response) {
   try {
     if (!assertAdmin(request)) {
@@ -99,6 +108,9 @@ module.exports = async function handler(request, response) {
         return json(response, 400, { error: "Invalid status." });
       }
 
+      const booking = await getBookingRecord(id);
+      if (!booking) return json(response, 404, { error: "Booking not found." });
+
       await supabaseRequest(`?id=eq.${encodeURIComponent(id)}`, {
         method: "PATCH",
         headers: {
@@ -107,10 +119,23 @@ module.exports = async function handler(request, response) {
         body: JSON.stringify({ status: body.status })
       });
 
-      return json(response, 200, { ok: true });
+      let payment = { status: "not_applicable" };
+      try {
+        if (body.status === "Completed") {
+          payment = await captureRemainingBalance({ bookingId: id });
+        } else if (body.status === "Cancelled") {
+          payment = await cancelRemainingAuthorization({ booking });
+        }
+      } catch (error) {
+        payment = { status: "error", error: error.message || "Payment update failed." };
+      }
+
+      return json(response, 200, { ok: true, payment });
     }
 
     if (request.method === "DELETE") {
+      const booking = await getBookingRecord(id);
+      if (booking) await cancelRemainingAuthorization({ booking });
       await supabaseRequest(`?id=eq.${encodeURIComponent(id)}`, {
         method: "DELETE",
         headers: {
