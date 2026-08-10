@@ -798,6 +798,14 @@ async function listReminderBookings() {
   return (records || []).filter((record) => ["Confirmed", "Cleaner assigned"].includes(record.status));
 }
 
+async function listPaymentBookings() {
+  const statuses = ["Confirmed", "Cleaner assigned", "In progress"];
+  const records = hasSupabaseConfig()
+    ? await supabaseRequest("?select=*&status=in.(Confirmed,Cleaner%20assigned,In%20progress)&order=schedule.asc&limit=500")
+    : await listDriveBookings();
+  return (records || []).filter((record) => statuses.includes(record.status));
+}
+
 async function listCustomerBookings(email) {
   const normalizedEmail = cleanText(email, 180).toLowerCase();
   const records = [];
@@ -1322,6 +1330,7 @@ module.exports = {
   packageForClient,
   json,
   listReminderBookings,
+  listPaymentBookings,
   listCustomerBookings,
   makeBookingId,
   nextAvailableSlotForDate,

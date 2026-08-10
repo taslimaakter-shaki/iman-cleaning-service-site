@@ -1225,6 +1225,7 @@
     minimumFractionDigits: Number(amount) % 1 ? 2 : 0,
     maximumFractionDigits: 2
   }).format(amount);
+  const bookingDeposit = (amount) => Math.round(Number(amount || 0) * 25) / 100;
   const hours = (amount) => Number(amount).toLocaleString("en-US", { maximumFractionDigits: 3 });
   const teamTime = (amount) => {
     const totalMinutes = Math.round(Number(amount) * 60);
@@ -1337,7 +1338,7 @@
         : "Your personalized estimate is based on the cleaning details you provided.";
     document.querySelector("[data-package-price]").textContent = money(state.package.price);
     document.querySelector("[data-man-hours]").textContent = `${hours(state.package.manHours)} labor-hours`;
-    document.querySelector("[data-total-due]").textContent = money(state.package.price);
+    document.querySelector("[data-total-due]").textContent = money(bookingDeposit(state.package.price));
     syncQuotedServiceCopy();
     renderPriceBreakdown(state.package);
     closeQuoteContact();
@@ -1900,6 +1901,7 @@
         ? "I confirm that the selected hours and appointment note accurately describe the organization or decluttering service I need."
         : "I confirm that my answers accurately represent the property’s current condition. No additional time or charges will be added without my approval.";
     }
+    document.querySelector("[data-total-due]").textContent = money(bookingDeposit(state.package.price));
   };
 
   document.querySelector("[data-continue-contact]").addEventListener("click", () => {
@@ -2022,7 +2024,7 @@
     } catch (error) {
       setStatus(status, error.message || "Secure checkout could not be started.");
       payButton.disabled = false;
-      payButton.textContent = "Pay 100% & confirm booking";
+      payButton.textContent = "Pay 25% deposit & confirm booking";
     }
   });
 
@@ -2074,7 +2076,7 @@
         "Your saved personalized estimate is ready. Choose an appointment whenever you’re ready to book.";
       document.querySelector("[data-package-price]").textContent = money(state.package.price);
       document.querySelector("[data-man-hours]").textContent = `${hours(state.package.manHours)} labor-hours`;
-      document.querySelector("[data-total-due]").textContent = money(state.package.price);
+      document.querySelector("[data-total-due]").textContent = money(bookingDeposit(state.package.price));
       syncQuotedServiceCopy();
       renderPriceBreakdown(state.package);
       showSavedQuoteDelivery("Your saved quote is open. You can choose an appointment and pay when you’re ready.", "success");
@@ -2141,7 +2143,7 @@
           : "Your personalized estimate is based on the cleaning details you provided.";
       document.querySelector("[data-package-price]").textContent = money(state.package.price);
       document.querySelector("[data-man-hours]").textContent = `${hours(state.package.manHours)} labor-hours`;
-      document.querySelector("[data-total-due]").textContent = money(state.package.price);
+      document.querySelector("[data-total-due]").textContent = money(bookingDeposit(state.package.price));
       syncQuotedServiceCopy();
       renderPriceBreakdown(state.package);
 

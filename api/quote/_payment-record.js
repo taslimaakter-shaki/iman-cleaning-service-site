@@ -159,6 +159,7 @@ function buildRecord({ session, siteUrl, source = "success_page" }) {
     paidAmount: money(paidCents),
     remainingAmount: money(Number(metadata.remaining_amount_cents || 0)),
     paymentType: cleanText(metadata.payment_type),
+    balanceCollection: cleanText(metadata.balance_collection),
     paymentStatus: cleanText(session.payment_status),
     checkoutSessionId: session.id,
     paymentIntentId: cleanText(paymentIntent?.id || session.payment_intent),
@@ -275,6 +276,13 @@ function buildCustomerEmail({ record, invoicePdf, managementUrl }) {
 
   const from = process.env.QUOTE_EMAIL_FROM || "Info@imancleaningservice.com";
   const subject = `Booking confirmed and PDF invoice - ${record.quoteId}`;
+  const automaticBalance = record.paymentType === "deposit_25"
+    && record.balanceCollection === "automatic_48h_authorization";
+  const paymentMessage = automaticBalance
+    ? "Your 25% booking deposit was received and your cleaning appointment is confirmed. The remaining 75% will be authorized on your saved payment method about 48 hours before the appointment and captured after the service is completed."
+    : Number(String(record.remainingAmount).replace(/[^0-9.-]/g, "")) > 0
+      ? "Your booking deposit was received and your cleaning appointment is confirmed. The remaining balance is due under your accepted service agreement."
+      : "Your full payment was received and your cleaning appointment is confirmed.";
   const details = [
     ["Customer", record.customerName],
     ["Location", record.serviceLocation],
@@ -291,13 +299,13 @@ function buildCustomerEmail({ record, invoicePdf, managementUrl }) {
   const text = [
     `Hi ${record.customerName || "there"},`,
     "",
-    "Thank you for booking with Iman Cleaning Service LLC. Your full payment was received and your cleaning appointment is confirmed.",
+    `Thank you for booking with Iman Cleaning Service LLC. ${paymentMessage}`,
     "",
     ...details.map(([label, value]) => `${label}: ${value}`),
     "",
     invoicePdf ? "Your PDF invoice is attached to this email." : "Your PDF invoice is available from the invoice link above.",
     managementUrl ? `Reschedule or cancel: ${managementUrl}` : "",
-    "Cancellation policy: cancel at least 24 hours before the appointment for a full refund. If less than 24 hours remain, 25% is retained and 75% is refunded to the original payment method.",
+    "Cancellation policy: cancel at least 48 hours before the appointment for a full refund of amounts charged. If less than 48 hours remain, the 25% booking deposit is non-refundable and any uncaptured authorization is released.",
     "We will send email and text reminders about 6 hours and 1 hour before your appointment.",
     "Iman Cleaning Service LLC will follow up if any additional appointment details are needed.",
     "",
@@ -316,11 +324,11 @@ function buildCustomerEmail({ record, invoicePdf, managementUrl }) {
 <html>
   <body style="font-family:Arial,sans-serif;color:#1f2933;line-height:1.5;">
     <p>Hi ${escapeHtml(record.customerName || "there")},</p>
-    <p>Thank you for booking with Iman Cleaning Service LLC. Your full payment was received and your cleaning appointment is confirmed.</p>
+    <p>Thank you for booking with Iman Cleaning Service LLC. ${escapeHtml(paymentMessage)}</p>
     <table>${rows}</table>
     <p><strong>${invoicePdf ? "Your PDF invoice is attached to this email." : "Your PDF invoice is available from the invoice link above."}</strong></p>
     ${managementUrl ? `<p><a href="${escapeHtml(managementUrl)}" style="display:inline-block;padding:13px 20px;background:#0b6474;color:#fff;text-decoration:none;border-radius:10px;font-weight:bold;">Reschedule or cancel my appointment</a></p>` : ""}
-    <p>Cancellation policy: cancel at least 24 hours before the appointment for a full refund. If less than 24 hours remain, 25% is retained and 75% is refunded to the original payment method.</p>
+    <p>Cancellation policy: cancel at least 48 hours before the appointment for a full refund of amounts charged. If less than 48 hours remain, the 25% booking deposit is non-refundable and any uncaptured authorization is released.</p>
     <p>We will send email and text reminders about 6 hours and 1 hour before your appointment.</p>
     <p>Iman Cleaning Service LLC will follow up if any additional appointment details are needed.</p>
     <p>Thank you,<br>Iman Cleaning Service LLC</p>
@@ -383,10 +391,13 @@ async function fetchInvoicePdf(record) {
 
 function buildCustomerConfirmationSms(record, managementUrl) {
   const invoiceUrl = record.stripeInvoicePdf || record.stripeInvoiceUrl || record.stripeReceiptUrl;
+  const automaticBalance = record.paymentType === "deposit_25"
+    && record.balanceCollection === "automatic_48h_authorization";
   return [
-    `IMAN Cleaning Service: Payment received and booking ${record.quoteId} is confirmed.`,
+    `IMAN Cleaning Service: ${automaticBalance ? "25% deposit received" : "Payment received"} and booking ${record.quoteId} is confirmed.`,
     `${record.service}: ${record.serviceDate} at ${record.serviceTime}.`,
     `Paid: ${record.paidAmount}.`,
+    automaticBalance ? `Remaining ${record.remainingAmount}: authorization about 48 hours before service, capture after completion.` : "",
     invoiceUrl ? `Invoice PDF: ${invoiceUrl}` : "",
     managementUrl ? `Reschedule/cancel: ${managementUrl}` : "",
     "We’ll remind you about 6 hours and 1 hour before. Reply STOP to opt out."
@@ -578,16 +589,43 @@ async function sendPaymentRecordForSessionId({ sessionId, siteUrl, source = "suc
     if (bookingConfirmation?.booking) {
       const paymentIntent = typeof session.payment_intent === "object" ? session.payment_intent : null;
       const invoice = typeof session.invoice === "object" ? session.invoice : null;
+      const metadata = session.metadata || {};
+      const priorPayment = bookingConfirmation.booking.estimate?.payment || {};
+      const paidCents = Number(session.amount_total || metadata.payment_amount_cents || 0);
+      const totalCents = Number(metadata.total_amount_cents || paidCents);
+      const remainingCents = Number(metadata.remaining_amount_cents || Math.max(0, totalCents - paidCents));
+      const automaticBalance = metadata.payment_type === "deposit_25"
+        && metadata.balance_collection === "automatic_48h_authorization";
       const estimate = {
         ...(bookingConfirmation.booking.estimate || {}),
         payment: {
+          ...priorPayment,
+          paymentType: cleanText(metadata.payment_type || priorPayment.paymentType),
+          balanceCollection: cleanText(metadata.balance_collection || priorPayment.balanceCollection),
+          status: remainingCents > 0 ? "deposit_paid" : "paid",
+          totalCents,
           paymentIntentId: cleanText(paymentIntent?.id || session.payment_intent),
-          paidCents: Number(session.amount_total || 0),
+          depositPaymentIntentId: cleanText(paymentIntent?.id || session.payment_intent),
+          stripeCustomerId: cleanText(typeof session.customer === "object" ? session.customer?.id : session.customer, 120),
+          paymentMethodId: cleanText(typeof paymentIntent?.payment_method === "object"
+            ? paymentIntent.payment_method?.id
+            : paymentIntent?.payment_method, 120),
+          paidCents,
+          depositCents: automaticBalance ? paidCents : Number(priorPayment.depositCents || paidCents),
+          remainingCents,
           invoiceId: cleanText(invoice?.id || session.invoice),
           invoiceUrl: cleanText(invoice?.hosted_invoice_url),
           invoicePdf: cleanText(invoice?.invoice_pdf),
           receiptUrl: cleanText(paymentIntent?.latest_charge?.receipt_url),
-          paidAt: stripeTime(paymentIntent?.created || session.created)
+          paidAt: stripeTime(paymentIntent?.created || session.created),
+          remaining: automaticBalance ? {
+            ...(priorPayment.remaining || {}),
+            status: "pending",
+            amountCents: remainingCents,
+            authorizationDueHours: 48,
+            attempts: 0,
+            paymentIntentId: ""
+          } : priorPayment.remaining
         }
       };
       bookingConfirmation.booking = await updateBooking(bookingId, { estimate });

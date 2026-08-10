@@ -18,3 +18,11 @@ jobs:
             --retry 2 \
             --header "Authorization: Bearer ${CRON_SECRET}" \
             https://www.imancleaningservice.com/api/booking/reminders
+      - name: Authorize balances for appointments within 48 hours
+        env:
+          CRON_SECRET: ${{ secrets.CRON_SECRET }}
+        run: |
+          curl --fail-with-body --silent --show-error \
+            --retry 2 \
+            --header "Authorization: Bearer ${CRON_SECRET}" \
+            https://www.imancleaningservice.com/api/booking/payments
