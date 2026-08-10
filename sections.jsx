@@ -125,14 +125,6 @@ function Hero() {
         <p className="ds-lead">
           Residential and commercial cleaning with clear quotes, flexible scheduling, and easy online booking.
         </p>
-        <div className="page-hero-actions">
-          <Button href={D.phoneHref} variant="accent" size="lg"
-            aria-label="Call Iman Cleaning Service" data-conv="call">
-            Call Us
-          </Button>
-          <Button href="./book-now.html" variant="secondary" size="lg"
-            aria-label="Get an instant cleaning quote" data-conv="book">Get an Instant Quote</Button>
-        </div>
         <div className="hero-trust-line" aria-label="Reviews and business hours">
           <a href={D.googleReviewsHref} target="_blank" rel="noopener noreferrer"
             aria-label="Read Iman Cleaning Service Google reviews" data-conv="google_reviews">
