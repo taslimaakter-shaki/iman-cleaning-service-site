@@ -80,6 +80,7 @@ function addressFromFields(fields) {
 
 function buildFormSubmissionSms({
   source = "Website form",
+  eventLabel = "submitted",
   fields = {},
   recordId = "",
   pageUrl = "",
@@ -117,7 +118,7 @@ function buildFormSubmissionSms({
   ]);
 
   const lines = [
-    `IMAN website: ${cleanText(source, 80)} submitted`,
+    `IMAN website: ${cleanText(source, 80)} ${cleanText(eventLabel, 24) || "submitted"}`,
     line("ID", recordId),
     line("Name", name),
     line("Phone", phone),
@@ -165,11 +166,15 @@ async function twilioRequest({ accountSid, authToken, from, to, body }) {
 
 async function sendFormSubmissionNotification(payload = {}) {
   const config = getSmsConfig();
+  const overrideRecipients = Array.isArray(payload.recipientOverride)
+    ? payload.recipientOverride.map(normalizePhoneNumber).filter(Boolean)
+    : [];
+  const recipients = overrideRecipients.length ? [...new Set(overrideRecipients)] : config.recipients;
   const missing = Object.entries({
     TWILIO_ACCOUNT_SID: config.accountSid,
     TWILIO_AUTH_TOKEN: config.authToken,
     TWILIO_FROM_NUMBER: config.from,
-    OWNER_SMS_TO: config.recipients.length ? config.recipients.join(",") : ""
+    OWNER_SMS_TO: recipients.length ? recipients.join(",") : ""
   }).filter(([, value]) => !value).map(([key]) => key);
 
   if (missing.length) {
@@ -182,7 +187,7 @@ async function sendFormSubmissionNotification(payload = {}) {
 
   const body = buildFormSubmissionSms(payload);
   const sent = [];
-  for (const to of config.recipients) {
+  for (const to of recipients) {
     const result = await twilioRequest({
       accountSid: config.accountSid,
       authToken: config.authToken,
