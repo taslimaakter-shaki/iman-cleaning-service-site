@@ -2,6 +2,9 @@ const { cleanText, trySendFormSubmissionNotification } = require("./_form-notifi
 
 const MAX_JSON_BODY = 64 * 1024;
 const DEFAULT_SITE_URL = "https://www.imancleaningservice.com";
+const INSTANT_PRICING_NOTIFICATION_TO = "+19298034053";
+const INSTANT_PRICING_DEDUP_MS = 30 * 60 * 1000;
+const recentInstantPricingNotifications = new Map();
 
 function json(response, statusCode, body) {
   response.statusCode = statusCode;
@@ -64,6 +67,27 @@ function normalizePhoneNumber(value) {
   if (digits.length === 11 && digits.startsWith("1")) return `+${digits}`;
   if (digits.length >= 11 && digits.length <= 15) return `+${digits}`;
   return "";
+}
+
+function clientFingerprint(request) {
+  const forwarded = cleanText(request.headers["x-forwarded-for"], 240).split(",")[0].trim();
+  const address = forwarded
+    || cleanText(request.headers["x-real-ip"], 120)
+    || cleanText(request.socket?.remoteAddress, 120)
+    || "unknown";
+  const userAgent = cleanText(request.headers["user-agent"], 240);
+  return `${address}|${userAgent}`;
+}
+
+function recentlyNotifiedInstantPricing(request, now = Date.now()) {
+  for (const [key, notifiedAt] of recentInstantPricingNotifications) {
+    if (now - notifiedAt > INSTANT_PRICING_DEDUP_MS) recentInstantPricingNotifications.delete(key);
+  }
+  const key = clientFingerprint(request);
+  const notifiedAt = recentInstantPricingNotifications.get(key);
+  if (notifiedAt && now - notifiedAt <= INSTANT_PRICING_DEDUP_MS) return true;
+  recentInstantPricingNotifications.set(key, now);
+  return false;
 }
 
 async function twilioRequest({ accountSid, authToken, path, options = {} }) {
@@ -196,8 +220,21 @@ module.exports = async function handler(request, response) {
 
     const body = await readJsonBody(request);
     const fields = body.fields && typeof body.fields === "object" ? body.fields : {};
+    const source = cleanText(body.source, 80) || "Website form";
+    const eventLabel = cleanText(body.event, 24) === "opened" ? "opened" : "submitted";
+    if (source === "Instant pricing form" && eventLabel === "opened" && recentlyNotifiedInstantPricing(request)) {
+      return json(response, 202, {
+        ok: true,
+        deduplicated: true,
+        ownerSms: { status: "deduplicated", sent: [], error: "" }
+      });
+    }
     const ownerSms = await trySendFormSubmissionNotification({
-      source: cleanText(body.source, 80) || "Website form",
+      source,
+      eventLabel,
+      recipientOverride: source === "Instant pricing form" && eventLabel === "opened"
+        ? [INSTANT_PRICING_NOTIFICATION_TO]
+        : undefined,
       fields,
       recordId: cleanText(body.recordId, 120),
       pageUrl: cleanText(body.pageUrl, 500),

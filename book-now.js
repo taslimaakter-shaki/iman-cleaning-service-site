@@ -3,6 +3,7 @@
   if (!form) return;
   const BOOKING_DRAFT_KEY = "imanBookingDraftV2";
   const BOOKING_DRAFT_VERSION = 2;
+  const INSTANT_PRICING_NOTICE_KEY = "imanInstantPricingOpenedNoticeV1";
   let persistBookingDraft = () => {};
   let clearBookingDraft = () => {};
 
@@ -17,6 +18,48 @@
   const confirmedArea = document.querySelector("[data-area-confirmed]");
   const confirmedZip = document.querySelector("[data-confirmed-zip]");
   const serviceZipNote = document.querySelector("[data-service-zip-note]");
+
+  const instantPricingEntrySource = () => {
+    const params = new URLSearchParams(window.location.search);
+    const campaignSource = String(params.get("source") || "").trim().slice(0, 80);
+    if (campaignSource) return campaignSource;
+    try {
+      const referrer = new URL(document.referrer);
+      if (referrer.origin === window.location.origin) return referrer.pathname || "website";
+      return referrer.hostname || "direct visit";
+    } catch {
+      return "direct visit";
+    }
+  };
+
+  const notifyInstantPricingOpened = () => {
+    const params = new URLSearchParams(window.location.search);
+    if (params.has("quote") || params.get("payment") === "cancelled") return;
+    try {
+      if (window.sessionStorage.getItem(INSTANT_PRICING_NOTICE_KEY)) return;
+      window.sessionStorage.setItem(INSTANT_PRICING_NOTICE_KEY, new Date().toISOString());
+    } catch {
+      // Continue when browser privacy settings disable session storage.
+    }
+    const payload = JSON.stringify({
+      source: "Instant pricing form",
+      event: "opened",
+      pageUrl: `${window.location.origin}${window.location.pathname}`,
+      summaryLines: [`Entry source: ${instantPricingEntrySource()}`]
+    });
+    if (navigator.sendBeacon) {
+      navigator.sendBeacon("/api/form-notification", new Blob([payload], { type: "application/json" }));
+      return;
+    }
+    fetch("/api/form-notification", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: payload,
+      keepalive: true
+    }).catch(() => {});
+  };
+
+  notifyInstantPricingOpened();
   let closeQualificationRedirect = () => {};
   let closeQualificationComplete = () => {};
   let closeAdditionalCleaningNotice = () => {};
