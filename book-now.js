@@ -209,6 +209,7 @@
   const qualificationRedirectOverlay = document.querySelector("[data-qualification-redirect]");
   const qualificationRedirectTitle = document.querySelector("[data-redirect-title]");
   const qualificationRedirectDescription = document.querySelector("[data-redirect-description]");
+  const qualificationRedirectReason = document.querySelector("[data-redirect-reason]");
   const qualificationRedirectContinue = document.querySelector("[data-redirect-continue]");
   const qualificationRedirectBack = document.querySelector("[data-redirect-back]");
   const qualificationCompleteOverlay = document.querySelector("[data-qualification-complete]");
@@ -578,57 +579,70 @@
     currentAccount = data.signedIn ? data.user : null;
     syncAccountState();
   }).catch(() => syncAccountState());
-  const questionControl = (question) => question?.querySelector("select, input:not([type='hidden'])");
+  const questionControls = (question) => Array.from(
+    question?.querySelectorAll("select, input:not([type='hidden'])") || []
+  );
+  const questionControl = (question) => questionControls(question)[0];
+  const questionControlFocusTarget = (question, control) => (
+    question?.querySelector(`[data-answer-for="${control?.name}"]`) || control
+  );
   const questionFocusTarget = (question) => (
     question?.querySelector("[data-answer-choice].is-selected") ||
     question?.querySelector("[data-answer-choice]") ||
     questionControl(question)
   );
   const syncAnswerChoices = (question) => {
-    const control = questionControl(question);
-    if (!control || control.tagName !== "SELECT") return;
-    question.querySelectorAll("[data-answer-choice]").forEach((button) => {
-      const selected = button.dataset.answerChoice === control.value;
-      button.classList.toggle("is-selected", selected);
-      button.setAttribute("aria-pressed", String(selected));
+    questionControls(question).forEach((control) => {
+      if (control.tagName !== "SELECT") return;
+      question.querySelectorAll(`[data-answer-for="${control.name}"]`).forEach((button) => {
+        const selected = button.dataset.answerChoice === control.value;
+        button.classList.toggle("is-selected", selected);
+        button.setAttribute("aria-pressed", String(selected));
+      });
     });
   };
   const buildAnswerChoices = () => {
     allMobileQuestions.forEach((question, questionIndex) => {
-      const select = question.querySelector("select");
-      if (!select || question.querySelector("[data-answer-options]")) return;
-      const questionTitle = question.querySelector("h2");
-      if (questionTitle && !questionTitle.id) questionTitle.id = `booking-question-${questionIndex + 1}`;
-      select.classList.add("booking-answer-select");
-      select.tabIndex = -1;
-      select.setAttribute("aria-hidden", "true");
-      const options = document.createElement("div");
-      options.className = "booking-answer-options";
-      options.dataset.answerOptions = "";
-      options.setAttribute("role", "group");
-      if (questionTitle?.id) options.setAttribute("aria-labelledby", questionTitle.id);
-      Array.from(select.options).filter((option) => option.value).forEach((option) => {
-        const button = document.createElement("button");
-        button.type = "button";
-        button.className = "booking-answer-choice";
-        button.dataset.answerChoice = option.value;
-        button.setAttribute("aria-pressed", "false");
-        const label = document.createElement("span");
-        label.textContent = option.textContent;
-        const check = document.createElement("i");
-        check.setAttribute("aria-hidden", "true");
-        check.textContent = "✓";
-        button.append(label, check);
-        button.addEventListener("click", () => {
-          select.value = option.value;
-          syncAnswerChoices(question);
-          select.dispatchEvent(new Event("change", { bubbles: true }));
-          setStatus(document.querySelector("[data-eligibility-status]"), "");
+      question.querySelectorAll("select").forEach((select, selectIndex) => {
+        if (question.querySelector(`[data-answer-options-for="${select.name}"]`)) return;
+        const questionTitle = select.closest(".booking-condition-question")?.querySelector("h3") || question.querySelector("h2");
+        if (questionTitle && !questionTitle.id) {
+          questionTitle.id = `booking-question-${questionIndex + 1}-${selectIndex + 1}`;
+        }
+        select.classList.add("booking-answer-select");
+        select.tabIndex = -1;
+        select.setAttribute("aria-hidden", "true");
+        const options = document.createElement("div");
+        options.className = "booking-answer-options";
+        options.dataset.answerOptions = "";
+        options.dataset.answerOptionsFor = select.name;
+        options.setAttribute("role", "group");
+        if (questionTitle?.id) options.setAttribute("aria-labelledby", questionTitle.id);
+        Array.from(select.options).filter((option) => option.value).forEach((option) => {
+          const button = document.createElement("button");
+          button.type = "button";
+          button.className = "booking-answer-choice";
+          button.dataset.answerChoice = option.value;
+          button.dataset.answerFor = select.name;
+          button.setAttribute("aria-pressed", "false");
+          const label = document.createElement("span");
+          label.textContent = option.textContent;
+          const check = document.createElement("i");
+          check.setAttribute("aria-hidden", "true");
+          check.textContent = "✓";
+          button.append(label, check);
+          button.addEventListener("click", () => {
+            select.value = option.value;
+            syncAnswerChoices(question);
+            select.dispatchEvent(new Event("change", { bubbles: true }));
+            setStatus(document.querySelector("[data-eligibility-status]"), "");
+            syncStageProgress();
+          });
+          options.append(button);
         });
-        options.append(button);
+        (select.closest(".booking-condition-question") || question).append(options);
+        syncAnswerChoices(question);
       });
-      question.append(options);
-      syncAnswerChoices(question);
     });
   };
   const goToStep = (step) => {
@@ -642,6 +656,7 @@
     });
     const stepSummary = document.querySelector("[data-step-summary]");
     if (stepSummary) stepSummary.textContent = `Step ${step} of 4`;
+    syncStageProgress();
     wizardDialog?.scrollTo({ top: 0, behavior: "smooth" });
     persistBookingDraft();
   };
@@ -792,6 +807,77 @@
     }] : [])] : [])
   ];
   };
+  const HOME_DETAIL_KEYS = new Set([
+    "bedrooms",
+    "fullBathrooms",
+    "halfBathrooms",
+    "livingDining",
+    "additionalRooms"
+  ]);
+  const CLEANING_STAGES = [
+    { label: "Eligibility", description: "Checking whether online pricing is available", time: "About 4 minutes remaining" },
+    { label: "Service", description: "Choose your cleaning service and property", time: "About 3 minutes remaining" },
+    { label: "Home details", description: "Tell us about the rooms in each unit", time: "About 3 minutes remaining" },
+    { label: "Extras", description: "Choose optional and included cleaning details", time: "About 2 minutes remaining" },
+    { label: "Your quote", description: "Review your personalized cleaning price", time: "About 2 minutes remaining" },
+    { label: "Appointment", description: "Choose a time and provide the service address", time: "About 1 minute remaining" },
+    { label: "Review & book", description: "Confirm your details and secure the appointment", time: "Less than 1 minute remaining" }
+  ];
+  const ORGANIZATION_STAGES = [
+    { label: "Service", description: "Organization and decluttering selected", time: "About 3 minutes remaining" },
+    { label: "Hours", description: "Choose how much organizing help you need", time: "About 2 minutes remaining" },
+    { label: "Contact", description: "Enter your details to receive your price", time: "About 2 minutes remaining" },
+    { label: "Appointment", description: "Choose a time and provide the service address", time: "About 1 minute remaining" },
+    { label: "Review & book", description: "Confirm your details and secure the appointment", time: "Less than 1 minute remaining" }
+  ];
+  const isOrganizationPath = () => (
+    organizationMode || state.serviceKey === "organization" || value("serviceIntent") === "organization"
+  );
+  const currentStageNumber = () => {
+    const organizationPath = isOrganizationPath();
+    if (quoteContactOverlay && !quoteContactOverlay.hidden) return organizationPath ? 3 : 5;
+    if (state.step === 2) return organizationPath ? 3 : 5;
+    if (state.step === 3) return organizationPath ? 4 : 6;
+    if (state.step === 4) return organizationPath ? 5 : 7;
+    if (organizationPath) return organizationMode ? 2 : 1;
+    if (quoteDetailsMode) {
+      const current = state.unitDetails[state.currentUnitIndex] || emptyUnitDetails();
+      const questions = pricingDetailQuestions(current, value("requestedService"));
+      return HOME_DETAIL_KEYS.has(questions[state.currentDetailQuestionIndex]?.key) ? 3 : 4;
+    }
+    if (serviceChoiceMode || propertyTypeMode || unitCountMode) return 2;
+    return 1;
+  };
+  const syncStageProgress = () => {
+    const stages = isOrganizationPath() ? ORGANIZATION_STAGES : CLEANING_STAGES;
+    const stageNumber = Math.min(stages.length, Math.max(1, currentStageNumber()));
+    const stage = stages[stageNumber - 1];
+    document.querySelectorAll("[data-stage-progress]").forEach((progress) => {
+      const label = progress.querySelector("[data-stage-label]");
+      const description = progress.querySelector("[data-stage-description]");
+      const time = progress.querySelector("[data-stage-time]");
+      const meter = progress.querySelector("[data-stage-meter]");
+      const dots = progress.querySelector("[data-stage-dots]");
+      if (label) label.textContent = `STEP ${stageNumber} OF ${stages.length} · ${stage.label.toUpperCase()}`;
+      if (description) description.textContent = stage.description;
+      if (time) time.textContent = stage.time;
+      if (meter) meter.style.width = `${(stageNumber / stages.length) * 100}%`;
+      progress.setAttribute("aria-valuenow", String(stageNumber));
+      progress.setAttribute("aria-valuemax", String(stages.length));
+      progress.setAttribute("aria-valuetext", `Step ${stageNumber} of ${stages.length}: ${stage.label}`);
+      if (dots) {
+        dots.replaceChildren();
+        stages.forEach((item, index) => {
+          const dot = document.createElement("span");
+          dot.className = index + 1 < stageNumber
+            ? "is-complete"
+            : index + 1 === stageNumber ? "is-current" : "";
+          dot.title = item.label;
+          dots.append(dot);
+        });
+      }
+    });
+  };
   const selectedUnitCount = () => Math.min(10, Math.max(1, Number(value("unitCount")) || 1));
   const syncUnitCount = () => {
     const count = selectedUnitCount();
@@ -879,6 +965,7 @@
   const syncMobileQuestion = () => {
     const activeQuestions = mobileQuestions();
     mobileQuestionIndex = Math.min(mobileQuestionIndex, Math.max(0, activeQuestions.length - 1));
+    syncStageProgress();
     if (organizationMode) {
       allMobileQuestions.forEach((question) => question.classList.remove("is-mobile-current"));
       if (serviceChoiceForm) serviceChoiceForm.hidden = true;
@@ -887,7 +974,7 @@
       if (quoteDetailsForm) quoteDetailsForm.hidden = true;
       if (organizationForm) organizationForm.hidden = false;
       if (mobileQuestionNav) mobileQuestionNav.hidden = false;
-      if (mobileQuestionCount) mobileQuestionCount.textContent = "Organization details";
+      if (mobileQuestionCount) mobileQuestionCount.textContent = "Hours · Question 1 of 1";
       if (mobileQuestionProgress) mobileQuestionProgress.style.width = "100%";
       if (eligibilityButtonLabel) eligibilityButtonLabel.textContent = "See my price";
       return;
@@ -906,14 +993,18 @@
         state.unitDetails[state.currentUnitIndex] || emptyUnitDetails(),
         value("requestedService")
       );
+      const currentDetail = detailQuestions[state.currentDetailQuestionIndex];
+      const stageKeys = HOME_DETAIL_KEYS.has(currentDetail?.key)
+        ? detailQuestions.filter((question) => HOME_DETAIL_KEYS.has(question.key))
+        : detailQuestions.filter((question) => !HOME_DETAIL_KEYS.has(question.key));
+      const localQuestionIndex = Math.max(0, stageKeys.findIndex((question) => question.key === currentDetail?.key));
+      const stageName = HOME_DETAIL_KEYS.has(currentDetail?.key) ? "Home details" : "Extras";
       if (mobileQuestionCount) {
-        mobileQuestionCount.textContent =
-          `Unit ${state.currentUnitIndex + 1} · ${state.currentDetailQuestionIndex + 1}/${detailQuestions.length}`;
+        const unitPrefix = count > 1 ? `Unit ${state.currentUnitIndex + 1} of ${count} · ` : "";
+        mobileQuestionCount.textContent = `${unitPrefix}${stageName} · Question ${localQuestionIndex + 1} of ${stageKeys.length}`;
       }
       if (mobileQuestionProgress) {
-        const completed = (state.currentUnitIndex * detailQuestions.length) + state.currentDetailQuestionIndex + 1;
-        const total = count * detailQuestions.length;
-        mobileQuestionProgress.style.width = `${(completed / total) * 100}%`;
+        mobileQuestionProgress.style.width = `${((localQuestionIndex + 1) / stageKeys.length) * 100}%`;
       }
       if (eligibilityButtonLabel) {
         const isLastQuestion = state.currentDetailQuestionIndex >= detailQuestions.length - 1;
@@ -932,7 +1023,7 @@
       if (unitCountForm) unitCountForm.hidden = false;
       syncUnitCount();
       if (mobileQuestionNav) mobileQuestionNav.hidden = false;
-      if (mobileQuestionCount) mobileQuestionCount.textContent = "Unit count";
+      if (mobileQuestionCount) mobileQuestionCount.textContent = "Service · Question 3 of 3";
       if (mobileQuestionProgress) mobileQuestionProgress.style.width = "100%";
       if (eligibilityButtonLabel) eligibilityButtonLabel.textContent = "Continue";
       return;
@@ -946,7 +1037,7 @@
       if (propertyTypeForm) propertyTypeForm.hidden = false;
       syncPropertyTypeChoice();
       if (mobileQuestionNav) mobileQuestionNav.hidden = false;
-      if (mobileQuestionCount) mobileQuestionCount.textContent = "Property type";
+      if (mobileQuestionCount) mobileQuestionCount.textContent = "Service · Question 2 of 3";
       if (mobileQuestionProgress) mobileQuestionProgress.style.width = "100%";
       if (eligibilityButtonLabel) eligibilityButtonLabel.textContent = "Continue";
       return;
@@ -960,7 +1051,7 @@
       if (serviceChoiceForm) serviceChoiceForm.hidden = false;
       syncServiceChoice();
       if (mobileQuestionNav) mobileQuestionNav.hidden = false;
-      if (mobileQuestionCount) mobileQuestionCount.textContent = "Service choice";
+      if (mobileQuestionCount) mobileQuestionCount.textContent = "Service · Question 1 of 3";
       if (mobileQuestionProgress) mobileQuestionProgress.style.width = "100%";
       if (eligibilityButtonLabel) eligibilityButtonLabel.textContent = "Continue";
       return;
@@ -974,14 +1065,15 @@
       const activeIndex = activeQuestions.indexOf(question);
       const isActive = activeIndex !== -1;
       question.classList.toggle("is-mobile-current", isActive && activeIndex === mobileQuestionIndex);
-      const control = questionControl(question);
       if (question.hasAttribute("data-occupied-service-question")) {
-        control.disabled = !isActive;
+        questionControls(question).forEach((control) => {
+          control.disabled = !isActive;
+        });
       }
       syncAnswerChoices(question);
     });
     if (mobileQuestionNav) mobileQuestionNav.hidden = false;
-    if (mobileQuestionCount) mobileQuestionCount.textContent = `Eligibility question ${mobileQuestionIndex + 1} of ${activeQuestions.length}`;
+    if (mobileQuestionCount) mobileQuestionCount.textContent = `Eligibility check · Question ${mobileQuestionIndex + 1} of ${activeQuestions.length}`;
     if (mobileQuestionProgress) {
       mobileQuestionProgress.style.width = `${((mobileQuestionIndex + 1) / activeQuestions.length) * 100}%`;
     }
@@ -1115,9 +1207,13 @@
       service: redirect.service || "",
       category: redirect.category || "residential"
     }, answers);
-    if (qualificationRedirectTitle) qualificationRedirectTitle.textContent = redirect.title;
-    if (qualificationRedirectDescription) qualificationRedirectDescription.textContent = redirect.description;
-    if (qualificationRedirectContinue) qualificationRedirectContinue.textContent = `${redirect.buttonLabel} →`;
+    if (qualificationRedirectTitle) qualificationRedirectTitle.textContent = "This service needs a custom quote";
+    if (qualificationRedirectDescription) {
+      qualificationRedirectDescription.textContent = "Based on your answers, we need a few additional details to provide an accurate price. Your information has been saved.";
+    }
+    if (qualificationRedirectReason) qualificationRedirectReason.textContent = redirect.description;
+    if (qualificationRedirectContinue) qualificationRedirectContinue.textContent = "Request a custom quote →";
+    persistBookingDraft();
     if (qualificationRedirectOverlay) qualificationRedirectOverlay.hidden = false;
     window.setTimeout(() => qualificationRedirectContinue?.focus(), 40);
   };
@@ -1129,6 +1225,7 @@
   const showQuoteContact = () => {
     if (!quoteContactOverlay) return;
     quoteContactOverlay.hidden = false;
+    syncStageProgress();
     setStatus(quoteContactStatus, "");
     window.setTimeout(() => {
       quoteContactForm?.elements.quoteFirstName?.focus();
@@ -1584,18 +1681,48 @@
       return;
     }
     if (quoteDetailsMode) {
-      if (state.currentDetailQuestionIndex > 0) {
-        state.currentDetailQuestionIndex -= 1;
+      const currentQuestions = pricingDetailQuestions(
+        state.unitDetails[state.currentUnitIndex] || emptyUnitDetails(),
+        value("requestedService")
+      );
+      const currentKey = currentQuestions[state.currentDetailQuestionIndex]?.key;
+      const inHomeDetails = HOME_DETAIL_KEYS.has(currentKey);
+      const currentStageIndexes = currentQuestions
+        .map((question, index) => ({ question, index }))
+        .filter(({ question }) => HOME_DETAIL_KEYS.has(question.key) === inHomeDetails)
+        .map(({ index }) => index);
+      const localIndex = currentStageIndexes.indexOf(state.currentDetailQuestionIndex);
+      if (localIndex > 0) {
+        state.currentDetailQuestionIndex = currentStageIndexes[localIndex - 1];
         syncMobileQuestion();
         return;
       }
       if (state.currentUnitIndex > 0) {
         saveCurrentUnitDetails();
         state.currentUnitIndex -= 1;
-        state.currentDetailQuestionIndex = pricingDetailQuestions(
-          state.unitDetails[state.currentUnitIndex],
+        const previousQuestions = pricingDetailQuestions(
+          state.unitDetails[state.currentUnitIndex] || emptyUnitDetails(),
           value("requestedService")
-        ).length - 1;
+        );
+        const previousStageIndexes = previousQuestions
+          .map((question, index) => ({ question, index }))
+          .filter(({ question }) => HOME_DETAIL_KEYS.has(question.key) === inHomeDetails)
+          .map(({ index }) => index);
+        state.currentDetailQuestionIndex = previousStageIndexes[previousStageIndexes.length - 1];
+        syncMobileQuestion();
+        return;
+      }
+      if (!inHomeDetails) {
+        state.currentUnitIndex = selectedUnitCount() - 1;
+        const previousQuestions = pricingDetailQuestions(
+          state.unitDetails[state.currentUnitIndex] || emptyUnitDetails(),
+          value("requestedService")
+        );
+        const homeIndexes = previousQuestions
+          .map((question, index) => ({ question, index }))
+          .filter(({ question }) => HOME_DETAIL_KEYS.has(question.key))
+          .map(({ index }) => index);
+        state.currentDetailQuestionIndex = homeIndexes[homeIndexes.length - 1];
         syncMobileQuestion();
         return;
       }
@@ -1650,6 +1777,7 @@
   };
   closeQuoteContact = () => {
     if (quoteContactOverlay) quoteContactOverlay.hidden = true;
+    syncStageProgress();
   };
   additionalCleaningNoticeContinue?.addEventListener("click", closeAdditionalCleaningNotice);
   quoteContactBack?.addEventListener("click", () => {
@@ -1666,17 +1794,11 @@
     questionFocusTarget(mobileQuestions()[mobileQuestionIndex])?.focus();
   });
   qualificationCompleteContinue?.addEventListener("click", enterServiceChoice);
-  ["cleaningCategory", "propertyOver2000", "waterDamage", "recentRenovation", "excessiveBelongings", "utilitiesAvailable", "propertyAccess", "clutter", "buildup", "hazards"].forEach((fieldName) => {
+  ["cleaningCategory", "propertyOver2000", "waterDamage", "recentRenovation", "utilitiesAvailable", "propertyAccess", "clutter", "buildup", "hazards"].forEach((fieldName) => {
     form.elements[fieldName]?.addEventListener("change", () => {
       const internalReason = qualificationReasonFromAnswers(eligibilityFromForm());
       if (internalReason) showQualificationRedirect(internalReason);
     });
-  });
-  form.elements.hazards?.addEventListener("change", () => {
-    const answers = eligibilityFromForm();
-    if (answers.hazards === "none" && !qualificationReasonFromAnswers(answers)) {
-      showQualificationComplete();
-    }
   });
   syncMobileQuestion();
 
@@ -1734,15 +1856,16 @@
     if (unitCountMode) {
       syncUnitCount();
       state.currentUnitIndex = 0;
-      setStatus(status, "");
+      setStatus(status, "✓ Service details completed. Now tell us about your home.", "success");
       enterQuoteDetails();
       return;
     }
     if (!quoteDetailsMode) {
-      const currentControl = questionControl(activeQuestions[mobileQuestionIndex]);
-      if (currentControl?.required && !currentControl.value) {
-        setStatus(status, "Please answer this question to continue.");
-        questionFocusTarget(activeQuestions[mobileQuestionIndex])?.focus();
+      const currentQuestion = activeQuestions[mobileQuestionIndex];
+      const invalidControl = questionControls(currentQuestion).find((control) => control.required && !control.value);
+      if (invalidControl) {
+        setStatus(status, "Please answer every part of this question to continue.");
+        questionControlFocusTarget(currentQuestion, invalidControl)?.focus();
         return;
       }
       if (mobileQuestionIndex === 0 && value("serviceIntent") === "organization") {
@@ -1781,16 +1904,52 @@
       standardDetailOptions?.querySelector("button")?.focus();
       return;
     }
-    if (state.currentDetailQuestionIndex < detailQuestions.length - 1) {
-      state.currentDetailQuestionIndex += 1;
+    const inHomeDetails = HOME_DETAIL_KEYS.has(detailQuestion.key);
+    const stageIndexes = detailQuestions
+      .map((question, index) => ({ question, index }))
+      .filter(({ question }) => HOME_DETAIL_KEYS.has(question.key) === inHomeDetails)
+      .map(({ index }) => index);
+    const localDetailIndex = stageIndexes.indexOf(state.currentDetailQuestionIndex);
+    if (localDetailIndex < stageIndexes.length - 1) {
+      state.currentDetailQuestionIndex = stageIndexes[localDetailIndex + 1];
       setStatus(status, "");
       syncMobileQuestion();
       return;
     }
-    if (state.currentUnitIndex < selectedUnitCount() - 1) {
+    if (inHomeDetails && state.currentUnitIndex < selectedUnitCount() - 1) {
+      const completedUnit = state.currentUnitIndex + 1;
       state.currentUnitIndex += 1;
-      state.currentDetailQuestionIndex = 0;
-      setStatus(status, "");
+      const nextUnitQuestions = pricingDetailQuestions(
+        state.unitDetails[state.currentUnitIndex] || emptyUnitDetails(),
+        value("requestedService")
+      );
+      state.currentDetailQuestionIndex = nextUnitQuestions.findIndex((question) => HOME_DETAIL_KEYS.has(question.key));
+      setStatus(status, `✓ Unit ${completedUnit} home details completed. Now tell us about Unit ${completedUnit + 1}.`, "success");
+      syncMobileQuestion();
+      wizardDialog?.scrollTo({ top: 0, behavior: "smooth" });
+      return;
+    }
+    if (inHomeDetails) {
+      state.currentUnitIndex = 0;
+      const firstUnitQuestions = pricingDetailQuestions(
+        state.unitDetails[0] || emptyUnitDetails(),
+        value("requestedService")
+      );
+      state.currentDetailQuestionIndex = firstUnitQuestions.findIndex((question) => !HOME_DETAIL_KEYS.has(question.key));
+      setStatus(status, "✓ Home details completed. Now choose any extras.", "success");
+      syncMobileQuestion();
+      wizardDialog?.scrollTo({ top: 0, behavior: "smooth" });
+      return;
+    }
+    if (state.currentUnitIndex < selectedUnitCount() - 1) {
+      const completedUnit = state.currentUnitIndex + 1;
+      state.currentUnitIndex += 1;
+      const nextUnitQuestions = pricingDetailQuestions(
+        state.unitDetails[state.currentUnitIndex] || emptyUnitDetails(),
+        value("requestedService")
+      );
+      state.currentDetailQuestionIndex = nextUnitQuestions.findIndex((question) => !HOME_DETAIL_KEYS.has(question.key));
+      setStatus(status, `✓ Unit ${completedUnit} completed. Now choose extras for Unit ${completedUnit + 1}.`, "success");
       syncMobileQuestion();
       wizardDialog?.scrollTo({ top: 0, behavior: "smooth" });
       return;
@@ -2184,12 +2343,10 @@
     window.setTimeout(persistBookingDraft, 0);
   });
   document.querySelector("[data-booking-cancel]")?.addEventListener("click", () => {
-    const confirmed = window.confirm(
-      "Cancel this booking and permanently clear all saved answers on this device?"
-    );
-    if (!confirmed) return;
-    clearBookingDraft();
-    window.location.replace("./book-now.html");
+    persistBookingDraft();
+    const saveCopy = document.querySelector("[data-booking-save-copy]");
+    if (saveCopy) saveCopy.textContent = "Progress saved";
+    window.setTimeout(closeWizard, 120);
   });
 
   if (savedQuoteToken) {
