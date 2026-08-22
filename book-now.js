@@ -12,12 +12,15 @@
   const zipForm = document.querySelector("[data-zip-form]");
   const zipInput = document.querySelector("#booking-zip-input");
   const zipStatus = document.querySelector("[data-zip-status]");
+  const zipSuccess = document.querySelector("[data-zip-success]");
+  const zipSubmit = zipForm?.querySelector("button[type='submit']");
   const bookingWizard = document.querySelector("[data-booking-wizard]");
   const wizardDialog = document.querySelector(".booking-wizard-dialog");
   const checkoutZip = form.elements.zip;
   const confirmedArea = document.querySelector("[data-area-confirmed]");
   const confirmedZip = document.querySelector("[data-confirmed-zip]");
   const serviceZipNote = document.querySelector("[data-service-zip-note]");
+  let zipSuccessTimer = 0;
 
   const instantPricingEntrySource = () => {
     const params = new URLSearchParams(window.location.search);
@@ -101,10 +104,16 @@
   };
   const openZipGate = () => {
     if (!zipGate) return;
+    window.clearTimeout(zipSuccessTimer);
+    zipSuccessTimer = 0;
     zipGate.hidden = false;
     document.body.classList.add("zip-gate-open");
     zipInput.value = checkoutZip.value;
     zipStatus.hidden = true;
+    if (zipSuccess) zipSuccess.hidden = true;
+    zipInput.disabled = false;
+    if (zipSubmit) zipSubmit.disabled = false;
+    zipForm?.removeAttribute("aria-busy");
     window.setTimeout(() => zipInput.focus(), 50);
   };
   const closeZipGate = () => {
@@ -133,6 +142,7 @@
   });
   zipForm?.addEventListener("submit", (event) => {
     event.preventDefault();
+    if (zipSuccess && !zipSuccess.hidden) return;
     const zip = serviceArea.normalize(zipInput.value);
     if (!serviceArea.isValid(zip)) {
       showZipError("Please enter a valid 5-digit ZIP code.");
@@ -144,14 +154,21 @@
       zipInput.focus();
       return;
     }
-    zipStatus.hidden = false;
-    zipStatus.dataset.type = "success";
-    zipStatus.textContent = "Great news—we serve your area. Opening the booking form…";
+    zipStatus.hidden = true;
+    zipInput.disabled = true;
+    if (zipSubmit) zipSubmit.disabled = true;
+    zipForm.setAttribute("aria-busy", "true");
+    if (zipSuccess) zipSuccess.hidden = false;
     applyServiceZip(zip);
-    window.setTimeout(() => {
+    zipSuccessTimer = window.setTimeout(() => {
+      zipSuccessTimer = 0;
+      if (zipSuccess) zipSuccess.hidden = true;
+      zipInput.disabled = false;
+      if (zipSubmit) zipSubmit.disabled = false;
+      zipForm.removeAttribute("aria-busy");
       closeZipGate();
       openWizard();
-    }, 450);
+    }, 5000);
   });
   document.querySelector("[data-change-zip]")?.addEventListener("click", () => {
     hideWizard();
