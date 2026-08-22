@@ -23,7 +23,7 @@
   <meta name="twitter:image" content="https://www.imancleaningservice.com/brand-card.png">
   <link rel="stylesheet" href="./design-system.css">
   <link rel="stylesheet" href="./site.css?v=20260725-book-now">
-  <link rel="stylesheet" href="./booking.css?v=20260727-calendar-scheduler">
+  <link rel="stylesheet" href="./booking.css?v=20260822-stage-progress">
   <script type="application/ld+json">
   {
     "@context": "https://schema.org",
@@ -79,18 +79,20 @@
               </a>
               <div class="booking-wizard-save-actions">
                 <span class="booking-wizard-save" data-booking-save-copy>Your progress is saved</span>
-                <button class="booking-cancel-draft" type="button" data-booking-cancel>Cancel &amp; clear</button>
+                <button class="booking-cancel-draft" type="button" data-booking-cancel>Save &amp; exit</button>
               </div>
               <button type="button" data-wizard-close aria-label="Close booking">×</button>
             </div>
             <h1 class="booking-visually-hidden" id="booking-wizard-title">Residential cleaning booking assistant</h1>
             <form class="booking-form" data-booking-form novalidate autocomplete="off">
-          <div class="booking-progress-note"><strong data-step-summary>Step 1 of 4</strong><span>About 2 minutes to book</span></div>
-          <div class="booking-progress" aria-label="Booking progress">
-            <span class="is-active" data-progress="1"><b>1</b><small>Your home</small></span>
-            <span data-progress="2"><b>2</b><small>Your price</small></span>
-            <span data-progress="3"><b>3</b><small>Your time</small></span>
-            <span data-progress="4"><b>4</b><small>Confirm</small></span>
+          <div class="booking-stage-progress" data-stage-progress role="progressbar" aria-label="Booking progress" aria-valuemin="1">
+            <div class="booking-stage-heading">
+              <strong data-stage-label>STEP 1 OF 7 · ELIGIBILITY</strong>
+              <span data-stage-description>Checking whether online pricing is available</span>
+            </div>
+            <div class="booking-stage-dots" data-stage-dots aria-hidden="true"></div>
+            <div class="booking-stage-meter" aria-hidden="true"><i data-stage-meter></i></div>
+            <small data-stage-time>About 4 minutes remaining</small>
           </div>
 
           <section class="booking-step" data-step="1">
@@ -99,15 +101,11 @@
                 <span>Residential cleaning · ZIP <strong data-confirmed-zip></strong></span>
                 <button type="button" data-change-zip>Change ZIP</button>
               </div>
-              <div class="booking-eligibility-intro" role="note">
-                <strong>Online pricing eligibility</strong>
-                <span>Your answers help us determine whether we can show you an instant price or if your service needs a custom quote.</span>
-              </div>
             </div>
             <div class="booking-mobile-question-nav">
               <button type="button" data-question-back>← Back</button>
               <div class="booking-question-progress">
-                <span data-question-count>Eligibility question 1 of 11</span>
+                <span data-question-count>Eligibility check · Question 1 of 8</span>
                 <div aria-hidden="true"><i data-question-progress></i></div>
               </div>
             </div>
@@ -124,10 +122,10 @@
               <input type="hidden" name="phone" value="">
               <div data-mobile-question>
                 <span class="booking-question-kicker">Choose your service type</span>
-                <h2>Do you need organization / decluttering or a cleaning service?</h2>
+                <h2>What type of help do you need?</h2>
                 <select name="serviceIntent" required>
                   <option value="">Select option</option>
-                  <option value="organization">Organization / Decluttering</option>
+                  <option value="organization">Organization &amp; Decluttering</option>
                   <option value="cleaning">Cleaning Service</option>
                 </select>
               </div>
@@ -168,17 +166,7 @@
                   <option value="no">No</option>
                 </select>
               </div>
-              <div data-mobile-question>
-                <span class="booking-question-kicker">About your space</span>
-                <h2>Are there excessive belongings or storage that may limit access?</h2>
-                <small class="booking-service-guide">Examples include large amounts of boxes, furniture, clothing, personal belongings, or stored items that significantly limit access to floors, countertops, bathrooms, or other cleaning areas.</small>
-                <select name="excessiveBelongings" required>
-                  <option value="">Select option</option>
-                  <option value="no">No</option>
-                  <option value="few">A few areas</option>
-                  <option value="most">Most rooms</option>
-                </select>
-              </div>
+              <input type="hidden" name="excessiveBelongings" value="no">
               <div data-mobile-question>
                 <span class="booking-question-kicker">Appointment essentials</span>
                 <h2>Will electricity and running water be available?</h2>
@@ -199,36 +187,40 @@
                   <option value="no">No</option>
                 </select>
               </div>
-              <div data-mobile-question>
-                <span class="booking-question-kicker">Current condition</span>
-                <h2>How much clutter is present?</h2>
-                <select name="clutter" required>
-                  <option value="">Select option</option>
-                  <option value="low">Little or no clutter</option>
-                  <option value="moderate">Some items need to be worked around</option>
-                  <option value="heavy">Heavy clutter limits safe movement</option>
-                </select>
-              </div>
-              <div data-mobile-question>
-                <span class="booking-question-kicker">Current condition</span>
-                <h2>Is there heavy buildup?</h2>
-                <select name="buildup" required>
-                  <option value="">Select option</option>
-                  <option value="none">No unusual or heavy buildup</option>
-                  <option value="some">Some buildup in some areas</option>
-                  <option value="heavy">Yes — heavy grease, soap scum, dust, or residue</option>
-                </select>
-              </div>
-              <div data-mobile-question>
-                <span class="booking-question-kicker">Final safety check</span>
-                <h2>Are there any safety concerns?</h2>
-                <select name="hazards" required>
-                  <option value="">Select option</option>
-                  <option value="none">No mold, pests, or human/animal waste</option>
-                  <option value="mold">Possible mold</option>
-                  <option value="pests">Active pest infestation</option>
-                  <option value="waste">Human or significant animal waste</option>
-                </select>
+              <div data-mobile-question data-condition-question>
+                <span class="booking-question-kicker">Property condition</span>
+                <h2>Tell us about the property’s current condition</h2>
+                <div class="booking-condition-questions">
+                  <div class="booking-condition-question">
+                    <h3>How much do belongings or clutter limit access?</h3>
+                    <select name="clutter" required>
+                      <option value="">Select option</option>
+                      <option value="low">Little or no clutter</option>
+                      <option value="moderate">Some items need to be worked around</option>
+                      <option value="several">Several areas have limited access</option>
+                      <option value="heavy">Heavy clutter prevents safe movement</option>
+                    </select>
+                  </div>
+                  <div class="booking-condition-question">
+                    <h3>Is there heavy buildup?</h3>
+                    <select name="buildup" required>
+                      <option value="">Select option</option>
+                      <option value="none">No unusual or heavy buildup</option>
+                      <option value="some">Some buildup in some areas</option>
+                      <option value="heavy">Yes — heavy grease, soap scum, dust, or residue</option>
+                    </select>
+                  </div>
+                  <div class="booking-condition-question">
+                    <h3>Are there any safety concerns?</h3>
+                    <select name="hazards" required>
+                      <option value="">Select option</option>
+                      <option value="none">No mold, pests, or human/animal waste</option>
+                      <option value="mold">Possible mold</option>
+                      <option value="pests">Active pest infestation</option>
+                      <option value="waste">Human or significant animal waste</option>
+                    </select>
+                  </div>
+                </div>
               </div>
               </div>
               <div class="booking-organization-form" data-organization-form hidden>
@@ -473,13 +465,13 @@
           <div class="booking-redirect-overlay" data-qualification-redirect hidden>
             <div class="booking-redirect-backdrop" aria-hidden="true"></div>
             <section class="booking-redirect-dialog" role="alertdialog" aria-modal="true" aria-labelledby="booking-redirect-title" aria-describedby="booking-redirect-description">
-              <span class="booking-redirect-kicker">Custom quote needed</span>
-              <h2 id="booking-redirect-title" data-redirect-title></h2>
-              <p id="booking-redirect-description" data-redirect-description></p>
-              <p class="booking-redirect-note">You will be redirected to the custom quote page, and your answers will be carried with you.</p>
+              <span class="booking-redirect-kicker">Online pricing unavailable</span>
+              <h2 id="booking-redirect-title" data-redirect-title>This service needs a custom quote</h2>
+              <p id="booking-redirect-description" data-redirect-description>Based on your answers, we need a few additional details to provide an accurate price. Your information has been saved.</p>
+              <p class="booking-redirect-note" data-redirect-reason></p>
               <div class="booking-redirect-actions">
                 <button class="booking-redirect-back" type="button" data-redirect-back>Review my answer</button>
-                <button class="booking-redirect-continue" type="button" data-redirect-continue>Continue to Custom Quote →</button>
+                <button class="booking-redirect-continue" type="button" data-redirect-continue>Request a custom quote →</button>
               </div>
             </section>
           </div>
@@ -499,6 +491,15 @@
           <div class="booking-redirect-overlay" data-quote-contact hidden>
             <div class="booking-redirect-backdrop" aria-hidden="true"></div>
             <section class="booking-redirect-dialog booking-quote-contact-dialog" role="dialog" aria-modal="true" aria-labelledby="quote-contact-title" aria-describedby="quote-contact-description">
+              <div class="booking-stage-progress booking-stage-progress-overlay" data-stage-progress role="progressbar" aria-label="Booking progress" aria-valuemin="1">
+                <div class="booking-stage-heading">
+                  <strong data-stage-label></strong>
+                  <span data-stage-description></span>
+                </div>
+                <div class="booking-stage-dots" data-stage-dots aria-hidden="true"></div>
+                <div class="booking-stage-meter" aria-hidden="true"><i data-stage-meter></i></div>
+                <small data-stage-time></small>
+              </div>
               <span class="booking-redirect-kicker">Last step</span>
               <h2 id="quote-contact-title">Your personalized quote is ready</h2>
               <p id="quote-contact-description">Enter your details to view it now. We’ll also send you a copy by email and text.</p>
@@ -565,6 +566,6 @@
         </div>
   </main>
   <script src="./booking-service-area.js?v=20260725-zip-gate"></script>
-    <script src="./book-now.js?v=20260809-deposit-hold"></script>
+    <script src="./book-now.js?v=20260822-stage-progress"></script>
 </body>
 </html>

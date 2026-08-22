@@ -1208,11 +1208,11 @@
             },
             clutter: {
               label: "Clutter",
-              values: { low: "Little or no clutter", moderate: "Some items need to be worked around", heavy: "Heavy clutter limits safe movement" }
+              values: { low: "Little or no clutter", moderate: "Some items need to be worked around", several: "Several areas have limited access", heavy: "Heavy clutter prevents safe movement" }
             },
             buildup: {
               label: "Heavy buildup",
-              values: { none: "No unusual or heavy buildup", heavy: "Heavy grease, soap scum, dust, or residue" }
+              values: { none: "No unusual or heavy buildup", some: "Some buildup in some areas", heavy: "Heavy grease, soap scum, dust, or residue" }
             },
             hazards: {
               label: "Safety concerns",
@@ -1299,11 +1299,11 @@
               }
             });
             if (clutter) {
-              const clutterMap = { low: "No clutter", moderate: "Some clutter", heavy: "Heavy clutter" };
+              const clutterMap = { low: "No clutter", moderate: "Some clutter", several: "Heavy clutter", heavy: "Heavy clutter" };
               if (clutterMap[bookingAnswers.clutter]) clutter.value = clutterMap[bookingAnswers.clutter];
             }
             if (buildup) {
-              const buildupMap = { none: "No major buildup", heavy: "Heavy grease, soap scum, or mold" };
+              const buildupMap = { none: "No major buildup", some: "Some buildup in a few areas", heavy: "Heavy grease, soap scum, or mold" };
               if (buildupMap[bookingAnswers.buildup]) buildup.value = buildupMap[bookingAnswers.buildup];
             }
             const hazardMap = {
