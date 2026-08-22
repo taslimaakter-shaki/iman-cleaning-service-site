@@ -2560,7 +2560,7 @@ fieldset.booking-field-wide legend {
 
 .booking-wizard-dialog[data-current-step="1"] .booking-mobile-question-nav {
   display: grid;
-  grid-template-columns: auto minmax(160px, 1fr);
+  grid-template-columns: 1fr;
   gap: 18px;
   align-items: end;
   margin: 0 0 24px;
