@@ -2507,9 +2507,9 @@ fieldset.booking-field-wide legend {
 .booking-stage-nav button {
   display: grid;
   justify-items: center;
-  gap: 5px;
   min-width: 76px;
-  padding: 8px 5px;
+  min-height: 54px;
+  padding: 10px 5px;
   color: var(--teal-800);
   background: #fff;
   border: 1px solid var(--teal-100);
@@ -2518,19 +2518,9 @@ fieldset.booking-field-wide legend {
   cursor: pointer;
 }
 
-.booking-stage-nav b {
-  display: grid;
-  width: 24px;
-  height: 24px;
-  place-items: center;
-  color: #fff;
-  background: var(--brand);
-  border-radius: 50%;
-  font-size: .65rem;
-}
-
 .booking-stage-nav span {
-  font-size: .62rem;
+  align-self: center;
+  font-size: .66rem;
   font-weight: 800;
   line-height: 1.15;
   text-align: center;
@@ -2553,11 +2543,6 @@ fieldset.booking-field-wide legend {
   background: #f8faf9;
   cursor: not-allowed;
   opacity: .58;
-}
-
-.booking-stage-nav button:disabled b {
-  color: var(--text-muted);
-  background: var(--teal-50);
 }
 
 .booking-stage-progress > small {
