@@ -204,7 +204,7 @@
   const allMobileQuestions = Array.from(form.querySelectorAll("[data-mobile-question]"));
   const mobileQuestionNav = form.querySelector(".booking-mobile-question-nav");
   const mobileQuestionCount = form.querySelector("[data-question-count]");
-  const mobileQuestionProgress = form.querySelector("[data-question-progress]");
+  const mobileQuestionTime = form.querySelector("[data-question-time]");
   const eligibilityButtonLabel = form.querySelector("[data-eligibility-button-label]");
   const qualificationRedirectOverlay = document.querySelector("[data-qualification-redirect]");
   const qualificationRedirectTitle = document.querySelector("[data-redirect-title]");
@@ -815,30 +815,23 @@
     "additionalRooms"
   ]);
   const CLEANING_STAGES = [
-    { label: "Eligibility", description: "Checking whether online pricing is available", time: "About 4 minutes remaining" },
-    { label: "Service", description: "Choose your cleaning service and property", time: "About 3 minutes remaining" },
-    { label: "Home details", description: "Tell us about the rooms in each unit", time: "About 3 minutes remaining" },
-    { label: "Extras", description: "Choose optional and included cleaning details", time: "About 2 minutes remaining" },
-    { label: "Your quote", description: "Review your personalized cleaning price", time: "About 2 minutes remaining" },
-    { label: "Appointment", description: "Choose a time and provide the service address", time: "About 1 minute remaining" },
-    { label: "Review & book", description: "Confirm your details and secure the appointment", time: "Less than 1 minute remaining" }
-  ];
-  const ORGANIZATION_STAGES = [
-    { label: "Service", description: "Organization and decluttering selected", time: "About 3 minutes remaining" },
-    { label: "Hours", description: "Choose how much organizing help you need", time: "About 2 minutes remaining" },
-    { label: "Contact", description: "Enter your details to receive your price", time: "About 2 minutes remaining" },
-    { label: "Appointment", description: "Choose a time and provide the service address", time: "About 1 minute remaining" },
-    { label: "Review & book", description: "Confirm your details and secure the appointment", time: "Less than 1 minute remaining" }
+    { label: "Eligibility", start: 5, end: 25 },
+    { label: "Service", start: 25, end: 35 },
+    { label: "Home details", start: 35, end: 55 },
+    { label: "Extras", start: 55, end: 70 },
+    { label: "Your quote", start: 70, end: 80 },
+    { label: "Appointment", start: 80, end: 93 },
+    { label: "Review & book", start: 93, end: 99 }
   ];
   const isOrganizationPath = () => (
     organizationMode || state.serviceKey === "organization" || value("serviceIntent") === "organization"
   );
   const currentStageNumber = () => {
     const organizationPath = isOrganizationPath();
-    if (quoteContactOverlay && !quoteContactOverlay.hidden) return organizationPath ? 3 : 5;
-    if (state.step === 2) return organizationPath ? 3 : 5;
-    if (state.step === 3) return organizationPath ? 4 : 6;
-    if (state.step === 4) return organizationPath ? 5 : 7;
+    if (quoteContactOverlay && !quoteContactOverlay.hidden) return 5;
+    if (state.step === 2) return 5;
+    if (state.step === 3) return 6;
+    if (state.step === 4) return 7;
     if (organizationPath) return organizationMode ? 2 : 1;
     if (quoteDetailsMode) {
       const current = state.unitDetails[state.currentUnitIndex] || emptyUnitDetails();
@@ -848,34 +841,80 @@
     if (serviceChoiceMode || propertyTypeMode || unitCountMode) return 2;
     return 1;
   };
+  let lastProgressStage = 0;
+  let highestProgressInStage = 0;
+  const answeredEligibilityQuestions = () => mobileQuestions().filter((question) => {
+    const requiredControls = questionControls(question).filter((control) => control.required);
+    return requiredControls.length && requiredControls.every((control) => Boolean(control.value));
+  }).length;
+  const detailStageFraction = (homeDetails) => {
+    const count = selectedUnitCount();
+    let total = 0;
+    let completed = 0;
+    for (let unitIndex = 0; unitIndex < count; unitIndex += 1) {
+      const questions = pricingDetailQuestions(
+        state.unitDetails[unitIndex] || emptyUnitDetails(),
+        value("requestedService")
+      );
+      const stageQuestions = questions.filter((question) => HOME_DETAIL_KEYS.has(question.key) === homeDetails);
+      total += stageQuestions.length;
+      if (unitIndex < state.currentUnitIndex) {
+        completed += stageQuestions.length;
+      } else if (unitIndex === state.currentUnitIndex) {
+        const currentKey = questions[state.currentDetailQuestionIndex]?.key;
+        const localIndex = stageQuestions.findIndex((question) => question.key === currentKey);
+        completed += Math.max(0, localIndex + 1);
+      }
+    }
+    return total ? completed / total : 0;
+  };
+  const rawProgressPercent = (stageNumber) => {
+    if (stageNumber === 1) {
+      return 8 + (answeredEligibilityQuestions() / Math.max(1, mobileQuestions().length)) * 17;
+    }
+    if (stageNumber === 2) {
+      if (organizationMode) return 30;
+      if (unitCountMode) return 35;
+      if (propertyTypeMode) return 32;
+      return 28;
+    }
+    if (stageNumber === 3) return 35 + detailStageFraction(true) * 20;
+    if (stageNumber === 4) return 55 + detailStageFraction(false) * 15;
+    if (stageNumber === 5) {
+      if (quoteContactOverlay && !quoteContactOverlay.hidden) {
+        const required = Array.from(quoteContactForm?.querySelectorAll("[required]") || []);
+        const completed = required.filter((control) => control.type === "checkbox" ? control.checked : Boolean(control.value)).length;
+        return 70 + (completed / Math.max(1, required.length)) * 7;
+      }
+      return 78;
+    }
+    if (stageNumber === 6) return value("schedule") ? 92 : 86;
+    const confirmations = ["completionAgreement", "conditionAgreement", "termsAgreement"]
+      .filter((name) => form.elements[name]?.checked).length;
+    return 96 + confirmations;
+  };
   const syncStageProgress = () => {
-    const stages = isOrganizationPath() ? ORGANIZATION_STAGES : CLEANING_STAGES;
+    const stages = CLEANING_STAGES;
     const stageNumber = Math.min(stages.length, Math.max(1, currentStageNumber()));
     const stage = stages[stageNumber - 1];
+    const rawPercent = Math.min(99, Math.max(stage.start, Math.round(rawProgressPercent(stageNumber))));
+    if (lastProgressStage !== stageNumber) {
+      lastProgressStage = stageNumber;
+      highestProgressInStage = rawPercent;
+    } else {
+      highestProgressInStage = Math.max(highestProgressInStage, rawPercent);
+    }
+    const percent = highestProgressInStage;
     document.querySelectorAll("[data-stage-progress]").forEach((progress) => {
       const label = progress.querySelector("[data-stage-label]");
-      const description = progress.querySelector("[data-stage-description]");
-      const time = progress.querySelector("[data-stage-time]");
+      const percentLabel = progress.querySelector("[data-stage-percent]");
       const meter = progress.querySelector("[data-stage-meter]");
-      const dots = progress.querySelector("[data-stage-dots]");
-      if (label) label.textContent = `STEP ${stageNumber} OF ${stages.length} · ${stage.label.toUpperCase()}`;
-      if (description) description.textContent = stage.description;
-      if (time) time.textContent = stage.time;
-      if (meter) meter.style.width = `${(stageNumber / stages.length) * 100}%`;
-      progress.setAttribute("aria-valuenow", String(stageNumber));
-      progress.setAttribute("aria-valuemax", String(stages.length));
-      progress.setAttribute("aria-valuetext", `Step ${stageNumber} of ${stages.length}: ${stage.label}`);
-      if (dots) {
-        dots.replaceChildren();
-        stages.forEach((item, index) => {
-          const dot = document.createElement("span");
-          dot.className = index + 1 < stageNumber
-            ? "is-complete"
-            : index + 1 === stageNumber ? "is-current" : "";
-          dot.title = item.label;
-          dots.append(dot);
-        });
-      }
+      if (label) label.textContent = `Step ${stageNumber} of ${stages.length} · ${stage.label}`;
+      if (percentLabel) percentLabel.textContent = `${percent}% complete`;
+      if (meter) meter.style.width = `${percent}%`;
+      progress.setAttribute("aria-valuenow", String(percent));
+      progress.setAttribute("aria-valuemax", "100");
+      progress.setAttribute("aria-valuetext", `${percent}% complete. Step ${stageNumber} of ${stages.length}: ${stage.label}`);
     });
   };
   const selectedUnitCount = () => Math.min(10, Math.max(1, Number(value("unitCount")) || 1));
@@ -962,6 +1001,10 @@
       }
       return;
   };
+  const setQuestionMeta = (text, time) => {
+    if (mobileQuestionCount) mobileQuestionCount.textContent = text;
+    if (mobileQuestionTime) mobileQuestionTime.textContent = time;
+  };
   const syncMobileQuestion = () => {
     const activeQuestions = mobileQuestions();
     mobileQuestionIndex = Math.min(mobileQuestionIndex, Math.max(0, activeQuestions.length - 1));
@@ -974,8 +1017,7 @@
       if (quoteDetailsForm) quoteDetailsForm.hidden = true;
       if (organizationForm) organizationForm.hidden = false;
       if (mobileQuestionNav) mobileQuestionNav.hidden = false;
-      if (mobileQuestionCount) mobileQuestionCount.textContent = "Hours · Question 1 of 1";
-      if (mobileQuestionProgress) mobileQuestionProgress.style.width = "100%";
+      setQuestionMeta("Question 1 of 1 · Next: Your quote", "About 3 min left");
       if (eligibilityButtonLabel) eligibilityButtonLabel.textContent = "See my price";
       return;
     }
@@ -999,13 +1041,12 @@
         : detailQuestions.filter((question) => !HOME_DETAIL_KEYS.has(question.key));
       const localQuestionIndex = Math.max(0, stageKeys.findIndex((question) => question.key === currentDetail?.key));
       const stageName = HOME_DETAIL_KEYS.has(currentDetail?.key) ? "Home details" : "Extras";
-      if (mobileQuestionCount) {
-        const unitPrefix = count > 1 ? `Unit ${state.currentUnitIndex + 1} of ${count} · ` : "";
-        mobileQuestionCount.textContent = `${unitPrefix}${stageName} · Question ${localQuestionIndex + 1} of ${stageKeys.length}`;
-      }
-      if (mobileQuestionProgress) {
-        mobileQuestionProgress.style.width = `${((localQuestionIndex + 1) / stageKeys.length) * 100}%`;
-      }
+      const unitPrefix = count > 1 ? `Unit ${state.currentUnitIndex + 1} of ${count} · ` : "";
+      const nextStage = stageName === "Home details" ? "Extras" : "Your quote";
+      setQuestionMeta(
+        `${unitPrefix}Question ${localQuestionIndex + 1} of ${stageKeys.length} · Next: ${nextStage}`,
+        stageName === "Home details" ? "About 3 min left" : "About 2 min left"
+      );
       if (eligibilityButtonLabel) {
         const isLastQuestion = state.currentDetailQuestionIndex >= detailQuestions.length - 1;
         eligibilityButtonLabel.textContent = !isLastQuestion
@@ -1023,8 +1064,7 @@
       if (unitCountForm) unitCountForm.hidden = false;
       syncUnitCount();
       if (mobileQuestionNav) mobileQuestionNav.hidden = false;
-      if (mobileQuestionCount) mobileQuestionCount.textContent = "Service · Question 3 of 3";
-      if (mobileQuestionProgress) mobileQuestionProgress.style.width = "100%";
+      setQuestionMeta("Question 3 of 3 · Next: Home details", "About 4 min left");
       if (eligibilityButtonLabel) eligibilityButtonLabel.textContent = "Continue";
       return;
     }
@@ -1037,8 +1077,7 @@
       if (propertyTypeForm) propertyTypeForm.hidden = false;
       syncPropertyTypeChoice();
       if (mobileQuestionNav) mobileQuestionNav.hidden = false;
-      if (mobileQuestionCount) mobileQuestionCount.textContent = "Service · Question 2 of 3";
-      if (mobileQuestionProgress) mobileQuestionProgress.style.width = "100%";
+      setQuestionMeta("Question 2 of 3 · Next: Home details", "About 4 min left");
       if (eligibilityButtonLabel) eligibilityButtonLabel.textContent = "Continue";
       return;
     }
@@ -1051,8 +1090,7 @@
       if (serviceChoiceForm) serviceChoiceForm.hidden = false;
       syncServiceChoice();
       if (mobileQuestionNav) mobileQuestionNav.hidden = false;
-      if (mobileQuestionCount) mobileQuestionCount.textContent = "Service · Question 1 of 3";
-      if (mobileQuestionProgress) mobileQuestionProgress.style.width = "100%";
+      setQuestionMeta("Question 1 of 3 · Next: Home details", "About 4 min left");
       if (eligibilityButtonLabel) eligibilityButtonLabel.textContent = "Continue";
       return;
     }
@@ -1073,10 +1111,10 @@
       syncAnswerChoices(question);
     });
     if (mobileQuestionNav) mobileQuestionNav.hidden = false;
-    if (mobileQuestionCount) mobileQuestionCount.textContent = `Eligibility check · Question ${mobileQuestionIndex + 1} of ${activeQuestions.length}`;
-    if (mobileQuestionProgress) {
-      mobileQuestionProgress.style.width = `${((mobileQuestionIndex + 1) / activeQuestions.length) * 100}%`;
-    }
+    setQuestionMeta(
+      `Question ${mobileQuestionIndex + 1} of ${activeQuestions.length} · Next: Service`,
+      "About 5 min left"
+    );
     if (eligibilityButtonLabel) {
       eligibilityButtonLabel.textContent = "Continue";
     }
@@ -1650,6 +1688,7 @@
       form.elements.requestedService.value = selectedService;
       form.elements.propertyStatus.value = selectedService === "move" ? "moving" : "occupied";
       syncServiceChoice();
+      syncStageProgress();
       setStatus(document.querySelector("[data-eligibility-status]"), "");
     });
   });
@@ -1659,16 +1698,19 @@
       const selectedPropertyType = button.dataset.bookingPropertyType;
       form.elements.propertyType.value = selectedPropertyType;
       syncPropertyTypeChoice();
+      syncStageProgress();
       setStatus(document.querySelector("[data-eligibility-status]"), "");
     });
   });
   unitCountDecrease?.addEventListener("click", () => {
     form.elements.unitCount.value = String(selectedUnitCount() - 1);
     syncUnitCount();
+    syncStageProgress();
   });
   unitCountIncrease?.addEventListener("click", () => {
     form.elements.unitCount.value = String(selectedUnitCount() + 1);
     syncUnitCount();
+    syncStageProgress();
   });
   syncPropertyTypeChoice();
   syncUnitCount();
@@ -2336,8 +2378,12 @@
 
   form.addEventListener("input", persistBookingDraft);
   form.addEventListener("change", persistBookingDraft);
+  form.addEventListener("input", syncStageProgress);
+  form.addEventListener("change", syncStageProgress);
   quoteContactForm?.addEventListener("input", persistBookingDraft);
   quoteContactForm?.addEventListener("change", persistBookingDraft);
+  quoteContactForm?.addEventListener("input", syncStageProgress);
+  quoteContactForm?.addEventListener("change", syncStageProgress);
   document.addEventListener("click", (event) => {
     if (event.target.closest("[data-booking-cancel]")) return;
     window.setTimeout(persistBookingDraft, 0);

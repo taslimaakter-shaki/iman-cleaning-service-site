@@ -23,7 +23,7 @@
   <meta name="twitter:image" content="https://www.imancleaningservice.com/brand-card.png">
   <link rel="stylesheet" href="./design-system.css">
   <link rel="stylesheet" href="./site.css?v=20260725-book-now">
-  <link rel="stylesheet" href="./booking.css?v=20260822-stage-progress">
+  <link rel="stylesheet" href="./booking.css?v=20260822-weighted-progress">
   <script type="application/ld+json">
   {
     "@context": "https://schema.org",
@@ -85,14 +85,13 @@
             </div>
             <h1 class="booking-visually-hidden" id="booking-wizard-title">Residential cleaning booking assistant</h1>
             <form class="booking-form" data-booking-form novalidate autocomplete="off">
-          <div class="booking-stage-progress" data-stage-progress role="progressbar" aria-label="Booking progress" aria-valuemin="1">
+          <div class="booking-stage-progress" data-stage-progress role="progressbar" aria-label="Booking progress" aria-valuemin="0">
+            <strong class="booking-stage-benefit">Get your exact cleaning price</strong>
             <div class="booking-stage-heading">
-              <strong data-stage-label>STEP 1 OF 7 · ELIGIBILITY</strong>
-              <span data-stage-description>Checking whether online pricing is available</span>
+              <strong data-stage-label>Step 1 of 7 · Eligibility</strong>
+              <span data-stage-percent>8% complete</span>
             </div>
-            <div class="booking-stage-dots" data-stage-dots aria-hidden="true"></div>
             <div class="booking-stage-meter" aria-hidden="true"><i data-stage-meter></i></div>
-            <small data-stage-time>About 4 minutes remaining</small>
           </div>
 
           <section class="booking-step" data-step="1">
@@ -105,10 +104,11 @@
             <div class="booking-mobile-question-nav">
               <button type="button" data-question-back>← Back</button>
               <div class="booking-question-progress">
-                <span data-question-count>Eligibility check · Question 1 of 8</span>
-                <div aria-hidden="true"><i data-question-progress></i></div>
+                <span data-question-count>Question 1 of 8 · Next: Service</span>
+                <small data-question-time>About 5 min left</small>
               </div>
             </div>
+            <p class="booking-question-saved">✓ Your answers are automatically saved</p>
 
             <div class="booking-question-panel">
               <div class="booking-fields" data-mobile-questions>
@@ -491,16 +491,15 @@
           <div class="booking-redirect-overlay" data-quote-contact hidden>
             <div class="booking-redirect-backdrop" aria-hidden="true"></div>
             <section class="booking-redirect-dialog booking-quote-contact-dialog" role="dialog" aria-modal="true" aria-labelledby="quote-contact-title" aria-describedby="quote-contact-description">
-              <div class="booking-stage-progress booking-stage-progress-overlay" data-stage-progress role="progressbar" aria-label="Booking progress" aria-valuemin="1">
+              <div class="booking-stage-progress booking-stage-progress-overlay" data-stage-progress role="progressbar" aria-label="Booking progress" aria-valuemin="0">
+                <strong class="booking-stage-benefit">Get your exact cleaning price</strong>
                 <div class="booking-stage-heading">
                   <strong data-stage-label></strong>
-                  <span data-stage-description></span>
+                  <span data-stage-percent></span>
                 </div>
-                <div class="booking-stage-dots" data-stage-dots aria-hidden="true"></div>
                 <div class="booking-stage-meter" aria-hidden="true"><i data-stage-meter></i></div>
-                <small data-stage-time></small>
               </div>
-              <span class="booking-redirect-kicker">Last step</span>
+              <span class="booking-redirect-kicker">Your quote</span>
               <h2 id="quote-contact-title">Your personalized quote is ready</h2>
               <p id="quote-contact-description">Enter your details to view it now. We’ll also send you a copy by email and text.</p>
               <form data-quote-contact-form novalidate autocomplete="off">
@@ -566,6 +565,6 @@
         </div>
   </main>
   <script src="./booking-service-area.js?v=20260725-zip-gate"></script>
-    <script src="./book-now.js?v=20260822-stage-progress"></script>
+    <script src="./book-now.js?v=20260822-weighted-progress"></script>
 </body>
 </html>
