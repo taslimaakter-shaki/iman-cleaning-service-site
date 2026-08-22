@@ -2564,11 +2564,11 @@
     if (event.target.closest("[data-booking-cancel]")) return;
     window.setTimeout(persistBookingDraft, 0);
   });
-  document.querySelector("[data-booking-cancel]")?.addEventListener("click", () => {
-    persistBookingDraft();
-    const saveCopy = document.querySelector("[data-booking-save-copy]");
-    if (saveCopy) saveCopy.textContent = "Progress saved";
-    window.setTimeout(closeWizard, 120);
+  document.querySelectorAll("[data-booking-cancel]").forEach((button) => {
+    button.addEventListener("click", () => {
+      persistBookingDraft();
+      window.setTimeout(closeWizard, 120);
+    });
   });
 
   if (savedQuoteToken) {

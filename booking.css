@@ -2204,6 +2204,7 @@ fieldset.booking-field-wide legend {
   font: inherit;
   font-size: 1.35rem;
   cursor: pointer;
+  margin-left: auto;
 }
 
 .booking-wizard-dialog .booking-form {
@@ -3385,6 +3386,22 @@ fieldset.booking-field-wide legend {
   width: min(100%, 420px);
   min-height: 56px;
   margin: 22px auto 0;
+}
+
+.booking-wizard-dialog[data-current-step="1"] .booking-question-actions {
+  flex-wrap: nowrap;
+  align-items: center;
+  justify-content: center;
+  margin-top: 22px;
+}
+
+.booking-wizard-dialog[data-current-step="1"] .booking-question-actions .booking-next {
+  flex: 1 1 420px;
+  margin: 0;
+}
+
+.booking-save-exit {
+  white-space: nowrap;
 }
 
 .booking-wizard-dialog[data-current-step="1"] .booking-help {

@@ -23,7 +23,7 @@
   <meta name="twitter:image" content="https://www.imancleaningservice.com/brand-card.png">
   <link rel="stylesheet" href="./design-system.css">
   <link rel="stylesheet" href="./site.css?v=20260725-book-now">
-  <link rel="stylesheet" href="./booking.css?v=20260822-edit-stages">
+  <link rel="stylesheet" href="./booking.css?v=20260822-save-by-continue">
   <script type="application/ld+json">
   {
     "@context": "https://schema.org",
@@ -75,9 +75,6 @@
           <div class="booking-wizard-backdrop" data-wizard-close aria-hidden="true"></div>
           <section class="booking-wizard-dialog" data-current-step="1" role="dialog" aria-modal="true" aria-labelledby="booking-wizard-title">
             <div class="booking-wizard-toolbar">
-              <div class="booking-wizard-save-actions">
-                <button class="booking-cancel-draft" type="button" data-booking-cancel>Save &amp; exit</button>
-              </div>
               <button type="button" data-wizard-close aria-label="Close booking">×</button>
             </div>
             <h1 class="booking-visually-hidden" id="booking-wizard-title">Residential cleaning booking assistant</h1>
@@ -281,7 +278,10 @@
               </div>
             </div>
             <div class="booking-status" data-eligibility-status aria-live="polite" hidden></div>
-            <button class="booking-primary booking-next" type="button" data-check-eligibility><span data-eligibility-button-label>Continue</span> <span aria-hidden="true">→</span></button>
+            <div class="booking-actions booking-question-actions">
+              <button class="booking-secondary booking-save-exit" type="button" data-booking-cancel>Save &amp; exit</button>
+              <button class="booking-primary booking-next" type="button" data-check-eligibility><span data-eligibility-button-label>Continue</span> <span aria-hidden="true">→</span></button>
+            </div>
             <p class="booking-help">Not sure about an answer? <a href="tel:9298034053">Call 929-803-4053</a> and we’ll help.</p>
           </section>
 
@@ -316,6 +316,7 @@
             </div>
             <div class="booking-actions">
               <button class="booking-secondary" type="button" data-back="1">Change answers</button>
+              <button class="booking-secondary booking-save-exit" type="button" data-booking-cancel>Save &amp; exit</button>
               <button class="booking-primary" type="button" data-load-availability>Choose my appointment →</button>
             </div>
           </section>
@@ -387,6 +388,7 @@
             </label>
             <div class="booking-actions">
               <button class="booking-secondary" type="button" data-back="2">Back</button>
+              <button class="booking-secondary booking-save-exit" type="button" data-booking-cancel>Save &amp; exit</button>
               <button class="booking-primary" type="button" data-continue-contact>Secure my booking →</button>
             </div>
           </section>
@@ -436,6 +438,7 @@
             <div class="booking-status" data-checkout-status aria-live="polite" hidden></div>
             <div class="booking-actions">
               <button class="booking-secondary" type="button" data-back="3">Back</button>
+              <button class="booking-secondary booking-save-exit" type="button" data-booking-cancel>Save &amp; exit</button>
               <button class="booking-primary" type="submit" data-pay-button>Pay 25% deposit &amp; confirm booking</button>
             </div>
           </section>
@@ -517,6 +520,7 @@
                 <div class="booking-status" data-quote-contact-status aria-live="polite" hidden></div>
                 <div class="booking-redirect-actions">
                   <button class="booking-redirect-back" type="button" data-quote-contact-back>Review answers</button>
+                  <button class="booking-redirect-back booking-save-exit" type="button" data-booking-cancel>Save &amp; exit</button>
                   <button class="booking-redirect-continue" type="submit" data-quote-contact-submit>View my quote →</button>
                 </div>
               </form>
@@ -565,6 +569,6 @@
         </div>
   </main>
   <script src="./booking-service-area.js?v=20260725-zip-gate"></script>
-    <script src="./book-now.js?v=20260822-edit-stages"></script>
+    <script src="./book-now.js?v=20260822-save-by-continue"></script>
 </body>
 </html>
