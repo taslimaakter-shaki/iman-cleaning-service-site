@@ -23,7 +23,7 @@
   <meta name="twitter:image" content="https://www.imancleaningservice.com/brand-card.png">
   <link rel="stylesheet" href="./design-system.css">
   <link rel="stylesheet" href="./site.css?v=20260725-book-now">
-  <link rel="stylesheet" href="./booking.css?v=20260822-zip-success">
+  <link rel="stylesheet" href="./booking.css?v=20260822-simplified-questions">
   <script type="application/ld+json">
   {
     "@context": "https://schema.org",
@@ -75,12 +75,7 @@
           <div class="booking-wizard-backdrop" data-wizard-close aria-hidden="true"></div>
           <section class="booking-wizard-dialog" data-current-step="1" role="dialog" aria-modal="true" aria-labelledby="booking-wizard-title">
             <div class="booking-wizard-toolbar">
-              <a class="booking-wizard-brand" href="./index.html" aria-label="Iman Cleaning Service home">
-                <img src="./iman-logo-icon.png" alt="" width="38" height="38">
-                <span>Secure residential booking</span>
-              </a>
               <div class="booking-wizard-save-actions">
-                <span class="booking-wizard-save" data-booking-save-copy>Your progress is saved</span>
                 <button class="booking-cancel-draft" type="button" data-booking-cancel>Save &amp; exit</button>
               </div>
               <button type="button" data-wizard-close aria-label="Close booking">×</button>
@@ -88,7 +83,6 @@
             <h1 class="booking-visually-hidden" id="booking-wizard-title">Residential cleaning booking assistant</h1>
             <form class="booking-form" data-booking-form novalidate autocomplete="off">
           <div class="booking-stage-progress" data-stage-progress role="progressbar" aria-label="Booking progress" aria-valuemin="0">
-            <strong class="booking-stage-benefit">Get your exact cleaning price</strong>
             <div class="booking-stage-heading">
               <strong data-stage-label>Step 1 of 7 · Eligibility</strong>
               <span data-stage-percent>8% complete</span>
@@ -105,12 +99,7 @@
             </div>
             <div class="booking-mobile-question-nav">
               <button type="button" data-question-back>← Back</button>
-              <div class="booking-question-progress">
-                <span data-question-count>Question 1 of 8 · Next: Service</span>
-                <small data-question-time>About 5 min left</small>
-              </div>
             </div>
-            <p class="booking-question-saved">✓ Your answers are automatically saved</p>
 
             <div class="booking-question-panel">
               <div class="booking-fields" data-mobile-questions>
@@ -123,7 +112,6 @@
               <input type="hidden" name="email" value="">
               <input type="hidden" name="phone" value="">
               <div data-mobile-question>
-                <span class="booking-question-kicker">Choose your service type</span>
                 <h2>What type of help do you need?</h2>
                 <select name="serviceIntent" required>
                   <option value="">Select option</option>
@@ -132,7 +120,6 @@
                 </select>
               </div>
               <div data-mobile-question>
-                <span class="booking-question-kicker">Choose your service</span>
                 <h2>What kind of cleaning are you looking for?</h2>
                 <select name="cleaningCategory" required>
                   <option value="">Select option</option>
@@ -142,7 +129,6 @@
                 </select>
               </div>
               <div data-mobile-question>
-                <span class="booking-question-kicker">Your home size</span>
                 <h2>Is the property more than 2,000 sq ft?</h2>
                 <select name="propertyOver2000" required>
                   <option value="">Select option</option>
@@ -151,7 +137,6 @@
                 </select>
               </div>
               <div data-mobile-question>
-                <span class="booking-question-kicker">A quick safety check</span>
                 <h2>Has the property experienced flooding or water damage?</h2>
                 <select name="waterDamage" required>
                   <option value="">Select option</option>
@@ -160,7 +145,6 @@
                 </select>
               </div>
               <div data-mobile-question>
-                <span class="booking-question-kicker">About your home</span>
                 <h2>Has the property recently been renovated or under construction?</h2>
                 <select name="recentRenovation" required>
                   <option value="">Select option</option>
@@ -170,7 +154,6 @@
               </div>
               <input type="hidden" name="excessiveBelongings" value="no">
               <div data-mobile-question>
-                <span class="booking-question-kicker">Appointment essentials</span>
                 <h2>Will electricity and running water be available?</h2>
                 <small class="booking-service-guide">Our team requires both electricity and running water to safely and properly complete the cleaning service.</small>
                 <select name="utilitiesAvailable" required>
@@ -180,7 +163,6 @@
                 </select>
               </div>
               <div data-mobile-question>
-                <span class="booking-question-kicker">Property access</span>
                 <h2>Can every area that needs cleaning be safely accessed?</h2>
                 <small class="booking-service-guide">Examples include furniture blocking rooms or walkways, locked rooms or restricted areas, limited access due to storage or belongings, or unsafe conditions that may prevent our team from cleaning.</small>
                 <select name="propertyAccess" required>
@@ -190,7 +172,6 @@
                 </select>
               </div>
               <div data-mobile-question data-condition-question>
-                <span class="booking-question-kicker">Property condition</span>
                 <h2>Tell us about the property’s current condition</h2>
                 <div class="booking-condition-questions">
                   <div class="booking-condition-question">
@@ -226,7 +207,6 @@
               </div>
               </div>
               <div class="booking-organization-form" data-organization-form hidden>
-                <span class="booking-question-kicker">Organization / Decluttering</span>
                 <h2>How many hours do you need?</h2>
                 <p>Choose at least 4 hours.</p>
                 <div class="booking-fields">
@@ -241,7 +221,6 @@
                 </div>
               </div>
               <div class="booking-service-choice-form" data-service-choice-form hidden>
-                <span class="booking-question-kicker">Choose your cleaning</span>
                 <h2>What kind of service are you looking for?</h2>
                 <div class="booking-service-choice-options" role="group" aria-label="Cleaning service">
                   <button type="button" class="booking-answer-choice" data-booking-service="standard" aria-pressed="false">
@@ -259,7 +238,6 @@
                 </div>
               </div>
               <div class="booking-property-type-form" data-property-type-form hidden>
-                <span class="booking-question-kicker">About the property</span>
                 <h2>Is this property a house, apartment, or co-op?</h2>
                 <div class="booking-service-choice-options" role="group" aria-label="Residential property type">
                   <button type="button" class="booking-answer-choice" data-booking-property-type="house" aria-pressed="false">
@@ -277,7 +255,6 @@
                 </div>
               </div>
               <div class="booking-unit-count-form" data-unit-count-form hidden>
-                <span class="booking-question-kicker">Number of units</span>
                 <h2>How many units need cleaning?</h2>
                 <div class="booking-unit-counter" role="group" aria-label="Number of residential units">
                   <button type="button" data-unit-count-decrease aria-label="Remove one unit">−</button>
@@ -290,7 +267,6 @@
                 <small class="booking-unit-limit">You can include up to 10 units in one online booking.</small>
               </div>
               <div class="booking-quote-details-form" data-quote-details-form hidden>
-                <span class="booking-question-kicker" data-unit-details-kicker>Let’s get your quote</span>
                 <h2 data-unit-details-title>Tell us about your home</h2>
                 <p data-unit-details-copy>Answer one question at a time for an itemized price.</p>
                 <div class="booking-standard-detail-question" data-standard-detail-question>
@@ -494,7 +470,6 @@
             <div class="booking-redirect-backdrop" aria-hidden="true"></div>
             <section class="booking-redirect-dialog booking-quote-contact-dialog" role="dialog" aria-modal="true" aria-labelledby="quote-contact-title" aria-describedby="quote-contact-description">
               <div class="booking-stage-progress booking-stage-progress-overlay" data-stage-progress role="progressbar" aria-label="Booking progress" aria-valuemin="0">
-                <strong class="booking-stage-benefit">Get your exact cleaning price</strong>
                 <div class="booking-stage-heading">
                   <strong data-stage-label></strong>
                   <span data-stage-percent></span>
@@ -567,6 +542,6 @@
         </div>
   </main>
   <script src="./booking-service-area.js?v=20260725-zip-gate"></script>
-    <script src="./book-now.js?v=20260822-zip-success"></script>
+    <script src="./book-now.js?v=20260822-simplified-questions"></script>
 </body>
 </html>
