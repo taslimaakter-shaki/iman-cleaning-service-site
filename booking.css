@@ -3184,8 +3184,26 @@ fieldset.booking-field-wide legend {
 }
 
 .booking-complete-dialog {
+  overflow: hidden;
   justify-items: center;
   text-align: center;
+}
+
+.booking-complete-dialog::after {
+  position: absolute;
+  right: 0;
+  bottom: 0;
+  left: 0;
+  height: 5px;
+  background: linear-gradient(90deg, var(--brand), var(--accent));
+  content: "";
+  transform-origin: left;
+  animation: bookingCompleteCountdown 3s linear both;
+}
+
+@keyframes bookingCompleteCountdown {
+  from { transform: scaleX(1); }
+  to { transform: scaleX(0); }
 }
 
 .booking-complete-icon {

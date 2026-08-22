@@ -232,8 +232,6 @@
   const qualificationRedirectContinue = document.querySelector("[data-redirect-continue]");
   const qualificationRedirectBack = document.querySelector("[data-redirect-back]");
   const qualificationCompleteOverlay = document.querySelector("[data-qualification-complete]");
-  const qualificationCompleteContinue = document.querySelector("[data-qualification-complete-continue]");
-  const qualificationCompleteBack = document.querySelector("[data-qualification-complete-back]");
   const additionalCleaningNotice = document.querySelector("[data-additional-cleaning-notice]");
   const additionalCleaningNoticeContinue = document.querySelector("[data-additional-cleaning-notice-continue]");
   const quoteContactOverlay = document.querySelector("[data-quote-contact]");
@@ -284,6 +282,7 @@
   const timeSlots = form.querySelector("[data-time-slots]");
   const schedulerStatus = form.querySelector("[data-scheduler-status]");
   let pendingQualificationUrl = "";
+  let qualificationCompleteTimer = 0;
   let mobileQuestionIndex = 0;
   let organizationMode = false;
   let serviceChoiceMode = false;
@@ -1301,8 +1300,13 @@
   };
   const showQualificationComplete = () => {
     if (!qualificationCompleteOverlay) return;
+    window.clearTimeout(qualificationCompleteTimer);
     qualificationCompleteOverlay.hidden = false;
-    window.setTimeout(() => qualificationCompleteContinue?.focus(), 40);
+    window.setTimeout(() => qualificationCompleteOverlay.querySelector(".booking-complete-dialog")?.focus(), 40);
+    qualificationCompleteTimer = window.setTimeout(() => {
+      qualificationCompleteTimer = 0;
+      enterServiceChoice();
+    }, 3000);
   };
   const showQuoteContact = () => {
     if (!quoteContactOverlay) return;
@@ -1921,6 +1925,8 @@
     if (pendingQualificationUrl) window.location.assign(pendingQualificationUrl);
   });
   closeQualificationComplete = () => {
+    window.clearTimeout(qualificationCompleteTimer);
+    qualificationCompleteTimer = 0;
     if (qualificationCompleteOverlay) qualificationCompleteOverlay.hidden = true;
   };
   closeAdditionalCleaningNotice = () => {
@@ -1943,11 +1949,6 @@
     standardDetailOptions?.querySelector("button")?.focus();
     if (!standardDetailOptions?.querySelector("button")) standardDetailNumberInput?.focus();
   });
-  qualificationCompleteBack?.addEventListener("click", () => {
-    closeQualificationComplete();
-    questionFocusTarget(mobileQuestions()[mobileQuestionIndex])?.focus();
-  });
-  qualificationCompleteContinue?.addEventListener("click", enterServiceChoice);
   ["cleaningCategory", "propertyOver2000", "waterDamage", "recentRenovation", "utilitiesAvailable", "propertyAccess", "clutter", "buildup", "hazards"].forEach((fieldName) => {
     form.elements[fieldName]?.addEventListener("change", () => {
       const internalReason = qualificationReasonFromAnswers(eligibilityFromForm());
