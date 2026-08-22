@@ -68,7 +68,6 @@
   let closeAdditionalCleaningNotice = () => {};
   let closeQuoteContact = () => {};
   let closeAccountDialog = () => {};
-  let closeStageMenu = () => {};
   const openWizard = () => {
     if (!bookingWizard) return;
     bookingWizard.hidden = false;
@@ -90,7 +89,6 @@
     closeAdditionalCleaningNotice();
     closeQuoteContact();
     closeAccountDialog();
-    closeStageMenu();
     hideWizard();
     if (document.body.classList.contains("booking-form-only")) {
       window.location.assign("./index.html");
@@ -186,11 +184,6 @@
   });
   document.addEventListener("keydown", (event) => {
     if (event.key !== "Escape" || bookingWizard.hidden || !zipGate.hidden) return;
-    const stageMenu = document.querySelector("[data-stage-menu]");
-    if (stageMenu && !stageMenu.hidden) {
-      closeStageMenu();
-      return;
-    }
     const additionalCleaningNotice = document.querySelector("[data-additional-cleaning-notice]");
     if (additionalCleaningNotice && !additionalCleaningNotice.hidden) {
       closeAdditionalCleaningNotice();
@@ -226,10 +219,7 @@
     selectedDate: "",
     highestStageReached: 1
   };
-  const stageMenu = document.querySelector("[data-stage-menu]");
   const stageMenuButtons = Array.from(document.querySelectorAll("[data-stage-target]"));
-  const stageMenuOpeners = Array.from(document.querySelectorAll("[data-stage-menu-open]"));
-  let lastStageMenuTrigger = null;
   const allMobileQuestions = Array.from(form.querySelectorAll("[data-mobile-question]"));
   const mobileQuestionNav = form.querySelector(".booking-mobile-question-nav");
   const mobileQuestionCount = form.querySelector("[data-question-count]");
@@ -887,30 +877,6 @@
       if (action) action.textContent = !applicable ? "Not needed" : current ? "Current" : reached ? "Edit" : "Not reached";
     });
   };
-  closeStageMenu = (restoreFocus = true) => {
-    if (!stageMenu || stageMenu.hidden) return;
-    stageMenu.hidden = true;
-    stageMenuOpeners.forEach((button) => button.setAttribute("aria-expanded", "false"));
-    if (restoreFocus) lastStageMenuTrigger?.focus();
-  };
-  const openStageMenu = (trigger) => {
-    if (!stageMenu) return;
-    lastStageMenuTrigger = trigger;
-    syncStageMenu();
-    stageMenu.hidden = false;
-    stageMenuOpeners.forEach((button) => button.setAttribute("aria-expanded", String(button === trigger)));
-    window.setTimeout(() => {
-      stageMenu.querySelector("button.is-current:not(:disabled), [data-stage-menu-close]")?.focus();
-    }, 40);
-  };
-  stageMenuOpeners.forEach((button) => {
-    button.setAttribute("aria-haspopup", "dialog");
-    button.setAttribute("aria-expanded", "false");
-    button.addEventListener("click", () => openStageMenu(button));
-  });
-  document.querySelectorAll("[data-stage-menu-close]").forEach((button) => {
-    button.addEventListener("click", () => closeStageMenu());
-  });
   let lastProgressStage = 0;
   let highestProgressInStage = 0;
   const answeredEligibilityQuestions = () => mobileQuestions().filter((question) => {
@@ -981,8 +947,9 @@
     }
     const percent = highestProgressInStage;
     document.querySelectorAll("[data-stage-progress]").forEach((progress) => {
-      const label = progress.querySelector("[data-stage-label]");
-      const percentLabel = progress.querySelector("[data-stage-percent]");
+      const progressSection = progress.closest(".booking-stage-progress");
+      const label = progressSection?.querySelector("[data-stage-label]");
+      const percentLabel = progressSection?.querySelector("[data-stage-percent]");
       const meter = progress.querySelector("[data-stage-meter]");
       if (label) label.textContent = `Step ${stageNumber} of ${stages.length} · ${stage.label}`;
       if (percentLabel) percentLabel.textContent = `${percent}% complete`;
@@ -1419,7 +1386,6 @@
   const navigateToStage = (targetStage) => {
     const stageNumber = Number(targetStage);
     if (!stageIsApplicable(stageNumber) || stageNumber > state.highestStageReached) return;
-    closeStageMenu(false);
     closeQualificationRedirect();
     closeQualificationComplete();
     closeAdditionalCleaningNotice();
