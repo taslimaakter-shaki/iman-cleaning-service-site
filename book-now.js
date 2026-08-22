@@ -981,7 +981,7 @@
       syncAnswerChoices(question);
     });
     if (mobileQuestionNav) mobileQuestionNav.hidden = false;
-    if (mobileQuestionCount) mobileQuestionCount.textContent = `Question ${mobileQuestionIndex + 1} of ${activeQuestions.length}`;
+    if (mobileQuestionCount) mobileQuestionCount.textContent = `Eligibility question ${mobileQuestionIndex + 1} of ${activeQuestions.length}`;
     if (mobileQuestionProgress) {
       mobileQuestionProgress.style.width = `${((mobileQuestionIndex + 1) / activeQuestions.length) * 100}%`;
     }
