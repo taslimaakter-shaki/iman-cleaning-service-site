@@ -1643,6 +1643,71 @@ fieldset.booking-field-wide legend {
   text-underline-offset: 2px;
 }
 
+.booking-zip-success {
+  position: absolute;
+  inset: 0;
+  z-index: 2;
+  display: grid;
+  place-content: center;
+  justify-items: center;
+  gap: 16px;
+  padding: 32px;
+  overflow: hidden;
+  color: var(--teal-950);
+  background:
+    radial-gradient(circle at 50% 38%, rgba(150, 193, 103, .2), transparent 38%),
+    #fff;
+  border-radius: inherit;
+  animation: zipSuccessIn .3s ease both;
+}
+
+.booking-zip-success[hidden] {
+  display: none;
+}
+
+.booking-zip-success::after {
+  position: absolute;
+  right: 0;
+  bottom: 0;
+  left: 0;
+  height: 5px;
+  background: linear-gradient(90deg, var(--brand), var(--leaf-500));
+  content: "";
+  transform-origin: left;
+  animation: zipSuccessCountdown 5s linear both;
+}
+
+.booking-zip-success-icon {
+  display: grid;
+  width: 66px;
+  height: 66px;
+  place-items: center;
+  color: #fff;
+  background: var(--success);
+  border-radius: 50%;
+  box-shadow: 0 12px 30px rgba(39, 109, 66, .22);
+  font-size: 2rem;
+  font-weight: 900;
+}
+
+.booking-zip-success strong {
+  max-width: 16ch;
+  font-family: var(--font-display);
+  font-size: clamp(1.7rem, 5vw, 2.35rem);
+  line-height: 1.12;
+  letter-spacing: -.025em;
+}
+
+@keyframes zipSuccessIn {
+  from { opacity: 0; transform: scale(.98); }
+  to { opacity: 1; transform: scale(1); }
+}
+
+@keyframes zipSuccessCountdown {
+  from { transform: scaleX(1); }
+  to { transform: scaleX(0); }
+}
+
 .booking-zip-trust {
   display: flex;
   flex-wrap: wrap;
