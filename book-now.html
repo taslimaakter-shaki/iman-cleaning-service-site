@@ -23,7 +23,7 @@
   <meta name="twitter:image" content="https://www.imancleaningservice.com/brand-card.png">
   <link rel="stylesheet" href="./design-system.css">
   <link rel="stylesheet" href="./site.css?v=20260725-book-now">
-  <link rel="stylesheet" href="./booking.css?v=20260822-simplified-questions">
+  <link rel="stylesheet" href="./booking.css?v=20260822-edit-stages">
   <script type="application/ld+json">
   {
     "@context": "https://schema.org",
@@ -88,6 +88,7 @@
               <span data-stage-percent>8% complete</span>
             </div>
             <div class="booking-stage-meter" aria-hidden="true"><i data-stage-meter></i></div>
+            <button class="booking-stage-edit" type="button" data-stage-menu-open>Review or edit answers</button>
           </div>
 
           <section class="booking-step" data-step="1">
@@ -440,6 +441,27 @@
           </section>
             </form>
           </section>
+          <div class="booking-stage-menu-overlay" data-stage-menu hidden>
+            <div class="booking-redirect-backdrop" data-stage-menu-close aria-hidden="true"></div>
+            <section class="booking-stage-menu-dialog" role="dialog" aria-modal="true" aria-labelledby="booking-stage-menu-title">
+              <div class="booking-stage-menu-heading">
+                <div>
+                  <span>Booking sections</span>
+                  <h2 id="booking-stage-menu-title">Review or edit your answers</h2>
+                </div>
+                <button type="button" data-stage-menu-close aria-label="Close section menu">×</button>
+              </div>
+              <ol class="booking-stage-menu-list">
+                <li><button type="button" data-stage-target="1"><b>1</b><span><strong>Eligibility</strong><small>Property condition and eligibility</small></span><em data-stage-action>Current</em></button></li>
+                <li><button type="button" data-stage-target="2"><b>2</b><span><strong>Service</strong><small>Cleaning type and property type</small></span><em data-stage-action>Not reached</em></button></li>
+                <li><button type="button" data-stage-target="3"><b>3</b><span><strong>Home details</strong><small>Bedrooms, bathrooms and rooms</small></span><em data-stage-action>Not reached</em></button></li>
+                <li><button type="button" data-stage-target="4"><b>4</b><span><strong>Extras</strong><small>Appliances, cabinets and additional tasks</small></span><em data-stage-action>Not reached</em></button></li>
+                <li><button type="button" data-stage-target="5"><b>5</b><span><strong>Your quote</strong><small>Contact information and personalized price</small></span><em data-stage-action>Not reached</em></button></li>
+                <li><button type="button" data-stage-target="6"><b>6</b><span><strong>Appointment</strong><small>Date, time, priorities and address</small></span><em data-stage-action>Not reached</em></button></li>
+                <li><button type="button" data-stage-target="7"><b>7</b><span><strong>Review &amp; book</strong><small>Review, agreement and deposit</small></span><em data-stage-action>Not reached</em></button></li>
+              </ol>
+            </section>
+          </div>
           <div class="booking-redirect-overlay" data-qualification-redirect hidden>
             <div class="booking-redirect-backdrop" aria-hidden="true"></div>
             <section class="booking-redirect-dialog" role="alertdialog" aria-modal="true" aria-labelledby="booking-redirect-title" aria-describedby="booking-redirect-description">
@@ -475,6 +497,7 @@
                   <span data-stage-percent></span>
                 </div>
                 <div class="booking-stage-meter" aria-hidden="true"><i data-stage-meter></i></div>
+                <button class="booking-stage-edit" type="button" data-stage-menu-open>Review or edit answers</button>
               </div>
               <span class="booking-redirect-kicker">Your quote</span>
               <h2 id="quote-contact-title">Your personalized quote is ready</h2>
@@ -542,6 +565,6 @@
         </div>
   </main>
   <script src="./booking-service-area.js?v=20260725-zip-gate"></script>
-    <script src="./book-now.js?v=20260822-simplified-questions"></script>
+    <script src="./book-now.js?v=20260822-edit-stages"></script>
 </body>
 </html>

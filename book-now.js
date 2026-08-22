@@ -68,6 +68,7 @@
   let closeAdditionalCleaningNotice = () => {};
   let closeQuoteContact = () => {};
   let closeAccountDialog = () => {};
+  let closeStageMenu = () => {};
   const openWizard = () => {
     if (!bookingWizard) return;
     bookingWizard.hidden = false;
@@ -89,6 +90,7 @@
     closeAdditionalCleaningNotice();
     closeQuoteContact();
     closeAccountDialog();
+    closeStageMenu();
     hideWizard();
     if (document.body.classList.contains("booking-form-only")) {
       window.location.assign("./index.html");
@@ -184,6 +186,11 @@
   });
   document.addEventListener("keydown", (event) => {
     if (event.key !== "Escape" || bookingWizard.hidden || !zipGate.hidden) return;
+    const stageMenu = document.querySelector("[data-stage-menu]");
+    if (stageMenu && !stageMenu.hidden) {
+      closeStageMenu();
+      return;
+    }
     const additionalCleaningNotice = document.querySelector("[data-additional-cleaning-notice]");
     if (additionalCleaningNotice && !additionalCleaningNotice.hidden) {
       closeAdditionalCleaningNotice();
@@ -216,8 +223,13 @@
     availableDates: [],
     availableMonths: [],
     calendarMonthIndex: 0,
-    selectedDate: ""
+    selectedDate: "",
+    highestStageReached: 1
   };
+  const stageMenu = document.querySelector("[data-stage-menu]");
+  const stageMenuButtons = Array.from(document.querySelectorAll("[data-stage-target]"));
+  const stageMenuOpeners = Array.from(document.querySelectorAll("[data-stage-menu-open]"));
+  let lastStageMenuTrigger = null;
   const allMobileQuestions = Array.from(form.querySelectorAll("[data-mobile-question]"));
   const mobileQuestionNav = form.querySelector(".booking-mobile-question-nav");
   const mobileQuestionCount = form.querySelector("[data-question-count]");
@@ -429,7 +441,8 @@
             pricingMode: state.pricingMode,
             availableSlots: state.availableSlots,
             calendarMonthIndex: state.calendarMonthIndex,
-            selectedDate: state.selectedDate
+            selectedDate: state.selectedDate,
+            highestStageReached: state.highestStageReached
           },
           view: {
             mobileQuestionIndex,
@@ -858,6 +871,46 @@
     if (serviceChoiceMode || propertyTypeMode || unitCountMode) return 2;
     return 1;
   };
+  const stageIsApplicable = (stageNumber) => (
+    !(isOrganizationPath() && (stageNumber === 3 || stageNumber === 4))
+  );
+  const syncStageMenu = (stageNumber = currentStageNumber()) => {
+    stageMenuButtons.forEach((button) => {
+      const targetStage = Number(button.dataset.stageTarget);
+      const action = button.querySelector("[data-stage-action]");
+      const applicable = stageIsApplicable(targetStage);
+      const reached = applicable && targetStage <= state.highestStageReached;
+      const current = targetStage === stageNumber;
+      button.disabled = !reached;
+      button.classList.toggle("is-current", current);
+      button.setAttribute("aria-current", current ? "step" : "false");
+      if (action) action.textContent = !applicable ? "Not needed" : current ? "Current" : reached ? "Edit" : "Not reached";
+    });
+  };
+  closeStageMenu = (restoreFocus = true) => {
+    if (!stageMenu || stageMenu.hidden) return;
+    stageMenu.hidden = true;
+    stageMenuOpeners.forEach((button) => button.setAttribute("aria-expanded", "false"));
+    if (restoreFocus) lastStageMenuTrigger?.focus();
+  };
+  const openStageMenu = (trigger) => {
+    if (!stageMenu) return;
+    lastStageMenuTrigger = trigger;
+    syncStageMenu();
+    stageMenu.hidden = false;
+    stageMenuOpeners.forEach((button) => button.setAttribute("aria-expanded", String(button === trigger)));
+    window.setTimeout(() => {
+      stageMenu.querySelector("button.is-current:not(:disabled), [data-stage-menu-close]")?.focus();
+    }, 40);
+  };
+  stageMenuOpeners.forEach((button) => {
+    button.setAttribute("aria-haspopup", "dialog");
+    button.setAttribute("aria-expanded", "false");
+    button.addEventListener("click", () => openStageMenu(button));
+  });
+  document.querySelectorAll("[data-stage-menu-close]").forEach((button) => {
+    button.addEventListener("click", () => closeStageMenu());
+  });
   let lastProgressStage = 0;
   let highestProgressInStage = 0;
   const answeredEligibilityQuestions = () => mobileQuestions().filter((question) => {
@@ -913,6 +966,11 @@
   const syncStageProgress = () => {
     const stages = CLEANING_STAGES;
     const stageNumber = Math.min(stages.length, Math.max(1, currentStageNumber()));
+    state.highestStageReached = Math.max(
+      1,
+      Math.min(stages.length, Number(state.highestStageReached) || 1),
+      stageNumber
+    );
     const stage = stages[stageNumber - 1];
     const rawPercent = Math.min(99, Math.max(stage.start, Math.round(rawProgressPercent(stageNumber))));
     if (lastProgressStage !== stageNumber) {
@@ -933,6 +991,7 @@
       progress.setAttribute("aria-valuemax", "100");
       progress.setAttribute("aria-valuetext", `${percent}% complete. Step ${stageNumber} of ${stages.length}: ${stage.label}`);
     });
+    syncStageMenu(stageNumber);
   };
   const selectedUnitCount = () => Math.min(10, Math.max(1, Number(value("unitCount")) || 1));
   const syncUnitCount = () => {
@@ -995,6 +1054,7 @@
               current.excludeRefrigerator = "";
               current.excludeCabinets = "";
             }
+            invalidateDownstreamAfterEdit();
             loadCurrentUnitDetails();
             if (question.key === "additionalCleaning" && option.value === "yes") {
               if (additionalCleaningNotice) additionalCleaningNotice.hidden = false;
@@ -1333,15 +1393,20 @@
     wizardDialog?.scrollTo({ top: 0, behavior: "smooth" });
     window.setTimeout(() => unitCountIncrease?.focus(), 40);
   };
-  const enterQuoteDetails = () => {
+  const enterQuoteDetailsAtStage = (homeDetails = true) => {
     organizationMode = false;
     serviceChoiceMode = false;
     propertyTypeMode = false;
     unitCountMode = false;
     quoteDetailsMode = true;
     state.currentUnitIndex = 0;
-    state.currentDetailQuestionIndex = 0;
     syncUnitCount();
+    const questions = pricingDetailQuestions(
+      state.unitDetails[0] || emptyUnitDetails(),
+      value("requestedService")
+    );
+    const firstQuestionIndex = questions.findIndex((question) => HOME_DETAIL_KEYS.has(question.key) === homeDetails);
+    state.currentDetailQuestionIndex = Math.max(0, firstQuestionIndex);
     closeQualificationComplete();
     syncMobileQuestion();
     wizardDialog?.scrollTo({ top: 0, behavior: "smooth" });
@@ -1350,6 +1415,66 @@
       if (!standardDetailOptions?.querySelector("button")) standardDetailNumberInput?.focus();
     }, 40);
   };
+  const enterQuoteDetails = () => enterQuoteDetailsAtStage(true);
+  const navigateToStage = (targetStage) => {
+    const stageNumber = Number(targetStage);
+    if (!stageIsApplicable(stageNumber) || stageNumber > state.highestStageReached) return;
+    closeStageMenu(false);
+    closeQualificationRedirect();
+    closeQualificationComplete();
+    closeAdditionalCleaningNotice();
+    closeQuoteContact();
+    closeAccountDialog();
+
+    if (stageNumber === 1) {
+      goToStep(1);
+      organizationMode = false;
+      serviceChoiceMode = false;
+      propertyTypeMode = false;
+      unitCountMode = false;
+      quoteDetailsMode = false;
+      mobileQuestionIndex = 0;
+      syncMobileQuestion();
+      window.setTimeout(() => questionFocusTarget(mobileQuestions()[0])?.focus(), 40);
+      return;
+    }
+    if (stageNumber === 2) {
+      goToStep(1);
+      if (isOrganizationPath()) enterOrganizationDetails();
+      else enterServiceChoice();
+      return;
+    }
+    if (stageNumber === 3 || stageNumber === 4) {
+      goToStep(1);
+      enterQuoteDetailsAtStage(stageNumber === 3);
+      return;
+    }
+    if (stageNumber === 5) {
+      if (state.package) {
+        goToStep(2);
+        window.setTimeout(() => document.querySelector('[data-step="2"] h2')?.focus(), 40);
+      } else {
+        goToStep(1);
+        showQuoteContact();
+      }
+      return;
+    }
+    if (stageNumber === 6) {
+      goToStep(3);
+      renderCalendar();
+      renderTimeSlots();
+      window.setTimeout(() => calendarGrid?.querySelector("button.is-available")?.focus(), 40);
+      return;
+    }
+    if (stageNumber === 7) {
+      if (value("schedule")) syncCheckoutReview();
+      goToStep(4);
+      window.setTimeout(() => form.elements.address?.focus(), 40);
+    }
+  };
+  stageMenuButtons.forEach((button) => {
+    button.addEventListener("click", () => navigateToStage(button.dataset.stageTarget));
+  });
   const exitQuoteDetails = () => {
     quoteDetailsMode = false;
     enterUnitCountChoice();
@@ -1704,6 +1829,7 @@
       const selectedService = button.dataset.bookingService;
       form.elements.requestedService.value = selectedService;
       form.elements.propertyStatus.value = selectedService === "move" ? "moving" : "occupied";
+      invalidateDownstreamAfterEdit();
       syncServiceChoice();
       syncStageProgress();
       setStatus(document.querySelector("[data-eligibility-status]"), "");
@@ -1714,6 +1840,7 @@
     button.addEventListener("click", () => {
       const selectedPropertyType = button.dataset.bookingPropertyType;
       form.elements.propertyType.value = selectedPropertyType;
+      invalidateDownstreamAfterEdit();
       syncPropertyTypeChoice();
       syncStageProgress();
       setStatus(document.querySelector("[data-eligibility-status]"), "");
@@ -1721,11 +1848,13 @@
   });
   unitCountDecrease?.addEventListener("click", () => {
     form.elements.unitCount.value = String(selectedUnitCount() - 1);
+    invalidateDownstreamAfterEdit();
     syncUnitCount();
     syncStageProgress();
   });
   unitCountIncrease?.addEventListener("click", () => {
     form.elements.unitCount.value = String(selectedUnitCount() + 1);
+    invalidateDownstreamAfterEdit();
     syncUnitCount();
     syncStageProgress();
   });
@@ -2332,7 +2461,8 @@
       "pricingMode",
       "availableSlots",
       "calendarMonthIndex",
-      "selectedDate"
+      "selectedDate",
+      "highestStageReached"
     ].forEach((key) => {
       if (Object.prototype.hasOwnProperty.call(savedState, key)) state[key] = savedState[key];
     });
@@ -2393,6 +2523,35 @@
     return true;
   };
 
+  const invalidateDownstreamAfterEdit = () => {
+    const editedStage = currentStageNumber();
+    if (editedStage >= state.highestStageReached) return;
+    if (editedStage <= 4) {
+      state.highestStageReached = editedStage;
+      state.package = null;
+      state.initialSlots = [];
+      state.availableSlots = [];
+      state.availableDates = [];
+      state.availableMonths = [];
+      state.selectedDate = "";
+      if (scheduleSelect) {
+        scheduleSelect.replaceChildren(new Option("Select an appointment", ""));
+      }
+      ["completionAgreement", "laborHoursAgreement", "conditionAgreement", "termsAgreement"].forEach((name) => {
+        if (form.elements[name]) form.elements[name].checked = false;
+      });
+    } else if (editedStage === 6) {
+      state.highestStageReached = 6;
+      ["laborHoursAgreement", "conditionAgreement", "termsAgreement"].forEach((name) => {
+        if (form.elements[name]) form.elements[name].checked = false;
+      });
+    }
+    syncStageProgress();
+    persistBookingDraft();
+  };
+
+  form.addEventListener("input", invalidateDownstreamAfterEdit);
+  form.addEventListener("change", invalidateDownstreamAfterEdit);
   form.addEventListener("input", persistBookingDraft);
   form.addEventListener("change", persistBookingDraft);
   form.addEventListener("input", syncStageProgress);
