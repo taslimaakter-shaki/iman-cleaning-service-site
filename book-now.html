@@ -56,12 +56,10 @@
     <div class="booking-zip-backdrop" aria-hidden="true"></div>
     <section class="booking-zip-dialog" role="dialog" aria-modal="true" aria-labelledby="booking-zip-title">
       <img src="./iman-logo-icon.png" alt="" width="54" height="54">
-      <span class="booking-zip-kicker">First, let’s check your area</span>
       <h2 id="booking-zip-title">What is the property’s ZIP code?</h2>
       <form data-zip-form novalidate autocomplete="off">
-        <label for="booking-zip-input">Property ZIP code</label>
         <div class="booking-zip-control">
-          <input id="booking-zip-input" name="serviceZip" inputmode="numeric" autocomplete="off" maxlength="5" pattern="[0-9]{5}" placeholder="Enter 5-digit ZIP" required>
+          <input id="booking-zip-input" name="serviceZip" inputmode="numeric" autocomplete="off" maxlength="5" pattern="[0-9]{5}" placeholder="Enter 5-digit ZIP" aria-label="Property ZIP code" required>
           <button type="submit">Check availability →</button>
         </div>
         <div class="booking-zip-status" data-zip-status aria-live="polite" hidden></div>
