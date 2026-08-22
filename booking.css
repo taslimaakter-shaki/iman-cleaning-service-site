@@ -2333,6 +2333,14 @@ fieldset.booking-field-wide legend {
   border-bottom: 1px solid var(--teal-100);
 }
 
+.booking-stage-benefit {
+  color: var(--accent-deep);
+  font-size: .68rem;
+  font-weight: 900;
+  letter-spacing: .12em;
+  text-transform: uppercase;
+}
+
 .booking-stage-heading {
   display: grid;
   grid-template-columns: minmax(0, 1fr) auto;
@@ -2342,14 +2350,14 @@ fieldset.booking-field-wide legend {
 
 .booking-stage-heading strong {
   color: var(--teal-800);
-  font-size: .72rem;
+  font-size: .78rem;
   font-weight: 900;
-  letter-spacing: .075em;
 }
 
 .booking-stage-heading span {
   color: var(--text-muted);
-  font-size: .72rem;
+  font-size: .76rem;
+  font-weight: 800;
   line-height: 1.4;
   text-align: right;
 }
@@ -2405,7 +2413,7 @@ fieldset.booking-field-wide legend {
 }
 
 .booking-stage-meter {
-  display: none;
+  display: block;
   overflow: hidden;
   height: 7px;
   background: var(--teal-50);
@@ -2502,7 +2510,9 @@ fieldset.booking-field-wide legend {
 
 .booking-question-progress {
   display: grid;
-  gap: 7px;
+  grid-template-columns: minmax(0, 1fr) auto;
+  gap: 8px 18px;
+  align-items: center;
   min-width: 0;
 }
 
@@ -2510,6 +2520,13 @@ fieldset.booking-field-wide legend {
   color: var(--teal-700);
   font-size: .7rem;
   font-weight: 800;
+  text-align: left;
+}
+
+.booking-question-progress > small {
+  color: var(--text-muted);
+  font-size: .68rem;
+  font-weight: 750;
   text-align: right;
 }
 
@@ -2527,6 +2544,14 @@ fieldset.booking-field-wide legend {
   background: linear-gradient(90deg, var(--brand), var(--accent));
   border-radius: inherit;
   transition: width .28s ease;
+}
+
+.booking-question-saved {
+  margin: -15px 0 20px;
+  color: var(--text-muted);
+  font-size: .68rem;
+  font-weight: 700;
+  text-align: right;
 }
 
 .booking-wizard-dialog[data-current-step="1"] .booking-question-panel {
@@ -3551,8 +3576,8 @@ fieldset.booking-field-wide legend {
   }
 
   .booking-stage-heading {
-    grid-template-columns: 1fr;
-    gap: 3px;
+    grid-template-columns: minmax(0, 1fr) auto;
+    gap: 8px;
   }
 
   .booking-stage-heading strong {
@@ -3561,7 +3586,7 @@ fieldset.booking-field-wide legend {
 
   .booking-stage-heading span {
     font-size: .68rem;
-    text-align: left;
+    text-align: right;
   }
 
   .booking-stage-dots {
@@ -3592,6 +3617,20 @@ fieldset.booking-field-wide legend {
 
   .booking-wizard-dialog[data-current-step="1"] .booking-mobile-question-nav {
     margin-bottom: 22px;
+  }
+
+  .booking-question-progress {
+    grid-template-columns: 1fr;
+    gap: 2px;
+  }
+
+  .booking-question-progress > span,
+  .booking-question-progress > small {
+    text-align: right;
+  }
+
+  .booking-question-saved {
+    margin-top: -16px;
   }
 
   .booking-wizard-dialog[data-current-step="1"] [data-mobile-question] h2 {
