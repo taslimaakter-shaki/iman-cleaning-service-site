@@ -23,7 +23,7 @@
   <meta name="twitter:image" content="https://www.imancleaningservice.com/brand-card.png">
   <link rel="stylesheet" href="./design-system.css">
   <link rel="stylesheet" href="./site.css?v=20260725-book-now">
-  <link rel="stylesheet" href="./booking.css?v=20260823-three-second-zip-confirmation">
+  <link rel="stylesheet" href="./booking.css?v=20260823-details-cleaning-menu">
   <script type="application/ld+json">
   {
     "@context": "https://schema.org",
@@ -241,7 +241,17 @@
                     <span><strong>Moving Cleaning</strong><small>For an empty or mostly empty move-in or move-out property</small></span>
                     <i aria-hidden="true">✓</i>
                   </button>
+                  <button type="button" class="booking-answer-choice" data-booking-service="details" aria-pressed="false">
+                    <span><strong>Details Cleaning</strong><small>Choose specific rooms, areas, or tasks that need focused attention</small></span>
+                    <i aria-hidden="true">✓</i>
+                  </button>
                 </div>
+                <section class="booking-details-cleaning-overview" data-details-cleaning-overview hidden aria-labelledby="details-cleaning-overview-title">
+                  <h3 id="details-cleaning-overview-title">Overview</h3>
+                  <p>Our Details Cleaning service is best for clients who want to choose exactly which areas or tasks need extra attention. If a regular Deep Cleaning does not cover everything you want, but you do not need an extreme or specialty cleaning service, Details Cleaning may be the right option.</p>
+                  <p>You can send us photos and describe your cleaning needs as specifically as possible. This helps us prepare a custom quote and schedule the right team for your appointment.</p>
+                  <p>This service can be booked for a full home or for specific areas such as the kitchen, bathroom, cabinets, closets, windows, baseboards, floors, or any room that needs focused attention.</p>
+                </section>
               </div>
               <div class="booking-property-type-form" data-property-type-form hidden>
                 <h2>Is this property a house, apartment, or co-op?</h2>
@@ -610,6 +620,6 @@
         </div>
   </main>
   <script src="./booking-service-area.js?v=20260725-zip-gate"></script>
-    <script src="./book-now.js?v=20260823-three-second-zip-confirmation"></script>
+    <script src="./book-now.js?v=20260823-details-cleaning-menu"></script>
 </body>
 </html>

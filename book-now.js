@@ -256,6 +256,7 @@
   const organizationNotesInput = form.elements.organizationNotes;
   const serviceChoiceForm = form.querySelector("[data-service-choice-form]");
   const serviceChoiceButtons = Array.from(form.querySelectorAll("[data-booking-service]"));
+  const detailsCleaningOverview = form.querySelector("[data-details-cleaning-overview]");
   const propertyTypeForm = form.querySelector("[data-property-type-form]");
   const propertyTypeButtons = Array.from(form.querySelectorAll("[data-booking-property-type]"));
   const unitCountForm = form.querySelector("[data-unit-count-form]");
@@ -295,6 +296,7 @@
     organization: "Organization / Decluttering",
     standard: "Standard Cleaning",
     deep: "Deep Cleaning",
+    details: "Details Cleaning",
     move: "Move-In / Move-Out Cleaning",
     post: "Post-Construction Cleaning"
   };
@@ -366,7 +368,7 @@
   };
   const preset = new URLSearchParams(window.location.search);
   const presetService = preset.get("service");
-  if (["standard", "deep", "move"].includes(presetService)) {
+  if (["standard", "deep", "details", "move"].includes(presetService)) {
     state.unitDetails = [{}];
     form.elements.propertyStatus.value =
       presetService === "move" ? "moving" : "occupied";
@@ -688,6 +690,12 @@
       button.classList.toggle("is-selected", selected);
       button.setAttribute("aria-pressed", String(selected));
     });
+    if (detailsCleaningOverview) detailsCleaningOverview.hidden = selectedService !== "details";
+    if (serviceChoiceMode && eligibilityButtonLabel) {
+      eligibilityButtonLabel.textContent = selectedService === "details"
+        ? "Continue to custom quote"
+        : "Continue";
+    }
   };
   const syncPropertyTypeChoice = () => {
     const selectedType = value("propertyType");
@@ -1170,7 +1178,11 @@
       syncServiceChoice();
       if (mobileQuestionNav) mobileQuestionNav.hidden = false;
       setQuestionMeta("Question 1 of 3 · Next: Home details", "About 4 min left");
-      if (eligibilityButtonLabel) eligibilityButtonLabel.textContent = "Continue";
+      if (eligibilityButtonLabel) {
+        eligibilityButtonLabel.textContent = value("requestedService") === "details"
+          ? "Continue to custom quote"
+          : "Continue";
+      }
       return;
     }
     if (organizationForm) organizationForm.hidden = true;
@@ -2091,6 +2103,18 @@
       if (!value("requestedService")) {
         setStatus(status, "Please choose a cleaning service to continue.");
         serviceChoiceButtons[0]?.focus();
+        return;
+      }
+      if (value("requestedService") === "details") {
+        const answers = eligibilityFromForm();
+        state.eligibility = answers;
+        persistBookingDraft();
+        window.location.assign(quoteUrlFor({
+          type: "review",
+          reason: "Details Cleaning is customized around specific rooms, surfaces, appliances, and priority tasks.",
+          service: "details-cleaning",
+          category: "residential"
+        }, answers));
         return;
       }
       setStatus(status, "");
