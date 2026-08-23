@@ -559,13 +559,6 @@ function calculateWindowQuote(details = {}, serviceZip = "") {
   };
   add("screens", "removable screen", details.screens, 5, 2);
   add("tracks", "detailed track and sill", details.tracks, 7, 3);
-  add("storms", "removable storm insert", details.storms, 14, 5);
-  add("removable_grids", "removable grid sash", details.removableGrids, 5, 2);
-  add("extra_panes", "divided-light pane over 8", details.extraPanes, 1.25, 1);
-  add("extra_panels", "additional bay/bow panel", details.extraPanels, 18, 5);
-  add("extra_louvers", "jalousie louver over 10", details.extraLouvers, 1, 0.5);
-  if (scope !== "interior") add("second_floor", "second-floor exterior access", details.secondFloor, 5, 2);
-  add("obstructions", "removable child guard / A/C obstruction", details.obstructions, 15, 7.5);
 
   if (size === "oversized") {
     const amount = Math.round(baseTotal * 0.5 * 100) / 100;

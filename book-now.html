@@ -23,7 +23,7 @@
   <meta name="twitter:image" content="https://www.imancleaningservice.com/brand-card.png">
   <link rel="stylesheet" href="./design-system.css">
   <link rel="stylesheet" href="./site.css?v=20260725-book-now">
-  <link rel="stylesheet" href="./booking.css?v=20260823-bathroom-windows-v3">
+  <link rel="stylesheet" href="./booking.css?v=20260823-window-scope-v5">
   <script type="application/ld+json">
   {
     "@context": "https://schema.org",
@@ -260,16 +260,11 @@
                     <label class="booking-window-card" data-window-card><input type="checkbox" name="windowTypes" value="storefront_panel"><span class="booking-window-photo" style="--window-x:3;--window-y:3"><img src="./assets/window-types-atlas-v1.jpg" alt="Storefront glass panel example"></span><strong>Storefront panel</strong><small>Each uninterrupted panel or glass door</small><span class="booking-window-quantity">Quantity <input type="number" min="1" max="200" value="1" data-window-quantity="storefront_panel" disabled></span></label>
                   </div>
                 </fieldset>
-                <fieldset class="booking-window-options"><legend>Add-ons and access</legend><div class="booking-window-option-grid">
-                  <label><span>Removable screens</span><input name="windowScreens" type="number" min="0" max="200" value="0"></label>
-                  <label><span>Detailed tracks and sills</span><input name="windowTracks" type="number" min="0" max="200" value="0"></label>
-                  <label><span>Removable storm inserts</span><input name="windowStorms" type="number" min="0" max="200" value="0"></label>
-                  <label><span>Removable grid sashes</span><input name="windowRemovableGrids" type="number" min="0" max="200" value="0"></label>
-                  <label><span>Extra divided-light panes over 8</span><input name="windowExtraPanes" type="number" min="0" max="500" value="0"></label>
-                  <label><span>Extra bay/bow panels</span><input name="windowExtraPanels" type="number" min="0" max="100" value="0"></label>
-                  <label><span>Extra jalousie louvers over 10</span><input name="windowExtraLouvers" type="number" min="0" max="500" value="0"></label>
-                  <label><span>Exterior windows requiring second-floor access</span><input name="windowSecondFloor" type="number" min="0" max="200" value="0"></label>
-                  <label><span>Windows blocked by removable guard or A/C</span><input name="windowObstructions" type="number" min="0" max="200" value="0"></label>
+                <fieldset class="booking-window-options"><legend>Screens, sills, and tracks</legend>
+                  <p class="booking-window-help">Glass cleaning is included with each window type. Add these items only when needed and safely accessible.</p>
+                  <div class="booking-window-option-grid booking-window-option-grid--simple">
+                  <label><span>Removable window screens</span><input name="windowScreens" type="number" min="0" max="200" value="0"></label>
+                  <label><span>Detailed sills and tracks</span><input name="windowTracks" type="number" min="0" max="200" value="0"></label>
                 </div></fieldset>
                 <fieldset class="booking-window-options"><legend>Condition and safe access</legend><div class="booking-window-basics">
                   <label><span>Window condition</span><select name="windowCondition" required><option value="routine">Routine dirt</option><option value="hard_water">Hard-water or mineral deposits</option><option value="paint_adhesive">Paint, stickers, silicone, or adhesive</option><option value="construction">Post-construction residue</option><option value="damaged">Cracked, loose, or damaged glass</option></select></label>
@@ -680,6 +675,6 @@
         </div>
   </main>
   <script src="./booking-service-area.js?v=20260725-zip-gate"></script>
-  <script src="./book-now.js?v=20260823-window-instant-v1"></script>
+  <script src="./book-now.js?v=20260823-window-scope-v2"></script>
 </body>
 </html>
