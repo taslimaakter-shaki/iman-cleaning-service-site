@@ -1,6 +1,7 @@
 const {
   availableSlotsForPackage,
   calculateOrganizationQuote,
+  calculateWindowQuote,
   calculateResidentialQuoteBundle,
   catalogForClient,
   getPackageBundle,
@@ -21,6 +22,11 @@ module.exports = async function handler(request, response) {
       const serviceKey = String(body.serviceKey || "").trim();
       if (serviceKey === "organization" && body.pricingMode === "organization_formula") {
         const pkg = calculateOrganizationQuote(body.unitDetails?.[0]?.hours);
+        const slots = await availableSlotsForPackage(pkg);
+        return json(response, 200, { package: packageForClient(pkg), slots });
+      }
+      if (serviceKey === "window" && body.pricingMode === "window_formula") {
+        const pkg = calculateWindowQuote(body.unitDetails?.[0], body.serviceZip);
         const slots = await availableSlotsForPackage(pkg);
         return json(response, 200, { package: packageForClient(pkg), slots });
       }

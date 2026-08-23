@@ -254,6 +254,8 @@
   const organizationForm = form.querySelector("[data-organization-form]");
   const organizationHoursInput = form.elements.organizationHours;
   const organizationNotesInput = form.elements.organizationNotes;
+  const windowForm = form.querySelector("[data-window-form]");
+  const windowCards = Array.from(form.querySelectorAll("[data-window-card]"));
   const serviceChoiceForm = form.querySelector("[data-service-choice-form]");
   const serviceChoiceButtons = Array.from(form.querySelectorAll("[data-booking-service]"));
   const propertyTypeForm = form.querySelector("[data-property-type-form]");
@@ -285,6 +287,7 @@
   let qualificationCompleteTimer = 0;
   let mobileQuestionIndex = 0;
   let organizationMode = false;
+  let windowMode = false;
   let serviceChoiceMode = false;
   let propertyTypeMode = false;
   let unitCountMode = false;
@@ -293,6 +296,7 @@
   let draftSaveTimer = 0;
   const serviceNames = {
     organization: "Organization / Decluttering",
+    window: "Window Cleaning",
     standard: "Standard Cleaning",
     deep: "Deep Cleaning",
     details: "Details Cleaning",
@@ -310,6 +314,12 @@
       title: "Let’s Prepare Your Window Cleaning Quote",
       description: "Window cleaning is quoted according to the number and type of windows, accessibility, and whether interior or exterior cleaning is needed.",
       buttonLabel: "Request a Window Cleaning Quote",
+      service: "window-cleaning"
+    },
+    window_manual_review: {
+      title: "Your Window Cleaning Request Needs a Review",
+      description: "Photos and a brief review are required because the window condition, size, access, obstruction, or panel count may affect safe service and accurate pricing.",
+      buttonLabel: "Continue with photos",
       service: "window-cleaning"
     },
     window_addon: {
@@ -375,6 +385,85 @@
   }
 
   const value = (name) => form.elements[name]?.value || "";
+  const windowDetailsFromForm = () => ({
+    serviceZip: value("zip"),
+    propertyType: value("windowPropertyType"),
+    scope: value("windowScope"),
+    frequency: value("windowFrequency"),
+    windows: Array.from(form.querySelectorAll('input[name="windowTypes"]:checked')).map((control) => ({
+      type: control.value,
+      quantity: Number(form.querySelector(`[data-window-quantity="${control.value}"]`)?.value || 0)
+    })),
+    screens: Number(value("windowScreens")),
+    tracks: Number(value("windowTracks")),
+    storms: Number(value("windowStorms")),
+    removableGrids: Number(value("windowRemovableGrids")),
+    extraPanes: Number(value("windowExtraPanes")),
+    extraPanels: Number(value("windowExtraPanels")),
+    extraLouvers: Number(value("windowExtraLouvers")),
+    secondFloor: Number(value("windowSecondFloor")),
+    obstructions: Number(value("windowObstructions")),
+    condition: value("windowCondition"),
+    size: value("windowSize"),
+    access: value("windowAccess"),
+    brownstoneUpper: Boolean(form.elements.windowBrownstoneUpper?.checked),
+    nonTilting: Boolean(form.elements.windowNonTilting?.checked),
+    skylightRoof: Boolean(form.elements.windowSkylightRoof?.checked),
+    fixedObstruction: Boolean(form.elements.windowFixedObstruction?.checked),
+    unclearPanels: Boolean(form.elements.windowUnclearPanels?.checked),
+    parkingIssue: Boolean(form.elements.windowParkingIssue?.checked)
+  });
+  const windowNeedsManualReview = (details) => (
+    ["hard_water", "paint_adhesive", "construction", "damaged"].includes(details.condition) ||
+    details.size === "very_oversized" ||
+    ["third", "special_equipment", "leaning_out", "not_sure"].includes(details.access) ||
+    details.brownstoneUpper || details.nonTilting || details.skylightRoof ||
+    details.fixedObstruction || details.unclearPanels || details.parkingIssue
+  );
+  const restoreWindowDetails = (details = {}) => {
+    const values = {
+      windowPropertyType: details.propertyType,
+      windowScope: details.scope,
+      windowFrequency: details.frequency,
+      windowScreens: details.screens,
+      windowTracks: details.tracks,
+      windowStorms: details.storms,
+      windowRemovableGrids: details.removableGrids,
+      windowExtraPanes: details.extraPanes,
+      windowExtraPanels: details.extraPanels,
+      windowExtraLouvers: details.extraLouvers,
+      windowSecondFloor: details.secondFloor,
+      windowObstructions: details.obstructions,
+      windowCondition: details.condition,
+      windowSize: details.size,
+      windowAccess: details.access
+    };
+    Object.entries(values).forEach(([name, fieldValue]) => {
+      if (form.elements[name] && fieldValue !== undefined) form.elements[name].value = String(fieldValue);
+    });
+    const flags = {
+      windowBrownstoneUpper: details.brownstoneUpper,
+      windowNonTilting: details.nonTilting,
+      windowSkylightRoof: details.skylightRoof,
+      windowFixedObstruction: details.fixedObstruction,
+      windowUnclearPanels: details.unclearPanels,
+      windowParkingIssue: details.parkingIssue
+    };
+    Object.entries(flags).forEach(([name, checked]) => {
+      if (form.elements[name]) form.elements[name].checked = Boolean(checked);
+    });
+    const selected = new Map((details.windows || []).map((item) => [item.type, item.quantity]));
+    windowCards.forEach((card) => {
+      const checkbox = card.querySelector('input[type="checkbox"]');
+      const quantity = card.querySelector("[data-window-quantity]");
+      checkbox.checked = selected.has(checkbox.value);
+      card.classList.toggle("is-selected", checkbox.checked);
+      if (quantity) {
+        quantity.value = String(selected.get(checkbox.value) || 1);
+        quantity.disabled = !checkbox.checked;
+      }
+    });
+  };
   const captureFields = (targetForm) => {
     const fields = {};
     const controls = Array.from(targetForm?.elements || []).filter((control) => control.name);
@@ -437,6 +526,7 @@
           view: {
             mobileQuestionIndex,
             organizationMode,
+            windowMode,
             serviceChoiceMode,
             propertyTypeMode,
             unitCountMode,
@@ -894,12 +984,14 @@
   const isOrganizationPath = () => (
     organizationMode || state.serviceKey === "organization" || value("serviceIntent") === "organization"
   );
+  const isWindowPath = () => windowMode || state.serviceKey === "window" || value("cleaningCategory") === "window";
   const currentStageNumber = () => {
     const organizationPath = isOrganizationPath();
     if (quoteContactOverlay && !quoteContactOverlay.hidden) return 5;
     if (state.step === 2) return 5;
     if (state.step === 3) return 6;
     if (state.step === 4) return 7;
+    if (isWindowPath() && windowMode) return 3;
     if (organizationPath) return organizationMode ? 2 : 1;
     if (quoteDetailsMode) {
       const current = state.unitDetails[state.currentUnitIndex] || emptyUnitDetails();
@@ -1120,6 +1212,39 @@
     const activeQuestions = mobileQuestions();
     mobileQuestionIndex = Math.min(mobileQuestionIndex, Math.max(0, activeQuestions.length - 1));
     syncStageProgress();
+    if (windowMode) {
+      allMobileQuestions.forEach((question) => {
+        question.classList.remove("is-mobile-current");
+        questionControls(question).forEach((control) => { control.disabled = true; });
+      });
+      if (organizationForm) organizationForm.hidden = true;
+      if (serviceChoiceForm) serviceChoiceForm.hidden = true;
+      if (propertyTypeForm) propertyTypeForm.hidden = true;
+      if (unitCountForm) unitCountForm.hidden = true;
+      if (quoteDetailsForm) quoteDetailsForm.hidden = true;
+      if (windowForm) {
+        windowForm.hidden = false;
+        Array.from(windowForm.elements || windowForm.querySelectorAll("input,select,textarea")).forEach((control) => {
+          if (!control.hasAttribute("data-window-quantity")) control.disabled = false;
+        });
+        windowCards.forEach((card) => {
+          const checkbox = card.querySelector('input[type="checkbox"]');
+          const quantity = card.querySelector("[data-window-quantity]");
+          if (quantity) quantity.disabled = !checkbox?.checked;
+        });
+      }
+      if (mobileQuestionNav) mobileQuestionNav.hidden = false;
+      setQuestionMeta("Window details · Next: Your quote", "About 3 min left");
+      if (eligibilityButtonLabel) eligibilityButtonLabel.textContent = "See my instant price";
+      return;
+    }
+    if (windowForm) {
+      windowForm.hidden = true;
+      Array.from(windowForm.querySelectorAll("input,select,textarea")).forEach((control) => { control.disabled = true; });
+    }
+    allMobileQuestions.forEach((question) => {
+      questionControls(question).forEach((control) => { control.disabled = false; });
+    });
     if (organizationMode) {
       allMobileQuestions.forEach((question) => question.classList.remove("is-mobile-current"));
       if (serviceChoiceForm) serviceChoiceForm.hidden = true;
@@ -1260,7 +1385,6 @@
   });
   const qualificationReasonFromAnswers = (answers) => {
     if (answers.cleaningCategory === "commercial") return "commercial_service";
-    if (answers.cleaningCategory === "window") return "window_service";
     if (answers.propertyOver2000 === "yes") return "large_property";
     if (answers.waterDamage === "yes") return "water_damage";
     if (answers.recentRenovation === "yes") return "post_construction";
@@ -1390,6 +1514,7 @@
     }, 40);
   };
   const enterOrganizationDetails = () => {
+    windowMode = false;
     organizationMode = true;
     serviceChoiceMode = false;
     propertyTypeMode = false;
@@ -1400,6 +1525,7 @@
     window.setTimeout(() => organizationHoursInput?.focus(), 40);
   };
   const enterServiceChoice = () => {
+    windowMode = false;
     organizationMode = false;
     serviceChoiceMode = true;
     propertyTypeMode = false;
@@ -1414,6 +1540,7 @@
     }, 40);
   };
   const enterPropertyTypeChoice = () => {
+    windowMode = false;
     organizationMode = false;
     serviceChoiceMode = false;
     propertyTypeMode = true;
@@ -1427,6 +1554,7 @@
     }, 40);
   };
   const enterUnitCountChoice = () => {
+    windowMode = false;
     organizationMode = false;
     serviceChoiceMode = false;
     propertyTypeMode = false;
@@ -1437,6 +1565,7 @@
     window.setTimeout(() => unitCountIncrease?.focus(), 40);
   };
   const enterQuoteDetailsAtStage = (homeDetails = true) => {
+    windowMode = false;
     organizationMode = false;
     serviceChoiceMode = false;
     propertyTypeMode = false;
@@ -1459,6 +1588,19 @@
     }, 40);
   };
   const enterQuoteDetails = () => enterQuoteDetailsAtStage(true);
+  const enterWindowDetails = () => {
+    organizationMode = false;
+    serviceChoiceMode = false;
+    propertyTypeMode = false;
+    unitCountMode = false;
+    quoteDetailsMode = false;
+    windowMode = true;
+    form.elements.requestedService.value = "window";
+    form.elements.propertyStatus.value = "window";
+    syncMobileQuestion();
+    wizardDialog?.scrollTo({ top: 0, behavior: "smooth" });
+    window.setTimeout(() => form.elements.windowPropertyType?.focus(), 40);
+  };
   const navigateToStage = (targetStage) => {
     const stageNumber = Number(targetStage);
     if (!stageIsApplicable(stageNumber) || stageNumber > state.highestStageReached) return;
@@ -1482,13 +1624,15 @@
     }
     if (stageNumber === 2) {
       goToStep(1);
-      if (isOrganizationPath()) enterOrganizationDetails();
+      if (isWindowPath()) enterWindowDetails();
+      else if (isOrganizationPath()) enterOrganizationDetails();
       else enterServiceChoice();
       return;
     }
     if (stageNumber === 3 || stageNumber === 4) {
       goToStep(1);
-      enterQuoteDetailsAtStage(stageNumber === 3);
+      if (isWindowPath()) enterWindowDetails();
+      else enterQuoteDetailsAtStage(stageNumber === 3);
       return;
     }
     if (stageNumber === 5) {
@@ -1530,6 +1674,7 @@
     enterServiceChoice();
   };
   const exitServiceChoice = () => {
+    windowMode = false;
     organizationMode = false;
     serviceChoiceMode = false;
     propertyTypeMode = false;
@@ -1570,7 +1715,8 @@
         body: JSON.stringify({
           pricingMode: state.pricingMode,
           serviceKey: state.serviceKey,
-          unitDetails: state.unitDetails
+          unitDetails: state.unitDetails,
+          serviceZip: value("zip")
         })
       });
     }
@@ -1636,8 +1782,9 @@
   };
   const syncQuotedServiceCopy = () => {
     const isOrganization = state.serviceKey === "organization";
+    const isWindow = state.serviceKey === "window";
     const priceNotice = document.querySelector("[data-price-notice]");
-    if (priceNotice) priceNotice.hidden = isOrganization;
+    if (priceNotice) priceNotice.hidden = isOrganization || isWindow;
     const completionCopy = document.querySelector("[data-completion-agreement-copy]");
     if (completionCopy) {
       completionCopy.textContent = isOrganization
@@ -1645,7 +1792,7 @@
         : "I understand that this estimate includes a fixed number of labor-hours and is based on the information I provided.";
     }
     document.querySelectorAll("[data-cleaning-schedule-details]").forEach((element) => {
-      element.hidden = isOrganization;
+      element.hidden = isOrganization || isWindow;
     });
   };
   const renderQuoteOverview = (pkg) => {
@@ -1924,11 +2071,24 @@
     document.querySelector("[data-addon-total]").textContent = money(pkg.addOnSubtotal);
     document.querySelector("[data-addon-total-row]").hidden = !pkg.addOnTotal;
     document.querySelector("[data-quote-subtotal]").textContent = money(pkg.subtotal);
+    const taxLabel = document.querySelector("[data-quote-tax-label]");
+    if (taxLabel) taxLabel.textContent = `NY sales tax (${(Number(pkg.taxRate || 0.08875) * 100).toFixed(3).replace(/0+$/, "").replace(/\.$/, "")}%)`;
     document.querySelector("[data-quote-tax]").textContent = money(pkg.tax);
     document.querySelector("[data-quote-total]").textContent = money(pkg.total);
   };
 
   buildAnswerChoices();
+  windowCards.forEach((card) => {
+    const checkbox = card.querySelector('input[type="checkbox"]');
+    const quantity = card.querySelector("[data-window-quantity]");
+    checkbox?.addEventListener("change", () => {
+      card.classList.toggle("is-selected", checkbox.checked);
+      if (quantity) quantity.disabled = !checkbox.checked;
+      invalidateDownstreamAfterEdit();
+      setStatus(document.querySelector("[data-eligibility-status]"), "");
+      persistBookingDraft();
+    });
+  });
   serviceChoiceButtons.forEach((button) => {
     button.addEventListener("click", () => {
       const selectedService = button.dataset.bookingService;
@@ -1966,6 +2126,15 @@
   syncPropertyTypeChoice();
   syncUnitCount();
   form.querySelector("[data-question-back]")?.addEventListener("click", () => {
+    if (windowMode) {
+      windowMode = false;
+      form.elements.requestedService.value = "";
+      form.elements.propertyStatus.value = "occupied";
+      mobileQuestionIndex = 1;
+      syncMobileQuestion();
+      questionFocusTarget(mobileQuestions()[mobileQuestionIndex])?.focus();
+      return;
+    }
     if (organizationMode) {
       organizationMode = false;
       mobileQuestionIndex = 0;
@@ -2077,6 +2246,10 @@
   additionalCleaningNoticeContinue?.addEventListener("click", closeAdditionalCleaningNotice);
   quoteContactBack?.addEventListener("click", () => {
     closeQuoteContact();
+    if (isWindowPath()) {
+      enterWindowDetails();
+      return;
+    }
     if (organizationMode) {
       organizationHoursInput?.focus();
       return;
@@ -2095,6 +2268,46 @@
   document.querySelector("[data-check-eligibility]").addEventListener("click", async () => {
     const status = document.querySelector("[data-eligibility-status]");
     const activeQuestions = mobileQuestions();
+    if (windowMode) {
+      const invalidControl = Array.from(windowForm?.querySelectorAll("input:not(:disabled),select:not(:disabled)") || [])
+        .find((control) => !control.checkValidity());
+      if (invalidControl) {
+        invalidControl.reportValidity();
+        invalidControl.focus();
+        return;
+      }
+      const details = windowDetailsFromForm();
+      if (!details.windows.length) {
+        setStatus(status, "Choose at least one window type and enter its quantity.");
+        windowCards[0]?.querySelector('input[type="checkbox"]')?.focus();
+        return;
+      }
+      if (details.windows.some((item) => !Number.isInteger(item.quantity) || item.quantity < 1)) {
+        setStatus(status, "Enter a valid whole-number quantity for every selected window type.");
+        return;
+      }
+      state.serviceKey = "window";
+      state.pricingMode = "window_formula";
+      state.packageIds = [];
+      state.unitDetails = [details];
+      state.eligibility = {
+        serviceIntent: "cleaning",
+        requestedService: "window",
+        cleaningCategory: "window",
+        propertyStatus: "window",
+        propertyType: details.propertyType,
+        serviceZip: value("zip"),
+        unitCount: 1
+      };
+      if (windowNeedsManualReview(details)) {
+        persistBookingDraft();
+        showQualificationRedirect("window_manual_review");
+        return;
+      }
+      setStatus(status, "");
+      showQuoteContact();
+      return;
+    }
     if (organizationMode) {
       const selectedHours = Number(organizationHoursInput?.value);
       if (!Number.isInteger(selectedHours) || selectedHours < 4 || selectedHours > 24) {
@@ -2173,6 +2386,11 @@
       if (mobileQuestionIndex === 0 && value("serviceIntent") === "organization") {
         setStatus(status, "");
         enterOrganizationDetails();
+        return;
+      }
+      if (mobileQuestionIndex === 1 && value("cleaningCategory") === "window") {
+        setStatus(status, "");
+        enterWindowDetails();
         return;
       }
       const internalReason = qualificationReasonFromAnswers(eligibilityFromForm());
@@ -2396,6 +2614,11 @@
     button.addEventListener("click", () => {
       const targetStep = Number(button.dataset.back);
       if (targetStep === 1) {
+        if (state.serviceKey === "window") {
+          enterWindowDetails();
+          goToStep(targetStep);
+          return;
+        }
         if (state.serviceKey === "organization") {
           organizationMode = true;
           serviceChoiceMode = false;
@@ -2521,6 +2744,7 @@
         organizationHoursInput.value = String(state.unitDetails[0]?.hours || 4);
         organizationNotesInput.value = state.unitDetails[0]?.notes || "";
       }
+      if (state.serviceKey === "window") restoreWindowDetails(state.unitDetails[0]);
       ["firstName", "lastName", "email", "phone"].forEach((name) => {
         form.elements[name].value = data.customer?.[name] || "";
       });
@@ -2582,6 +2806,7 @@
     const savedView = draft.view || {};
     mobileQuestionIndex = Math.max(0, Number(savedView.mobileQuestionIndex) || 0);
     organizationMode = Boolean(savedView.organizationMode);
+    windowMode = Boolean(savedView.windowMode) || state.serviceKey === "window";
     serviceChoiceMode = Boolean(savedView.serviceChoiceMode);
     propertyTypeMode = Boolean(savedView.propertyTypeMode);
     unitCountMode = Boolean(savedView.unitCountMode);

@@ -2,6 +2,7 @@ const {
   HOLD_MINUTES,
   availableSlotsForPackage,
   calculateOrganizationQuote,
+  calculateWindowQuote,
   calculateResidentialQuoteBundle,
   cleanText,
   createBooking,
@@ -77,12 +78,15 @@ module.exports = async function handler(request, response) {
       pricingMode === "organization_formula";
     const residentialFormulaMode = ["standard", "deep", "move"].includes(formulaServiceKey) &&
       pricingMode === `${formulaServiceKey}_formula`;
-    const formulaMode = organizationMode || residentialFormulaMode;
+    const windowMode = formulaServiceKey === "window" && pricingMode === "window_formula";
+    const formulaMode = organizationMode || residentialFormulaMode || windowMode;
     const requestedPackageIds = Array.isArray(body.packageIds) && body.packageIds.length
       ? body.packageIds
       : [body.packageId];
     const pkg = organizationMode
       ? calculateOrganizationQuote(submittedUnitDetails[0]?.hours)
+      : windowMode
+      ? calculateWindowQuote(submittedUnitDetails[0], body.eligibility?.serviceZip || body.customer?.zip)
       : residentialFormulaMode
       ? calculateResidentialQuoteBundle(submittedUnitDetails, formulaServiceKey)
       : getPackageBundle(requestedPackageIds);
@@ -93,7 +97,7 @@ module.exports = async function handler(request, response) {
         ...unit,
         unitNumber: index + 1,
         tierKey: organizationMode ? "hourly" : "instant_quote",
-        tierLabel: organizationMode ? pkg.tierLabel : `Unit ${index + 1} personalized ${pkg.serviceLabel}`,
+        tierLabel: organizationMode || windowMode ? pkg.tierLabel : `Unit ${index + 1} personalized ${pkg.serviceLabel}`,
         squareFootage: 0
       }))
       : submittedUnitDetails.length
@@ -129,6 +133,12 @@ module.exports = async function handler(request, response) {
     const requiredEligibility = organizationMode ? [
       "serviceIntent",
       "requestedService"
+    ] : windowMode ? [
+      "serviceIntent",
+      "requestedService",
+      "cleaningCategory",
+      "propertyType",
+      "serviceZip"
     ] : [
       "propertyStatus",
       "cleaningCategory",
@@ -142,20 +152,20 @@ module.exports = async function handler(request, response) {
       "buildup",
       "hazards"
     ];
-    if (!organizationMode && submittedUnitDetails.length) {
+    if (!organizationMode && !windowMode && submittedUnitDetails.length) {
       requiredEligibility.push("propertyType", "unitCount");
     }
-    if (!organizationMode && cleanText(eligibility.propertyStatus, 40) === "occupied") {
+    if (!organizationMode && !windowMode && cleanText(eligibility.propertyStatus, 40) === "occupied") {
       requiredEligibility.push("requestedService");
     }
     if (requiredEligibility.some((field) => !cleanText(eligibility[field], 40))) {
       return json(response, 400, { error: "Complete every package eligibility question before checkout." });
     }
-    if (!organizationMode && submittedUnitDetails.length && Number(eligibility.unitCount) !== unitDetails.length) {
+    if (!organizationMode && !windowMode && submittedUnitDetails.length && Number(eligibility.unitCount) !== unitDetails.length) {
       return json(response, 400, { error: "The number of units does not match the submitted home details." });
     }
 
-    if (!organizationMode) {
+    if (!organizationMode && !windowMode) {
       const recommendation = recommendResidentialService({
         ...eligibility,
         squareFootage
@@ -224,6 +234,12 @@ module.exports = async function handler(request, response) {
     const depositTaxCents = depositAmountCents - depositSubtotalCents;
     const unitSummary = organizationMode
       ? `${pkg.manHours} total labor-hours of organization / decluttering with 2 team members for ${pkg.teamHours} hours, $${pkg.total.toFixed(2)} including tax.`
+      : windowMode
+      ? [
+        `${submittedUnitDetails[0]?.windows?.reduce((sum, item) => sum + Number(item.quantity || 0), 0) || 0} selected windows/panels`,
+        `${cleanText(submittedUnitDetails[0]?.scope, 20).replace("both", "interior and exterior")}`,
+        `$${pkg.subtotal.toFixed(2)} before tax; $${pkg.tax.toFixed(2)} sales tax; $${pkg.total.toFixed(2)} total.`
+      ].join(", ")
       : unitDetails
       .map((unit) => residentialFormulaMode
         ? [
@@ -257,11 +273,15 @@ module.exports = async function handler(request, response) {
       notes: [
         organizationMode
           ? "Service type: Organization / Decluttering."
+          : windowMode
+          ? `Window cleaning: ${unitSummary}`
           : `Property type: ${cleanText(eligibility.propertyType, 40) || "residential"}.`,
         `Package: ${pkg.tierLabel}.`,
         unitSummary,
         organizationMode
           ? `Included service: ${pkg.manHours} total labor-hours at $60 per labor-hour; 2 team members for ${pkg.teamHours} hours.`
+          : windowMode
+          ? `Estimated service time: approximately ${pkg.teamHours} hours with a two-person team.`
           : `Included labor: ${pkg.manHours} man-hours; two-person team for approximately ${pkg.teamHours} hours.`,
         priorities.length ? `Priorities: ${priorities.join(", ")}.` : "",
         notes ? `Customer notes: ${notes}` : ""
@@ -325,6 +345,8 @@ module.exports = async function handler(request, response) {
     const description = cleanText(
       organizationMode
         ? `${pkg.tierLabel}. 2 team members for ${pkg.teamHours} hours (${pkg.manHours} total labor-hours at $60 per labor-hour).`
+        : windowMode
+        ? `${pkg.tierLabel}. ${unitSummary}`
         : `${pkg.tierLabel}. ${unitSummary} Two-person team for approximately ${pkg.teamHours} hours (${pkg.manHours} total labor-hours).`,
       500
     );

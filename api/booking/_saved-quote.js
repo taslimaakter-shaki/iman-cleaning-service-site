@@ -1,6 +1,7 @@
 const crypto = require("crypto");
 const {
   calculateOrganizationQuote,
+  calculateWindowQuote,
   calculateResidentialQuoteBundle,
   cleanText,
   json,
@@ -278,6 +279,10 @@ function validateAndPrice(body) {
   const unitDetails = Array.isArray(body.unitDetails) ? body.unitDetails.slice(0, 10) : [];
   if (serviceKey === "organization" && body.pricingMode === "organization_formula") {
     const pkg = calculateOrganizationQuote(unitDetails[0]?.hours);
+    return { eligibility, serviceKey, unitDetails, pkg };
+  }
+  if (serviceKey === "window" && body.pricingMode === "window_formula") {
+    const pkg = calculateWindowQuote(unitDetails[0], eligibility.serviceZip);
     return { eligibility, serviceKey, unitDetails, pkg };
   }
   if (!["standard", "deep", "move"].includes(serviceKey) || body.pricingMode !== `${serviceKey}_formula`) {

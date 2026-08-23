@@ -23,7 +23,7 @@
   <meta name="twitter:image" content="https://www.imancleaningservice.com/brand-card.png">
   <link rel="stylesheet" href="./design-system.css">
   <link rel="stylesheet" href="./site.css?v=20260725-book-now">
-  <link rel="stylesheet" href="./booking.css?v=20260823-cancel-booking">
+  <link rel="stylesheet" href="./booking.css?v=20260823-window-instant-v1">
   <script type="application/ld+json">
   {
     "@context": "https://schema.org",
@@ -226,6 +226,63 @@
                   </label>
                 </div>
               </div>
+              <div class="booking-window-form" data-window-form hidden>
+                <header class="booking-window-intro">
+                  <h2>Build your window cleaning quote</h2>
+                  <p>Select every window type you have, then enter the quantity. One window usually means one complete framed opening.</p>
+                </header>
+                <div class="booking-window-basics">
+                  <label><span>Property type</span><select name="windowPropertyType" required><option value="">Select type</option><option value="residential">Residential</option><option value="commercial">Commercial / storefront</option></select></label>
+                  <label><span>Cleaning sides</span><select name="windowScope" required><option value="">Select sides</option><option value="interior">Interior only</option><option value="exterior">Exterior only</option><option value="both">Interior and exterior</option></select></label>
+                  <label><span>Service frequency</span><select name="windowFrequency" required><option value="one_time">One-time service</option><option value="weekly">Weekly</option><option value="biweekly">Every two weeks</option><option value="every_four_weeks">Every four weeks</option></select></label>
+                </div>
+                <fieldset class="booking-window-types">
+                  <legend>Which window types do you have?</legend>
+                  <p class="booking-window-help">Choose all that apply. The photo examples help you identify each style.</p>
+                  <div class="booking-window-grid">
+                    <label class="booking-window-card" data-window-card><input type="checkbox" name="windowTypes" value="single_hung"><span class="booking-window-photo" style="--window-x:0;--window-y:0"><img src="./assets/window-types-atlas-v1.jpg" alt="Single-hung window example"></span><strong>Single-hung</strong><small>One movable sash</small><span class="booking-window-quantity">Quantity <input type="number" min="1" max="100" value="1" data-window-quantity="single_hung" disabled></span></label>
+                    <label class="booking-window-card" data-window-card><input type="checkbox" name="windowTypes" value="double_hung"><span class="booking-window-photo" style="--window-x:1;--window-y:0"><img src="./assets/window-types-atlas-v1.jpg" alt="Double-hung window example"></span><strong>Double-hung</strong><small>Two movable sashes; counts as one</small><span class="booking-window-quantity">Quantity <input type="number" min="1" max="100" value="1" data-window-quantity="double_hung" disabled></span></label>
+                    <label class="booking-window-card" data-window-card><input type="checkbox" name="windowTypes" value="sliding"><span class="booking-window-photo" style="--window-x:2;--window-y:0"><img src="./assets/window-types-atlas-v1.jpg" alt="Sliding window example"></span><strong>Sliding</strong><small>One framed sliding assembly</small><span class="booking-window-quantity">Quantity <input type="number" min="1" max="100" value="1" data-window-quantity="sliding" disabled></span></label>
+                    <label class="booking-window-card" data-window-card><input type="checkbox" name="windowTypes" value="casement"><span class="booking-window-photo" style="--window-x:3;--window-y:0"><img src="./assets/window-types-atlas-v1.jpg" alt="Casement window example"></span><strong>Casement</strong><small>Count each sash that opens</small><span class="booking-window-quantity">Quantity <input type="number" min="1" max="100" value="1" data-window-quantity="casement" disabled></span></label>
+                    <label class="booking-window-card" data-window-card><input type="checkbox" name="windowTypes" value="awning"><span class="booking-window-photo" style="--window-x:0;--window-y:1"><img src="./assets/window-types-atlas-v1.jpg" alt="Awning window example"></span><strong>Awning</strong><small>Hinged at the top</small><span class="booking-window-quantity">Quantity <input type="number" min="1" max="100" value="1" data-window-quantity="awning" disabled></span></label>
+                    <label class="booking-window-card" data-window-card><input type="checkbox" name="windowTypes" value="hopper"><span class="booking-window-photo" style="--window-x:1;--window-y:1"><img src="./assets/window-types-atlas-v1.jpg" alt="Hopper window example"></span><strong>Hopper</strong><small>Hinged at the bottom</small><span class="booking-window-quantity">Quantity <input type="number" min="1" max="100" value="1" data-window-quantity="hopper" disabled></span></label>
+                    <label class="booking-window-card" data-window-card><input type="checkbox" name="windowTypes" value="picture_fixed"><span class="booking-window-photo" style="--window-x:2;--window-y:1"><img src="./assets/window-types-atlas-v1.jpg" alt="Picture or fixed window example"></span><strong>Picture / fixed</strong><small>One non-opening panel</small><span class="booking-window-quantity">Quantity <input type="number" min="1" max="100" value="1" data-window-quantity="picture_fixed" disabled></span></label>
+                    <label class="booking-window-card" data-window-card><input type="checkbox" name="windowTypes" value="bay_up_to_3_panels"><span class="booking-window-photo" style="--window-x:3;--window-y:1"><img src="./assets/window-types-atlas-v1.jpg" alt="Bay window example"></span><strong>Bay</strong><small>One assembly, up to 3 panels</small><span class="booking-window-quantity">Quantity <input type="number" min="1" max="30" value="1" data-window-quantity="bay_up_to_3_panels" disabled></span></label>
+                    <label class="booking-window-card" data-window-card><input type="checkbox" name="windowTypes" value="bow_up_to_5_panels"><span class="booking-window-photo" style="--window-x:0;--window-y:2"><img src="./assets/window-types-atlas-v1.jpg" alt="Bow window example"></span><strong>Bow</strong><small>One assembly, up to 5 panels</small><span class="booking-window-quantity">Quantity <input type="number" min="1" max="30" value="1" data-window-quantity="bow_up_to_5_panels" disabled></span></label>
+                    <label class="booking-window-card" data-window-card><input type="checkbox" name="windowTypes" value="garden"><span class="booking-window-photo" style="--window-x:1;--window-y:2"><img src="./assets/window-types-atlas-v1.jpg" alt="Garden window example"></span><strong>Garden</strong><small>Projecting assembly, up to 5 faces</small><span class="booking-window-quantity">Quantity <input type="number" min="1" max="30" value="1" data-window-quantity="garden" disabled></span></label>
+                    <label class="booking-window-card" data-window-card><input type="checkbox" name="windowTypes" value="transom"><span class="booking-window-photo" style="--window-x:2;--window-y:2"><img src="./assets/window-types-atlas-v1.jpg" alt="Transom window example"></span><strong>Transom</strong><small>Separate panel above a door/window</small><span class="booking-window-quantity">Quantity <input type="number" min="1" max="100" value="1" data-window-quantity="transom" disabled></span></label>
+                    <label class="booking-window-card" data-window-card><input type="checkbox" name="windowTypes" value="french_grid"><span class="booking-window-photo" style="--window-x:3;--window-y:2"><img src="./assets/window-types-atlas-v1.jpg" alt="French or grid window example"></span><strong>French / grid</strong><small>Standard divided-light sash</small><span class="booking-window-quantity">Quantity <input type="number" min="1" max="100" value="1" data-window-quantity="french_grid" disabled></span></label>
+                    <label class="booking-window-card" data-window-card><input type="checkbox" name="windowTypes" value="jalousie"><span class="booking-window-photo" style="--window-x:0;--window-y:3"><img src="./assets/window-types-atlas-v1.jpg" alt="Jalousie window example"></span><strong>Jalousie</strong><small>Assembly with up to 10 louvers</small><span class="booking-window-quantity">Quantity <input type="number" min="1" max="50" value="1" data-window-quantity="jalousie" disabled></span></label>
+                    <label class="booking-window-card" data-window-card><input type="checkbox" name="windowTypes" value="arched_specialty"><span class="booking-window-photo" style="--window-x:1;--window-y:3"><img src="./assets/window-types-atlas-v1.jpg" alt="Arched specialty window example"></span><strong>Arched / specialty</strong><small>One specialty panel</small><span class="booking-window-quantity">Quantity <input type="number" min="1" max="50" value="1" data-window-quantity="arched_specialty" disabled></span></label>
+                    <label class="booking-window-card" data-window-card><input type="checkbox" name="windowTypes" value="skylight"><span class="booking-window-photo" style="--window-x:2;--window-y:3"><img src="./assets/window-types-atlas-v1.jpg" alt="Skylight example"></span><strong>Skylight</strong><small>Only with safe interior access</small><span class="booking-window-quantity">Quantity <input type="number" min="1" max="30" value="1" data-window-quantity="skylight" disabled></span></label>
+                    <label class="booking-window-card" data-window-card><input type="checkbox" name="windowTypes" value="storefront_panel"><span class="booking-window-photo" style="--window-x:3;--window-y:3"><img src="./assets/window-types-atlas-v1.jpg" alt="Storefront glass panel example"></span><strong>Storefront panel</strong><small>Each uninterrupted panel or glass door</small><span class="booking-window-quantity">Quantity <input type="number" min="1" max="200" value="1" data-window-quantity="storefront_panel" disabled></span></label>
+                  </div>
+                </fieldset>
+                <fieldset class="booking-window-options"><legend>Add-ons and access</legend><div class="booking-window-option-grid">
+                  <label><span>Removable screens</span><input name="windowScreens" type="number" min="0" max="200" value="0"></label>
+                  <label><span>Detailed tracks and sills</span><input name="windowTracks" type="number" min="0" max="200" value="0"></label>
+                  <label><span>Removable storm inserts</span><input name="windowStorms" type="number" min="0" max="200" value="0"></label>
+                  <label><span>Removable grid sashes</span><input name="windowRemovableGrids" type="number" min="0" max="200" value="0"></label>
+                  <label><span>Extra divided-light panes over 8</span><input name="windowExtraPanes" type="number" min="0" max="500" value="0"></label>
+                  <label><span>Extra bay/bow panels</span><input name="windowExtraPanels" type="number" min="0" max="100" value="0"></label>
+                  <label><span>Extra jalousie louvers over 10</span><input name="windowExtraLouvers" type="number" min="0" max="500" value="0"></label>
+                  <label><span>Exterior windows requiring second-floor access</span><input name="windowSecondFloor" type="number" min="0" max="200" value="0"></label>
+                  <label><span>Windows blocked by removable guard or A/C</span><input name="windowObstructions" type="number" min="0" max="200" value="0"></label>
+                </div></fieldset>
+                <fieldset class="booking-window-options"><legend>Condition and safe access</legend><div class="booking-window-basics">
+                  <label><span>Window condition</span><select name="windowCondition" required><option value="routine">Routine dirt</option><option value="hard_water">Hard-water or mineral deposits</option><option value="paint_adhesive">Paint, stickers, silicone, or adhesive</option><option value="construction">Post-construction residue</option><option value="damaged">Cracked, loose, or damaged glass</option></select></label>
+                  <label><span>Largest panel size</span><select name="windowSize" required><option value="standard">Up to 15 sq. ft.</option><option value="oversized">15–30 sq. ft.</option><option value="very_oversized">More than 30 sq. ft.</option></select></label>
+                  <label><span>Highest exterior access</span><select name="windowAccess" required><option value="ground_safe">Ground floor / safely reachable</option><option value="second_safe">Second floor with safe access</option><option value="third">Third floor</option><option value="special_equipment">Roof, extension ladder, lift, scaffold, or rope</option><option value="leaning_out">Would require leaning outside</option><option value="not_sure">Not sure</option></select></label>
+                </div><div class="booking-window-review-flags">
+                  <label><input type="checkbox" name="windowBrownstoneUpper"> Brownstone upper-floor exterior windows</label>
+                  <label><input type="checkbox" name="windowNonTilting"> NYC apartment windows do not tilt inward</label>
+                  <label><input type="checkbox" name="windowSkylightRoof"> A skylight requires roof access</label>
+                  <label><input type="checkbox" name="windowFixedObstruction"> A child guard or A/C unit is fixed in place</label>
+                  <label><input type="checkbox" name="windowUnclearPanels"> I am not sure how to count a bay, bow, garden, or specialty window</label>
+                  <label><input type="checkbox" name="windowParkingIssue"> Parking/loading or building access may significantly affect the job</label>
+                </div></fieldset>
+                <p class="booking-window-note">Prices are calculated before local sales tax. Unsafe access or restoration work requires photos and a review before we confirm the price.</p>
+              </div>
               <div class="booking-service-choice-form" data-service-choice-form hidden>
                 <h2>What kind of service are you looking for?</h2>
                 <div class="booking-service-choice-options" role="group" aria-label="Cleaning service">
@@ -325,7 +382,7 @@
                       <div><dt>Service price before tax</dt><dd data-standard-base-price></dd></div>
                       <div data-addon-total-row><dt>Selected add-ons before tax</dt><dd data-addon-total></dd></div>
                       <div><dt>Price before tax</dt><dd data-quote-subtotal></dd></div>
-                      <div><dt>NY sales tax (8.875%)</dt><dd data-quote-tax></dd></div>
+                      <div><dt data-quote-tax-label>NY sales tax (8.875%)</dt><dd data-quote-tax></dd></div>
                       <div class="booking-price-breakdown-total"><dt>Total estimated price</dt><dd data-quote-total></dd></div>
                     </dl>
                   </div>
@@ -621,6 +678,6 @@
         </div>
   </main>
   <script src="./booking-service-area.js?v=20260725-zip-gate"></script>
-    <script src="./book-now.js?v=20260823-no-prequote-team"></script>
+  <script src="./book-now.js?v=20260823-window-instant-v1"></script>
 </body>
 </html>
