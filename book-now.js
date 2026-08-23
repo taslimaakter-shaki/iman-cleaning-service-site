@@ -468,6 +468,7 @@
   };
   const accountMode = () => form.elements.accountMode?.value || "guest";
   const syncAccountState = () => {
+    if (!accountState || !accountStateCopy || !accountLogout) return;
     if (currentAccount) {
       accountStateCopy.textContent = `Logged in as ${currentAccount.email}. This booking will appear in your account.`;
       accountState.hidden = false;
@@ -952,9 +953,7 @@
     if (stageNumber === 4) return 55 + detailStageFraction(false) * 15;
     if (stageNumber === 5) return 71;
     if (stageNumber === 6) return value("schedule") ? 92 : 86;
-    const confirmations = ["completionAgreement", "conditionAgreement", "termsAgreement"]
-      .filter((name) => form.elements[name]?.checked).length;
-    return 96 + confirmations;
+    return 100;
   };
   const syncStageProgress = () => {
     const stages = CLEANING_STAGES;
@@ -965,7 +964,7 @@
       stageNumber
     );
     const stage = stages[stageNumber - 1];
-    const rawPercent = Math.min(99, Math.max(stage.start, Math.round(rawProgressPercent(stageNumber))));
+    const rawPercent = Math.min(stageNumber === 7 ? 100 : 99, Math.max(stage.start, Math.round(rawProgressPercent(stageNumber))));
     if (lastProgressStage !== stageNumber) {
       lastProgressStage = stageNumber;
       highestProgressInStage = rawPercent;
@@ -979,11 +978,13 @@
       const percentLabel = progressSection?.querySelector("[data-stage-percent]");
       const meter = progress.querySelector("[data-stage-meter]");
       if (label) label.textContent = `Step ${stageNumber} of ${stages.length} · ${stage.label}`;
-      if (percentLabel) percentLabel.textContent = `${percent}% complete`;
+      if (percentLabel) percentLabel.textContent = stageNumber === 7 ? "Final step" : `${percent}% complete`;
       if (meter) meter.style.width = `${percent}%`;
       progress.setAttribute("aria-valuenow", String(percent));
       progress.setAttribute("aria-valuemax", "100");
-      progress.setAttribute("aria-valuetext", `${percent}% complete. Step ${stageNumber} of ${stages.length}: ${stage.label}`);
+      progress.setAttribute("aria-valuetext", stageNumber === 7
+        ? `Final step. Step ${stageNumber} of ${stages.length}: ${stage.label}`
+        : `${percent}% complete. Step ${stageNumber} of ${stages.length}: ${stage.label}`);
     });
     syncStageMenu(stageNumber);
   };
@@ -1515,6 +1516,13 @@
     if (!wholeHours) return `${minutes} minutes`;
     return `${wholeHours} ${hourLabel} ${minutes} minutes`;
   };
+  const compactTeamTime = (amount) => {
+    const totalMinutes = Math.round(Number(amount) * 60);
+    const wholeHours = Math.floor(totalMinutes / 60);
+    const minutes = totalMinutes % 60;
+    if (minutes === 30) return `${wholeHours || ""}½ ${wholeHours ? "hours" : "hour"}`.trim();
+    return teamTime(amount);
+  };
   const availabilityRequest = async () => {
     if (/_formula$/.test(state.pricingMode)) {
       return fetch("/api/booking/availability", {
@@ -1615,10 +1623,13 @@
       ? `1 professional organizer for ${teamTime(pkg.teamHours)}`
       : `${pkg.cleanerCount || 2} cleaners for approximately ${teamTime(pkg.teamHours)}`;
     document.querySelector("[data-total-due]").textContent = money(deposit);
+    document.querySelector("[data-checkout-total]").textContent = money(pkg.price);
+    document.querySelector("[data-checkout-balance]").textContent = money(balance);
+    document.querySelector("[data-final-labor-hours]").textContent = hours(pkg.manHours);
     document.querySelector("[data-pay-button]").textContent = `Pay ${money(deposit)} & confirm booking`;
     document.querySelector("[data-checkout-payment-explanation]").textContent =
-      `You are paying only the 25% booking deposit today—not the full ${money(pkg.price)}.`;
-    form.elements.completionAgreement.checked = false;
+      "You are paying only the booking deposit today.";
+    form.elements.bookingAgreement.checked = false;
   };
   const calculateAndShowQuote = async ({ sendLink = true } = {}) => {
     const status = document.querySelector("[data-eligibility-status]");
@@ -2283,31 +2294,26 @@
   });
 
   const syncCheckoutReview = () => {
-    document.querySelector("[data-checkout-package]").textContent =
-      `${state.package.serviceLabel} — ${state.package.tierLabel}`;
+    document.querySelector("[data-checkout-package]").textContent = state.package.serviceLabel;
     const checkoutTeamDescription = document.querySelector("[data-checkout-team-description]");
     if (checkoutTeamDescription) {
       checkoutTeamDescription.textContent = state.serviceKey === "organization"
-        ? `${hours(state.package.manHours)} hours will be provided by one professional organizer at $60 per hour.`
-        : `${hours(state.package.manHours)} total labor-hours will be provided by a professional two-person cleaning team for approximately ${teamTime(state.package.teamHours)} at the property.`;
+        ? `1 professional organizer · Approximately ${compactTeamTime(state.package.teamHours)}`
+        : `${state.package.cleanerCount || 2} cleaners · Approximately ${compactTeamTime(state.package.teamHours)}`;
     }
-    document.querySelector("[data-checkout-schedule]").textContent =
-      form.elements.schedule.options[form.elements.schedule.selectedIndex].textContent;
-    document.querySelector("[data-labor-agreement]").textContent =
-      state.serviceKey === "organization"
-        ? `I understand that this booking includes ${hours(state.package.manHours)} hours with one professional organizer at $60 per hour.`
-        : `I understand that this package includes ${hours(state.package.manHours)} total labor-hours, provided by a professional two-person cleaning team for approximately ${teamTime(state.package.teamHours)} at the property.`;
-    const conditionAgreementCopy = document.querySelector("[data-condition-agreement-copy]");
-    if (conditionAgreementCopy) {
-      conditionAgreementCopy.textContent = state.serviceKey === "organization"
-        ? "I confirm that the selected hours and appointment note accurately describe the organization or decluttering service I need."
-        : "I confirm that my answers accurately represent the property’s current condition. No additional time or charges will be added without my approval.";
-    }
-    document.querySelector("[data-total-due]").textContent = money(bookingDeposit(state.package.price));
+    const selectedSlot = state.availableSlots.find((slot) => slot.value === value("schedule"));
+    document.querySelector("[data-checkout-schedule]").textContent = selectedSlot
+      ? `${longDate(selectedSlot.date)} at ${displayTime(selectedSlot.time)}`
+      : form.elements.schedule.options[form.elements.schedule.selectedIndex].textContent;
     const deposit = bookingDeposit(state.package.price);
+    const balance = Math.round((Number(state.package.price || 0) - deposit) * 100) / 100;
+    document.querySelector("[data-total-due]").textContent = money(deposit);
+    document.querySelector("[data-checkout-total]").textContent = money(state.package.price);
+    document.querySelector("[data-checkout-balance]").textContent = money(balance);
+    document.querySelector("[data-final-labor-hours]").textContent = hours(state.package.manHours);
     document.querySelector("[data-pay-button]").textContent = `Pay ${money(deposit)} & confirm booking`;
     document.querySelector("[data-checkout-payment-explanation]").textContent =
-      `You are paying only the 25% booking deposit today—not the full ${money(state.package.price)}.`;
+      "You are paying only the booking deposit today.";
   };
 
   document.querySelector("[data-continue-contact]").addEventListener("click", () => {
@@ -2358,11 +2364,6 @@
   form.addEventListener("submit", async (event) => {
     event.preventDefault();
     const status = document.querySelector("[data-checkout-status]");
-    if (accountMode() === "account" && !currentAccount) {
-      setStatus(status, "Log in or create an account, or choose Book as a guest.", "info");
-      openAccountDialog("login");
-      return;
-    }
     const visibleStep = document.querySelector('[data-step="4"]');
     const invalid = Array.from(visibleStep.querySelectorAll("input[required]")).find((control) => !control.checkValidity());
     if (invalid) {
@@ -2406,15 +2407,16 @@
         email: value("email"),
         phone: value("phone"),
         address: value("address"),
+        address2: value("address2"),
         city: value("city"),
         state: value("state"),
         zip: value("zip")
       },
       agreements: {
-        laborHours: form.elements.laborHoursAgreement.checked,
-        completion: form.elements.completionAgreement.checked,
-        condition: form.elements.conditionAgreement.checked,
-        terms: form.elements.termsAgreement.checked
+        laborHours: form.elements.bookingAgreement.checked,
+        completion: form.elements.bookingAgreement.checked,
+        condition: form.elements.bookingAgreement.checked,
+        terms: form.elements.bookingAgreement.checked
       }
     };
 
@@ -2582,12 +2584,12 @@
       if (scheduleSelect) {
         scheduleSelect.replaceChildren(new Option("Select an appointment", ""));
       }
-      ["completionAgreement", "laborHoursAgreement", "conditionAgreement", "termsAgreement"].forEach((name) => {
+      ["bookingAgreement"].forEach((name) => {
         if (form.elements[name]) form.elements[name].checked = false;
       });
     } else if (editedStage === 6) {
       state.highestStageReached = 6;
-      ["laborHoursAgreement", "conditionAgreement", "termsAgreement"].forEach((name) => {
+      ["bookingAgreement"].forEach((name) => {
         if (form.elements[name]) form.elements[name].checked = false;
       });
     }

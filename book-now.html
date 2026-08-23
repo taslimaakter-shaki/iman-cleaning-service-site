@@ -23,7 +23,7 @@
   <meta name="twitter:image" content="https://www.imancleaningservice.com/brand-card.png">
   <link rel="stylesheet" href="./design-system.css">
   <link rel="stylesheet" href="./site.css?v=20260725-book-now">
-  <link rel="stylesheet" href="./booking.css?v=20260823-important-estimate-note">
+  <link rel="stylesheet" href="./booking.css?v=20260823-final-checkout-layout">
   <script type="application/ld+json">
   {
     "@context": "https://schema.org",
@@ -442,55 +442,63 @@
 
           <section class="booking-step" data-step="4" hidden>
             <div class="booking-step-head">
-              <span class="ds-kicker">Service address and secure payment</span>
-              <h2>Confirm where we’re cleaning</h2>
+              <span class="ds-kicker">Review &amp; book</span>
+              <h2>Review and confirm your booking</h2>
             </div>
-            <div class="booking-fields">
-              <label class="booking-field-wide"><span>Street address</span><input name="address" autocomplete="off" required></label>
-              <label><span>City</span><input name="city" autocomplete="off" required></label>
-              <label><span>State</span><input name="state" value="NY" autocomplete="off" required></label>
-              <label><span>ZIP code <small data-service-zip-note></small></span><input name="zip" inputmode="numeric" autocomplete="off" maxlength="5" pattern="[0-9]{5}" required></label>
-            </div>
-            <div class="booking-checkout-disclosure" aria-labelledby="booking-team-disclosure">
-              <span class="ds-kicker">Final service details</span>
-              <h3 id="booking-team-disclosure" data-checkout-package></h3>
-              <p data-checkout-team-description><strong data-checkout-labor></strong> will be provided by a professional two-person cleaning team for approximately <strong data-checkout-team-time></strong> at the property.</p>
-              <p>Selected appointment: <strong data-checkout-schedule></strong></p>
-            </div>
-            <fieldset class="booking-account-choice" data-account-choice hidden>
-              <legend>How would you like to book?</legend>
-              <label class="booking-account-option">
-                <input type="radio" name="accountMode" value="guest" checked>
-                <span><strong>Book as a guest</strong><small>Fastest—no account required.</small></span>
-                <b>Recommended</b>
-              </label>
-              <label class="booking-account-option">
-                <input type="radio" name="accountMode" value="account">
-                <span><strong>Log in or create an account</strong><small>View invoices, appointments, rescheduling, and cancellations in one place.</small></span>
-              </label>
-              <div class="booking-account-state" data-account-state hidden>
-                <span data-account-state-copy></span>
-                <button type="button" data-account-logout hidden>Log out</button>
+            <input type="hidden" name="accountMode" value="guest">
+            <div class="booking-final-layout">
+              <div class="booking-final-left">
+                <section class="booking-final-card" aria-labelledby="booking-address-title">
+                  <h3 id="booking-address-title">Where are we cleaning?</h3>
+                  <div class="booking-final-address-grid">
+                    <label class="booking-final-field-wide"><span>Street address</span><input name="address" autocomplete="street-address" required></label>
+                    <label class="booking-final-field-wide"><span>Apt/unit <small>— optional</small></span><input name="address2" autocomplete="address-line2"></label>
+                    <label><span>City</span><input name="city" autocomplete="address-level2" required></label>
+                    <label><span>State</span><input name="state" value="NY" autocomplete="address-level1" readonly required></label>
+                    <label><span>ZIP code <small data-service-zip-note></small></span><input name="zip" inputmode="numeric" autocomplete="postal-code" maxlength="5" pattern="[0-9]{5}" readonly required></label>
+                  </div>
+                </section>
+
+                <section class="booking-final-card booking-service-review" aria-labelledby="booking-service-title">
+                  <h3 id="booking-service-title">Service details</h3>
+                  <strong class="booking-service-name" data-checkout-package></strong>
+                  <p data-checkout-schedule></p>
+                  <p data-checkout-team-description></p>
+                  <div class="booking-service-edit-actions">
+                    <button type="button" data-back="3">Edit appointment</button>
+                    <button type="button" data-stage-target="2">Edit service</button>
+                  </div>
+                </section>
+
+                <p class="booking-post-booking-account"><strong>Create a password to manage your booking</strong> — optional after payment.</p>
+                <button class="booking-save-exit booking-final-save" type="button" data-booking-cancel>Save and finish later</button>
               </div>
-            </fieldset>
-            <div class="booking-agreements">
-              <label><input type="checkbox" name="laborHoursAgreement" required> <span data-labor-agreement></span></label>
-              <label><input type="checkbox" name="completionAgreement" required> <span data-completion-agreement-copy>I understand that this estimate includes a fixed number of labor-hours and is based on the information I provided.</span></label>
-              <label><input type="checkbox" name="conditionAgreement" required> <span data-condition-agreement-copy>I confirm that my answers accurately represent the property’s current condition. No additional time or charges will be added without my approval.</span></label>
-              <label><input type="checkbox" name="termsAgreement" required> I agree to the <a href="./agreement.html" target="_blank" rel="noopener">Service Agreement</a>, the 25% booking deposit, and authorization of the remaining 75% about 48 hours before service for capture after completion.</label>
-            </div>
-            <div class="booking-final-summary">
-              <span>Total due today</span>
-              <strong data-total-due></strong>
-            </div>
-            <div class="booking-status" data-checkout-status aria-live="polite" hidden></div>
-            <div class="booking-actions">
-              <button class="booking-secondary" type="button" data-back="3">Back</button>
-              <button class="booking-secondary booking-save-exit" type="button" data-booking-cancel>Save &amp; exit</button>
-              <div class="booking-payment-submit">
-                <button class="booking-primary" type="submit" data-pay-button>Pay deposit &amp; confirm booking</button>
-                <small data-checkout-payment-explanation></small>
-              </div>
+
+              <aside class="booking-final-booking-summary" aria-labelledby="booking-summary-title">
+                <h3 id="booking-summary-title">Booking summary</h3>
+                <dl class="booking-final-totals">
+                  <div><dt>Estimated total</dt><dd data-checkout-total></dd></div>
+                </dl>
+                <span class="booking-deposit-label">Due today—25% deposit</span>
+                <strong class="booking-deposit-total" data-total-due></strong>
+                <dl class="booking-final-totals booking-final-balance">
+                  <div><dt>Remaining after service</dt><dd data-checkout-balance></dd></div>
+                </dl>
+                <ul class="booking-final-trust">
+                  <li>Secure payment</li>
+                  <li>No extra charges without approval</li>
+                </ul>
+                <div class="booking-final-agreement">
+                  <label><input type="checkbox" name="bookingAgreement" required> <strong>I agree to the <a href="./agreement.html" target="_blank" rel="noopener">Service Agreement</a> and payment terms.</strong></label>
+                  <p>By booking, I confirm that my service details are accurate and understand that the estimate includes <strong data-final-labor-hours></strong> labor-hours. I agree to the Service Agreement and payment terms.</p>
+                </div>
+                <p class="booking-authorization-note">A temporary authorization may be placed on your card up to 48 hours before the appointment. The remaining balance will only be charged after the service is completed.</p>
+                <div class="booking-status" data-checkout-status aria-live="polite" hidden></div>
+                <div class="booking-payment-submit">
+                  <button class="booking-primary" type="submit" data-pay-button>Pay deposit &amp; confirm booking</button>
+                  <small data-checkout-payment-explanation></small>
+                </div>
+              </aside>
             </div>
           </section>
             </form>
@@ -603,6 +611,6 @@
         </div>
   </main>
   <script src="./booking-service-area.js?v=20260725-zip-gate"></script>
-    <script src="./book-now.js?v=20260823-pet-questions"></script>
+    <script src="./book-now.js?v=20260823-final-checkout-and-pets"></script>
 </body>
 </html>

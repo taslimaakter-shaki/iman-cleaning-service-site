@@ -189,10 +189,11 @@ module.exports = async function handler(request, response) {
     const email = cleanText(customer.email, 180);
     const phone = cleanText(customer.phone, 40);
     const address = cleanText(customer.address, 240);
+    const address2 = cleanText(customer.address2, 80);
     const city = cleanText(customer.city, 80);
     const state = cleanText(customer.state, 30);
     const zip = cleanText(customer.zip, 15);
-    const fullAddress = cleanText([address, city, state, zip].filter(Boolean).join(", "), 400);
+    const fullAddress = cleanText([address, address2, city, state, zip].filter(Boolean).join(", "), 400);
 
     if (!firstName || !lastName || !email || !phone || !address || !city || !state || !zip) {
       return json(response, 400, { error: "Complete all customer and service-address fields." });
