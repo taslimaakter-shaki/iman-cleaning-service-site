@@ -3,8 +3,8 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>Book Residential Cleaning Online in NYC | Iman Cleaning</title>
-  <meta name="description" content="Book residential cleaning in NYC and Long Island. Get your exact Standard, Deep, or Move-In/Move-Out Cleaning price, choose a time, and pay securely online.">
+  <title>Book Cleaning Services Online in NYC | Iman Cleaning</title>
+  <meta name="description" content="Book residential, commercial, window cleaning, or organization services in NYC and Long Island. Get a quote, choose a time, and book securely online.">
   <meta name="robots" content="index, follow, max-image-preview:large">
   <meta name="theme-color" content="#0b6474">
   <meta name="author" content="Iman Cleaning Service LLC">
@@ -12,25 +12,25 @@
   <meta property="og:type" content="website">
   <meta property="og:site_name" content="Iman Cleaning Service LLC">
   <meta property="og:locale" content="en_US">
-  <meta property="og:title" content="Book Residential Cleaning Online in NYC | Iman Cleaning">
-  <meta property="og:description" content="Answer a few questions, see your residential cleaning price, choose an available time, and book securely online.">
+  <meta property="og:title" content="Book Cleaning Services Online in NYC | Iman Cleaning">
+  <meta property="og:description" content="Answer a few questions, get a quote for the service you need, choose an available time, and book securely online.">
   <meta property="og:url" content="https://www.imancleaningservice.com/book-now.html">
   <meta property="og:image" content="https://www.imancleaningservice.com/brand-card.png">
-  <meta property="og:image:alt" content="Iman Cleaning Service LLC residential cleaning in New York City">
+  <meta property="og:image:alt" content="Iman Cleaning Service LLC cleaning services in New York City">
   <meta name="twitter:card" content="summary_large_image">
-  <meta name="twitter:title" content="Book Residential Cleaning Online in NYC | Iman Cleaning">
+  <meta name="twitter:title" content="Book Cleaning Services Online in NYC | Iman Cleaning">
   <meta name="twitter:description" content="See your cleaning price, choose an available time, and pay securely online.">
   <meta name="twitter:image" content="https://www.imancleaningservice.com/brand-card.png">
   <link rel="stylesheet" href="./design-system.css">
   <link rel="stylesheet" href="./site.css?v=20260725-book-now">
-  <link rel="stylesheet" href="./booking.css?v=20260822-label-only-stages">
+  <link rel="stylesheet" href="./booking.css?v=20260823-quote-transparency">
   <script type="application/ld+json">
   {
     "@context": "https://schema.org",
     "@type": "Service",
-    "name": "Residential Cleaning Booking",
-    "serviceType": ["Standard Cleaning", "Deep Cleaning", "Move-In Cleaning", "Move-Out Cleaning", "Post-Construction Cleaning"],
-    "description": "Online residential cleaning booking with upfront package pricing for homes and apartments in New York City and Long Island.",
+    "name": "Cleaning Services Booking",
+    "serviceType": ["Residential Cleaning", "Commercial Cleaning", "Window Cleaning", "Organization and Decluttering"],
+    "description": "Online booking and quotes for residential, commercial, window cleaning, and organization services in New York City and Long Island.",
     "url": "https://www.imancleaningservice.com/book-now.html",
     "provider": {
       "@type": "CleaningService",
@@ -77,7 +77,7 @@
             <div class="booking-wizard-toolbar">
               <button type="button" data-wizard-close aria-label="Close booking">×</button>
             </div>
-            <h1 class="booking-visually-hidden" id="booking-wizard-title">Residential cleaning booking assistant</h1>
+            <h1 class="booking-visually-hidden" id="booking-wizard-title">Cleaning service booking assistant</h1>
             <form class="booking-form" data-booking-form novalidate autocomplete="off">
           <div class="booking-stage-progress">
             <div class="booking-stage-heading">
@@ -99,7 +99,7 @@
           <section class="booking-step" data-step="1">
             <div class="booking-question-context">
               <div class="booking-area-confirmed" data-area-confirmed hidden>
-                <span>Residential cleaning · ZIP <strong data-confirmed-zip></strong></span>
+                <span>Service location · ZIP <strong data-confirmed-zip></strong></span>
                 <button type="button" data-change-zip>Change ZIP</button>
               </div>
             </div>
@@ -492,26 +492,28 @@
                   <button type="button" data-stage-target="7" title="Final booking review" disabled><span>Review &amp; book</span></button>
                 </nav>
               </div>
-              <span class="booking-redirect-kicker">Your quote</span>
-              <h2 id="quote-contact-title">Your personalized quote is ready</h2>
-              <p id="quote-contact-description">Enter your details to view it now. We’ll also send you a copy by email and text.</p>
+              <span class="booking-redirect-kicker booking-quote-calculated"><span aria-hidden="true">✓</span> Quote calculated</span>
+              <h2 id="quote-contact-title">Where should we send your quote?</h2>
+              <p id="quote-contact-description">Enter your information to view your price and continue to scheduling. We’ll send your quote by email and text at the same time.</p>
               <form data-quote-contact-form novalidate autocomplete="off">
                 <div class="booking-fields booking-quote-contact-fields">
-                  <label><span>First name</span><input name="quoteFirstName" autocomplete="off" required></label>
-                  <label><span>Last name</span><input name="quoteLastName" autocomplete="off" required></label>
-                  <label><span>Email address</span><input type="email" name="quoteEmail" autocomplete="off" required></label>
-                  <label><span>Phone number</span><input type="tel" name="quotePhone" autocomplete="off" required></label>
+                  <label><span>First name</span><input name="quoteFirstName" autocomplete="given-name" placeholder="Enter first name" required></label>
+                  <label><span>Last name</span><input name="quoteLastName" autocomplete="family-name" placeholder="Enter last name" required></label>
+                  <label><span>Email address</span><input type="email" name="quoteEmail" autocomplete="email" placeholder="you@example.com" required></label>
+                  <label><span>Phone number</span><input type="tel" name="quotePhone" autocomplete="tel" inputmode="tel" placeholder="(000) 000-0000" required></label>
                   <label class="booking-honeypot" aria-hidden="true"><span>Website</span><input name="website" tabindex="-1" autocomplete="off"></label>
                 </div>
                 <label class="booking-quote-sms-consent">
                   <input type="checkbox" name="quoteSmsConsent" required>
-                  <span><strong>Send me my quote and booking-related updates by text.</strong><br>Message and data rates may apply. Reply STOP to opt out.<br><a href="./sms-terms.html" target="_blank" rel="noopener">View SMS Terms.</a></span>
+                  <span><strong>Text me my quote and appointment updates.</strong><br>Message and data rates may apply. Reply STOP to opt out. <a href="./sms-terms.html" target="_blank" rel="noopener">View SMS Terms.</a></span>
                 </label>
                 <div class="booking-status" data-quote-contact-status aria-live="polite" hidden></div>
-                <div class="booking-redirect-actions">
-                  <button class="booking-redirect-back" type="button" data-quote-contact-back>Review answers</button>
-                  <button class="booking-redirect-back booking-save-exit" type="button" data-booking-cancel>Save &amp; exit</button>
+                <div class="booking-quote-submit">
                   <button class="booking-redirect-continue" type="submit" data-quote-contact-submit>View my quote →</button>
+                </div>
+                <div class="booking-quote-secondary-actions">
+                  <button type="button" data-quote-contact-back>← Edit my answers</button>
+                  <button class="booking-save-exit" type="button" data-booking-cancel>Save and finish later</button>
                 </div>
               </form>
             </section>
@@ -559,6 +561,6 @@
         </div>
   </main>
   <script src="./booking-service-area.js?v=20260725-zip-gate"></script>
-    <script src="./book-now.js?v=20260822-label-only-stages"></script>
+    <script src="./book-now.js?v=20260823-quote-transparency"></script>
 </body>
 </html>
