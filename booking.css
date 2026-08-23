@@ -3551,6 +3551,31 @@ fieldset.booking-field-wide legend {
   line-height: 1.65;
 }
 
+.booking-important-note {
+  display: grid;
+  gap: 8px;
+  padding: 18px 20px;
+  color: var(--text-body);
+  background: #fffaf0;
+  border: 1px solid #ead9b5;
+  border-radius: 16px;
+}
+
+.booking-important-note[hidden] {
+  display: none;
+}
+
+.booking-important-note > strong {
+  color: var(--teal-950);
+  font-size: .9rem;
+}
+
+.booking-important-note p {
+  margin: 0;
+  font-size: .8rem;
+  line-height: 1.55;
+}
+
 .booking-quote-summary {
   position: sticky;
   top: 82px;
