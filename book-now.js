@@ -1570,13 +1570,7 @@
   };
   const renderQuoteOverview = (pkg) => {
     const serviceLabel = serviceNames[state.serviceKey] || pkg.serviceLabel;
-    const units = pkg.units || [];
-    const bedroomCount = units.reduce((total, unit) => total + Number(unit.bedrooms || 0), 0);
-    const bathroomCount = units.reduce((total, unit) => total + Number(unit.fullBathrooms || 0) + Number(unit.halfBathrooms || 0), 0);
     document.querySelector("[data-recommendation-title]").textContent = `Your ${serviceLabel} Estimate`;
-    document.querySelector("[data-recommendation-reason]").textContent = state.serviceKey === "organization"
-      ? "Based on the organization and decluttering hours you selected."
-      : `${bedroomCount}-bedroom home · ${bathroomCount} bathroom${bathroomCount === 1 ? "" : "s"} · Based on the information you provided.`;
     document.querySelector("[data-package-price]").textContent = money(pkg.price);
     document.querySelector("[data-mobile-package-price]").textContent = money(pkg.price);
     document.querySelector("[data-man-hours]").textContent = `${hours(pkg.manHours)} labor-hours included`;
