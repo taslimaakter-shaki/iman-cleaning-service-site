@@ -29,7 +29,7 @@
   gtag('config', 'G-6MEJH73E0H');
 </script>
 <link rel="stylesheet" href="./design-system.css">
-<link rel="stylesheet" href="./site.css?v=20260727-booking-handoff">
+<link rel="stylesheet" href="./site.css?v=20260823-window-quote">
 <link rel="stylesheet" href="./homepage-footer.css?v=20260727-footer-location">
 </head>
 <body class="quote-page redesigned-quote-page">
@@ -207,10 +207,147 @@
                           <option>Interior and exterior</option>
                         </select>
                       </label>
-                      <label data-window-cleaning-field hidden>
-                        <span>Approximately how many windows?</span>
-                        <input type="number" name="Window Cleaning Count" min="1" step="1" placeholder="Enter window count" required disabled>
-                      </label>
+                      <div class="window-type-builder field-wide" data-window-cleaning-field data-window-type-builder hidden>
+                        <div class="window-type-builder-head">
+                          <span class="window-type-eyebrow">Select all that apply</span>
+                          <h3>What kinds of windows do you have?</h3>
+                          <p>Choose every style you want cleaned, then enter the quantity. Count the entire framed window as one—do not count each pane separately.</p>
+                        </div>
+                        <div class="window-type-grid">
+                          <article class="window-type-card" data-window-type-card>
+                            <label class="window-type-choice">
+                              <input type="checkbox" name="Window Types[]" value="Single-hung" data-window-type-option disabled>
+                              <span class="window-type-photo"><img src="./assets/window-types-atlas-v1.jpg" alt="Single-hung window with one movable lower sash" style="--window-x:0%;--window-y:0%"></span>
+                              <span class="window-type-copy"><strong>Single-hung</strong><small>Only the lower sash opens.</small></span>
+                            </label>
+                            <label class="window-type-quantity"><span>Quantity</span><input type="number" name="Single-hung Window Quantity" min="1" max="200" step="1" inputmode="numeric" value="1" data-window-type-quantity disabled></label>
+                          </article>
+                          <article class="window-type-card" data-window-type-card>
+                            <label class="window-type-choice">
+                              <input type="checkbox" name="Window Types[]" value="Double-hung" data-window-type-option disabled>
+                              <span class="window-type-photo"><img src="./assets/window-types-atlas-v1.jpg" alt="Double-hung window with movable upper and lower sashes" style="--window-x:-100%;--window-y:0%"></span>
+                              <span class="window-type-copy"><strong>Double-hung</strong><small>Both upper and lower sashes move.</small></span>
+                            </label>
+                            <label class="window-type-quantity"><span>Quantity</span><input type="number" name="Double-hung Window Quantity" min="1" max="200" step="1" inputmode="numeric" value="1" data-window-type-quantity disabled></label>
+                          </article>
+                          <article class="window-type-card" data-window-type-card>
+                            <label class="window-type-choice">
+                              <input type="checkbox" name="Window Types[]" value="Sliding" data-window-type-option disabled>
+                              <span class="window-type-photo"><img src="./assets/window-types-atlas-v1.jpg" alt="Horizontal sliding window" style="--window-x:-200%;--window-y:0%"></span>
+                              <span class="window-type-copy"><strong>Sliding</strong><small>One or more panels slide sideways.</small></span>
+                            </label>
+                            <label class="window-type-quantity"><span>Quantity</span><input type="number" name="Sliding Window Quantity" min="1" max="200" step="1" inputmode="numeric" value="1" data-window-type-quantity disabled></label>
+                          </article>
+                          <article class="window-type-card" data-window-type-card>
+                            <label class="window-type-choice">
+                              <input type="checkbox" name="Window Types[]" value="Casement" data-window-type-option disabled>
+                              <span class="window-type-photo"><img src="./assets/window-types-atlas-v1.jpg" alt="Casement window hinged at the side" style="--window-x:-300%;--window-y:0%"></span>
+                              <span class="window-type-copy"><strong>Casement</strong><small>Hinged at the side and swings outward.</small></span>
+                            </label>
+                            <label class="window-type-quantity"><span>Quantity</span><input type="number" name="Casement Window Quantity" min="1" max="200" step="1" inputmode="numeric" value="1" data-window-type-quantity disabled></label>
+                          </article>
+                          <article class="window-type-card" data-window-type-card>
+                            <label class="window-type-choice">
+                              <input type="checkbox" name="Window Types[]" value="Awning" data-window-type-option disabled>
+                              <span class="window-type-photo"><img src="./assets/window-types-atlas-v1.jpg" alt="Awning window hinged at the top" style="--window-x:0%;--window-y:-100%"></span>
+                              <span class="window-type-copy"><strong>Awning</strong><small>Hinged at the top and opens outward.</small></span>
+                            </label>
+                            <label class="window-type-quantity"><span>Quantity</span><input type="number" name="Awning Window Quantity" min="1" max="200" step="1" inputmode="numeric" value="1" data-window-type-quantity disabled></label>
+                          </article>
+                          <article class="window-type-card" data-window-type-card>
+                            <label class="window-type-choice">
+                              <input type="checkbox" name="Window Types[]" value="Hopper" data-window-type-option disabled>
+                              <span class="window-type-photo"><img src="./assets/window-types-atlas-v1.jpg" alt="Hopper window hinged at the bottom" style="--window-x:-100%;--window-y:-100%"></span>
+                              <span class="window-type-copy"><strong>Hopper</strong><small>Hinged at the bottom and opens inward.</small></span>
+                            </label>
+                            <label class="window-type-quantity"><span>Quantity</span><input type="number" name="Hopper Window Quantity" min="1" max="200" step="1" inputmode="numeric" value="1" data-window-type-quantity disabled></label>
+                          </article>
+                          <article class="window-type-card" data-window-type-card>
+                            <label class="window-type-choice">
+                              <input type="checkbox" name="Window Types[]" value="Picture / fixed" data-window-type-option disabled>
+                              <span class="window-type-photo"><img src="./assets/window-types-atlas-v1.jpg" alt="Large fixed picture window" style="--window-x:-200%;--window-y:-100%"></span>
+                              <span class="window-type-copy"><strong>Picture / fixed</strong><small>A large glass panel that does not open.</small></span>
+                            </label>
+                            <label class="window-type-quantity"><span>Quantity</span><input type="number" name="Picture or Fixed Window Quantity" min="1" max="200" step="1" inputmode="numeric" value="1" data-window-type-quantity disabled></label>
+                          </article>
+                          <article class="window-type-card" data-window-type-card>
+                            <label class="window-type-choice">
+                              <input type="checkbox" name="Window Types[]" value="Bay" data-window-type-option disabled>
+                              <span class="window-type-photo"><img src="./assets/window-types-atlas-v1.jpg" alt="Three-section bay window projecting outward" style="--window-x:-300%;--window-y:-100%"></span>
+                              <span class="window-type-copy"><strong>Bay</strong><small>Three or more angled sections projecting outward.</small></span>
+                            </label>
+                            <label class="window-type-quantity"><span>Quantity</span><input type="number" name="Bay Window Quantity" min="1" max="100" step="1" inputmode="numeric" value="1" data-window-type-quantity disabled></label>
+                          </article>
+                          <article class="window-type-card" data-window-type-card>
+                            <label class="window-type-choice">
+                              <input type="checkbox" name="Window Types[]" value="Bow" data-window-type-option disabled>
+                              <span class="window-type-photo"><img src="./assets/window-types-atlas-v1.jpg" alt="Curved multi-panel bow window" style="--window-x:0%;--window-y:-200%"></span>
+                              <span class="window-type-copy"><strong>Bow</strong><small>Four or more panels forming a gentle curve.</small></span>
+                            </label>
+                            <label class="window-type-quantity"><span>Quantity</span><input type="number" name="Bow Window Quantity" min="1" max="100" step="1" inputmode="numeric" value="1" data-window-type-quantity disabled></label>
+                          </article>
+                          <article class="window-type-card" data-window-type-card>
+                            <label class="window-type-choice">
+                              <input type="checkbox" name="Window Types[]" value="Garden" data-window-type-option disabled>
+                              <span class="window-type-photo"><img src="./assets/window-types-atlas-v1.jpg" alt="Box-shaped garden window projecting outward" style="--window-x:-100%;--window-y:-200%"></span>
+                              <span class="window-type-copy"><strong>Garden</strong><small>A small box-shaped window projecting outward.</small></span>
+                            </label>
+                            <label class="window-type-quantity"><span>Quantity</span><input type="number" name="Garden Window Quantity" min="1" max="100" step="1" inputmode="numeric" value="1" data-window-type-quantity disabled></label>
+                          </article>
+                          <article class="window-type-card" data-window-type-card>
+                            <label class="window-type-choice">
+                              <input type="checkbox" name="Window Types[]" value="Transom" data-window-type-option disabled>
+                              <span class="window-type-photo"><img src="./assets/window-types-atlas-v1.jpg" alt="Narrow horizontal transom window" style="--window-x:-200%;--window-y:-200%"></span>
+                              <span class="window-type-copy"><strong>Transom</strong><small>A narrow window above a door or another window.</small></span>
+                            </label>
+                            <label class="window-type-quantity"><span>Quantity</span><input type="number" name="Transom Window Quantity" min="1" max="200" step="1" inputmode="numeric" value="1" data-window-type-quantity disabled></label>
+                          </article>
+                          <article class="window-type-card" data-window-type-card>
+                            <label class="window-type-choice">
+                              <input type="checkbox" name="Window Types[]" value="French / divided-light" data-window-type-option disabled>
+                              <span class="window-type-photo"><img src="./assets/window-types-atlas-v1.jpg" alt="French divided-light window with decorative grids" style="--window-x:-300%;--window-y:-200%"></span>
+                              <span class="window-type-copy"><strong>French / grid</strong><small>Glass divided by many decorative grids.</small></span>
+                            </label>
+                            <label class="window-type-quantity"><span>Quantity</span><input type="number" name="French or Grid Window Quantity" min="1" max="200" step="1" inputmode="numeric" value="1" data-window-type-quantity disabled></label>
+                          </article>
+                          <article class="window-type-card" data-window-type-card>
+                            <label class="window-type-choice">
+                              <input type="checkbox" name="Window Types[]" value="Jalousie / louvered" data-window-type-option disabled>
+                              <span class="window-type-photo"><img src="./assets/window-types-atlas-v1.jpg" alt="Jalousie window made of horizontal glass louvers" style="--window-x:0%;--window-y:-300%"></span>
+                              <span class="window-type-copy"><strong>Jalousie / louvered</strong><small>Multiple horizontal glass slats.</small></span>
+                            </label>
+                            <label class="window-type-quantity"><span>Quantity</span><input type="number" name="Jalousie Window Quantity" min="1" max="200" step="1" inputmode="numeric" value="1" data-window-type-quantity disabled></label>
+                          </article>
+                          <article class="window-type-card" data-window-type-card>
+                            <label class="window-type-choice">
+                              <input type="checkbox" name="Window Types[]" value="Arched / specialty shape" data-window-type-option disabled>
+                              <span class="window-type-photo"><img src="./assets/window-types-atlas-v1.jpg" alt="Arched specialty-shape window" style="--window-x:-100%;--window-y:-300%"></span>
+                              <span class="window-type-copy"><strong>Arched / specialty</strong><small>Round, oval, arched, triangular, or custom-shaped.</small></span>
+                            </label>
+                            <label class="window-type-quantity"><span>Quantity</span><input type="number" name="Specialty Shape Window Quantity" min="1" max="100" step="1" inputmode="numeric" value="1" data-window-type-quantity disabled></label>
+                          </article>
+                          <article class="window-type-card" data-window-type-card>
+                            <label class="window-type-choice">
+                              <input type="checkbox" name="Window Types[]" value="Skylight" data-window-type-option disabled>
+                              <span class="window-type-photo"><img src="./assets/window-types-atlas-v1.jpg" alt="Skylight installed in a sloped roof" style="--window-x:-200%;--window-y:-300%"></span>
+                              <span class="window-type-copy"><strong>Skylight</strong><small>A window installed in the roof or ceiling.</small></span>
+                            </label>
+                            <label class="window-type-quantity"><span>Quantity</span><input type="number" name="Skylight Quantity" min="1" max="100" step="1" inputmode="numeric" value="1" data-window-type-quantity disabled></label>
+                          </article>
+                          <article class="window-type-card" data-window-type-card>
+                            <label class="window-type-choice">
+                              <input type="checkbox" name="Window Types[]" value="Storefront / commercial glass" data-window-type-option disabled>
+                              <span class="window-type-photo"><img src="./assets/window-types-atlas-v1.jpg" alt="Commercial storefront glass windows" style="--window-x:-300%;--window-y:-300%"></span>
+                              <span class="window-type-copy"><strong>Storefront glass</strong><small>Large commercial glass panels or display windows.</small></span>
+                            </label>
+                            <label class="window-type-quantity"><span>Quantity</span><input type="number" name="Storefront Glass Panel Quantity" min="1" max="300" step="1" inputmode="numeric" value="1" data-window-type-quantity disabled></label>
+                          </article>
+                        </div>
+                        <label class="window-other-type">
+                          <span>Other or not sure? Describe it here. (optional)</span>
+                          <input type="text" name="Other Window Type" placeholder="Example: removable storm windows or a glass patio door" disabled>
+                        </label>
+                      </div>
                       <label data-window-cleaning-field hidden>
                         <span>What floor are the windows on?</span>
                         <select name="Window Cleaning Floor" required disabled>
@@ -220,6 +357,40 @@
                           <option>3rd floor</option>
                           <option>4th floor or higher</option>
                           <option>Multiple floors</option>
+                        </select>
+                      </label>
+                      <label data-window-cleaning-field hidden>
+                        <span>What equipment may be needed to reach the exterior?</span>
+                        <select name="Window Cleaning Access" required disabled>
+                          <option value="" selected disabled>Select option</option>
+                          <option>Reachable from the ground or inside</option>
+                          <option>Step ladder</option>
+                          <option>Extension ladder</option>
+                          <option>Roof, scaffold, or lift access</option>
+                          <option>Not sure</option>
+                        </select>
+                      </label>
+                      <label class="optional-field" data-window-cleaning-field hidden>
+                        <span>How many screens should we clean? (optional)</span>
+                        <input type="number" name="Window Screen Quantity" min="0" max="500" step="1" inputmode="numeric" placeholder="Enter screen count" disabled>
+                      </label>
+                      <label class="optional-field" data-window-cleaning-field hidden>
+                        <span>How many tracks and sills need detailing? (optional)</span>
+                        <input type="number" name="Window Track and Sill Quantity" min="0" max="500" step="1" inputmode="numeric" placeholder="Enter total" disabled>
+                      </label>
+                      <label class="optional-field" data-window-cleaning-field hidden>
+                        <span>How many removable storm windows are there? (optional)</span>
+                        <input type="number" name="Storm Window Quantity" min="0" max="300" step="1" inputmode="numeric" placeholder="Enter total" disabled>
+                      </label>
+                      <label data-window-cleaning-field hidden>
+                        <span>What is the current condition of the glass?</span>
+                        <select name="Window Cleaning Condition" required disabled>
+                          <option value="" selected disabled>Select option</option>
+                          <option>Routine dirt and fingerprints</option>
+                          <option>Heavy dirt or long-term buildup</option>
+                          <option>Hard-water spots or mineral deposits</option>
+                          <option>Paint, stickers, or construction residue</option>
+                          <option>Mixed condition / not sure</option>
                         </select>
                       </label>
                       <label class="field-wide optional-field" data-window-cleaning-field hidden>
@@ -792,6 +963,9 @@
         const quoteActions = document.querySelector(".quote-actions");
         const residentialFields = Array.from(document.querySelectorAll("[data-residential-field]"));
         const windowCleaningFields = Array.from(document.querySelectorAll("[data-window-cleaning-field]"));
+        const windowTypeBuilder = document.querySelector("[data-window-type-builder]");
+        const windowTypeOptions = Array.from(document.querySelectorAll("[data-window-type-option]"));
+        const otherWindowType = document.querySelector('[name="Other Window Type"]');
         const schedulableFields = Array.from(document.querySelectorAll("[data-schedulable-field]"));
         const commercialFields = Array.from(document.querySelectorAll("[data-commercial-field]"));
         const commercialSpaceSelect = document.querySelector("[data-commercial-space-select]");
@@ -914,6 +1088,7 @@
           windowCleaningFields.forEach((field) => {
             syncFieldAvailability(field, isWindowCleaningService());
           });
+          syncWindowTypeBuilder();
           schedulableFields.forEach((field) => {
             syncFieldAvailability(field, isSchedulableService());
           });
@@ -925,6 +1100,32 @@
           if (typeof syncQuoteWizard === "function") {
             syncQuoteWizard();
           }
+        }
+
+        function syncWindowTypeBuilder() {
+          if (!windowTypeOptions.length) return;
+          const isAvailable = isWindowCleaningService();
+          const hasSelectedType = windowTypeOptions.some((input) => input.checked);
+          const hasOtherType = Boolean(otherWindowType && otherWindowType.value.trim());
+
+          windowTypeOptions.forEach((input, index) => {
+            const card = input.closest("[data-window-type-card]");
+            const quantity = card?.querySelector("[data-window-type-quantity]");
+            input.required = isAvailable && index === 0 && !hasSelectedType && !hasOtherType;
+            input.setCustomValidity("");
+            if (input.required) {
+              input.dataset.requiredMessage = "Please choose at least one window type or describe your window under Other or not sure.";
+            }
+            if (quantity) {
+              quantity.disabled = !isAvailable || !input.checked;
+              quantity.required = isAvailable && input.checked;
+              if (input.checked && (!quantity.value || Number(quantity.value) < 1)) {
+                quantity.value = "1";
+              }
+            }
+            card?.classList.toggle("is-selected", isAvailable && input.checked);
+          });
+          windowTypeBuilder?.classList.toggle("has-selection", hasSelectedType || hasOtherType);
         }
 
         function syncCleaningDetailFields() {
@@ -1681,6 +1882,10 @@
         if (serviceCategory) {
           serviceCategory.addEventListener("change", syncProgressiveQuoteFields);
         }
+        windowTypeOptions.forEach((input) => {
+          input.addEventListener("change", syncWindowTypeBuilder);
+        });
+        otherWindowType?.addEventListener("input", syncWindowTypeBuilder);
         if (commercialSpaceSelect) {
           commercialSpaceSelect.addEventListener("change", syncCommercialFields);
         }
@@ -1712,6 +1917,9 @@
           if (!control) return null;
           if (control.matches("[data-addon-option], [data-biohazard-option]")) {
             return control.closest(".choice-grid");
+          }
+          if (control.matches("[data-window-type-option], [data-window-type-quantity]")) {
+            return control.closest("[data-window-type-builder]") || control.closest("[data-window-type-card]");
           }
           return control.closest(".priority-date-card, label, fieldset");
         }
