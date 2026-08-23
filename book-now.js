@@ -1578,10 +1578,8 @@
     document.querySelector("[data-man-hours]").textContent = `${hours(pkg.manHours)} labor-hours included`;
     document.querySelector("[data-quote-tax-summary]").textContent = money(pkg.tax);
     document.querySelector("[data-quote-deposit]").textContent = money(deposit);
-    document.querySelector("[data-quote-deposit-copy]").textContent = money(deposit);
     document.querySelector("[data-quote-deposit-amount]").textContent = money(deposit);
     document.querySelector("[data-quote-balance]").textContent = money(balance);
-    document.querySelector("[data-quote-total-copy]").textContent = money(pkg.price);
     document.querySelector("[data-team-time-summary]").textContent = state.serviceKey === "organization"
       ? `1 professional organizer for ${teamTime(pkg.teamHours)}`
       : `${pkg.cleanerCount || 2} cleaners for approximately ${teamTime(pkg.teamHours)}`;
@@ -2229,11 +2227,6 @@
   const availabilityButtons = Array.from(document.querySelectorAll("[data-load-availability]"));
   availabilityButtons.forEach((button) => {
     button.addEventListener("click", async () => {
-      if (!form.elements.completionAgreement.checked) {
-        form.elements.completionAgreement.reportValidity();
-        form.elements.completionAgreement.focus();
-        return;
-      }
       availabilityButtons.forEach((control) => {
         control.disabled = true;
         control.textContent = "Loading availability…";

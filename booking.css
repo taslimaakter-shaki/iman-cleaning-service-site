@@ -3475,6 +3475,24 @@ fieldset.booking-field-wide legend {
   font-weight: 900;
 }
 
+.booking-package-labor {
+  display: grid;
+  gap: 4px;
+  margin-top: 18px;
+  padding-top: 16px;
+  border-top: 1px solid var(--border-subtle);
+}
+
+.booking-package-labor strong {
+  color: var(--teal-900);
+  font-size: .92rem;
+}
+
+.booking-package-labor span {
+  color: var(--text-muted);
+  font-size: .8rem;
+}
+
 .booking-quote-step .booking-price-breakdown,
 .booking-estimate-terms {
   display: block;
@@ -3531,7 +3549,7 @@ fieldset.booking-field-wide legend {
   top: 82px;
   display: grid;
   padding: 28px;
-  background: linear-gradient(155deg, #fff, #f6fbf8);
+  background: #fff;
   border: 1px solid rgba(11, 100, 116, .18);
   border-radius: 24px;
   box-shadow: 0 22px 55px rgba(4, 40, 49, .12);
@@ -3565,40 +3583,30 @@ fieldset.booking-field-wide legend {
 
 .booking-payment-schedule {
   display: grid;
-  gap: 12px;
+  gap: 14px;
   margin-top: 20px;
-  padding: 18px;
-  background: #fff;
-  border: 1px solid rgba(100, 154, 48, .28);
-  border-radius: 16px;
+  padding-top: 18px;
+  background: transparent;
+  border: 0;
+  border-top: 1px solid var(--border-subtle);
 }
 
 .booking-payment-schedule h3 {
   margin: 0;
   color: var(--teal-950);
-  font-size: 1.05rem;
+  font-size: 1.22rem;
   line-height: 1.25;
 }
 
 .booking-payment-schedule h3 strong {
-  color: var(--leaf-700);
-}
-
-.booking-payment-highlight {
-  margin: 0;
-  color: var(--teal-900);
-  font-size: .84rem;
-  font-weight: 750;
-  line-height: 1.45;
+  color: inherit;
 }
 
 .booking-payment-schedule dl {
   display: grid;
   gap: 7px;
   margin: 0;
-  padding: 11px 0;
-  border-top: 1px solid var(--border-subtle);
-  border-bottom: 1px solid var(--border-subtle);
+  padding: 0;
 }
 
 .booking-payment-schedule dl div {
@@ -3611,7 +3619,7 @@ fieldset.booking-field-wide legend {
 .booking-payment-schedule dd {
   margin: 0;
   color: var(--text-body);
-  font-size: .8rem;
+  font-size: .84rem;
 }
 
 .booking-payment-schedule dd {
@@ -3643,78 +3651,6 @@ fieldset.booking-field-wide legend {
   content: "✓";
 }
 
-.booking-deposit-policy {
-  margin: 0;
-  color: var(--text-muted);
-  font-size: .7rem;
-  line-height: 1.45;
-}
-
-.booking-deposit-policy a {
-  color: var(--teal-800);
-  font-weight: 750;
-  text-decoration: underline;
-  text-underline-offset: 2px;
-}
-
-.booking-payment-timeline {
-  display: grid;
-  grid-template-columns: repeat(4, 1fr);
-  gap: 8px;
-  margin: 16px 0 0;
-  padding: 0;
-  list-style: none;
-}
-
-.booking-payment-timeline li {
-  position: relative;
-  padding-top: 15px;
-  color: var(--text-muted);
-  font-size: .62rem;
-  font-weight: 750;
-  line-height: 1.25;
-}
-
-.booking-payment-timeline li::before {
-  position: absolute;
-  top: 0;
-  left: 0;
-  width: 8px;
-  height: 8px;
-  background: var(--leaf-600);
-  border-radius: 50%;
-  content: "";
-}
-
-.booking-payment-timeline li:not(:last-child)::after {
-  position: absolute;
-  top: 3px;
-  left: 12px;
-  width: calc(100% - 8px);
-  height: 2px;
-  background: var(--teal-100);
-  content: "";
-}
-
-.booking-quote-labor {
-  display: grid;
-  gap: 5px;
-  margin-top: 22px;
-  padding: 18px 0;
-  border-top: 1px solid var(--border-subtle);
-  border-bottom: 1px solid var(--border-subtle);
-}
-
-.booking-quote-labor strong {
-  color: var(--teal-900);
-  font-size: 1rem;
-}
-
-.booking-quote-labor span {
-  color: var(--text-muted);
-  font-size: .84rem;
-}
-
 .booking-quote-summary .booking-saved-quote-status {
   margin-top: 16px;
   padding: 11px 12px;
@@ -3725,7 +3661,7 @@ fieldset.booking-field-wide legend {
 .booking-quote-assurance {
   display: flex;
   gap: 8px;
-  margin: 18px 0 0;
+  margin: 12px 0 0;
   color: var(--teal-800);
   font-size: .8rem;
   font-weight: 800;
@@ -3736,22 +3672,12 @@ fieldset.booking-field-wide legend {
   color: var(--leaf-700);
 }
 
-.booking-quote-summary .booking-scope-agreement {
-  margin-top: 16px;
-}
-
-.booking-quote-summary .booking-agreements label {
-  padding: 13px;
-  background: #fff;
-  font-size: .78rem;
-}
-
 .booking-quote-appointment {
   width: 100%;
   margin-top: 18px;
 }
 
-.booking-quote-summary .booking-no-payment {
+.booking-quote-summary .booking-payment-review {
   margin-top: 8px;
   font-size: .7rem;
   text-align: center;

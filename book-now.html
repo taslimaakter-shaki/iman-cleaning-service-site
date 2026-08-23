@@ -23,7 +23,7 @@
   <meta name="twitter:image" content="https://www.imancleaningservice.com/brand-card.png">
   <link rel="stylesheet" href="./design-system.css">
   <link rel="stylesheet" href="./site.css?v=20260725-book-now">
-  <link rel="stylesheet" href="./booking.css?v=20260823-payment-schedule">
+  <link rel="stylesheet" href="./booking.css?v=20260823-simplified-deposit-card">
   <script type="application/ld+json">
   {
     "@context": "https://schema.org",
@@ -304,6 +304,10 @@
                 <section class="booking-quote-section" aria-labelledby="booking-package-title">
                   <h3 id="booking-package-title">Your cleaning package</h3>
                   <div data-quote-package-summary></div>
+                  <div class="booking-package-labor">
+                    <strong data-man-hours></strong>
+                    <span data-team-time-summary></span>
+                  </div>
                 </section>
 
                 <section class="booking-quote-section" data-quote-extras-section aria-labelledby="booking-extras-title">
@@ -342,40 +346,21 @@
                 <small>Includes <b data-quote-tax-summary></b> NYC sales tax</small>
 
                 <section class="booking-payment-schedule" aria-labelledby="booking-deposit-title">
-                  <h3 id="booking-deposit-title">Pay only <strong data-quote-deposit></strong> to confirm</h3>
-                  <p class="booking-payment-highlight">Reserve your appointment for only <strong data-quote-deposit-copy></strong> today—not the full <strong data-quote-total-copy></strong>.</p>
+                  <h3 id="booking-deposit-title">Reserve for only <strong data-quote-deposit></strong></h3>
                   <dl>
-                    <div><dt>Booking deposit</dt><dd data-quote-deposit-amount></dd></div>
-                    <div><dt>Due after your cleaning</dt><dd data-quote-balance></dd></div>
+                    <div><dt><strong>25% booking deposit:</strong></dt><dd data-quote-deposit-amount></dd></div>
+                    <div><dt><strong>Due after service:</strong></dt><dd data-quote-balance></dd></div>
                   </dl>
                   <ul>
-                    <li>You will <strong>not</strong> be charged the full amount today.</li>
-                    <li>The remaining balance is due after the service is completed.</li>
+                    <li>You are <strong>not paying the full amount now</strong></li>
+                    <li>No payment is required on this step</li>
                   </ul>
-                  <p class="booking-deposit-policy">The booking deposit is subject to our <a href="./agreement.html" target="_blank" rel="noopener">cancellation and rescheduling policy</a>.</p>
                 </section>
 
-                <ol class="booking-payment-timeline" aria-label="Payment timeline">
-                  <li>Choose appointment</li>
-                  <li>Pay 25% deposit</li>
-                  <li>Cleaning completed</li>
-                  <li>Pay remaining 75%</li>
-                </ol>
-
-                <div class="booking-quote-labor">
-                  <strong data-man-hours></strong>
-                  <span data-team-time-summary></span>
-                </div>
-
-                <div class="booking-status booking-saved-quote-status" data-saved-quote-status aria-live="polite" hidden></div>
-                <p class="booking-quote-assurance"><span aria-hidden="true">✓</span> No additional work or charges without your approval</p>
-
-                <div class="booking-agreements booking-scope-agreement">
-                  <label><input type="checkbox" name="completionAgreement" required> <span data-completion-agreement-copy>I understand that this estimate includes a fixed number of labor-hours and is based on the information I provided.</span></label>
-                </div>
-
                 <button class="booking-primary booking-quote-appointment" type="button" data-load-availability>Choose my appointment →</button>
-                <small class="booking-no-payment">No payment is required on this step.</small>
+                <small class="booking-payment-review">You’ll review everything before paying the deposit.</small>
+                <p class="booking-quote-assurance"><span aria-hidden="true">✓</span> No additional work or charges without your approval</p>
+                <div class="booking-status booking-saved-quote-status" data-saved-quote-status aria-live="polite" hidden></div>
               </aside>
             </div>
 
@@ -492,6 +477,7 @@
             </fieldset>
             <div class="booking-agreements">
               <label><input type="checkbox" name="laborHoursAgreement" required> <span data-labor-agreement></span></label>
+              <label><input type="checkbox" name="completionAgreement" required> <span data-completion-agreement-copy>I understand that this estimate includes a fixed number of labor-hours and is based on the information I provided.</span></label>
               <label><input type="checkbox" name="conditionAgreement" required> <span data-condition-agreement-copy>I confirm that my answers accurately represent the property’s current condition. No additional time or charges will be added without my approval.</span></label>
               <label><input type="checkbox" name="termsAgreement" required> I agree to the <a href="./agreement.html" target="_blank" rel="noopener">Service Agreement</a>, the 25% booking deposit, and authorization of the remaining 75% about 48 hours before service for capture after completion.</label>
             </div>
@@ -619,6 +605,6 @@
         </div>
   </main>
   <script src="./booking-service-area.js?v=20260725-zip-gate"></script>
-    <script src="./book-now.js?v=20260823-payment-schedule"></script>
+    <script src="./book-now.js?v=20260823-simplified-deposit-card"></script>
 </body>
 </html>
