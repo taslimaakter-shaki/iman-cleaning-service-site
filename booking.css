@@ -4715,47 +4715,6 @@ fieldset.booking-field-wide legend {
   padding: 10px 12px;
   font: inherit;
 }
-.booking-window-option-card {
-  align-content: start;
-  min-width: 0;
-  padding: 10px;
-  border: 1px solid #cee4e8;
-  border-radius: 16px;
-  background: #fff;
-  overflow: hidden;
-}
-.booking-window-option-card > img {
-  display: block;
-  width: 100%;
-  aspect-ratio: 4 / 3;
-  border-radius: 10px;
-  object-fit: cover;
-  background: #eaf3f4;
-}
-.booking-window-option-card > strong {
-  color: #0c3540;
-  line-height: 1.25;
-}
-.booking-window-option-card > small {
-  min-height: 4.6em;
-  color: #627376;
-  font-weight: 500;
-  line-height: 1.45;
-}
-.booking-window-option-quantity {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 8px;
-  margin-top: auto;
-  font-size: .78rem;
-}
-.booking-window-option-grid .booking-window-option-quantity input {
-  width: 64px;
-  min-height: 38px;
-  flex: 0 0 64px;
-  padding: 6px 8px;
-}
 .booking-window-types,
 .booking-window-options {
   margin: 0;
