@@ -403,7 +403,7 @@
   const windowNeedsManualReview = (details) => (
     ["hard_water", "paint_adhesive", "construction", "damaged"].includes(details.condition) ||
     details.size === "very_oversized" ||
-    ["third", "special_equipment", "leaning_out", "not_sure"].includes(details.access)
+    ["third", "leaning_out", "not_sure"].includes(details.access)
   );
   const restoreWindowDetails = (details = {}) => {
     const values = {
