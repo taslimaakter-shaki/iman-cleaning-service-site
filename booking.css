@@ -3631,12 +3631,6 @@ fieldset.booking-field-wide legend {
   margin-top: 18px;
 }
 
-.booking-quote-summary .booking-payment-review {
-  margin-top: 8px;
-  font-size: .7rem;
-  text-align: center;
-}
-
 .booking-quote-trust-list {
   display: grid;
   gap: 7px;
