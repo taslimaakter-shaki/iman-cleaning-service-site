@@ -336,6 +336,11 @@ function calculateResidentialUnitPrice(unit = {}, unitIndex = 0, serviceKey = "s
     serviceKey === "move" ? { key: "interior_windows", label: "Interior window cleaning", amount: 0, included: true } : null
   ].filter(Boolean);
   const addOns = [
+    hasPets === "yes" ? {
+      key: "pet_fee",
+      label: `Pet fee (${petCount} pet${petCount === 1 ? "" : "s"})`,
+      amount: 50 + Math.max(0, petCount - 1) * 30
+    } : null,
     refrigerator === "empty" ? { key: "refrigerator", label: "Inside refrigerator (emptied)", amount: 40 } : null,
     refrigerator === "not-empty" ? { key: "refrigerator", label: "Inside refrigerator (not empty)", amount: 60 } : null,
     oven === "yes" ? { key: "oven", label: "Inside oven", amount: 30 } : null,

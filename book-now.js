@@ -761,6 +761,7 @@
       type: "number",
       question: "How many pets do you have?",
       label: "Number of pets",
+      helper: "$50 for the first pet, plus $30 for each additional pet.",
       min: 1,
       max: 20
     }, {
