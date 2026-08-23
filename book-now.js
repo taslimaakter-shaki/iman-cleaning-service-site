@@ -667,6 +667,7 @@
   const goToStep = (step) => {
     state.step = step;
     if (wizardDialog) wizardDialog.dataset.currentStep = String(step);
+    bookingWizard?.classList.toggle("is-quote-page", step === 2);
     document.querySelectorAll("[data-step]").forEach((section) => {
       section.hidden = Number(section.dataset.step) !== step;
     });
@@ -920,14 +921,7 @@
     }
     if (stageNumber === 3) return 35 + detailStageFraction(true) * 20;
     if (stageNumber === 4) return 55 + detailStageFraction(false) * 15;
-    if (stageNumber === 5) {
-      if (quoteContactOverlay && !quoteContactOverlay.hidden) {
-        const required = Array.from(quoteContactForm?.querySelectorAll("[required]") || []);
-        const completed = required.filter((control) => control.type === "checkbox" ? control.checked : Boolean(control.value)).length;
-        return 70 + (completed / Math.max(1, required.length)) * 7;
-      }
-      return 78;
-    }
+    if (stageNumber === 5) return 71;
     if (stageNumber === 6) return value("schedule") ? 92 : 86;
     const confirmations = ["completionAgreement", "conditionAgreement", "termsAgreement"]
       .filter((name) => form.elements[name]?.checked).length;
@@ -1568,11 +1562,29 @@
     if (completionCopy) {
       completionCopy.textContent = isOrganization
         ? `I understand that this booking includes ${hours(state.package?.manHours || 0)} hours with one professional organizer at $60 per hour.`
-        : "I understand that this package includes a fixed number of labor-hours and may not cover every listed or requested task. Completion depends on the home’s actual condition, clutter, buildup, size, access, and the accuracy of my answers.";
+        : "I understand that this estimate includes a fixed number of labor-hours and is based on the information I provided.";
     }
     document.querySelectorAll("[data-cleaning-schedule-details]").forEach((element) => {
       element.hidden = isOrganization;
     });
+  };
+  const renderQuoteOverview = (pkg) => {
+    const serviceLabel = serviceNames[state.serviceKey] || pkg.serviceLabel;
+    const units = pkg.units || [];
+    const bedroomCount = units.reduce((total, unit) => total + Number(unit.bedrooms || 0), 0);
+    const bathroomCount = units.reduce((total, unit) => total + Number(unit.fullBathrooms || 0) + Number(unit.halfBathrooms || 0), 0);
+    document.querySelector("[data-recommendation-title]").textContent = `Your ${serviceLabel} Estimate`;
+    document.querySelector("[data-recommendation-reason]").textContent = state.serviceKey === "organization"
+      ? "Based on the organization and decluttering hours you selected."
+      : `${bedroomCount}-bedroom home · ${bathroomCount} bathroom${bathroomCount === 1 ? "" : "s"} · Based on the information you provided.`;
+    document.querySelector("[data-package-price]").textContent = money(pkg.price);
+    document.querySelector("[data-mobile-package-price]").textContent = money(pkg.price);
+    document.querySelector("[data-man-hours]").textContent = `${hours(pkg.manHours)} labor-hours included`;
+    document.querySelector("[data-quote-tax-summary]").textContent = money(pkg.tax);
+    document.querySelector("[data-team-time-summary]").textContent = state.serviceKey === "organization"
+      ? `1 professional organizer for ${teamTime(pkg.teamHours)}`
+      : `${pkg.cleanerCount || 2} cleaners for approximately ${teamTime(pkg.teamHours)}`;
+    document.querySelector("[data-total-due]").textContent = money(bookingDeposit(pkg.price));
   };
   const calculateAndShowQuote = async ({ sendLink = true } = {}) => {
     const status = document.querySelector("[data-eligibility-status]");
@@ -1582,15 +1594,7 @@
     if (!response.ok) throw new Error(data.error || "The package could not be loaded.");
     state.package = data.package;
     state.initialSlots = data.slots || [];
-    document.querySelector("[data-recommendation-title]").textContent =
-      `${serviceNames[state.serviceKey]} — ${state.package.tierLabel}`;
-    document.querySelector("[data-recommendation-reason]").textContent =
-      state.serviceKey === "organization"
-        ? "Your estimate is based on the number of organization and decluttering hours you selected."
-        : "Your personalized estimate is based on the cleaning details you provided.";
-    document.querySelector("[data-package-price]").textContent = money(state.package.price);
-    document.querySelector("[data-man-hours]").textContent = `${hours(state.package.manHours)} labor-hours`;
-    document.querySelector("[data-total-due]").textContent = money(bookingDeposit(state.package.price));
+    renderQuoteOverview(state.package);
     syncQuotedServiceCopy();
     renderPriceBreakdown(state.package);
     closeQuoteContact();
@@ -1764,8 +1768,50 @@
     const breakdown = document.querySelector("[data-price-breakdown]");
     const priceLabel = document.querySelector("[data-package-price-label]");
     const isFormula = /_formula$/.test(pkg?.pricingMode || "");
-    if (breakdown) breakdown.hidden = !isFormula;
-    if (priceLabel) priceLabel.textContent = isFormula ? "Total estimated price" : "Your personalized price";
+    if (breakdown) {
+      breakdown.hidden = !isFormula;
+      breakdown.open = false;
+    }
+    if (priceLabel) priceLabel.textContent = "Estimated total";
+
+    const packageSummary = document.querySelector("[data-quote-package-summary]");
+    if (packageSummary) {
+      packageSummary.replaceChildren();
+      (pkg.units || []).forEach((unit) => {
+        const section = document.createElement("section");
+        if ((pkg.units || []).length > 1) {
+          const heading = document.createElement("h4");
+          heading.textContent = `Unit ${unit.unitNumber}`;
+          section.append(heading);
+        }
+        const list = document.createElement("ul");
+        (unit.baseItems || [])
+          .filter((item) => item.amount > 0 || item.included)
+          .forEach((item) => {
+            const row = document.createElement("li");
+            row.textContent = item.label;
+            list.append(row);
+          });
+        section.append(list);
+        packageSummary.append(section);
+      });
+    }
+
+    const extrasSummary = document.querySelector("[data-quote-extras-summary]");
+    const extrasSection = document.querySelector("[data-quote-extras-section]");
+    const extras = (pkg.units || []).flatMap((unit) => unit.addOns || [])
+      .filter((item) => item.amount > 0 || item.included);
+    if (extrasSection) extrasSection.hidden = extras.length === 0;
+    if (extrasSummary) {
+      const list = document.createElement("ul");
+      extras.forEach((item) => {
+        const row = document.createElement("li");
+        row.textContent = item.label;
+        list.append(row);
+      });
+      extrasSummary.replaceChildren(list);
+    }
+
     if (!isFormula) return;
     const unitContainer = document.querySelector("[data-price-breakdown-units]");
     if (unitContainer) {
@@ -2175,28 +2221,36 @@
     }
   });
 
-  document.querySelector("[data-load-availability]").addEventListener("click", async () => {
-    if (!form.elements.completionAgreement.checked) {
-      form.elements.completionAgreement.reportValidity();
-      form.elements.completionAgreement.focus();
-      return;
-    }
-    const button = document.querySelector("[data-load-availability]");
-    button.disabled = true;
-    button.textContent = "Loading availability…";
-    try {
-      const response = await availabilityRequest();
-      const data = await response.json().catch(() => ({}));
-      if (!response.ok) throw new Error(data.error || "Availability could not be loaded.");
-      if (!(data.slots || []).length) throw new Error("No online appointments are currently available. Please call or request a quote.");
-      loadSchedulerSlots(data.slots);
-      goToStep(3);
-    } catch (error) {
-      window.alert(error.message);
-    } finally {
-      button.disabled = false;
-      button.textContent = "Choose my appointment →";
-    }
+  const availabilityButtons = Array.from(document.querySelectorAll("[data-load-availability]"));
+  availabilityButtons.forEach((button) => {
+    button.addEventListener("click", async () => {
+      if (!form.elements.completionAgreement.checked) {
+        form.elements.completionAgreement.reportValidity();
+        form.elements.completionAgreement.focus();
+        return;
+      }
+      availabilityButtons.forEach((control) => {
+        control.disabled = true;
+        control.textContent = "Loading availability…";
+      });
+      try {
+        const response = await availabilityRequest();
+        const data = await response.json().catch(() => ({}));
+        if (!response.ok) throw new Error(data.error || "Availability could not be loaded.");
+        if (!(data.slots || []).length) throw new Error("No online appointments are currently available. Please call or request a quote.");
+        loadSchedulerSlots(data.slots);
+        goToStep(3);
+      } catch (error) {
+        window.alert(error.message);
+      } finally {
+        availabilityButtons.forEach((control) => {
+          control.disabled = false;
+          control.textContent = control.closest(".booking-mobile-quote-bar")
+            ? "Choose appointment →"
+            : "Choose my appointment →";
+        });
+      }
+    });
   });
 
   const syncCheckoutReview = () => {
@@ -2389,13 +2443,7 @@
       syncPropertyTypeChoice();
       allMobileQuestions.forEach(syncAnswerChoices);
       syncUnitCount();
-      document.querySelector("[data-recommendation-title]").textContent =
-        `${serviceNames[state.serviceKey]} — ${state.package.tierLabel}`;
-      document.querySelector("[data-recommendation-reason]").textContent =
-        "Your saved personalized estimate is ready. Choose an appointment whenever you’re ready to book.";
-      document.querySelector("[data-package-price]").textContent = money(state.package.price);
-      document.querySelector("[data-man-hours]").textContent = `${hours(state.package.manHours)} labor-hours`;
-      document.querySelector("[data-total-due]").textContent = money(bookingDeposit(state.package.price));
+      renderQuoteOverview(state.package);
       syncQuotedServiceCopy();
       renderPriceBreakdown(state.package);
       showSavedQuoteDelivery("Your saved quote is open. You can choose an appointment and pay when you’re ready.", "success");
@@ -2455,15 +2503,7 @@
     syncMobileQuestion();
 
     if (state.package) {
-      document.querySelector("[data-recommendation-title]").textContent =
-        `${serviceNames[state.serviceKey] || state.package.serviceLabel} — ${state.package.tierLabel}`;
-      document.querySelector("[data-recommendation-reason]").textContent =
-        state.serviceKey === "organization"
-          ? "Your estimate is based on the number of organization and decluttering hours you selected."
-          : "Your personalized estimate is based on the cleaning details you provided.";
-      document.querySelector("[data-package-price]").textContent = money(state.package.price);
-      document.querySelector("[data-man-hours]").textContent = `${hours(state.package.manHours)} labor-hours`;
-      document.querySelector("[data-total-due]").textContent = money(bookingDeposit(state.package.price));
+      renderQuoteOverview(state.package);
       syncQuotedServiceCopy();
       renderPriceBreakdown(state.package);
 

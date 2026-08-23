@@ -23,7 +23,7 @@
   <meta name="twitter:image" content="https://www.imancleaningservice.com/brand-card.png">
   <link rel="stylesheet" href="./design-system.css">
   <link rel="stylesheet" href="./site.css?v=20260725-book-now">
-  <link rel="stylesheet" href="./booking.css?v=20260823-progressive-stage-menu">
+  <link rel="stylesheet" href="./booking.css?v=20260823-compact-quote-page">
   <script type="application/ld+json">
   {
     "@context": "https://schema.org",
@@ -293,39 +293,74 @@
             <p class="booking-help">Not sure about an answer? <a href="tel:9298034053">Call 929-803-4053</a> and we’ll help.</p>
           </section>
 
-          <section class="booking-step" data-step="2" hidden>
-            <div class="booking-step-head">
-              <span class="ds-kicker">Your personalized quote</span>
+          <section class="booking-step booking-quote-step" data-step="2" hidden>
+            <header class="booking-quote-head">
+              <span class="booking-quote-next">Quote ready <i aria-hidden="true">·</i> Next: Choose appointment</span>
               <h2 data-recommendation-title></h2>
               <p data-recommendation-reason></p>
+            </header>
+
+            <div class="booking-quote-layout">
+              <div class="booking-quote-details-column">
+                <section class="booking-quote-section" aria-labelledby="booking-package-title">
+                  <h3 id="booking-package-title">Your cleaning package</h3>
+                  <div data-quote-package-summary></div>
+                </section>
+
+                <section class="booking-quote-section" data-quote-extras-section aria-labelledby="booking-extras-title">
+                  <h3 id="booking-extras-title">Selected extras</h3>
+                  <div data-quote-extras-summary></div>
+                </section>
+
+                <details class="booking-price-breakdown" data-price-breakdown hidden>
+                  <summary>View itemized pricing <span aria-hidden="true">⌄</span></summary>
+                  <div class="booking-price-breakdown-content">
+                    <div data-price-breakdown-units></div>
+                    <dl>
+                      <div><dt>Service price before tax</dt><dd data-standard-base-price></dd></div>
+                      <div data-addon-total-row><dt>Selected add-ons before tax</dt><dd data-addon-total></dd></div>
+                      <div><dt>Price before tax</dt><dd data-quote-subtotal></dd></div>
+                      <div><dt>NY sales tax (8.875%)</dt><dd data-quote-tax></dd></div>
+                      <div class="booking-price-breakdown-total"><dt>Total estimated price</dt><dd data-quote-total></dd></div>
+                    </dl>
+                  </div>
+                </details>
+
+                <details class="booking-estimate-terms" data-price-notice>
+                  <summary>Read estimate terms <span aria-hidden="true">⌄</span></summary>
+                  <p>Your estimate is based on the information you provided. If the property’s condition, clutter, buildup, access, or requested work differs significantly, the included labor-hours may not cover every task. Additional time is $80 per cleaner, per hour. We will discuss any adjustment first, and no additional work or charges will be made without your approval.</p>
+                </details>
+
+                <div class="booking-quote-text-actions">
+                  <button type="button" data-back="1">← Edit quote details</button>
+                  <button class="booking-save-exit" type="button" data-booking-cancel>Save and finish later</button>
+                </div>
+              </div>
+
+              <aside class="booking-quote-summary" aria-label="Quote and booking summary">
+                <span data-package-price-label>Estimated total</span>
+                <strong class="booking-quote-total" data-package-price></strong>
+                <small>Includes <b data-quote-tax-summary></b> NYC sales tax</small>
+
+                <div class="booking-quote-labor">
+                  <strong data-man-hours></strong>
+                  <span data-team-time-summary></span>
+                </div>
+
+                <div class="booking-status booking-saved-quote-status" data-saved-quote-status aria-live="polite" hidden></div>
+                <p class="booking-quote-assurance"><span aria-hidden="true">✓</span> No additional work or charges without your approval</p>
+
+                <div class="booking-agreements booking-scope-agreement">
+                  <label><input type="checkbox" name="completionAgreement" required> <span data-completion-agreement-copy>I understand that this estimate includes a fixed number of labor-hours and is based on the information I provided.</span></label>
+                </div>
+
+                <button class="booking-primary booking-quote-appointment" type="button" data-load-availability>Choose my appointment →</button>
+              </aside>
             </div>
-            <div class="booking-price-card">
-              <div><span data-package-price-label>Your personalized price</span><strong data-package-price></strong></div>
-              <div><span>Total labor included</span><strong data-man-hours></strong></div>
-            </div>
-            <div class="booking-price-breakdown" data-price-breakdown hidden>
-              <h3>Your itemized estimate</h3>
-              <div data-price-breakdown-units></div>
-              <dl>
-                <div><dt>Service price before tax</dt><dd data-standard-base-price></dd></div>
-                <div data-addon-total-row><dt>Selected add-ons before tax</dt><dd data-addon-total></dd></div>
-                <div><dt>Price before tax</dt><dd data-quote-subtotal></dd></div>
-                <div><dt>NY Sales Tax included (8.875%)</dt><dd data-quote-tax></dd></div>
-                <div class="booking-price-breakdown-total"><dt>Total Estimated Price</dt><dd data-quote-total></dd></div>
-              </dl>
-            </div>
-            <div class="booking-notice" data-price-notice>
-              <strong>Important:</strong>
-              <p>Your estimate is based on the information you provided. If the home's actual condition differs significantly (such as heavy buildup, excessive clutter, post-construction debris, water damage, inaccessible areas, or other conditions requiring additional labor), the scheduled labor-hours may not be enough to complete every requested task. Our cleaning team will prioritize your selected services and follow the service checklist. If additional time is required, it is billed at <strong>$80 per cleaner, per hour</strong>, and <strong>no additional work or charges will be made without your prior approval</strong>. Any necessary price adjustments will only be discussed after an on-site assessment.</p>
-            </div>
-            <div class="booking-status booking-saved-quote-status" data-saved-quote-status aria-live="polite" hidden></div>
-            <div class="booking-agreements booking-scope-agreement">
-              <label><input type="checkbox" name="completionAgreement" required> <span data-completion-agreement-copy>I understand that this package includes a fixed number of labor-hours and may not cover every listed or requested task. Completion depends on the home’s actual condition, clutter, buildup, size, access, and the accuracy of my answers.</span></label>
-            </div>
-            <div class="booking-actions">
-              <button class="booking-secondary" type="button" data-back="1">Change answers</button>
-              <button class="booking-secondary booking-save-exit" type="button" data-booking-cancel>Save &amp; exit</button>
-              <button class="booking-primary" type="button" data-load-availability>Choose my appointment →</button>
+
+            <div class="booking-mobile-quote-bar">
+              <span><small>Estimated total</small><strong data-mobile-package-price></strong></span>
+              <button class="booking-primary" type="button" data-load-availability>Choose appointment →</button>
             </div>
           </section>
 
@@ -560,6 +595,6 @@
         </div>
   </main>
   <script src="./booking-service-area.js?v=20260725-zip-gate"></script>
-    <script src="./book-now.js?v=20260823-progressive-stage-menu"></script>
+    <script src="./book-now.js?v=20260823-compact-quote-page"></script>
 </body>
 </html>
