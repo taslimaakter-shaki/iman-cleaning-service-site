@@ -459,7 +459,7 @@ function calculateStandardQuoteBundle(unitDetails = []) {
 function calculateOrganizationQuote(hoursValue) {
   const selectedHours = Number(hoursValue);
   if (!Number.isInteger(selectedHours) || selectedHours < ORGANIZATION_MIN_HOURS || selectedHours > 24) {
-    throw Object.assign(new Error("Choose a whole number from 4 to 24 hours for organization or decluttering."), {
+    throw Object.assign(new Error("Choose a whole number from 4 to 24 total labor-hours for organization or decluttering."), {
       statusCode: 400
     });
   }
@@ -467,7 +467,7 @@ function calculateOrganizationQuote(hoursValue) {
   const taxBreakdown = inclusiveTaxBreakdown(totalCents);
   const baseItem = {
     key: "organization_hours",
-    label: `${selectedHours} hours × $${ORGANIZATION_HOURLY_RATE} per hour`,
+    label: `${selectedHours} labor-hours × $${ORGANIZATION_HOURLY_RATE} per labor-hour`,
     amount: taxBreakdown.total,
     preTaxAmount: taxBreakdown.subtotal,
     taxAmount: taxBreakdown.tax
@@ -484,7 +484,8 @@ function calculateOrganizationQuote(hoursValue) {
     subtotal: taxBreakdown.total,
     subtotalCents: totalCents,
     manHours: selectedHours,
-    teamHours: selectedHours
+    teamHours: selectedHours / TEAM_SIZE,
+    cleanerCount: TEAM_SIZE
   };
   return {
     id: `organization__${selectedHours}_hours`,
@@ -492,7 +493,7 @@ function calculateOrganizationQuote(hoursValue) {
     serviceKey: "organization",
     serviceLabel: "Organization / Decluttering",
     tierKey: "hourly",
-    tierLabel: `${selectedHours}-Hour Service`,
+    tierLabel: `${selectedHours} Labor-Hour Service`,
     bedroomsLabel: "",
     bathroomsLabel: "",
     price: taxBreakdown.total,
@@ -503,8 +504,8 @@ function calculateOrganizationQuote(hoursValue) {
     addOnTotal: 0,
     addOnSubtotal: 0,
     manHours: selectedHours,
-    teamHours: selectedHours,
-    cleanerCount: 1,
+    teamHours: selectedHours / TEAM_SIZE,
+    cleanerCount: TEAM_SIZE,
     manHourRate: ORGANIZATION_HOURLY_RATE,
     unitCount: 1,
     pricingMode: "organization_formula",

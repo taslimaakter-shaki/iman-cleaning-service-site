@@ -223,7 +223,7 @@ module.exports = async function handler(request, response) {
     const depositSubtotalCents = Math.min(depositAmountCents, Math.round(pkg.subtotalCents * DEPOSIT_PERCENT / 100));
     const depositTaxCents = depositAmountCents - depositSubtotalCents;
     const unitSummary = organizationMode
-      ? `${pkg.manHours} hours of organization / decluttering with one professional organizer, $${pkg.total.toFixed(2)} including tax.`
+      ? `${pkg.manHours} total labor-hours of organization / decluttering with two team members for approximately ${pkg.teamHours} hours, $${pkg.total.toFixed(2)} including tax.`
       : unitDetails
       .map((unit) => residentialFormulaMode
         ? [
@@ -261,7 +261,7 @@ module.exports = async function handler(request, response) {
         `Package: ${pkg.tierLabel}.`,
         unitSummary,
         organizationMode
-          ? `Included service: ${pkg.manHours} hours with one professional organizer at $60 per hour.`
+          ? `Included service: ${pkg.manHours} total labor-hours at $60 per labor-hour; two-person team for approximately ${pkg.teamHours} hours.`
           : `Included labor: ${pkg.manHours} man-hours; two-person team for approximately ${pkg.teamHours} hours.`,
         priorities.length ? `Priorities: ${priorities.join(", ")}.` : "",
         notes ? `Customer notes: ${notes}` : ""
@@ -324,7 +324,7 @@ module.exports = async function handler(request, response) {
     const siteUrl = getSiteUrl(request);
     const description = cleanText(
       organizationMode
-        ? `${pkg.tierLabel}. One professional organizer for ${pkg.teamHours} hours at $60 per hour.`
+        ? `${pkg.tierLabel}. Two-person organization team for approximately ${pkg.teamHours} hours (${pkg.manHours} total labor-hours at $60 per labor-hour).`
         : `${pkg.tierLabel}. ${unitSummary} Two-person team for approximately ${pkg.teamHours} hours (${pkg.manHours} total labor-hours).`,
       500
     );

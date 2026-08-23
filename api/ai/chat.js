@@ -65,7 +65,7 @@ const INSTRUCTIONS = [
   "Move-In/Move-Out starting prices: studio/1 bath $300; 1 bed/1 bath $400; 2 bed/1 bath $480; 3 bed/1 bath $560; 3 bed/2 baths $640.",
   "Post-Construction Cleaning starting prices for eligible residential properties: studio/1 bath $400; 1 bed/1 bath $500; 2 bed/1 bath $580; 3 bed/1 bath $660; 3 bed/2 baths $740.",
   "Recurring Standard Cleaning savings: 25% weekly, 20% biweekly, and 15% monthly.",
-  "Organization Services cost $60 per hour per person with a three-hour minimum per person.",
+  "Organization Services cost $60 per labor-hour with a four labor-hour minimum. Two team members divide the labor-hours, so four labor-hours takes approximately two hours on site and six labor-hours takes approximately three hours.",
   "Detailed, Extreme, ineligible Post-Construction properties, and all commercial cleaning require a custom quote based on size, condition, scope, frequency, and access.",
   "Starting prices can change based on condition, square footage, clutter, pet hair, buildup, parking/accessibility, bathrooms, levels, and requested work.",
   "Deep Cleaning includes inside oven, inside refrigerator, light dishwashing, and inside empty cabinets or drawers, plus cleaning behind appliances that are safe to move.",

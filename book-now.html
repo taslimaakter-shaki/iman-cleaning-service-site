@@ -23,7 +23,7 @@
   <meta name="twitter:image" content="https://www.imancleaningservice.com/brand-card.png">
   <link rel="stylesheet" href="./design-system.css">
   <link rel="stylesheet" href="./site.css?v=20260725-book-now">
-  <link rel="stylesheet" href="./booking.css?v=20260823-details-cleaning-option">
+  <link rel="stylesheet" href="./booking.css?v=20260823-cancel-booking">
   <script type="application/ld+json">
   {
     "@context": "https://schema.org",
@@ -213,12 +213,13 @@
               </div>
               </div>
               <div class="booking-organization-form" data-organization-form hidden>
-                <h2>How many hours do you need?</h2>
-                <p>Choose at least 4 hours.</p>
+                <h2>How many total labor-hours do you need?</h2>
+                <p>Two team members share the labor-hours. Choose at least 4 labor-hours.</p>
                 <div class="booking-fields">
                   <label>
-                    <span>Number of hours</span>
+                    <span>Total labor-hours</span>
                     <input name="organizationHours" type="number" min="4" max="24" step="1" value="4">
+                    <small data-organization-team-time>4 labor-hours = 2 team members for approximately 2 hours.</small>
                   </label>
                   <label class="booking-field-wide">
                     <span>Appointment note (optional)</span>
@@ -292,6 +293,7 @@
             <div class="booking-status" data-eligibility-status aria-live="polite" hidden></div>
             <div class="booking-actions booking-question-actions">
               <button class="booking-secondary booking-save-exit" type="button" data-booking-cancel>Save &amp; exit</button>
+              <button class="booking-secondary booking-discard" type="button" data-booking-discard>Cancel</button>
               <button class="booking-primary booking-next" type="button" data-check-eligibility><span data-eligibility-button-label>Continue</span> <span aria-hidden="true">→</span></button>
             </div>
             <p class="booking-help">Not sure about an answer? <a href="tel:9298034053">Call 929-803-4053</a> and we’ll help.</p>
@@ -338,6 +340,7 @@
 
                 <div class="booking-quote-text-actions">
                   <button type="button" data-back="1">← Edit quote details</button>
+                  <button class="booking-discard" type="button" data-booking-discard>Cancel</button>
                   <button class="booking-save-exit" type="button" data-booking-cancel>Save and finish later</button>
                 </div>
               </div>
@@ -440,6 +443,7 @@
             <div class="booking-actions">
               <button class="booking-secondary" type="button" data-back="2">Back</button>
               <button class="booking-secondary booking-save-exit" type="button" data-booking-cancel>Save &amp; exit</button>
+              <button class="booking-secondary booking-discard" type="button" data-booking-discard>Cancel</button>
               <button class="booking-primary" type="button" data-continue-contact>Secure my booking →</button>
             </div>
           </section>
@@ -474,7 +478,10 @@
                   </div>
                 </section>
 
-                <button class="booking-save-exit booking-final-save" type="button" data-booking-cancel>Save and finish later</button>
+                <div class="booking-final-secondary-actions">
+                  <button class="booking-save-exit booking-final-save" type="button" data-booking-cancel>Save and finish later</button>
+                  <button class="booking-discard booking-final-save" type="button" data-booking-discard>Cancel</button>
+                </div>
               </div>
 
               <aside class="booking-final-booking-summary" aria-labelledby="booking-summary-title">
@@ -566,6 +573,7 @@
                 </div>
                 <div class="booking-quote-secondary-actions">
                   <button type="button" data-quote-contact-back>← Edit my answers</button>
+                  <button class="booking-discard" type="button" data-booking-discard>Cancel</button>
                   <button class="booking-save-exit" type="button" data-booking-cancel>Save and finish later</button>
                 </div>
               </form>
@@ -614,6 +622,6 @@
         </div>
   </main>
   <script src="./booking-service-area.js?v=20260725-zip-gate"></script>
-    <script src="./book-now.js?v=20260823-pet-pricing"></script>
+    <script src="./book-now.js?v=20260823-organization-team-time"></script>
 </body>
 </html>

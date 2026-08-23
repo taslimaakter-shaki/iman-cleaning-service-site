@@ -283,27 +283,14 @@
                         >
                       </label>
                       <label data-organizing-hours-field hidden>
-                        <span>The hourly rate for Organization is $60 per hour per person. A 3-hour minimum is required. How many hours do you need us for?</span>
+                        <span>Organization is $60 per labor-hour with a 4 labor-hour minimum. Two team members divide the labor-hours, so 4 labor-hours takes approximately 2 hours on site. How many total labor-hours do you need?</span>
                         <input
                           type="number"
                           name="Organization Hours Needed"
-                          min="3"
+                          min="4"
                           step="1"
-                          placeholder="Minimum 3 hours"
+                          placeholder="Minimum 4 labor-hours"
                           data-organizing-hours-input
-                          required
-                          disabled
-                        >
-                      </label>
-                      <label data-organizing-team-field hidden>
-                        <span>How many team members?</span>
-                        <input
-                          type="number"
-                          name="Organization Team Members"
-                          min="1"
-                          step="1"
-                          placeholder="Enter number of team members"
-                          data-organizing-team-input
                           required
                           disabled
                         >
@@ -814,7 +801,7 @@
         const serviceType = document.querySelector('[name="Service Type"]');
         const cleaningDetailFields = Array.from(document.querySelectorAll("[data-cleaning-detail-field]"));
         const hourlyCleaningFields = Array.from(document.querySelectorAll("[data-hourly-cleaning-hours-field], [data-hourly-cleaning-team-field]"));
-        const organizingFields = Array.from(document.querySelectorAll("[data-organizing-hours-field], [data-organizing-team-field]"));
+        const organizingFields = Array.from(document.querySelectorAll("[data-organizing-hours-field]"));
         const detailedCleaningFields = Array.from(document.querySelectorAll("[data-detailed-hours-field], [data-detailed-team-field]"));
         const extremeCleaningFields = Array.from(document.querySelectorAll("[data-extreme-hours-field], [data-extreme-team-field]"));
         const postConstructionFields = Array.from(document.querySelectorAll("[data-post-construction-hours-field]"));
@@ -894,7 +881,7 @@
         }
 
         function isConditionalDetailField(field) {
-          return field.matches("[data-cleaning-detail-field], [data-window-cleaning-field], [data-hourly-cleaning-hours-field], [data-hourly-cleaning-team-field], [data-organizing-hours-field], [data-organizing-team-field], [data-detailed-hours-field], [data-detailed-team-field], [data-extreme-hours-field], [data-extreme-team-field], [data-post-construction-hours-field]");
+          return field.matches("[data-cleaning-detail-field], [data-window-cleaning-field], [data-hourly-cleaning-hours-field], [data-hourly-cleaning-team-field], [data-organizing-hours-field], [data-detailed-hours-field], [data-detailed-team-field], [data-extreme-hours-field], [data-extreme-team-field], [data-post-construction-hours-field]");
         }
 
         function syncCommercialFields() {

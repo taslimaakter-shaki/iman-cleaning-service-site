@@ -848,6 +848,21 @@ fieldset.booking-field-wide legend {
   width: max-content;
 }
 
+.booking-final-secondary-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 18px;
+}
+
+.booking-discard {
+  color: #8d2f2f !important;
+}
+
+.booking-discard:hover,
+.booking-discard:focus-visible {
+  color: #641f1f !important;
+}
+
 .booking-final-booking-summary {
   position: sticky;
   top: 82px;
