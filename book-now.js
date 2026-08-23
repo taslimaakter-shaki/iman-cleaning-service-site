@@ -722,7 +722,8 @@
     additionalRooms: "",
     hasPets: "",
     petCount: "",
-    petType: ""
+    petType: "",
+    otherPetType: ""
   });
   const pricingDetailQuestions = (unit, serviceKey = value("requestedService")) => {
     const isStandard = serviceKey === "standard";
@@ -768,14 +769,23 @@
       options: [
         { value: "cats", label: "Cats" },
         { value: "dogs", label: "Dogs" },
-        { value: "other", label: "Others" }
+        { value: "cats-and-dogs", label: "Cats and Dogs" },
+        { value: "other", label: "Other" }
       ]
-    }] : []),
+    }, ...(unit.petType === "other" ? [{
+      key: "otherPetType",
+      type: "text",
+      question: "What kind of pet do you have?",
+      label: "Please specify your other pet",
+      placeholder: "For example: bird, rabbit, or fish",
+      maxLength: 80
+    }] : [])] : []),
     ...(!isMove ? [{
       key: "refrigerator",
       question: "Would you like the inside of the refrigerator cleaned?",
       options: [
-        { value: "yes", label: "Yes (+$40)" },
+        { value: "empty", label: "Yes — Emptied refrigerator (+$40)" },
+        { value: "not-empty", label: "Yes — Not empty refrigerator (+$60)" },
         { value: "no", label: "No" }
       ]
     }, {
@@ -868,7 +878,8 @@
     "additionalRooms",
     "hasPets",
     "petCount",
-    "petType"
+    "petType",
+    "otherPetType"
   ]);
   const CLEANING_STAGES = [
     { label: "Eligibility", start: 5, end: 25 },
@@ -1031,8 +1042,9 @@
         standardDetailHelper.hidden = !question.helper;
         standardDetailHelper.textContent = question.helper || "";
       }
+      const isTypedAnswer = question.type === "number" || question.type === "text";
       if (standardDetailOptions) {
-        standardDetailOptions.hidden = question.type === "number";
+        standardDetailOptions.hidden = isTypedAnswer;
         standardDetailOptions.replaceChildren();
         (question.options || []).forEach((option) => {
           const button = document.createElement("button");
@@ -1061,6 +1073,10 @@
             if (question.key === "hasPets" && option.value === "no") {
               current.petCount = "";
               current.petType = "";
+              current.otherPetType = "";
+            }
+            if (question.key === "petType" && option.value !== "other") {
+              current.otherPetType = "";
             }
             invalidateDownstreamAfterEdit();
             loadCurrentUnitDetails();
@@ -1073,11 +1089,20 @@
           standardDetailOptions.append(button);
         });
       }
-      if (standardDetailNumber) standardDetailNumber.hidden = question.type !== "number";
-      if (question.type === "number" && standardDetailNumberInput) {
+      if (standardDetailNumber) standardDetailNumber.hidden = !isTypedAnswer;
+      if (isTypedAnswer && standardDetailNumberInput) {
         standardDetailNumberLabel.textContent = question.label;
-        standardDetailNumberInput.min = String(question.min);
-        standardDetailNumberInput.max = String(question.max);
+        standardDetailNumberInput.type = question.type;
+        standardDetailNumberInput.inputMode = question.type === "number" ? "numeric" : "text";
+        standardDetailNumberInput.min = question.type === "number" ? String(question.min) : "";
+        standardDetailNumberInput.max = question.type === "number" ? String(question.max) : "";
+        standardDetailNumberInput.step = question.type === "number" ? "1" : "";
+        if (question.type === "text") {
+          standardDetailNumberInput.maxLength = question.maxLength;
+        } else {
+          standardDetailNumberInput.removeAttribute("maxlength");
+        }
+        standardDetailNumberInput.placeholder = question.placeholder || "";
         standardDetailNumberInput.value = current[question.key];
         standardDetailNumberInput.oninput = () => {
           current[question.key] = standardDetailNumberInput.value;
@@ -2175,6 +2200,13 @@
         standardDetailNumberInput?.focus();
         return;
       }
+    } else if (detailQuestion.type === "text") {
+      if (!String(detailValue || "").trim()) {
+        setStatus(status, "Please specify the type of pet to continue.");
+        standardDetailNumberInput?.focus();
+        return;
+      }
+      currentUnit[detailQuestion.key] = String(detailValue).trim();
     } else if (!detailValue) {
       setStatus(status, "Please choose an option to continue.");
       standardDetailOptions?.querySelector("button")?.focus();

@@ -217,14 +217,21 @@ function calculateResidentialUnitPrice(unit = {}, unitIndex = 0, serviceKey = "s
   const hasPets = yesNo(unit.hasPets || "no", `whether there are pets in Unit ${unitNumber}`);
   let petCount = 0;
   let petType = "";
+  let otherPetType = "";
   if (hasPets === "yes") {
     petCount = wholeNumber(unit.petCount, `the number of pets in Unit ${unitNumber}`, 20);
     if (petCount < 1) {
       throw Object.assign(new Error(`Enter the number of pets in Unit ${unitNumber}.`), { statusCode: 400 });
     }
     petType = cleanText(unit.petType, 20);
-    if (!["cats", "dogs", "other"].includes(petType)) {
+    if (!["cats", "dogs", "cats-and-dogs", "other"].includes(petType)) {
       throw Object.assign(new Error(`Choose the type of pets in Unit ${unitNumber}.`), { statusCode: 400 });
+    }
+    if (petType === "other") {
+      otherPetType = cleanText(unit.otherPetType, 80);
+      if (!otherPetType) {
+        throw Object.assign(new Error(`Enter the type of pet in Unit ${unitNumber}.`), { statusCode: 400 });
+      }
     }
   }
 
@@ -240,9 +247,15 @@ function calculateResidentialUnitPrice(unit = {}, unitIndex = 0, serviceKey = "s
   const excludeCabinets = serviceKey === "move" && excludeKitchenItems === "yes"
     ? yesNo(unit.excludeCabinets, `excluding inside cabinet cleaning in Unit ${unitNumber}`)
     : "no";
+  const submittedRefrigerator = cleanText(unit.refrigerator, 30);
   const refrigerator = serviceKey === "move"
     ? (excludeRefrigerator === "yes" ? "excluded" : "included")
-    : yesNo(unit.refrigerator, `inside refrigerator cleaning in Unit ${unitNumber}`);
+    : submittedRefrigerator === "yes"
+      ? "empty"
+      : submittedRefrigerator;
+  if (serviceKey !== "move" && !["no", "empty", "not-empty"].includes(refrigerator)) {
+    throw Object.assign(new Error(`Choose a refrigerator-cleaning option for Unit ${unitNumber}.`), { statusCode: 400 });
+  }
   const oven = serviceKey === "move"
     ? (excludeOven === "yes" ? "excluded" : "included")
     : yesNo(unit.oven, `inside oven cleaning in Unit ${unitNumber}`);
@@ -323,7 +336,8 @@ function calculateResidentialUnitPrice(unit = {}, unitIndex = 0, serviceKey = "s
     serviceKey === "move" ? { key: "interior_windows", label: "Interior window cleaning", amount: 0, included: true } : null
   ].filter(Boolean);
   const addOns = [
-    refrigerator === "yes" ? { key: "refrigerator", label: "Inside refrigerator", amount: 40 } : null,
+    refrigerator === "empty" ? { key: "refrigerator", label: "Inside refrigerator (emptied)", amount: 40 } : null,
+    refrigerator === "not-empty" ? { key: "refrigerator", label: "Inside refrigerator (not empty)", amount: 60 } : null,
     oven === "yes" ? { key: "oven", label: "Inside oven", amount: 30 } : null,
     cabinets === "yes" ? {
       key: "cabinets",
@@ -347,6 +361,7 @@ function calculateResidentialUnitPrice(unit = {}, unitIndex = 0, serviceKey = "s
     hasPets,
     petCount,
     petType,
+    otherPetType,
     refrigerator,
     oven,
     cabinets,

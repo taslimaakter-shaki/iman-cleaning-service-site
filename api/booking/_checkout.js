@@ -229,7 +229,9 @@ module.exports = async function handler(request, response) {
         ? [
           `Unit ${unit.unitNumber}: ${unit.bedrooms} bedroom(s), ${unit.fullBathrooms} full bathroom(s), ${unit.halfBathrooms} half bathroom(s), $${unit.subtotal.toFixed(2)} including tax.`,
           unit.hasPets === "yes"
-            ? `Pets: ${unit.petCount}; type: ${unit.petType === "other" ? "Other" : unit.petType[0].toUpperCase() + unit.petType.slice(1)}.`
+            ? `Pets: ${unit.petCount}; type: ${unit.petType === "other"
+              ? unit.otherPetType
+              : unit.petType === "cats-and-dogs" ? "Cats and Dogs" : unit.petType[0].toUpperCase() + unit.petType.slice(1)}.`
             : "No pets.",
           unit.additionalCleaning === "yes"
             ? "Additional cleaning requested at $80 per labor-hour."
