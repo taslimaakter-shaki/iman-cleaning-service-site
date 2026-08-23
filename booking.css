@@ -3568,6 +3568,7 @@ fieldset.booking-field-wide legend {
   font-weight: 850;
   letter-spacing: .08em;
   text-transform: uppercase;
+  white-space: nowrap;
 }
 
 .booking-quote-total {
