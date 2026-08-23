@@ -3549,7 +3549,7 @@ fieldset.booking-field-wide legend {
   margin-top: 4px;
   color: var(--teal-950);
   font-family: var(--font-display);
-  font-size: clamp(2.55rem, 5vw, 3.6rem);
+  font-size: clamp(2.15rem, 4vw, 3rem);
   line-height: 1;
   letter-spacing: -.04em;
 }
@@ -3561,6 +3561,139 @@ fieldset.booking-field-wide legend {
 
 .booking-quote-summary > small b {
   color: inherit;
+}
+
+.booking-payment-schedule {
+  display: grid;
+  gap: 12px;
+  margin-top: 20px;
+  padding: 18px;
+  background: #fff;
+  border: 1px solid rgba(100, 154, 48, .28);
+  border-radius: 16px;
+}
+
+.booking-payment-schedule h3 {
+  margin: 0;
+  color: var(--teal-950);
+  font-size: 1.05rem;
+  line-height: 1.25;
+}
+
+.booking-payment-schedule h3 strong {
+  color: var(--leaf-700);
+}
+
+.booking-payment-highlight {
+  margin: 0;
+  color: var(--teal-900);
+  font-size: .84rem;
+  font-weight: 750;
+  line-height: 1.45;
+}
+
+.booking-payment-schedule dl {
+  display: grid;
+  gap: 7px;
+  margin: 0;
+  padding: 11px 0;
+  border-top: 1px solid var(--border-subtle);
+  border-bottom: 1px solid var(--border-subtle);
+}
+
+.booking-payment-schedule dl div {
+  display: flex;
+  justify-content: space-between;
+  gap: 16px;
+}
+
+.booking-payment-schedule dt,
+.booking-payment-schedule dd {
+  margin: 0;
+  color: var(--text-body);
+  font-size: .8rem;
+}
+
+.booking-payment-schedule dd {
+  color: var(--teal-950);
+  font-weight: 850;
+}
+
+.booking-payment-schedule ul {
+  display: grid;
+  gap: 6px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.booking-payment-schedule li {
+  position: relative;
+  padding-left: 20px;
+  color: var(--text-body);
+  font-size: .76rem;
+  line-height: 1.4;
+}
+
+.booking-payment-schedule li::before {
+  position: absolute;
+  left: 0;
+  color: var(--leaf-700);
+  font-weight: 900;
+  content: "✓";
+}
+
+.booking-deposit-policy {
+  margin: 0;
+  color: var(--text-muted);
+  font-size: .7rem;
+  line-height: 1.45;
+}
+
+.booking-deposit-policy a {
+  color: var(--teal-800);
+  font-weight: 750;
+  text-decoration: underline;
+  text-underline-offset: 2px;
+}
+
+.booking-payment-timeline {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 8px;
+  margin: 16px 0 0;
+  padding: 0;
+  list-style: none;
+}
+
+.booking-payment-timeline li {
+  position: relative;
+  padding-top: 15px;
+  color: var(--text-muted);
+  font-size: .62rem;
+  font-weight: 750;
+  line-height: 1.25;
+}
+
+.booking-payment-timeline li::before {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 8px;
+  height: 8px;
+  background: var(--leaf-600);
+  border-radius: 50%;
+  content: "";
+}
+
+.booking-payment-timeline li:not(:last-child)::after {
+  position: absolute;
+  top: 3px;
+  left: 12px;
+  width: calc(100% - 8px);
+  height: 2px;
+  background: var(--teal-100);
+  content: "";
 }
 
 .booking-quote-labor {
@@ -3616,6 +3749,27 @@ fieldset.booking-field-wide legend {
 .booking-quote-appointment {
   width: 100%;
   margin-top: 18px;
+}
+
+.booking-quote-summary .booking-no-payment {
+  margin-top: 8px;
+  font-size: .7rem;
+  text-align: center;
+}
+
+.booking-payment-submit {
+  display: grid;
+  flex: 1 1 360px;
+  gap: 8px;
+  max-width: 440px;
+  margin-left: auto;
+}
+
+.booking-payment-submit small {
+  color: var(--text-muted);
+  font-size: .75rem;
+  line-height: 1.45;
+  text-align: center;
 }
 
 .booking-quote-text-actions {
@@ -4029,6 +4183,11 @@ fieldset.booking-field-wide legend {
 
   .booking-quote-summary .booking-quote-appointment {
     display: none;
+  }
+
+  .booking-payment-submit {
+    width: 100%;
+    max-width: none;
   }
 
   .booking-mobile-quote-bar {

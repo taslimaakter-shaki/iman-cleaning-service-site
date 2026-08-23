@@ -23,7 +23,7 @@
   <meta name="twitter:image" content="https://www.imancleaningservice.com/brand-card.png">
   <link rel="stylesheet" href="./design-system.css">
   <link rel="stylesheet" href="./site.css?v=20260725-book-now">
-  <link rel="stylesheet" href="./booking.css?v=20260823-compact-quote-page">
+  <link rel="stylesheet" href="./booking.css?v=20260823-payment-schedule">
   <script type="application/ld+json">
   {
     "@context": "https://schema.org",
@@ -341,6 +341,27 @@
                 <strong class="booking-quote-total" data-package-price></strong>
                 <small>Includes <b data-quote-tax-summary></b> NYC sales tax</small>
 
+                <section class="booking-payment-schedule" aria-labelledby="booking-deposit-title">
+                  <h3 id="booking-deposit-title">Pay only <strong data-quote-deposit></strong> to confirm</h3>
+                  <p class="booking-payment-highlight">Reserve your appointment for only <strong data-quote-deposit-copy></strong> today—not the full <strong data-quote-total-copy></strong>.</p>
+                  <dl>
+                    <div><dt>Booking deposit</dt><dd data-quote-deposit-amount></dd></div>
+                    <div><dt>Due after your cleaning</dt><dd data-quote-balance></dd></div>
+                  </dl>
+                  <ul>
+                    <li>You will <strong>not</strong> be charged the full amount today.</li>
+                    <li>The remaining balance is due after the service is completed.</li>
+                  </ul>
+                  <p class="booking-deposit-policy">The booking deposit is subject to our <a href="./agreement.html" target="_blank" rel="noopener">cancellation and rescheduling policy</a>.</p>
+                </section>
+
+                <ol class="booking-payment-timeline" aria-label="Payment timeline">
+                  <li>Choose appointment</li>
+                  <li>Pay 25% deposit</li>
+                  <li>Cleaning completed</li>
+                  <li>Pay remaining 75%</li>
+                </ol>
+
                 <div class="booking-quote-labor">
                   <strong data-man-hours></strong>
                   <span data-team-time-summary></span>
@@ -354,11 +375,12 @@
                 </div>
 
                 <button class="booking-primary booking-quote-appointment" type="button" data-load-availability>Choose my appointment →</button>
+                <small class="booking-no-payment">No payment is required on this step.</small>
               </aside>
             </div>
 
             <div class="booking-mobile-quote-bar">
-              <span><small>Estimated total</small><strong data-mobile-package-price></strong></span>
+              <span><small>Deposit to confirm</small><strong data-mobile-package-price></strong></span>
               <button class="booking-primary" type="button" data-load-availability>Choose appointment →</button>
             </div>
           </section>
@@ -481,7 +503,10 @@
             <div class="booking-actions">
               <button class="booking-secondary" type="button" data-back="3">Back</button>
               <button class="booking-secondary booking-save-exit" type="button" data-booking-cancel>Save &amp; exit</button>
-              <button class="booking-primary" type="submit" data-pay-button>Pay 25% deposit &amp; confirm booking</button>
+              <div class="booking-payment-submit">
+                <button class="booking-primary" type="submit" data-pay-button>Pay deposit &amp; confirm booking</button>
+                <small data-checkout-payment-explanation></small>
+              </div>
             </div>
           </section>
             </form>
@@ -594,6 +619,6 @@
         </div>
   </main>
   <script src="./booking-service-area.js?v=20260725-zip-gate"></script>
-    <script src="./book-now.js?v=20260823-compact-quote-page-v2"></script>
+    <script src="./book-now.js?v=20260823-payment-schedule"></script>
 </body>
 </html>

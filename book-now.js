@@ -1570,15 +1570,26 @@
   };
   const renderQuoteOverview = (pkg) => {
     const serviceLabel = serviceNames[state.serviceKey] || pkg.serviceLabel;
+    const deposit = bookingDeposit(pkg.price);
+    const balance = Math.round((Number(pkg.price || 0) - deposit) * 100) / 100;
     document.querySelector("[data-recommendation-title]").textContent = `Your ${serviceLabel} Estimate`;
     document.querySelector("[data-package-price]").textContent = money(pkg.price);
-    document.querySelector("[data-mobile-package-price]").textContent = money(pkg.price);
+    document.querySelector("[data-mobile-package-price]").textContent = money(deposit);
     document.querySelector("[data-man-hours]").textContent = `${hours(pkg.manHours)} labor-hours included`;
     document.querySelector("[data-quote-tax-summary]").textContent = money(pkg.tax);
+    document.querySelector("[data-quote-deposit]").textContent = money(deposit);
+    document.querySelector("[data-quote-deposit-copy]").textContent = money(deposit);
+    document.querySelector("[data-quote-deposit-amount]").textContent = money(deposit);
+    document.querySelector("[data-quote-balance]").textContent = money(balance);
+    document.querySelector("[data-quote-total-copy]").textContent = money(pkg.price);
     document.querySelector("[data-team-time-summary]").textContent = state.serviceKey === "organization"
       ? `1 professional organizer for ${teamTime(pkg.teamHours)}`
       : `${pkg.cleanerCount || 2} cleaners for approximately ${teamTime(pkg.teamHours)}`;
-    document.querySelector("[data-total-due]").textContent = money(bookingDeposit(pkg.price));
+    document.querySelector("[data-total-due]").textContent = money(deposit);
+    document.querySelector("[data-pay-button]").textContent = `Pay ${money(deposit)} deposit & confirm booking`;
+    document.querySelector("[data-checkout-payment-explanation]").textContent =
+      `Today’s payment is only 25% of your estimated total. The remaining ${money(balance)} is due after your cleaning.`;
+    form.elements.completionAgreement.checked = false;
   };
   const calculateAndShowQuote = async ({ sendLink = true } = {}) => {
     const status = document.querySelector("[data-eligibility-status]");
@@ -2269,6 +2280,11 @@
         : "I confirm that my answers accurately represent the property’s current condition. No additional time or charges will be added without my approval.";
     }
     document.querySelector("[data-total-due]").textContent = money(bookingDeposit(state.package.price));
+    const deposit = bookingDeposit(state.package.price);
+    const balance = Math.round((Number(state.package.price || 0) - deposit) * 100) / 100;
+    document.querySelector("[data-pay-button]").textContent = `Pay ${money(deposit)} deposit & confirm booking`;
+    document.querySelector("[data-checkout-payment-explanation]").textContent =
+      `Today’s payment is only 25% of your estimated total. The remaining ${money(balance)} is due after your cleaning.`;
   };
 
   document.querySelector("[data-continue-contact]").addEventListener("click", () => {
@@ -2391,7 +2407,7 @@
     } catch (error) {
       setStatus(status, error.message || "Secure checkout could not be started.");
       payButton.disabled = false;
-      payButton.textContent = "Pay 25% deposit & confirm booking";
+      payButton.textContent = `Pay ${money(bookingDeposit(state.package.price))} deposit & confirm booking`;
     }
   });
 
