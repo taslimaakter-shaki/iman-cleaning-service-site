@@ -227,6 +227,9 @@ module.exports = async function handler(request, response) {
       .map((unit) => residentialFormulaMode
         ? [
           `Unit ${unit.unitNumber}: ${unit.bedrooms} bedroom(s), ${unit.fullBathrooms} full bathroom(s), ${unit.halfBathrooms} half bathroom(s), $${unit.subtotal.toFixed(2)} including tax.`,
+          unit.hasPets === "yes"
+            ? `Pets: ${unit.petCount}; type: ${unit.petType === "other" ? "Other" : unit.petType[0].toUpperCase() + unit.petType.slice(1)}.`
+            : "No pets.",
           unit.additionalCleaning === "yes"
             ? "Additional cleaning requested at $80 per labor-hour."
             : ""

@@ -214,6 +214,19 @@ function calculateResidentialUnitPrice(unit = {}, unitIndex = 0, serviceKey = "s
   if (!["combined", "separate"].includes(livingDining)) {
     throw Object.assign(new Error(`Choose whether the living room and dining room are combined or separate in Unit ${unitNumber}.`), { statusCode: 400 });
   }
+  const hasPets = yesNo(unit.hasPets || "no", `whether there are pets in Unit ${unitNumber}`);
+  let petCount = 0;
+  let petType = "";
+  if (hasPets === "yes") {
+    petCount = wholeNumber(unit.petCount, `the number of pets in Unit ${unitNumber}`, 20);
+    if (petCount < 1) {
+      throw Object.assign(new Error(`Enter the number of pets in Unit ${unitNumber}.`), { statusCode: 400 });
+    }
+    petType = cleanText(unit.petType, 20);
+    if (!["cats", "dogs", "other"].includes(petType)) {
+      throw Object.assign(new Error(`Choose the type of pets in Unit ${unitNumber}.`), { statusCode: 400 });
+    }
+  }
 
   const excludeKitchenItems = serviceKey === "move"
     ? yesNo(unit.excludeKitchenItems || "no", `whether to exclude kitchen items in Unit ${unitNumber}`)
@@ -331,6 +344,9 @@ function calculateResidentialUnitPrice(unit = {}, unitIndex = 0, serviceKey = "s
     fullBathrooms,
     halfBathrooms,
     livingDining,
+    hasPets,
+    petCount,
+    petType,
     refrigerator,
     oven,
     cabinets,

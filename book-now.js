@@ -712,7 +712,10 @@
     excludeOven: "",
     excludeRefrigerator: "",
     excludeCabinets: "",
-    additionalRooms: ""
+    additionalRooms: "",
+    hasPets: "",
+    petCount: "",
+    petType: ""
   });
   const pricingDetailQuestions = (unit, serviceKey = value("requestedService")) => {
     const isStandard = serviceKey === "standard";
@@ -737,6 +740,29 @@
       helper: "Include offices, storage rooms, guest rooms, playrooms, dens, studies, and any other separate rooms.",
       min: 0,
       max: 30
+    }] : []),
+    {
+      key: "hasPets",
+      question: "Do you have a pet?",
+      options: [
+        { value: "yes", label: "Yes" },
+        { value: "no", label: "No" }
+      ]
+    }, ...(unit.hasPets === "yes" ? [{
+      key: "petCount",
+      type: "number",
+      question: "How many pets do you have?",
+      label: "Number of pets",
+      min: 1,
+      max: 20
+    }, {
+      key: "petType",
+      question: "What kind of pets do you have?",
+      options: [
+        { value: "cats", label: "Cats" },
+        { value: "dogs", label: "Dogs" },
+        { value: "other", label: "Others" }
+      ]
     }] : []),
     ...(!isMove ? [{
       key: "refrigerator",
@@ -832,7 +858,10 @@
     "fullBathrooms",
     "halfBathrooms",
     "livingDining",
-    "additionalRooms"
+    "additionalRooms",
+    "hasPets",
+    "petCount",
+    "petType"
   ]);
   const CLEANING_STAGES = [
     { label: "Eligibility", start: 5, end: 25 },
@@ -1018,6 +1047,10 @@
               current.excludeOven = "";
               current.excludeRefrigerator = "";
               current.excludeCabinets = "";
+            }
+            if (question.key === "hasPets" && option.value === "no") {
+              current.petCount = "";
+              current.petType = "";
             }
             invalidateDownstreamAfterEdit();
             loadCurrentUnitDetails();
