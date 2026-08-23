@@ -398,20 +398,12 @@
     tracks: Number(value("windowTracks")),
     condition: value("windowCondition"),
     size: value("windowSize"),
-    access: value("windowAccess"),
-    brownstoneUpper: Boolean(form.elements.windowBrownstoneUpper?.checked),
-    nonTilting: Boolean(form.elements.windowNonTilting?.checked),
-    skylightRoof: Boolean(form.elements.windowSkylightRoof?.checked),
-    fixedObstruction: Boolean(form.elements.windowFixedObstruction?.checked),
-    unclearPanels: Boolean(form.elements.windowUnclearPanels?.checked),
-    parkingIssue: Boolean(form.elements.windowParkingIssue?.checked)
+    access: value("windowAccess")
   });
   const windowNeedsManualReview = (details) => (
     ["hard_water", "paint_adhesive", "construction", "damaged"].includes(details.condition) ||
     details.size === "very_oversized" ||
-    ["third", "special_equipment", "leaning_out", "not_sure"].includes(details.access) ||
-    details.brownstoneUpper || details.nonTilting || details.skylightRoof ||
-    details.fixedObstruction || details.unclearPanels || details.parkingIssue
+    ["third", "special_equipment", "leaning_out", "not_sure"].includes(details.access)
   );
   const restoreWindowDetails = (details = {}) => {
     const values = {
@@ -426,17 +418,6 @@
     };
     Object.entries(values).forEach(([name, fieldValue]) => {
       if (form.elements[name] && fieldValue !== undefined) form.elements[name].value = String(fieldValue);
-    });
-    const flags = {
-      windowBrownstoneUpper: details.brownstoneUpper,
-      windowNonTilting: details.nonTilting,
-      windowSkylightRoof: details.skylightRoof,
-      windowFixedObstruction: details.fixedObstruction,
-      windowUnclearPanels: details.unclearPanels,
-      windowParkingIssue: details.parkingIssue
-    };
-    Object.entries(flags).forEach(([name, checked]) => {
-      if (form.elements[name]) form.elements[name].checked = Boolean(checked);
     });
     const selected = new Map((details.windows || []).map((item) => [item.type, item.quantity]));
     windowCards.forEach((card) => {

@@ -507,9 +507,7 @@ function calculateWindowQuote(details = {}, serviceZip = "") {
     throw Object.assign(new Error("Choose a valid service frequency."), { statusCode: 400 });
   }
   const manualReview = condition !== "routine" || size === "very_oversized" ||
-    ["third", "special_equipment", "leaning_out", "not_sure"].includes(access) ||
-    ["brownstoneUpper", "nonTilting", "skylightRoof", "fixedObstruction", "unclearPanels", "parkingIssue"]
-      .some((key) => details[key] === true);
+    ["third", "special_equipment", "leaning_out", "not_sure"].includes(access);
   if (manualReview) {
     throw Object.assign(new Error("Photos and a brief review are required before we can confirm this window-cleaning price."), {
       statusCode: 409,

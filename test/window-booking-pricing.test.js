@@ -77,6 +77,21 @@ function testRemovedWindowAddOnsAreIgnored() {
   assert.deepEqual(quote.units[0].addOns, []);
 }
 
+function testRemovedReviewFlagsAreIgnored() {
+  const quote = calculateWindowQuote({
+    ...standardRequest,
+    propertyType: "commercial",
+    windows: [{ type: "bathroom_sliding_half", quantity: 10 }],
+    brownstoneUpper: true,
+    nonTilting: true,
+    skylightRoof: true,
+    fixedObstruction: true,
+    unclearPanels: true,
+    parkingIssue: true
+  }, "10001");
+  assert.equal(quote.subtotal, 200);
+}
+
 function testReviewTriggersAndRouting() {
   assert.equal(recommendResidentialService({ cleaningCategory: "window" }).serviceKey, "window");
   assert.throws(() => calculateWindowQuote({
@@ -90,5 +105,6 @@ testQueensExample();
 testMinimumsDiscountsAndTax();
 testHalfSizeBathroomWindows();
 testRemovedWindowAddOnsAreIgnored();
+testRemovedReviewFlagsAreIgnored();
 testReviewTriggersAndRouting();
 console.log("Window booking pricing tests passed.");
