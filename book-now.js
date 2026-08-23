@@ -168,7 +168,7 @@
       zipForm.removeAttribute("aria-busy");
       closeZipGate();
       openWizard();
-    }, 5000);
+    }, 3000);
   });
   document.querySelector("[data-change-zip]")?.addEventListener("click", () => {
     hideWizard();

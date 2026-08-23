@@ -1940,7 +1940,7 @@ fieldset.booking-field-wide legend {
   background: linear-gradient(90deg, var(--brand), var(--leaf-500));
   content: "";
   transform-origin: left;
-  animation: zipSuccessCountdown 5s linear both;
+  animation: zipSuccessCountdown 3s linear both;
 }
 
 .booking-zip-success-icon {
