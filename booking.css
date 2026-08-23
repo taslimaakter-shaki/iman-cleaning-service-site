@@ -3411,6 +3411,12 @@ fieldset.booking-field-wide legend {
   font-size: 1rem;
 }
 
+.booking-quote-head .booking-quote-trust-line {
+  color: var(--teal-800);
+  font-size: .82rem;
+  font-weight: 750;
+}
+
 .booking-quote-layout {
   display: grid;
   grid-template-columns: minmax(0, 1.45fr) minmax(330px, .8fr);
@@ -3602,53 +3608,15 @@ fieldset.booking-field-wide legend {
   color: inherit;
 }
 
-.booking-payment-schedule dl {
-  display: grid;
-  gap: 7px;
-  margin: 0;
-  padding: 0;
-}
-
-.booking-payment-schedule dl div {
-  display: flex;
-  justify-content: space-between;
-  gap: 16px;
-}
-
-.booking-payment-schedule dt,
-.booking-payment-schedule dd {
+.booking-payment-schedule p {
   margin: 0;
   color: var(--text-body);
   font-size: .84rem;
+  line-height: 1.45;
 }
 
-.booking-payment-schedule dd {
+.booking-payment-schedule p strong {
   color: var(--teal-950);
-  font-weight: 850;
-}
-
-.booking-payment-schedule ul {
-  display: grid;
-  gap: 6px;
-  margin: 0;
-  padding: 0;
-  list-style: none;
-}
-
-.booking-payment-schedule li {
-  position: relative;
-  padding-left: 20px;
-  color: var(--text-body);
-  font-size: .76rem;
-  line-height: 1.4;
-}
-
-.booking-payment-schedule li::before {
-  position: absolute;
-  left: 0;
-  color: var(--leaf-700);
-  font-weight: 900;
-  content: "✓";
 }
 
 .booking-quote-summary .booking-saved-quote-status {
@@ -3656,20 +3624,6 @@ fieldset.booking-field-wide legend {
   padding: 11px 12px;
   font-size: .76rem;
   text-align: left;
-}
-
-.booking-quote-assurance {
-  display: flex;
-  gap: 8px;
-  margin: 12px 0 0;
-  color: var(--teal-800);
-  font-size: .8rem;
-  font-weight: 800;
-  line-height: 1.45;
-}
-
-.booking-quote-assurance span {
-  color: var(--leaf-700);
 }
 
 .booking-quote-appointment {
@@ -3681,6 +3635,31 @@ fieldset.booking-field-wide legend {
   margin-top: 8px;
   font-size: .7rem;
   text-align: center;
+}
+
+.booking-quote-trust-list {
+  display: grid;
+  gap: 7px;
+  margin: 16px 0 0;
+  padding: 14px 0 0;
+  border-top: 1px solid var(--border-subtle);
+  list-style: none;
+}
+
+.booking-quote-trust-list li {
+  position: relative;
+  padding-left: 20px;
+  color: var(--teal-800);
+  font-size: .78rem;
+  font-weight: 800;
+  line-height: 1.4;
+}
+
+.booking-quote-trust-list li::before {
+  position: absolute;
+  left: 0;
+  color: var(--leaf-700);
+  content: "✓";
 }
 
 .booking-payment-submit {

@@ -23,7 +23,7 @@
   <meta name="twitter:image" content="https://www.imancleaningservice.com/brand-card.png">
   <link rel="stylesheet" href="./design-system.css">
   <link rel="stylesheet" href="./site.css?v=20260725-book-now">
-  <link rel="stylesheet" href="./booking.css?v=20260823-simplified-deposit-card">
+  <link rel="stylesheet" href="./booking.css?v=20260823-conversion-price-card">
   <script type="application/ld+json">
   {
     "@context": "https://schema.org",
@@ -297,6 +297,7 @@
             <header class="booking-quote-head">
               <span class="booking-quote-next">Quote ready <i aria-hidden="true">·</i> Next: Choose appointment</span>
               <h2 data-recommendation-title></h2>
+              <p class="booking-quote-trust-line">Insured cleaning team <span aria-hidden="true">·</span> Secure payment <span aria-hidden="true">·</span> Transparent pricing</p>
             </header>
 
             <div class="booking-quote-layout">
@@ -341,25 +342,22 @@
               </div>
 
               <aside class="booking-quote-summary" aria-label="Quote and booking summary">
-                <span data-package-price-label>Estimated total</span>
+                <span data-package-price-label>Your estimated total</span>
                 <strong class="booking-quote-total" data-package-price></strong>
-                <small>Includes <b data-quote-tax-summary></b> NYC sales tax</small>
+                <small>Tax included</small>
 
                 <section class="booking-payment-schedule" aria-labelledby="booking-deposit-title">
-                  <h3 id="booking-deposit-title">Reserve for only <strong data-quote-deposit></strong></h3>
-                  <dl>
-                    <div><dt><strong>25% booking deposit:</strong></dt><dd data-quote-deposit-amount></dd></div>
-                    <div><dt><strong>Due after service:</strong></dt><dd data-quote-balance></dd></div>
-                  </dl>
-                  <ul>
-                    <li>You are <strong>not paying the full amount now</strong></li>
-                    <li>No payment is required on this step</li>
-                  </ul>
+                  <h3 id="booking-deposit-title">Reserve your cleaning for <strong data-quote-deposit></strong></h3>
+                  <p>Pay only a <strong>25% deposit</strong> when you confirm.</p>
+                  <p>The remaining <strong><span data-quote-balance></span> is due after your cleaning.</strong></p>
                 </section>
 
-                <button class="booking-primary booking-quote-appointment" type="button" data-load-availability>Choose my appointment →</button>
-                <small class="booking-payment-review">You’ll review everything before paying the deposit.</small>
-                <p class="booking-quote-assurance"><span aria-hidden="true">✓</span> No additional work or charges without your approval</p>
+                <button class="booking-primary booking-quote-appointment" type="button" data-load-availability>Choose an appointment →</button>
+                <small class="booking-payment-review">No payment on this step. Review everything before paying.</small>
+                <ul class="booking-quote-trust-list">
+                  <li>Secure checkout</li>
+                  <li>No extra charges without your approval</li>
+                </ul>
                 <div class="booking-status booking-saved-quote-status" data-saved-quote-status aria-live="polite" hidden></div>
               </aside>
             </div>
@@ -605,6 +603,6 @@
         </div>
   </main>
   <script src="./booking-service-area.js?v=20260725-zip-gate"></script>
-    <script src="./book-now.js?v=20260823-simplified-deposit-card"></script>
+    <script src="./book-now.js?v=20260823-conversion-price-card"></script>
 </body>
 </html>
