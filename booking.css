@@ -844,19 +844,6 @@ fieldset.booking-field-wide legend {
   cursor: pointer;
 }
 
-.booking-post-booking-account {
-  margin: 0;
-  padding: 14px 16px;
-  color: var(--text-muted);
-  background: #f7faf9;
-  border-radius: 12px;
-  font-size: .8rem;
-}
-
-.booking-post-booking-account strong {
-  color: var(--teal-900);
-}
-
 .booking-final-save {
   width: max-content;
 }
