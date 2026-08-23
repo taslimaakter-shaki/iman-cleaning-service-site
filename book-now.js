@@ -895,7 +895,10 @@
     !(isOrganizationPath() && (stageNumber === 3 || stageNumber === 4))
   );
   const syncStageMenu = (stageNumber = currentStageNumber()) => {
-    const hideFutureBookingStages = !state.package;
+    const quoteHasBeenDisplayed = Boolean(state.package)
+      && state.step >= 2
+      && (!quoteContactOverlay || quoteContactOverlay.hidden);
+    const hideFutureBookingStages = !quoteHasBeenDisplayed;
     document.querySelectorAll(".booking-stage-nav").forEach((nav) => {
       nav.classList.toggle("is-quote-stage", hideFutureBookingStages);
     });
