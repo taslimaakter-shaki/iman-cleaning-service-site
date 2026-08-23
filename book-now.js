@@ -864,12 +864,17 @@
     !(isOrganizationPath() && (stageNumber === 3 || stageNumber === 4))
   );
   const syncStageMenu = (stageNumber = currentStageNumber()) => {
+    const hideFutureBookingStages = stageNumber === 5;
+    document.querySelectorAll(".booking-stage-nav").forEach((nav) => {
+      nav.classList.toggle("is-quote-stage", hideFutureBookingStages);
+    });
     stageMenuButtons.forEach((button) => {
       const targetStage = Number(button.dataset.stageTarget);
       const action = button.querySelector("[data-stage-action]");
       const applicable = stageIsApplicable(targetStage);
       const reached = applicable && targetStage <= state.highestStageReached;
       const current = targetStage === stageNumber;
+      button.hidden = hideFutureBookingStages && targetStage >= 6;
       button.disabled = !reached;
       button.classList.toggle("is-current", current);
       button.setAttribute("aria-current", current ? "step" : "false");

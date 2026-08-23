@@ -2504,6 +2504,14 @@ fieldset.booking-field-wide legend {
   scrollbar-width: thin;
 }
 
+.booking-stage-nav.is-quote-stage {
+  grid-template-columns: repeat(5, minmax(76px, 1fr));
+}
+
+.booking-stage-nav button[hidden] {
+  display: none;
+}
+
 .booking-stage-nav button {
   display: grid;
   justify-items: center;
