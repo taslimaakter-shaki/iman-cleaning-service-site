@@ -253,7 +253,6 @@
   const savedQuoteStatus = document.querySelector("[data-saved-quote-status]");
   const organizationForm = form.querySelector("[data-organization-form]");
   const organizationHoursInput = form.elements.organizationHours;
-  const organizationTeamTime = form.querySelector("[data-organization-team-time]");
   const organizationNotesInput = form.elements.organizationNotes;
   const serviceChoiceForm = form.querySelector("[data-service-choice-form]");
   const serviceChoiceButtons = Array.from(form.querySelectorAll("[data-booking-service]"));
@@ -1130,7 +1129,6 @@
       if (organizationForm) organizationForm.hidden = false;
       if (mobileQuestionNav) mobileQuestionNav.hidden = false;
       setQuestionMeta("Question 1 of 1 · Next: Your quote", "About 3 min left");
-      syncOrganizationTeamTime();
       if (eligibilityButtonLabel) eligibilityButtonLabel.textContent = "See my price";
       return;
     }
@@ -1643,7 +1641,7 @@
     const completionCopy = document.querySelector("[data-completion-agreement-copy]");
     if (completionCopy) {
       completionCopy.textContent = isOrganization
-        ? `I understand that this booking includes ${hours(state.package?.manHours || 0)} total labor-hours, provided by a two-person organization team for approximately ${teamTime(state.package?.teamHours || 0)}.`
+        ? `I understand that this booking includes ${hours(state.package?.manHours || 0)} total labor-hours, provided by 2 team members for ${teamTime(state.package?.teamHours || 0)}.`
         : "I understand that this estimate includes a fixed number of labor-hours and is based on the information I provided.";
     }
     document.querySelectorAll("[data-cleaning-schedule-details]").forEach((element) => {
@@ -1661,7 +1659,7 @@
     document.querySelector("[data-quote-deposit]").textContent = money(deposit);
     document.querySelector("[data-quote-balance]").textContent = money(balance);
     document.querySelector("[data-team-time-summary]").textContent = state.serviceKey === "organization"
-      ? `2 team members for approximately ${teamTime(pkg.teamHours)}`
+      ? `2 team members for ${teamTime(pkg.teamHours)}`
       : `${pkg.cleanerCount || 2} cleaners for approximately ${teamTime(pkg.teamHours)}`;
     document.querySelector("[data-total-due]").textContent = money(deposit);
     document.querySelector("[data-checkout-total]").textContent = money(pkg.price);
@@ -1967,18 +1965,6 @@
   });
   syncPropertyTypeChoice();
   syncUnitCount();
-  const syncOrganizationTeamTime = () => {
-    if (!organizationTeamTime) return;
-    const laborHours = Number(organizationHoursInput?.value);
-    if (!Number.isFinite(laborHours) || laborHours <= 0) {
-      organizationTeamTime.textContent = "Two team members will divide the selected labor-hours.";
-      return;
-    }
-    const onsiteHours = laborHours / 2;
-    organizationTeamTime.textContent = `${laborHours} labor-hour${laborHours === 1 ? "" : "s"} = 2 team members for approximately ${onsiteHours} hour${onsiteHours === 1 ? "" : "s"}.`;
-  };
-  organizationHoursInput?.addEventListener("input", syncOrganizationTeamTime);
-  syncOrganizationTeamTime();
   form.querySelector("[data-question-back]")?.addEventListener("click", () => {
     if (organizationMode) {
       organizationMode = false;
@@ -2370,7 +2356,7 @@
     const checkoutTeamDescription = document.querySelector("[data-checkout-team-description]");
     if (checkoutTeamDescription) {
       checkoutTeamDescription.textContent = state.serviceKey === "organization"
-        ? `2 team members · Approximately ${compactTeamTime(state.package.teamHours)}`
+        ? `2 team members for ${compactTeamTime(state.package.teamHours)}`
         : `${state.package.cleanerCount || 2} cleaners · Approximately ${compactTeamTime(state.package.teamHours)}`;
     }
     const selectedSlot = state.availableSlots.find((slot) => slot.value === value("schedule"));

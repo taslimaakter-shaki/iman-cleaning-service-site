@@ -71,7 +71,7 @@ window.IMAN_DATA = {
         { name: "Move-In / Move-Out", price: "$300", href: "./move-in-move-out-cleaning.html" },
         { name: "Detailed Cleaning", price: "Custom quote available", href: "./details-cleaning.html" },
         { name: "Extreme Cleaning", price: "Custom quote available", href: "./extreme-cleaning.html" },
-        { name: "Organization Services", price: "$60 per labor-hour · 2-person team · 4 labor-hour minimum", href: "./organization-services.html" },
+        { name: "Organization Services", price: "$60 per labor-hour · 4 labor-hour minimum", href: "./organization-services.html" },
         { name: "Post-Construction Cleaning", price: "Residential packages from $400", href: "./post-construction-cleaning.html" },
       ],
     },
