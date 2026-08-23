@@ -256,7 +256,6 @@
   const organizationNotesInput = form.elements.organizationNotes;
   const serviceChoiceForm = form.querySelector("[data-service-choice-form]");
   const serviceChoiceButtons = Array.from(form.querySelectorAll("[data-booking-service]"));
-  const detailsCleaningOverview = form.querySelector("[data-details-cleaning-overview]");
   const propertyTypeForm = form.querySelector("[data-property-type-form]");
   const propertyTypeButtons = Array.from(form.querySelectorAll("[data-booking-property-type]"));
   const unitCountForm = form.querySelector("[data-unit-count-form]");
@@ -690,7 +689,6 @@
       button.classList.toggle("is-selected", selected);
       button.setAttribute("aria-pressed", String(selected));
     });
-    if (detailsCleaningOverview) detailsCleaningOverview.hidden = selectedService !== "details";
     if (serviceChoiceMode && eligibilityButtonLabel) {
       eligibilityButtonLabel.textContent = selectedService === "details"
         ? "Continue to custom quote"
