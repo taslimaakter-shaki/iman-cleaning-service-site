@@ -46,6 +46,20 @@ function testMinimumsDiscountsAndTax() {
   assert.equal(storefront.total, 136.09);
 }
 
+function testHalfSizeBathroomWindows() {
+  const quote = calculateWindowQuote({
+    ...standardRequest,
+    propertyType: "commercial",
+    windows: [
+      { type: "bathroom_sliding_half", quantity: 5 },
+      { type: "bathroom_hung_half", quantity: 5 }
+    ]
+  }, "10001");
+  assert.equal(quote.subtotal, 210);
+  assert.equal(quote.units[0].baseItems[0].label, "5 × Bathroom sliding window (half-size) (interior & exterior)");
+  assert.equal(quote.units[0].baseItems[1].label, "5 × Bathroom hung window (half-size) (interior & exterior)");
+}
+
 function testReviewTriggersAndRouting() {
   assert.equal(recommendResidentialService({ cleaningCategory: "window" }).serviceKey, "window");
   assert.throws(() => calculateWindowQuote({
@@ -57,5 +71,6 @@ function testReviewTriggersAndRouting() {
 
 testQueensExample();
 testMinimumsDiscountsAndTax();
+testHalfSizeBathroomWindows();
 testReviewTriggersAndRouting();
 console.log("Window booking pricing tests passed.");

@@ -19,6 +19,8 @@ const WINDOW_PRICES = {
   single_hung: { label: "Single-hung window", interior: 18, exterior: 17, both: 28, minutes: 9 },
   double_hung: { label: "Double-hung window", interior: 22, exterior: 20, both: 34, minutes: 10 },
   sliding: { label: "Sliding window assembly", interior: 20, exterior: 19, both: 32, minutes: 10 },
+  bathroom_sliding_half: { label: "Bathroom sliding window (half-size)", interior: 13, exterior: 12, both: 20, minutes: 6 },
+  bathroom_hung_half: { label: "Bathroom hung window (half-size)", interior: 14, exterior: 13, both: 22, minutes: 7 },
   casement: { label: "Casement sash", interior: 18, exterior: 17, both: 29, minutes: 9 },
   awning: { label: "Awning sash", interior: 16, exterior: 15, both: 25, minutes: 8 },
   hopper: { label: "Hopper sash", interior: 15, exterior: 14, both: 23, minutes: 8 },
@@ -518,7 +520,7 @@ function calculateWindowQuote(details = {}, serviceZip = "") {
   if (!["standard", "oversized"].includes(size)) {
     throw Object.assign(new Error("Choose a valid window size."), { statusCode: 400 });
   }
-  const selectedWindows = Array.isArray(details.windows) ? details.windows.slice(0, 16) : [];
+  const selectedWindows = Array.isArray(details.windows) ? details.windows.slice(0, 18) : [];
   if (!selectedWindows.length) {
     throw Object.assign(new Error("Choose at least one window type."), { statusCode: 400 });
   }

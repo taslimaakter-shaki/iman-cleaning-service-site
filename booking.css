@@ -4782,6 +4782,13 @@ fieldset.booking-field-wide legend {
   height: 100%;
   opacity: 0;
 }
+.booking-window-photo--image {
+  background-image: none;
+}
+.booking-window-photo--image img {
+  object-fit: contain;
+  opacity: 1;
+}
 .booking-window-card strong { color: #0c3540; }
 .booking-window-card small { min-height: 2.5em; color: #627376; }
 .booking-window-quantity {
