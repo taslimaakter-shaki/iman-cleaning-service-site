@@ -3481,20 +3481,21 @@ fieldset.booking-field-wide legend {
   font-weight: 900;
 }
 
-.booking-package-labor {
+.booking-summary-labor {
   display: grid;
   gap: 4px;
-  margin-top: 18px;
-  padding-top: 16px;
+  margin-top: 16px;
+  padding: 16px 0;
   border-top: 1px solid var(--border-subtle);
+  border-bottom: 1px solid var(--border-subtle);
 }
 
-.booking-package-labor strong {
+.booking-summary-labor strong {
   color: var(--teal-900);
   font-size: .92rem;
 }
 
-.booking-package-labor span {
+.booking-summary-labor span {
   color: var(--text-muted);
   font-size: .8rem;
 }
@@ -3590,11 +3591,10 @@ fieldset.booking-field-wide legend {
 .booking-payment-schedule {
   display: grid;
   gap: 14px;
-  margin-top: 20px;
-  padding-top: 18px;
+  margin-top: 18px;
+  padding-top: 0;
   background: transparent;
   border: 0;
-  border-top: 1px solid var(--border-subtle);
 }
 
 .booking-payment-schedule h3 {
