@@ -2277,8 +2277,18 @@
     }
     if (organizationMode) {
       const selectedHours = Number(organizationHoursInput?.value);
-      if (!Number.isInteger(selectedHours) || selectedHours < 4 || selectedHours > 24) {
-        setStatus(status, "Please enter a whole number from 4 to 24 total labor-hours.");
+      if (!Number.isInteger(selectedHours)) {
+        setStatus(status, "Please enter a whole number of hours.");
+        organizationHoursInput?.focus();
+        return;
+      }
+      if (selectedHours < 4) {
+        setStatus(status, "The minimum is 4 hours.");
+        organizationHoursInput?.focus();
+        return;
+      }
+      if (selectedHours > 24) {
+        setStatus(status, "The maximum is 24 hours.");
         organizationHoursInput?.focus();
         return;
       }
