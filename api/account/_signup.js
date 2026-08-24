@@ -2,6 +2,7 @@ const {
   authRequest,
   cleanText,
   json,
+  publicAccountUrl,
   publicUser,
   readJsonBody,
   sameOrigin,
@@ -23,7 +24,8 @@ module.exports = async function handler(request, response) {
     if (password.length < 8) {
       return json(response, 400, { error: "Create a password with at least 8 characters." });
     }
-    const result = await authRequest("/signup", {
+    const redirectTo = publicAccountUrl("/account-confirmed.html");
+    const result = await authRequest(`/signup?redirect_to=${encodeURIComponent(redirectTo)}`, {
       method: "POST",
       body: {
         email,

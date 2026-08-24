@@ -1,8 +1,87 @@
+const crypto = require("node:crypto");
+
 const ACCESS_COOKIE = "iman_customer_access";
 const REFRESH_COOKIE = "iman_customer_refresh";
+const DEFAULT_PUBLIC_SITE_URL = "https://www.imancleaningservice.com";
+const ACCOUNT_EMAIL_RATE_LIMIT_WINDOW_MS = 10 * 60 * 1000;
+const ACCOUNT_EMAIL_RATE_LIMIT_MAX = 4;
+const ACCOUNT_IP_RATE_LIMIT_MAX = 12;
+const recentAccountEmailRequests = new Map();
 
 function cleanText(value, maxLength = 500) {
   return String(value || "").trim().slice(0, maxLength);
+}
+
+function validEmail(value) {
+  const email = cleanText(value, 180).toLowerCase();
+  return /^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(email) ? email : "";
+}
+
+function publicAccountUrl(pathname) {
+  const configuredUrls = [process.env.PUBLIC_SITE_URL, process.env.SITE_URL];
+  let baseUrl = DEFAULT_PUBLIC_SITE_URL;
+  for (const configured of configuredUrls) {
+    if (!cleanText(configured, 500)) continue;
+    try {
+      const url = new URL(cleanText(configured, 500));
+      if (!["https:", "http:"].includes(url.protocol) || !url.hostname || url.username || url.password) continue;
+      baseUrl = url.origin;
+      break;
+    } catch {
+      // Ignore an invalid override and keep the explicit production URL.
+    }
+  }
+  return new URL(String(pathname || "/"), `${baseUrl}/`).toString();
+}
+
+function requestAddress(request) {
+  return cleanText(
+    String(request.headers?.["x-forwarded-for"] || "").split(",")[0]
+      || request.headers?.["x-real-ip"]
+      || request.socket?.remoteAddress
+      || "unknown",
+    160
+  );
+}
+
+function consumeAccountEmailRateLimit(request, email, action, now = Date.now()) {
+  if (recentAccountEmailRequests.size > 1000) {
+    for (const [key, value] of recentAccountEmailRequests) {
+      if (now - value.windowStartedAt >= ACCOUNT_EMAIL_RATE_LIMIT_WINDOW_MS) {
+        recentAccountEmailRequests.delete(key);
+      }
+    }
+  }
+  const normalizedAction = cleanText(action, 40);
+  const buckets = [
+    { value: `ip|${normalizedAction}|${requestAddress(request)}`, maximum: ACCOUNT_IP_RATE_LIMIT_MAX },
+    { value: `email|${normalizedAction}|${cleanText(email, 180).toLowerCase()}`, maximum: ACCOUNT_EMAIL_RATE_LIMIT_MAX }
+  ].map(({ value, maximum }) => ({
+    key: crypto.createHash("sha256").update(value).digest("hex"),
+    maximum
+  }));
+
+  for (const bucket of buckets) {
+    const current = recentAccountEmailRequests.get(bucket.key);
+    if (current && now - current.windowStartedAt < ACCOUNT_EMAIL_RATE_LIMIT_WINDOW_MS && current.count >= bucket.maximum) {
+      return {
+        allowed: false,
+        retryAfterSeconds: Math.max(1, Math.ceil(
+          (ACCOUNT_EMAIL_RATE_LIMIT_WINDOW_MS - (now - current.windowStartedAt)) / 1000
+        ))
+      };
+    }
+  }
+
+  for (const bucket of buckets) {
+    const current = recentAccountEmailRequests.get(bucket.key);
+    if (!current || now - current.windowStartedAt >= ACCOUNT_EMAIL_RATE_LIMIT_WINDOW_MS) {
+      recentAccountEmailRequests.set(bucket.key, { count: 1, windowStartedAt: now });
+    } else {
+      current.count += 1;
+    }
+  }
+  return { allowed: true, retryAfterSeconds: 0 };
 }
 
 function json(response, statusCode, payload) {
@@ -26,11 +105,12 @@ async function readJsonBody(request) {
 
 function authConfig() {
   const url = cleanText(process.env.SUPABASE_URL, 500).replace(/\/$/, "");
-  const key = cleanText(process.env.SUPABASE_SERVICE_ROLE_KEY, 3000);
+  const key = cleanText(process.env.SUPABASE_ANON_KEY, 3000)
+    || cleanText(process.env.SUPABASE_SERVICE_ROLE_KEY, 3000);
   if (!url || !key) {
     throw Object.assign(new Error("Customer accounts are not configured yet."), {
       statusCode: 503,
-      setup: "Add SUPABASE_URL and SUPABASE_SERVICE_ROLE_KEY in Vercel."
+      setup: "Add SUPABASE_URL and SUPABASE_ANON_KEY in Vercel."
     });
   }
   return { url, key };
@@ -39,7 +119,10 @@ function authConfig() {
 function accountConfigAvailable() {
   return Boolean(
     cleanText(process.env.SUPABASE_URL, 500) &&
-    cleanText(process.env.SUPABASE_SERVICE_ROLE_KEY, 3000)
+    (
+      cleanText(process.env.SUPABASE_ANON_KEY, 3000) ||
+      cleanText(process.env.SUPABASE_SERVICE_ROLE_KEY, 3000)
+    )
   );
 }
 
@@ -104,10 +187,17 @@ function clearSessionCookies(response) {
 
 function sameOrigin(request) {
   const origin = cleanText(request.headers?.origin, 500);
-  if (!origin) return true;
+  const fetchSite = cleanText(request.headers?.["sec-fetch-site"], 40).toLowerCase();
+  if (!origin) return fetchSite !== "cross-site";
   const host = cleanText(request.headers?.["x-forwarded-host"] || request.headers?.host, 300);
+  const forwardedProtocol = cleanText(request.headers?.["x-forwarded-proto"], 20)
+    .split(",")[0]
+    .toLowerCase();
   try {
-    return new URL(origin).host === host;
+    const originUrl = new URL(origin);
+    if (originUrl.host !== host) return false;
+    if (forwardedProtocol && originUrl.protocol !== `${forwardedProtocol}:`) return false;
+    return true;
   } catch {
     return false;
   }
@@ -164,9 +254,12 @@ module.exports = {
   authenticatedUser,
   cleanText,
   clearSessionCookies,
+  consumeAccountEmailRateLimit,
   json,
+  publicAccountUrl,
   publicUser,
   readJsonBody,
   sameOrigin,
-  setSessionCookies
+  setSessionCookies,
+  validEmail
 };

@@ -5,6 +5,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./account-auth-callback.js?v=20260824-recovery"></script>
 <title>House Cleaning Service in Queens, NY | Iman Cleaning Service LLC</title>
 <meta name="description" content="Professional house, apartment, office, and commercial cleaning in Queens, Jamaica, and across NYC. Book online or request a custom quote.">
 <link rel="canonical" href="https://www.imancleaningservice.com/">
@@ -141,13 +142,17 @@
   ]
 }
 </script>
-<script async src="https://www.googletagmanager.com/gtag/js?id=G-6MEJH73E0H"></script>
-<script src="./account-auth-callback.js"></script>
 <script>
-  window.dataLayer = window.dataLayer || [];
-  function gtag(){ dataLayer.push(arguments); }
-  gtag("js", new Date());
-  gtag("config", "G-6MEJH73E0H");
+  if (!window.__IMAN_AUTH_REDIRECT__) {
+    window.dataLayer = window.dataLayer || [];
+    window.gtag = function(){ window.dataLayer.push(arguments); };
+    var analyticsScript = document.createElement("script");
+    analyticsScript.async = true;
+    analyticsScript.src = "https://www.googletagmanager.com/gtag/js?id=G-6MEJH73E0H";
+    document.head.appendChild(analyticsScript);
+    window.gtag("js", new Date());
+    window.gtag("config", "G-6MEJH73E0H");
+  }
 </script>
 </head>
 <body>

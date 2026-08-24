@@ -1,8 +1,11 @@
 const handlers = {
   confirm: () => require("./_confirm"),
   dashboard: () => require("./_dashboard"),
+  "forgot-password": () => require("./_forgot-password"),
   login: () => require("./_login"),
   logout: () => require("./_logout"),
+  "magic-link": () => require("./_magic-link"),
+  "reset-password": () => require("./_reset-password"),
   session: () => require("./_session"),
   signup: () => require("./_signup")
 };

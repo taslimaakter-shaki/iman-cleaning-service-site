@@ -56,3 +56,68 @@ body.account-page{min-height:100vh;margin:0;background:linear-gradient(145deg,#e
 .account-loading{padding:50px;text-align:center;color:var(--account-muted);font-weight:800}
 @media(max-width:800px){.account-auth-grid{grid-template-columns:1fr}.account-dashboard-head{align-items:start;flex-direction:column}.account-summary{grid-template-columns:1fr}.account-booking-details{grid-template-columns:1fr}.account-nav-links a:not(.account-primary-link),.account-link-button{display:none}}
 @media(max-width:520px){.account-card{padding:22px}.account-intro h1{font-size:2.8rem}.account-booking-top{flex-direction:column}}
+
+/* Premium customer portal login */
+body.login-page{min-height:100svh;background:#f5f6ef;color:var(--account-ink)}
+.login-page .login-header{padding:20px clamp(20px,4vw,48px)}
+.login-header-inner{display:flex;width:min(1180px,100%);margin:0 auto;align-items:center;justify-content:space-between;gap:24px}
+.login-brand{display:inline-flex;align-items:center;gap:11px;color:var(--account-ink);font-size:.98rem;font-weight:900;text-decoration:none}
+.login-brand img{width:48px;height:48px;border-radius:11px;object-fit:contain}
+.login-back-link{padding:10px 0;color:#31575d;font-size:.92rem;font-weight:800;text-underline-offset:4px}
+.login-back-link:hover{color:var(--account-teal-dark)}
+.login-main{display:flex;min-height:calc(100svh - 88px);padding:34px 20px 58px;align-items:center;flex-direction:column;justify-content:center}
+.login-card{width:min(100%,450px);padding:clamp(28px,5vw,42px);border:1px solid #d9e5df;border-radius:20px;background:#fff;box-shadow:0 18px 50px rgba(7,52,61,.07);text-align:center}
+.login-card[hidden]{display:none}
+.login-eyebrow{margin:0 0 13px;color:#5b8c39;font-size:.76rem;font-weight:900;letter-spacing:.14em;text-transform:uppercase}
+.login-card h1{margin:0;color:var(--account-ink);font-size:clamp(2rem,5vw,2.25rem);letter-spacing:-.035em;line-height:1.1}
+.login-intro{margin:12px 0 31px;color:var(--account-muted);font-size:.98rem;line-height:1.55}
+.login-form{display:grid;gap:17px}
+.login-field{display:grid;gap:8px;color:#244950;font-size:.9rem;font-weight:850;text-align:left}
+.login-field input{width:100%;min-height:54px;padding:0 15px;border:1px solid #bed2ce;border-radius:12px;background:#fff;color:var(--account-ink);font:inherit;font-size:1rem;font-weight:500;transition:border-color .16s ease,box-shadow .16s ease,background-color .16s ease}
+.login-field input::placeholder{color:#8a9b9c}
+.login-field input:hover{border-color:#97b8b3}
+.login-field input:focus{border-color:var(--account-teal);outline:0;box-shadow:0 0 0 4px rgba(11,114,130,.12)}
+.login-password-wrap{position:relative;display:block}
+.login-password-wrap input{padding-right:68px}
+.login-password-toggle{position:absolute;top:50%;right:8px;min-width:50px;min-height:38px;padding:0 8px;border:0;border-radius:8px;background:transparent;color:var(--account-teal-dark);font:inherit;font-size:.84rem;font-weight:900;transform:translateY(-50%);cursor:pointer}
+.login-password-toggle:hover{background:#eef6f4}
+.login-password-toggle:focus-visible,.login-forgot:focus-visible,.login-submit:focus-visible,.login-secondary:focus-visible,.login-switch a:focus-visible,.login-card-footer a:focus-visible,.login-estimate a:focus-visible,.login-back-link:focus-visible{outline:3px solid rgba(11,114,130,.28);outline-offset:3px}
+.login-forgot{width:max-content;margin-top:-5px;padding:2px 0;border:0;background:transparent;color:var(--account-teal-dark);font:inherit;font-size:.87rem;font-weight:850;text-decoration:underline;text-decoration-thickness:1px;text-underline-offset:4px;cursor:pointer}
+.login-forgot:disabled{opacity:.58;cursor:wait}
+.login-submit,.login-secondary{width:100%;min-height:54px;padding:12px 18px;border-radius:12px;font:inherit;font-weight:900;transition:background-color .16s ease,border-color .16s ease,box-shadow .16s ease,transform .16s ease;cursor:pointer}
+.login-submit{border:1px solid var(--account-teal-dark);background:var(--account-teal-dark);color:#fff;box-shadow:0 8px 20px rgba(7,86,98,.14)}
+.login-submit:hover{border-color:#043f49;background:#043f49;transform:translateY(-1px)}
+.login-secondary{border:1px solid #a9c5c0;background:#fff;color:var(--account-teal-dark)}
+.login-secondary:hover{border-color:var(--account-teal);background:#f4f9f8;transform:translateY(-1px)}
+.login-submit:disabled,.login-secondary:disabled{opacity:.62;transform:none;cursor:wait}
+.login-divider{display:flex;margin:3px 0;align-items:center;gap:12px;color:#7b8d8f;font-size:.78rem;font-weight:750}
+.login-divider::before,.login-divider::after{content:"";height:1px;flex:1;background:#e2eae7}
+.login-switch{margin:27px 0 0;color:#617477;font-size:.9rem;line-height:1.5}
+.login-switch a,.login-card-footer a,.login-estimate a{color:var(--account-teal-dark);font-weight:900;text-underline-offset:3px}
+.login-card-footer{display:flex;margin:28px -4px -8px;padding-top:19px;border-top:1px solid #e5ece9;align-items:center;justify-content:center;flex-wrap:wrap;gap:6px;color:#667b7e;font-size:.78rem;line-height:1.5}
+.login-help{margin:-7px 0 0;color:var(--account-muted);font-size:.8rem;text-align:left}
+.login-estimate{margin:23px 0 0;color:#5e7275;font-size:.9rem;line-height:1.5;text-align:center}
+.login-status{margin:0;text-align:left;font-size:.85rem}
+.login-status.info{background:#eef6f7;color:#275b64}
+.login-status.error{background:#fff0f0;color:#8a2828}
+.login-status.success{background:#e9f7ef;color:#246142}
+
+@media(max-width:520px){
+  .login-page .login-header{padding:16px 18px}
+  .login-brand img{width:44px;height:44px}
+  .login-brand span{max-width:120px;font-size:.8rem;line-height:1.15}
+  .login-back-link{font-size:.84rem}
+  .login-main{min-height:calc(100svh - 76px);padding:24px 14px 42px;justify-content:flex-start}
+  .login-card{padding:30px 22px}
+  .login-intro{margin-bottom:26px}
+}
+
+@media(max-width:360px){
+  .login-page .login-header{padding-inline:14px}
+  .login-header-inner{gap:12px}
+  .login-brand span{position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0,0,0,0);white-space:nowrap;border:0}
+}
+
+@media(prefers-reduced-motion:reduce){
+  .login-field input,.login-submit,.login-secondary{transition:none}
+}
