@@ -89,6 +89,8 @@ body.login-page{min-height:100svh;background:#f5f6ef;color:var(--account-ink)}
 .login-submit:hover{border-color:#043f49;background:#043f49;transform:translateY(-1px)}
 .login-secondary{border:1px solid #a9c5c0;background:#fff;color:var(--account-teal-dark)}
 .login-secondary:hover{border-color:var(--account-teal);background:#f4f9f8;transform:translateY(-1px)}
+.login-google{display:flex;align-items:center;justify-content:center;gap:11px}
+.login-google svg{width:20px;height:20px;flex:0 0 20px}
 .login-submit:disabled,.login-secondary:disabled{opacity:.62;transform:none;cursor:wait}
 .login-divider{display:flex;margin:3px 0;align-items:center;gap:12px;color:#7b8d8f;font-size:.78rem;font-weight:750}
 .login-divider::before,.login-divider::after{content:"";height:1px;flex:1;background:#e2eae7}

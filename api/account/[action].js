@@ -2,6 +2,7 @@ const handlers = {
   confirm: () => require("./_confirm"),
   dashboard: () => require("./_dashboard"),
   "forgot-password": () => require("./_forgot-password"),
+  "google-login": () => require("./_google-login"),
   login: () => require("./_login"),
   logout: () => require("./_logout"),
   "magic-link": () => require("./_magic-link"),

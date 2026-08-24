@@ -84,13 +84,23 @@ global.fetch = async (url, options = {}) => {
 
 async function run() {
   const forgotPassword = require("../api/account/_forgot-password");
+  const googleLogin = require("../api/account/_google-login");
   const magicLink = require("../api/account/_magic-link");
   const resetPassword = require("../api/account/_reset-password");
   const signup = require("../api/account/_signup");
   const confirm = require("../api/account/_confirm");
 
+  let res = await call(googleLogin, request({}));
+  assert.strictEqual(res.statusCode, 200);
+  assert.strictEqual(res.data.ok, true);
+  const googleUrl = new URL(res.data.url);
+  assert.strictEqual(googleUrl.origin, "https://example.supabase.co");
+  assert.strictEqual(googleUrl.pathname, "/auth/v1/authorize");
+  assert.strictEqual(googleUrl.searchParams.get("provider"), "google");
+  assert.strictEqual(googleUrl.searchParams.get("redirect_to"), "https://www.imancleaningservice.com/account-confirmed.html");
+
   calls.length = 0;
-  let res = await call(forgotPassword, request({ email: " Customer@Example.com " }));
+  res = await call(forgotPassword, request({ email: " Customer@Example.com " }));
   assert.strictEqual(res.statusCode, 200);
   assert.strictEqual(res.data.ok, true);
   assert.match(res.data.message, /If an account exists/i);
@@ -252,6 +262,13 @@ async function run() {
   assert.strictEqual(res.statusCode, 200);
   assert.match(calls[0].url, /\/auth\/v1\/otp\?/);
 
+  res = await call(route, request({}, {
+    query: { action: "google-login" },
+    headers: { host: "www.imancleaningservice.com", origin: "https://www.imancleaningservice.com", "x-forwarded-for": "203.0.113.35" }
+  }));
+  assert.strictEqual(res.statusCode, 200);
+  assert.match(res.data.url, /\/auth\/v1\/authorize\?/);
+
   calls.length = 0;
   res = await call(route, request({ email: "forgot-route@example.com" }, {
     query: { action: "forgot-password" },
@@ -291,6 +308,9 @@ async function run() {
   assert.strictEqual(callbackResult.redirecting, true);
 
   const homepage = fs.readFileSync(require.resolve("../index.html"), "utf8");
+  const loginPage = fs.readFileSync(require.resolve("../login.html"), "utf8");
+  assert.match(loginPage, /Log in with Google/);
+  assert.doesNotMatch(loginPage, /Email me a secure login link/);
   assert.ok(
     homepage.indexOf("account-auth-callback.js?v=20260824-recovery") < homepage.indexOf("analyticsScript.src"),
     "The auth callback must run before analytics is loaded."

@@ -116,6 +116,24 @@ function authConfig() {
   return { url, key };
 }
 
+function oauthAuthorizeUrl(provider, redirectTo) {
+  const { url } = authConfig();
+  const supportedProviders = new Set(["google"]);
+  const normalizedProvider = cleanText(provider, 40).toLowerCase();
+  if (!supportedProviders.has(normalizedProvider)) {
+    throw Object.assign(new Error("This login provider is not supported."), { statusCode: 400 });
+  }
+  const destination = new URL(redirectTo);
+  const allowedOrigin = new URL(publicAccountUrl("/")).origin;
+  if (destination.origin !== allowedOrigin) {
+    throw Object.assign(new Error("The login return address is not allowed."), { statusCode: 400 });
+  }
+  const authorizeUrl = new URL(`${url}/auth/v1/authorize`);
+  authorizeUrl.searchParams.set("provider", normalizedProvider);
+  authorizeUrl.searchParams.set("redirect_to", destination.toString());
+  return authorizeUrl.toString();
+}
+
 function accountConfigAvailable() {
   return Boolean(
     cleanText(process.env.SUPABASE_URL, 500) &&
@@ -256,6 +274,7 @@ module.exports = {
   clearSessionCookies,
   consumeAccountEmailRateLimit,
   json,
+  oauthAuthorizeUrl,
   publicAccountUrl,
   publicUser,
   readJsonBody,
