@@ -155,7 +155,7 @@ ${ldBlocks.map((o) => `<script type="application/ld+json">\n${JSON.stringify(o, 
     <div class="footer-grid">
       <p><strong>Call us</strong><br><a href="${TEL}">929-803-4053</a></p>
       <p><strong>Email</strong><br><a href="mailto:Info@imancleaningservice.com">Info@imancleaningservice.com</a></p>
-      <p><strong>Service area</strong><br>All five NYC boroughs and Long Island — Queens, Brooklyn, Manhattan, Staten Island, and the Bronx</p>
+      <p><strong>Service area</strong><br>All five NYC boroughs — Queens, Brooklyn, Manhattan, Staten Island, and the Bronx</p>
       <p><strong>Hours</strong><br>Open 24 hours · 7 days a week</p>
     </div>
     <nav class="footer-nav" aria-label="All pages">

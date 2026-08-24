@@ -1,6 +1,7 @@
 const assert = require("node:assert/strict");
 const {
   calculateWindowQuote,
+  isNYCServiceZip,
   recommendResidentialService
 } = require("../api/booking/_shared");
 
@@ -29,10 +30,11 @@ function testMinimumsDiscountsAndTax() {
   const residential = calculateWindowQuote({
     ...standardRequest,
     windows: [{ type: "single_hung", quantity: 1 }]
-  }, "11001");
-  assert.equal(residential.subtotal, 250);
-  assert.equal(residential.taxRate, 0.08625);
-  assert.equal(residential.tax, 21.56);
+  }, "11004");
+  assert.equal(residential.subtotal, 225);
+  assert.equal(residential.taxRate, 0.08875);
+  assert.equal(residential.tax, 19.97);
+  assert.equal(residential.total, 244.97);
 
   const storefront = calculateWindowQuote({
     ...standardRequest,
@@ -44,6 +46,19 @@ function testMinimumsDiscountsAndTax() {
   assert.equal(storefront.subtotal, 125);
   assert.equal(storefront.tax, 11.09);
   assert.equal(storefront.total, 136.09);
+}
+
+function testNYCServiceAreaEnforcement() {
+  assert.equal(isNYCServiceZip("11432"), true);
+  assert.equal(isNYCServiceZip("11004"), true);
+  assert.equal(isNYCServiceZip("11005"), true);
+  ["11001", "11040", "11096", "11501", "11701", "11801", "11901"].forEach((zip) => {
+    assert.equal(isNYCServiceZip(zip), false);
+    assert.throws(() => calculateWindowQuote({
+      ...standardRequest,
+      windows: [{ type: "single_hung", quantity: 1 }]
+    }, zip), (error) => error.statusCode === 400);
+  });
 }
 
 function testHalfSizeBathroomWindows() {
@@ -107,4 +122,5 @@ testHalfSizeBathroomWindows();
 testRemovedWindowAddOnsAreIgnored();
 testRemovedReviewFlagsAreIgnored();
 testReviewTriggersAndRouting();
+testNYCServiceAreaEnforcement();
 console.log("Window booking pricing tests passed.");

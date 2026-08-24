@@ -13,7 +13,10 @@ const SLOT_INTERVAL_MINUTES = 30;
 const MIN_BOOKING_NOTICE_HOURS = 24;
 const MAX_ADVANCE_BOOKING_DAYS = 60;
 const NY_SALES_TAX_RATE = 0.08875;
-const NASSAU_SALES_TAX_RATE = 0.08625;
+const NYC_ZIP_PREFIXES = new Set([
+  "100", "101", "102", "103", "104", "111", "112", "113", "114", "116"
+]);
+const NYC_QUEENS_SPLIT_ZIPS = new Set(["11004", "11005"]);
 const WINDOW_TARGET_TEAM_HOURLY = 180;
 const WINDOW_PRICES = {
   single_hung: { label: "Single-hung window", interior: 18, exterior: 17, both: 28, minutes: 9 },
@@ -35,11 +38,6 @@ const WINDOW_PRICES = {
   skylight: { label: "Skylight", interior: 28, exterior: 32, both: 48, minutes: 16 },
   storefront_panel: { label: "Storefront panel", interior: 12, exterior: 12, both: 20, minutes: 3 }
 };
-const NASSAU_117_ZIPS = new Set([
-  "11709", "11710", "11714", "11732", "11735", "11753", "11756", "11758",
-  "11762", "11765", "11771", "11773", "11783", "11791", "11793", "11797"
-]);
-
 const SERVICES = {
   standard: {
     label: "Standard Cleaning",
@@ -124,6 +122,16 @@ function readJsonBody(request, maxBytes = 256 * 1024) {
 
 function cleanText(value, maxLength = 500) {
   return String(value || "").replace(/[\r\n]+/g, " ").replace(/\s+/g, " ").trim().slice(0, maxLength);
+}
+
+function normalizeServiceZip(value) {
+  return String(value || "").replace(/\D/g, "").slice(0, 5);
+}
+
+function isNYCServiceZip(value) {
+  const zip = normalizeServiceZip(value);
+  if (!/^\d{5}$/.test(zip)) return false;
+  return NYC_ZIP_PREFIXES.has(zip.slice(0, 3)) || NYC_QUEENS_SPLIT_ZIPS.has(zip);
 }
 
 function roundUpToHalfHour(value) {
@@ -482,14 +490,6 @@ function calculateStandardQuoteBundle(unitDetails = []) {
   return calculateResidentialQuoteBundle(unitDetails, "standard");
 }
 
-function windowTaxRateForZip(zipValue) {
-  const zip = cleanText(zipValue, 10).replace(/\D/g, "").slice(0, 5);
-  if (zip.startsWith("110") || zip.startsWith("115") || zip.startsWith("118") || NASSAU_117_ZIPS.has(zip)) {
-    return NASSAU_SALES_TAX_RATE;
-  }
-  return NY_SALES_TAX_RATE;
-}
-
 function calculateWindowQuote(details = {}, serviceZip = "") {
   const scope = cleanText(details.scope, 20);
   const propertyType = cleanText(details.propertyType, 30);
@@ -573,21 +573,22 @@ function calculateWindowQuote(details = {}, serviceZip = "") {
     addOnTotal -= discount;
   }
 
-  const zip = cleanText(serviceZip || details.serviceZip, 10).replace(/\D/g, "").slice(0, 5);
-  const isLongIsland = /^(110|115|117|118)/.test(zip);
+  const zip = normalizeServiceZip(serviceZip || details.serviceZip);
+  if (!isNYCServiceZip(zip)) {
+    throw Object.assign(new Error("Enter a ZIP code within our New York City service area."), { statusCode: 400 });
+  }
   let minimum = propertyType === "residential" ? 225 : 175;
   if (propertyType === "commercial" && frequency !== "one_time") {
     minimum = frequency === "every_four_weeks" ? 150 : 125;
   }
-  if (isLongIsland) minimum = Math.max(minimum, 250);
   const calculatedSubtotal = Math.round((baseTotal + addOnTotal) * 100) / 100;
   const subtotal = Math.max(minimum, calculatedSubtotal);
   const minimumAdjustment = Math.round((subtotal - calculatedSubtotal) * 100) / 100;
   if (minimumAdjustment > 0) {
-    addOns.push({ key: "service_minimum", label: `${isLongIsland ? "Long Island" : propertyType === "residential" ? "Residential" : "Commercial"} service minimum`, amount: minimumAdjustment, preTaxAmount: minimumAdjustment, taxAmount: 0 });
+    addOns.push({ key: "service_minimum", label: `${propertyType === "residential" ? "Residential" : "Commercial"} service minimum`, amount: minimumAdjustment, preTaxAmount: minimumAdjustment, taxAmount: 0 });
     addOnTotal += minimumAdjustment;
   }
-  const taxRate = windowTaxRateForZip(zip);
+  const taxRate = NY_SALES_TAX_RATE;
   const subtotalCents = Math.round(subtotal * 100);
   const taxCents = Math.round(subtotalCents * taxRate);
   const totalCents = subtotalCents + taxCents;
@@ -1550,6 +1551,7 @@ module.exports = {
   getPackage,
   getPackageBundle,
   getBooking,
+  isNYCServiceZip,
   packageForClient,
   json,
   listReminderBookings,

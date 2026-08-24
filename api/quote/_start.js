@@ -6,6 +6,7 @@ const {
   makeQuoteId,
   readJsonBody
 } = require("./_shared");
+const { isNYCServiceZip } = require("../booking/_shared");
 
 module.exports = async function handler(request, response) {
   try {
@@ -15,6 +16,9 @@ module.exports = async function handler(request, response) {
 
     const body = await readJsonBody(request);
     const formFields = body.formFields || {};
+    if (!isNYCServiceZip(formFields["ZIP Code"])) {
+      return json(response, 400, { error: "Enter a ZIP code within our New York City service area." });
+    }
     const quoteId = makeQuoteId();
     const { config, drive } = getGoogleClients();
 

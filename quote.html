@@ -21,6 +21,7 @@
 <meta name="twitter:title" content="Get a Free Cleaning Quote | Iman Cleaning Service LLC">
 <meta name="twitter:description" content="Request a free, no-commitment cleaning quote from Iman Cleaning Service LLC. Tell us about your NYC space and we'll confirm scope and price before you book.">
 <meta name="twitter:image" content="https://www.imancleaningservice.com/brand-card.png">
+<script src="./booking-service-area.js?v=20260824-nyc-only" defer></script>
 <script async src="https://www.googletagmanager.com/gtag/js?id=G-6MEJH73E0H"></script>
 <script>
   window.dataLayer = window.dataLayer || [];
@@ -930,7 +931,7 @@
 <script src="https://unpkg.com/react-dom@18.3.1/umd/react-dom.development.js" integrity="sha384-u6aeetuaXnQ38mYT8rp6sbXaQe3NL9t+IBXmnYxwkUI2Hw4bsp2Wvmx4yRQF1uAm" crossorigin="anonymous"></script>
 <script src="https://unpkg.com/@babel/standalone@7.29.0/babel.min.js" integrity="sha384-m08KidiNqLdpJqLq95G/LEi8Qvjl/xUYll3QILypMoQ65QorJ9Lvtp2RXYGBFj1y" crossorigin="anonymous"></script>
 <script src="./_ds_bundle.js"></script>
-<script src="./data.js"></script>
+<script src="./data.js?v=20260824-nyc-only"></script>
 <script type="text/babel" src="./chrome.jsx?v=20260810-free-estimate"></script>
 <script type="text/babel">
   const mountQuoteChrome = () => {
@@ -2053,6 +2054,15 @@
           if (!quoteForm) return;
           if (quoteForm.querySelector(".hp-field")?.value) return;
           if (!showMissingFieldHighlights()) return;
+
+          const serviceZipInput = quoteForm.elements.namedItem("ZIP Code");
+          const serviceArea = window.IMAN_BOOKING_SERVICE_AREA;
+          if (!serviceZipInput || !serviceArea?.isServed(serviceZipInput.value)) {
+            serviceZipInput?.setCustomValidity("Enter a ZIP code within our New York City service area.");
+            serviceZipInput?.reportValidity();
+            serviceZipInput?.focus();
+            return;
+          }
 
           const files = Array.from(workImages?.files || []);
           if (files.length > maxWorkImages) {

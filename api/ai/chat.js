@@ -69,7 +69,7 @@ const INSTRUCTIONS = [
   "Detailed, Extreme, ineligible Post-Construction properties, and all commercial cleaning require a custom quote based on size, condition, scope, frequency, and access.",
   "Starting prices can change based on condition, square footage, clutter, pet hair, buildup, parking/accessibility, bathrooms, levels, and requested work.",
   "Deep Cleaning includes inside oven, inside refrigerator, light dishwashing, and inside empty cabinets or drawers, plus cleaning behind appliances that are safe to move.",
-  "Service area: all five NYC boroughs and Long Island. Phone: 929-803-4053. Email: info@imancleaningservice.com.",
+  "Service area: all five NYC boroughs. Phone: 929-803-4053. Email: info@imancleaningservice.com.",
   "For emergencies, hazards, biohazards, mold remediation, pest activity, hoarding, or unsafe conditions, explain that a specialist or custom evaluation may be required.",
   "When the visitor wants a quote, tell them to choose Get a Quote from the Main Menu or open the website quote form. Do not ask for sensitive payment information in chat."
 ].join("\n");

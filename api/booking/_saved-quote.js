@@ -4,6 +4,7 @@ const {
   calculateWindowQuote,
   calculateResidentialQuoteBundle,
   cleanText,
+  isNYCServiceZip,
   json,
   packageForClient,
   readJsonBody,
@@ -275,6 +276,11 @@ function validateAndPrice(body) {
   const eligibility = body.eligibility && typeof body.eligibility === "object"
     ? body.eligibility
     : {};
+  if (!isNYCServiceZip(eligibility.serviceZip)) {
+    const error = new Error("Enter a ZIP code within our New York City service area.");
+    error.statusCode = 400;
+    throw error;
+  }
   const serviceKey = cleanText(eligibility.requestedService, 40);
   const unitDetails = Array.isArray(body.unitDetails) ? body.unitDetails.slice(0, 10) : [];
   if (serviceKey === "organization" && body.pricingMode === "organization_formula") {

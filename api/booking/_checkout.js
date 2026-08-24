@@ -8,6 +8,7 @@ const {
   createBooking,
   deletePendingBooking,
   getPackageBundle,
+  isNYCServiceZip,
   json,
   makeBookingId,
   readJsonBody,
@@ -67,6 +68,10 @@ module.exports = async function handler(request, response) {
     }
 
     const body = await readJsonBody(request);
+    const eligibilityZip = cleanText(body.eligibility?.serviceZip, 15);
+    if (!isNYCServiceZip(eligibilityZip)) {
+      return json(response, 400, { error: "Enter a ZIP code within our New York City service area." });
+    }
     const accountMode = cleanText(body.accountMode, 20);
     const accountSession = accountMode === "account"
       ? await authenticatedUser(request, response, { required: true })
@@ -207,6 +212,12 @@ module.exports = async function handler(request, response) {
 
     if (!firstName || !lastName || !email || !phone || !address || !city || !state || !zip) {
       return json(response, 400, { error: "Complete all customer and service-address fields." });
+    }
+    if (!isNYCServiceZip(zip)) {
+      return json(response, 400, { error: "Enter a service address within our New York City service area." });
+    }
+    if (zip.replace(/\D/g, "").slice(0, 5) !== eligibilityZip.replace(/\D/g, "").slice(0, 5)) {
+      return json(response, 400, { error: "The service-address ZIP code must match the ZIP used for this quote." });
     }
     if (!/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(email)) {
       return json(response, 400, { error: "Enter a valid email address." });

@@ -1,10 +1,10 @@
-<!-- @dsCard group="Website" viewport="1280x720" name="Service Areas" subtitle="All five boroughs + Long Island" -->
+<!-- @dsCard group="Website" viewport="1280x720" name="Service Areas" subtitle="All five NYC boroughs" -->
 <!DOCTYPE html>
 <html lang="en">
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Cleaning Service Areas in Queens, NYC &amp; Long Island | Iman Cleaning</title>
+<title>Cleaning Service Areas in NYC | Iman Cleaning</title>
 <meta name="description" content="Explore Iman Cleaning Service areas and local cleaning pages for New York City, Queens, Jamaica, Flushing, and Queens apartments.">
 <link rel="canonical" href="https://www.imancleaningservice.com/areas.html">
 <meta name="robots" content="index, follow, max-image-preview:large">
@@ -13,14 +13,14 @@
 <meta property="og:type" content="website">
 <meta property="og:site_name" content="Iman Cleaning Service LLC">
 <meta property="og:locale" content="en_US">
-<meta property="og:title" content="NYC &amp; Long Island Service Areas | Iman Cleaning Service LLC">
-<meta property="og:description" content="Iman Cleaning Service LLC cleans across Manhattan, Brooklyn, Queens, The Bronx, Staten Island, and Long Island — fully insured residential and commercial cleaning.">
+<meta property="og:title" content="NYC Service Areas | Iman Cleaning Service LLC">
+<meta property="og:description" content="Iman Cleaning Service LLC provides fully insured residential and commercial cleaning across Manhattan, Brooklyn, Queens, The Bronx, and Staten Island.">
 <meta property="og:url" content="https://www.imancleaningservice.com/areas.html">
 <meta property="og:image" content="https://www.imancleaningservice.com/brand-card.png">
 <meta property="og:image:alt" content="Iman Cleaning Service LLC — NYC residential & commercial cleaning">
 <meta name="twitter:card" content="summary_large_image">
-<meta name="twitter:title" content="NYC &amp; Long Island Service Areas | Iman Cleaning Service LLC">
-<meta name="twitter:description" content="Iman Cleaning Service LLC cleans across Manhattan, Brooklyn, Queens, The Bronx, Staten Island, and Long Island — fully insured residential and commercial cleaning.">
+<meta name="twitter:title" content="NYC Service Areas | Iman Cleaning Service LLC">
+<meta name="twitter:description" content="Iman Cleaning Service LLC provides fully insured residential and commercial cleaning across Manhattan, Brooklyn, Queens, The Bronx, and Staten Island.">
 <meta name="twitter:image" content="https://www.imancleaningservice.com/brand-card.png">
 <link rel="stylesheet" href="./design-system.css">
 <link rel="stylesheet" href="./site.css?v=20260727-clean-header-logo">
@@ -43,8 +43,7 @@
     { "@type": "City", "name": "Brooklyn" },
     { "@type": "City", "name": "Queens" },
     { "@type": "City", "name": "The Bronx" },
-    { "@type": "City", "name": "Staten Island" },
-    { "@type": "AdministrativeArea", "name": "Long Island" }
+    { "@type": "City", "name": "Staten Island" }
   ]
 }
 </script>
@@ -55,7 +54,7 @@
 <script src="https://unpkg.com/react-dom@18.3.1/umd/react-dom.development.js" integrity="sha384-u6aeetuaXnQ38mYT8rp6sbXaQe3NL9t+IBXmnYxwkUI2Hw4bsp2Wvmx4yRQF1uAm" crossorigin="anonymous"></script>
 <script src="https://unpkg.com/@babel/standalone@7.29.0/babel.min.js" integrity="sha384-m08KidiNqLdpJqLq95G/LEi8Qvjl/xUYll3QILypMoQ65QorJ9Lvtp2RXYGBFj1y" crossorigin="anonymous"></script>
 <script src="./_ds_bundle.js"></script>
-<script src="./data.js"></script>
+<script src="./data.js?v=20260824-nyc-only"></script>
 <script type="text/babel" src="./chrome.jsx?v=20260810-free-estimate"></script>
 <script type="text/babel">
 const mount = () => {
@@ -71,8 +70,7 @@ const mount = () => {
     { name: "Queens", blurb: "Homes, apartments, offices, and businesses throughout Queens." },
     { name: "The Bronx", blurb: "Apartments, family homes, and commercial spaces borough-wide." },
     { name: "Staten Island", blurb: "Houses, rentals, and offices across the island." },
-    { name: "Long Island", blurb: "Homes, apartments, offices, and move-out cleanings across Long Island." },
-    { name: "Not sure?", blurb: "If you're anywhere in NYC or Long Island, start a quote and we'll confirm coverage." },
+    { name: "Not sure?", blurb: "If you're anywhere in NYC, start a quote and we'll confirm coverage." },
   ];
   const localPages = [
     { name: "Cleaning Services in Queens & NYC", blurb: "Explore residential and commercial cleaning services available across Queens and New York City.", href: "./cleaning-services-nyc.html" },
@@ -88,8 +86,8 @@ const mount = () => {
       <section className="page-hero on-photo" style={{ "--hero-img": "url('./assets/nyc-skyline-sunset.png')" }}>
         <div className="ds-shell page-hero-inner">
           <span className="ds-kicker">Service areas</span>
-          <h1>Cleaning Service Areas in Queens, NYC &amp; Long Island</h1>
-          <p className="ds-lead">Wherever you are in the city or Long Island, an insured Iman crew can get there — homes, rentals, offices, and everything in between.</p>
+          <h1>Cleaning Service Areas Across NYC</h1>
+          <p className="ds-lead">Across New York City's five boroughs, an insured Iman crew can serve homes, rentals, offices, and businesses.</p>
           <div className="page-hero-badges">
             {serviceAreas.map((b) => <Badge key={b} tone="solid" size="md">{b}</Badge>)}
           </div>
@@ -100,7 +98,7 @@ const mount = () => {
         <div className="ds-shell">
           <div className="sec-head sec-head-center">
             <span className="ds-kicker">Pick your area</span>
-            <h2>Local cleaning across NYC and Long Island</h2>
+            <h2>Local cleaning across NYC</h2>
           </div>
           <div className="borough-grid">
             {boroughs.map((b) => (

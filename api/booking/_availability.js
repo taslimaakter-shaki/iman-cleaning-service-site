@@ -5,6 +5,7 @@ const {
   calculateResidentialQuoteBundle,
   catalogForClient,
   getPackageBundle,
+  isNYCServiceZip,
   json,
   packageForClient,
   readJsonBody,
@@ -19,6 +20,9 @@ module.exports = async function handler(request, response) {
 
     if (request.method === "POST") {
       const body = await readJsonBody(request);
+      if (!isNYCServiceZip(body.serviceZip)) {
+        return json(response, 400, { error: "Enter a ZIP code within our New York City service area." });
+      }
       const serviceKey = String(body.serviceKey || "").trim();
       if (serviceKey === "organization" && body.pricingMode === "organization_formula") {
         const pkg = calculateOrganizationQuote(body.unitDetails?.[0]?.hours);

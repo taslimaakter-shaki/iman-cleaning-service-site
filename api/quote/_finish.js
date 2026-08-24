@@ -5,6 +5,7 @@ const {
   json,
   readJsonBody
 } = require("./_shared");
+const { isNYCServiceZip } = require("../booking/_shared");
 const { trySendFormSubmissionNotification } = require("../_form-notifications");
 
 const MAX_ATTACHMENT_BATCH_BYTES = 15 * 1024 * 1024;
@@ -94,6 +95,9 @@ module.exports = async function handler(request, response) {
 
     if (!quoteId || !folderLink) {
       return json(response, 400, { error: "quoteId and folderLink are required." });
+    }
+    if (!isNYCServiceZip(formFields["ZIP Code"])) {
+      return json(response, 400, { error: "Enter a ZIP code within our New York City service area." });
     }
 
     const { drive, gmail } = getGoogleClients();

@@ -101,6 +101,13 @@
     if (confirmedZip) confirmedZip.textContent = zip;
     if (confirmedArea) confirmedArea.hidden = false;
     if (serviceZipNote) serviceZipNote.textContent = "— service area confirmed";
+    if (state.eligibility) {
+      state.eligibility = { ...state.eligibility, serviceZip: zip };
+    }
+    if (state.serviceKey === "window" && state.unitDetails[0]) {
+      state.unitDetails[0] = { ...state.unitDetails[0], serviceZip: zip };
+    }
+    persistBookingDraft();
   };
   const openZipGate = () => {
     if (!zipGate) return;
@@ -121,19 +128,10 @@
     zipGate.hidden = true;
     document.body.classList.remove("zip-gate-open");
   };
-  const showZipError = (message, includeQuoteLink = false) => {
+  const showZipError = (message) => {
     zipStatus.hidden = false;
     zipStatus.dataset.type = "error";
     zipStatus.replaceChildren(document.createTextNode(message));
-    if (includeQuoteLink) {
-      zipStatus.append(
-        document.createTextNode(" "),
-        Object.assign(document.createElement("a"), {
-          href: "./quote.html",
-          textContent: "Request a custom quote instead."
-        })
-      );
-    }
   };
 
   zipInput?.addEventListener("input", () => {
@@ -150,7 +148,7 @@
       return;
     }
     if (!serviceArea.isServed(zip)) {
-      showZipError("This ZIP is outside our regular NYC and Long Island online booking area.", true);
+      showZipError("This ZIP is outside our New York City service area. We currently serve only the five NYC boroughs.");
       zipInput.focus();
       return;
     }
@@ -2631,7 +2629,7 @@
     }
     const finalZip = serviceArea.normalize(value("zip"));
     if (!serviceArea.isServed(finalZip)) {
-      setStatus(status, "Please enter a ZIP code within our NYC and Long Island service area.");
+      setStatus(status, "Please enter a ZIP code within our New York City service area.");
       checkoutZip.focus();
       return;
     }

@@ -1423,7 +1423,7 @@ function Hero() {
     tone: "leaf",
     check: true,
     size: "sm"
-  }, "Fully Insured \u2022 Background-Checked Cleaners"), /*#__PURE__*/React.createElement("h1", null, "Reliable Cleaning Services in NYC & Long Island"), /*#__PURE__*/React.createElement("p", {
+  }, "Fully Insured \u2022 Background-Checked Cleaners"), /*#__PURE__*/React.createElement("h1", null, "Reliable Cleaning Services in NYC"), /*#__PURE__*/React.createElement("p", {
     className: "ds-lead"
   }, "Residential and commercial cleaning with clear quotes, flexible scheduling, and easy online booking."), /*#__PURE__*/React.createElement("div", {
     className: "page-hero-actions"
@@ -1557,8 +1557,6 @@ function Areas() {
     name: "The Bronx"
   }, {
     name: "Staten Island"
-  }, {
-    name: "Long Island"
   }];
   return /*#__PURE__*/React.createElement("section", {
     className: "areas-band",
@@ -2274,7 +2272,7 @@ function Hero() {
     tone: "leaf",
     check: true,
     size: "sm"
-  }, "Fully Insured \u2022 Background-Checked Cleaners"), /*#__PURE__*/React.createElement("h1", null, "Reliable Cleaning Services in NYC & Long Island"), /*#__PURE__*/React.createElement("p", {
+  }, "Fully Insured \u2022 Background-Checked Cleaners"), /*#__PURE__*/React.createElement("h1", null, "Reliable Cleaning Services in NYC"), /*#__PURE__*/React.createElement("p", {
     className: "ds-lead"
   }, "Residential and commercial cleaning with clear quotes, flexible scheduling, and easy online booking."), /*#__PURE__*/React.createElement("div", {
     className: "page-hero-actions"
@@ -2408,8 +2406,6 @@ function Areas() {
     name: "The Bronx"
   }, {
     name: "Staten Island"
-  }, {
-    name: "Long Island"
   }];
   return /*#__PURE__*/React.createElement("section", {
     className: "areas-band",
