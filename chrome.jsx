@@ -146,22 +146,6 @@
               </div>
             ))}
           </div>
-          <div className="footer-location">
-            <div className="footer-location-map">
-              <iframe
-                title="Map showing Iman Cleaning Service LLC in Queens, New York"
-                src="https://www.google.com/maps?q=Iman%20Cleaning%20Service%20LLC%2C%20Queens%2C%20NY&output=embed"
-                loading="lazy"
-                referrerPolicy="no-referrer-when-downgrade"
-              />
-            </div>
-            <div className="footer-location-copy">
-              <h4>Our location</h4>
-              <address>Queens, Brooklyn, Manhattan, Staten Island, and the Bronx</address>
-              <a href="https://www.google.com/maps/search/?api=1&query=Iman%20Cleaning%20Service%20LLC%20Queens%20NY"
-                target="_blank" rel="noopener noreferrer">View on Google Maps</a>
-            </div>
-          </div>
           <div className="footer-follow">
             <h4>Follow us for more</h4>
             <div className="social-row">
@@ -179,7 +163,6 @@
           <div className="footer-bottom">
             <span>© 2026 Iman Cleaning Service LLC. All rights reserved.</span>
             <nav className="footer-legal" aria-label="Legal">
-              <a href="./careers.html">Careers</a>
               <a href="./privacy-policy.html">Privacy Policy</a>
               <a href="./sms-terms.html">SMS Terms</a>
             </nav>

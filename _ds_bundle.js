@@ -1179,8 +1179,6 @@ function _extends() { return _extends = Object.assign ? Object.assign.bind() : f
       className: "footer-legal",
       "aria-label": "Legal"
     }, /*#__PURE__*/React.createElement("a", {
-      href: "./careers.html"
-    }, "Careers"), /*#__PURE__*/React.createElement("a", {
       href: "./privacy-policy.html"
     }, "Privacy Policy"), /*#__PURE__*/React.createElement("a", {
       href: "./sms-terms.html"
@@ -2032,8 +2030,6 @@ function _extends() { return _extends = Object.assign ? Object.assign.bind() : f
       className: "footer-legal",
       "aria-label": "Legal"
     }, /*#__PURE__*/React.createElement("a", {
-      href: "./careers.html"
-    }, "Careers"), /*#__PURE__*/React.createElement("a", {
       href: "./privacy-policy.html"
     }, "Privacy Policy"), /*#__PURE__*/React.createElement("a", {
       href: "./sms-terms.html"
