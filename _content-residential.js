@@ -102,7 +102,7 @@ window.SERVICES_RESIDENTIAL = [
     faqs: [
       { q: "Does the apartment need to be completely empty?", a: "Empty is ideal and gets the best result. If a few items remain, tell us in the quote request — we'll work around them, but cabinets and closets should be cleared for interior cleaning." },
       { q: "Are oven and fridge interiors included?", a: "Yes — appliance interiors are part of move-out scope, not an add-on. They're the first things a landlord checks." },
-      { q: "Can you clean on short notice before a walkthrough?", a: "Often, yes. We're open 8 AM–8 PM seven days, and month-end dates book fastest — send your request as soon as you have the date." },
+      { q: "Can you clean on short notice before a walkthrough?", a: "Often, yes. We're open 24 hours a day, seven days a week, and month-end dates book fastest — send your request as soon as you have the date." },
       { q: "Do you offer both move-out and move-in cleaning?", a: "Yes. Book the old place after movers leave and the new one before you unpack — one quote can cover both if the dates are close." }
     ],
     ctaKicker: "Moving day is set",

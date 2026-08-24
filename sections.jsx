@@ -131,7 +131,7 @@ function Hero() {
             <span aria-hidden="true">★★★★★</span> Read Our Google Reviews
           </a>
           <span className="hero-trust-divider" aria-hidden="true">•</span>
-          <span>Open Daily, 8 AM–8 PM</span>
+          <span>Open 24 hours · 7 days a week</span>
         </div>
       </div>
     </section>

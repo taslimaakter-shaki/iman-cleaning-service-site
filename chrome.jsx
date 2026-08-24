@@ -105,9 +105,9 @@
   function Footer() {
     const contacts = [
       { icon: "mail", h: "Email us", v: "Info@imancleaningservice.com", href: "mailto:Info@imancleaningservice.com" },
-      { icon: "pin", h: "Service area", v: "Queens, New York City, and select Long Island communities", href: "./areas.html" },
+      { icon: "pin", h: "Service area", v: "Queens, Brooklyn, Manhattan, Staten Island, and the Bronx", href: "./areas.html" },
       { icon: "phone", h: "Call us", v: "929-803-4053", href: "tel:+19298034053" },
-      { icon: "clock", h: "Business hours", v: "8 AM – 8 PM · 7 days" },
+      { icon: "clock", h: "Business hours", v: "Open 24 hours · 7 days a week" },
     ];
     const socials = [
       { name: "Instagram", href: "https://www.instagram.com/imancleaningservicellc/",
@@ -157,7 +157,7 @@
             </div>
             <div className="footer-location-copy">
               <h4>Our location</h4>
-              <address>Queens, New York City, and select Long Island communities</address>
+              <address>Queens, Brooklyn, Manhattan, Staten Island, and the Bronx</address>
               <a href="https://www.google.com/maps/search/?api=1&query=Iman%20Cleaning%20Service%20LLC%20Queens%20NY"
                 target="_blank" rel="noopener noreferrer">View on Google Maps</a>
             </div>

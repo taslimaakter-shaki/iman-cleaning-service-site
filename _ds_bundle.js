@@ -1065,7 +1065,7 @@ function _extends() { return _extends = Object.assign ? Object.assign.bind() : f
     }, {
       icon: "pin",
       h: "Service area",
-      v: "Manhattan, Brooklyn, Queens, The Bronx, Staten Island, and Long Island",
+      v: "Queens, Brooklyn, Manhattan, Staten Island, and the Bronx",
       href: "./areas.html"
     }, {
       icon: "phone",
@@ -1075,7 +1075,7 @@ function _extends() { return _extends = Object.assign ? Object.assign.bind() : f
     }, {
       icon: "clock",
       h: "Business hours",
-      v: "8 AM – 8 PM · 7 days"
+      v: "Open 24 hours · 7 days a week"
     }];
     const socials = [{
       name: "Instagram",
@@ -1455,7 +1455,7 @@ function Hero() {
   }, "\u2605\u2605\u2605\u2605\u2605"), " Read Our Reviews"), /*#__PURE__*/React.createElement("span", {
     className: "hero-trust-divider",
     "aria-hidden": "true"
-  }, "\u2022"), /*#__PURE__*/React.createElement("span", null, "Open Daily, 8 AM\u20138 PM"))));
+  }, "\u2022"), /*#__PURE__*/React.createElement("span", null, "Open 24 hours · 7 days a week"))));
 }
 
 /* ---- Proof strip ------------------------------------------------------- */
@@ -1918,7 +1918,7 @@ function _extends() { return _extends = Object.assign ? Object.assign.bind() : f
     }, {
       icon: "pin",
       h: "Service area",
-      v: "Manhattan, Brooklyn, Queens, The Bronx, Staten Island, and Long Island",
+      v: "Queens, Brooklyn, Manhattan, Staten Island, and the Bronx",
       href: "./areas.html"
     }, {
       icon: "phone",
@@ -1928,7 +1928,7 @@ function _extends() { return _extends = Object.assign ? Object.assign.bind() : f
     }, {
       icon: "clock",
       h: "Business hours",
-      v: "8 AM – 8 PM · 7 days"
+      v: "Open 24 hours · 7 days a week"
     }];
     const socials = [{
       name: "Instagram",
@@ -2308,7 +2308,7 @@ function Hero() {
   }, "\u2605\u2605\u2605\u2605\u2605"), " Read Our Reviews"), /*#__PURE__*/React.createElement("span", {
     className: "hero-trust-divider",
     "aria-hidden": "true"
-  }, "\u2022"), /*#__PURE__*/React.createElement("span", null, "Open Daily, 8 AM\u20138 PM"))));
+  }, "\u2022"), /*#__PURE__*/React.createElement("span", null, "Open 24 hours · 7 days a week"))));
 }
 
 /* ---- Proof strip ------------------------------------------------------- */

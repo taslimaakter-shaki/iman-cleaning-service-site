@@ -9,7 +9,7 @@ window.BOROUGHS = [
     sub: "High-rises, pre-war co-ops, and offices — doorman logistics included.",
     kicker: "Service area · Manhattan",
     intro: "Manhattan cleaning is half cleaning, half logistics: doorman check-ins, COIs for the management company, service-elevator windows, alternate-side chaos. We handle all of it routinely — your part is opening the door, or just telling the doorman we're coming.",
-    intro2: "From FiDi studios to Harlem brownstone floors, our crews work the borough daily between 8 AM and 8 PM.",
+    intro2: "From FiDi studios to Harlem brownstone floors, our team is available 24 hours a day, 7 days a week.",
     hoods: "Upper East Side · Upper West Side · Midtown · Chelsea · West Village · East Village · SoHo · Tribeca · FiDi · Harlem · Washington Heights · Inwood",
     services: [
       { slug: "standard-cleaning", name: "Standard cleaning", blurb: "Weekly and biweekly upkeep for apartments and condos — the same crew, timed to your building's service hours. Starts at $180." },
@@ -73,7 +73,7 @@ window.BOROUGHS = [
     ],
     faqs: [
       { q: "Do you clean full houses, not just apartments?", a: "Yes — detached and semi-attached houses are a big part of our Queens work. Multi-floor homes get a larger crew so the visit doesn't run all day." },
-      { q: "Are weekend appointments available in Queens?", a: "Yes — we work 8 AM to 8 PM, seven days. Weekend slots are popular with families, so recurring clients get first pick." },
+      { q: "Are weekend appointments available in Queens?", a: "Yes — we are open 24 hours a day, seven days a week. Weekend slots are popular with families, so recurring clients get first pick." },
       { q: "Do you serve the Rockaways and eastern Queens?", a: "Yes — from Astoria to Far Rockaway, Bayside to Jamaica. Distance doesn't change pricing; the space and scope do." }
     ],
     ctaKicker: "Queens, consider it handled",
