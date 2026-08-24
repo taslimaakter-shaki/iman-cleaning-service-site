@@ -6,13 +6,14 @@
     <title>Privacy Policy | Iman Cleaning Service LLC</title>
     <meta
       name="description"
-      content="Privacy Policy for Iman Cleaning Service LLC, including website assistant, quote, and SMS communications."
+      content="Detailed Privacy Policy for Iman Cleaning Service LLC, covering quotes, bookings, payments, website analytics, AI tools, calls, texts, and job applications."
     />
     <link rel="canonical" href="https://www.imancleaningservice.com/privacy-policy.html" />
     <link rel="stylesheet" href="./styles.css" />
     <style>
       body {
         margin: 0;
+        padding-top: 0;
         background: #f4f8f7;
         color: #1f2933;
         font-family: Inter, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
@@ -101,6 +102,48 @@
         padding: clamp(22px, 4vw, 42px);
       }
 
+      .legal-intro {
+        display: grid;
+        grid-template-columns: minmax(0, 1.45fr) minmax(250px, 0.75fr);
+        gap: 22px;
+        padding-bottom: 28px;
+      }
+
+      .legal-summary,
+      .legal-toc {
+        border: 1px solid #cfe3df;
+        border-radius: 12px;
+        background: #f3faf8;
+        padding: 20px;
+      }
+
+      .legal-summary h2,
+      .legal-toc h2 {
+        margin: 0 0 10px;
+        color: #034341;
+        font-size: 1.18rem;
+      }
+
+      .legal-summary p {
+        margin: 0;
+      }
+
+      .legal-summary p + p {
+        margin-top: 10px;
+      }
+
+      .legal-toc ol {
+        display: grid;
+        gap: 5px;
+        margin: 0;
+        padding-left: 22px;
+      }
+
+      .legal-card a {
+        color: #075f5d;
+        font-weight: 700;
+      }
+
       .legal-section {
         padding: 24px 0;
         border-top: 1px solid #d9e6e3;
@@ -117,6 +160,12 @@
         font-size: 1.22rem;
       }
 
+      .legal-section h3 {
+        margin: 20px 0 8px;
+        color: #123f44;
+        font-size: 1.04rem;
+      }
+
       .legal-section p,
       .legal-section ul {
         margin: 0;
@@ -130,6 +179,26 @@
 
       .legal-section ul {
         padding-left: 20px;
+      }
+
+      .legal-section li + li {
+        margin-top: 7px;
+      }
+
+      .legal-callout {
+        margin-top: 16px;
+        border-left: 4px solid #78b947;
+        border-radius: 6px;
+        background: #f5faef;
+        padding: 14px 16px;
+      }
+
+      .legal-callout p {
+        margin: 0;
+      }
+
+      .legal-section[id] {
+        scroll-margin-top: 18px;
       }
 
       .legal-footer {
@@ -155,6 +224,10 @@
           padding-inline: 12px;
           font-size: 0.82rem;
         }
+
+        .legal-intro {
+          grid-template-columns: 1fr;
+        }
       }
     </style>
       <link rel="stylesheet" href="./homepage-footer.css?v=20260727-footer-location" />
@@ -173,51 +246,191 @@
     <section class="legal-hero">
       <div class="legal-shell">
         <h1>Privacy Policy</h1>
-        <p>How Iman Cleaning Service LLC collects, uses, and protects information submitted through our website assistant, quote forms, phone, email, and SMS.</p>
+        <p>How Iman Cleaning Service LLC collects, uses, discloses, stores, and protects information across our website, quotes, bookings, payments, customer communications, and applications.</p>
       </div>
     </section>
 
     <main class="legal-main">
       <article class="legal-shell legal-card">
-        <section class="legal-section">
-          <h2>Effective Date</h2>
-          <p>June 20, 2026</p>
+        <div class="legal-intro">
+          <section class="legal-summary" aria-labelledby="privacy-at-a-glance">
+            <h2 id="privacy-at-a-glance">Privacy at a glance</h2>
+            <p><strong>Last updated and effective:</strong> August 24, 2026</p>
+            <p>We collect information needed to provide cleaning estimates, schedule and perform services, process payments, communicate with you, operate our website, and review applications. We do not sell personal information or share mobile opt-in information for another company’s marketing.</p>
+            <p>This summary is for convenience. The complete policy below explains our practices and your choices.</p>
+          </section>
+
+          <nav class="legal-toc" aria-label="Privacy policy contents">
+            <h2>Contents</h2>
+            <ol>
+              <li><a href="#scope">Scope</a></li>
+              <li><a href="#collect">Information we collect</a></li>
+              <li><a href="#use">How we use information</a></li>
+              <li><a href="#cookies">Cookies and analytics</a></li>
+              <li><a href="#ai">AI, chat, and calls</a></li>
+              <li><a href="#communications">Email and SMS</a></li>
+              <li><a href="#disclosure">How we disclose information</a></li>
+              <li><a href="#choices">Your choices</a></li>
+              <li><a href="#retention">Retention</a></li>
+              <li><a href="#security">Security</a></li>
+              <li><a href="#contact">Contact us</a></li>
+            </ol>
+          </nav>
+        </div>
+
+        <section class="legal-section" id="scope">
+          <h2>1. Scope and who we are</h2>
+          <p>This Privacy Policy describes the practices of Iman Cleaning Service LLC (“Iman Cleaning,” “we,” “us,” or “our”) when you use <a href="https://www.imancleaningservice.com">imancleaningservice.com</a>, request a quote, book or receive a service, create an account, communicate with us, use our website assistant or live chat, call or text us, or submit an employment or cleaner application.</p>
+          <p>This policy does not control the independent privacy practices of websites or services that we do not own. Links to social media, payment pages, and other third-party sites are governed by those parties’ own policies.</p>
         </section>
 
-        <section class="legal-section">
-          <h2>Information We Collect</h2>
-          <p>We may collect your name, phone number, email address, service address, quote details, photos you choose to submit, preferred appointment information, website chat messages, and other details you provide when requesting cleaning services.</p>
+        <section class="legal-section" id="collect">
+          <h2>2. Information we collect</h2>
+
+          <h3>Contact, identity, and account information</h3>
+          <ul>
+            <li>Name, email address, telephone number, service address, apartment or unit, city, state, and ZIP code.</li>
+            <li>Account information such as your email, password, full name, phone number, authentication records, and account-session identifiers. Passwords are processed by our authentication provider and are not visible to us in plain text.</li>
+            <li>Information you provide about another person, such as an authorized contact, reference, or emergency contact. Please provide another person’s information only if you have permission to do so.</li>
+          </ul>
+
+          <h3>Quote, property, and service information</h3>
+          <ul>
+            <li>Service type, property category and type, property size and layout, bedrooms, bathrooms, rooms, units, selected extras, cleaning priorities, window types and quantities, and requested labor time.</li>
+            <li>Information about property condition, clutter or buildup, pets, utilities, access, parking, hazards, recent construction or water damage, cleaning history, preferred dates and times, and other notes you submit.</li>
+            <li>Photos and files you choose to upload. These may reveal the interior, condition, location, or contents of a home or business. Please remove sensitive documents, faces, financial information, medication labels, security codes, and unrelated personal items from view before uploading.</li>
+          </ul>
+
+          <h3>Booking, agreement, and payment information</h3>
+          <ul>
+            <li>Appointment details, quote and booking status, service agreement acceptances, confirmations, cancellations, rescheduling requests, and communications about your service.</li>
+            <li>Estimated and final prices, deposits, balances, taxes, invoices, receipts, transaction status, and payment identifiers. Stripe processes your full card or digital-wallet details. We may receive limited payment information such as card brand, last four digits, Stripe customer or payment-method identifiers, and payment status, but we do not receive or store your full card number.</li>
+            <li>Information used to document a booking or agreement, which may include date, time, and internet protocol (“IP”) address.</li>
+          </ul>
+
+          <h3>Communications and customer support</h3>
+          <ul>
+            <li>Emails, text messages, live-chat and website-assistant messages, contact-form submissions, feedback, and other communications with us.</li>
+            <li>If our automated phone receptionist is enabled, call details may include caller and recipient numbers, recordings, transcripts, summaries, scheduling details, and other information discussed during the call. See <a href="#ai">AI, chat, and phone calls</a> below.</li>
+          </ul>
+
+          <h3>Device, website, and analytics information</h3>
+          <ul>
+            <li>IP address, browser and device type, operating system, pages viewed, links or buttons used, approximate location derived from an IP address, referring page, timestamps, and diagnostic or security information.</li>
+            <li>Cookies, local storage, session storage, and similar identifiers used for account sessions, saved form progress, ZIP-code eligibility, preferences, security, analytics, and site performance.</li>
+          </ul>
+
+          <h3>Applicant and cleaner information</h3>
+          <p>If you apply for employment or to provide cleaning services, we may collect your contact information, address and service area, résumé, languages, work authorization response, availability, experience and job history, transportation and driver-license availability, insurance status, skills, physical-capability responses, references, emergency contacts, certifications, and narrative answers. Please obtain permission before providing a reference’s or emergency contact’s information.</p>
+
+          <h3>Sources of information</h3>
+          <p>We collect information directly from you; automatically from your browser or device; from payment, communications, analytics, authentication, and scheduling providers; and from a person acting for you or submitting information about you.</p>
         </section>
 
-        <section class="legal-section">
-          <h2>How We Use Information</h2>
-          <p>We use your information to respond to requests, prepare cleaning quotes, schedule services, provide customer support, process payments, send service-related communications, and improve our website and operations.</p>
+        <section class="legal-section" id="use">
+          <h2>3. How we use information</h2>
+          <p>We may use personal information to:</p>
+          <ul>
+            <li>check service-area eligibility and prepare, deliver, save, or revise quotes;</li>
+            <li>schedule, confirm, provide, reschedule, cancel, and support cleaning services;</li>
+            <li>process deposits and balances, issue receipts and invoices, prevent duplicate transactions, and maintain payment and accounting records;</li>
+            <li>send service-related emails and texts, payment links, appointment updates, reminders, confirmations, and customer-support responses;</li>
+            <li>create and manage customer accounts and display associated bookings and invoices;</li>
+            <li>operate website chat, automated assistance, optional photo-based estimation, and phone support;</li>
+            <li>understand website use, measure performance, troubleshoot errors, improve services, and develop new features;</li>
+            <li>protect customers, workers, our business, and our systems; detect fraud, abuse, and security incidents; enforce agreements; and resolve disputes;</li>
+            <li>comply with legal, tax, accounting, insurance, licensing, and regulatory obligations; and</li>
+            <li>evaluate employment and cleaner applications and communicate with applicants.</li>
+          </ul>
         </section>
 
-        <section class="legal-section">
-          <h2>SMS and Phone Communications</h2>
-          <p>If you provide a phone number and ask us to contact you, we may use that number to call or text you about cleaning quotes, website assistant requests, appointment details, service updates, payment links, or customer support. Message frequency varies. Message and data rates may apply.</p>
-          <p>You can opt out of SMS messages by replying <strong>STOP</strong>. For help, reply <strong>HELP</strong> or contact us at <a href="mailto:Info@imancleaningservice.com">Info@imancleaningservice.com</a> or <a href="tel:+19298034053">929-803-4053</a>.</p>
+        <section class="legal-section" id="cookies">
+          <h2>4. Cookies, browser storage, and analytics</h2>
+          <p>Our website uses cookies and similar technologies for functions such as secure account sessions, saved quote or booking progress, preferences, security, and analytics.</p>
+          <ul>
+            <li><strong>Account cookies.</strong> Secure, HTTP-only cookies help keep signed-in customers authenticated. A refresh cookie may remain for up to 30 days unless it expires or is cleared earlier.</li>
+            <li><strong>Saved form progress.</strong> Booking answers may be saved in your browser’s local storage so you can continue later. This information generally remains on that device until the booking is completed or canceled, the site clears it, you clear browser data, or the browser removes it.</li>
+            <li><strong>Session storage.</strong> We may temporarily store ZIP-code eligibility, qualification, and notice information for the current browser session.</li>
+            <li><strong>Google Analytics.</strong> Google Analytics helps us understand how visitors use the website and may collect device, interaction, referrer, IP-derived approximate location, and similar usage information.</li>
+          </ul>
+          <p>You can block or delete cookies and local storage through your browser settings, but some account, saved-progress, and booking features may not work correctly. You may also use the <a href="https://tools.google.com/dlpage/gaoptout/" target="_blank" rel="noopener noreferrer">Google Analytics Opt-out Browser Add-on</a>. Our website does not currently respond differently to browser “Do Not Track” signals.</p>
         </section>
 
-        <section class="legal-section">
-          <h2>No Sale or Marketing Sharing of Mobile Information</h2>
-          <p>We do not sell your personal information. We do not share mobile opt-in information, phone numbers, or SMS consent with third parties or affiliates for marketing or promotional purposes.</p>
+        <section class="legal-section" id="ai">
+          <h2>5. AI tools, website chat, photos, and phone calls</h2>
+          <p>We may use automated tools to help answer questions, summarize information, route requests, support scheduling, and assist with estimates. Depending on the feature and its configuration:</p>
+          <ul>
+            <li>website-assistant messages may be sent to OpenAI to generate a response;</li>
+            <li>property details and selected photos may be sent to OpenAI or Google’s Vertex AI/Gemini services to assist with a cleaning estimate;</li>
+            <li>live-chat messages and contact information may be stored through Supabase and may be forwarded to our business by Twilio; and</li>
+            <li>calls handled by an ElevenLabs automated receptionist may be recorded, transcribed, summarized, and stored through our business systems.</li>
+          </ul>
+          <p>AI-generated responses and estimates can be incomplete or inaccurate and may be reviewed or adjusted based on the information you provide, property conditions, and our service terms. Do not submit sensitive or unrelated information to an AI or chat feature.</p>
+          <div class="legal-callout">
+            <p><strong>Call notice:</strong> A call with our automated receptionist may be recorded and transcribed for customer service, scheduling, quality, security, and dispute-resolution purposes. We will provide any additional notice or obtain consent when required by applicable law. If you do not want a call recorded or transcribed, do not continue the call; contact us by email or through a non-call website form instead.</p>
+          </div>
         </section>
 
-        <section class="legal-section">
-          <h2>Service Providers</h2>
-          <p>We may use trusted service providers to operate our website, forms, chat, messaging, payments, email, hosting, analytics, and business systems. These providers may process information only as needed to provide services to Iman Cleaning Service LLC.</p>
+        <section class="legal-section" id="communications">
+          <h2>6. Email, SMS, and service communications</h2>
+          <p>We may email or text you about a quote, appointment, service update, payment link, confirmation, receipt, account, support request, or other transaction you initiated. We may also call you about your request or service. Message frequency varies, and message and data rates may apply.</p>
+          <p>You can opt out of SMS messages by replying <strong>STOP</strong>. For help, reply <strong>HELP</strong> or contact us at <a href="mailto:Info@imancleaningservice.com">Info@imancleaningservice.com</a> or <a href="tel:+19298034053">929-803-4053</a>. Opting out of texts does not stop non-SMS communications or messages already in transit, and we may still contact you where legally permitted about an active transaction or safety issue. See our <a href="./sms-terms.html">SMS Terms</a> for additional terms.</p>
+          <p>We do not share mobile opt-in information, phone numbers, or SMS consent with third parties or affiliates for their own marketing or promotional purposes. Communications providers may process this information solely to deliver and support our messages.</p>
         </section>
 
-        <section class="legal-section">
-          <h2>Data Security</h2>
-          <p>We use reasonable administrative and technical safeguards to protect submitted information. No internet or messaging system can be guaranteed completely secure.</p>
+        <section class="legal-section" id="disclosure">
+          <h2>7. How we disclose information</h2>
+          <p>We disclose personal information as reasonably necessary for the purposes described in this policy. Recipients may include:</p>
+          <ul>
+            <li><strong>Vercel</strong> for website hosting, serverless functions, logs, and delivery;</li>
+            <li><strong>Supabase</strong> for authentication, databases, customer accounts, booking records, chat, applications, and related storage;</li>
+            <li><strong>Stripe</strong> for payment processing, customer and payment-method records, receipts, invoices, refunds, and fraud prevention;</li>
+            <li><strong>Google services</strong>, including Google Analytics, Drive, Gmail, Calendar, and, when enabled, Cloud or Vertex AI/Gemini, for analytics, files and photos, email, scheduling, and AI-assisted estimates;</li>
+            <li><strong>Twilio</strong> for text messaging and related communications;</li>
+            <li><strong>OpenAI</strong> for website-assistant responses and, when enabled, AI-assisted photo estimates;</li>
+            <li><strong>ElevenLabs</strong>, when enabled, for an automated phone receptionist and call processing;</li>
+            <li><strong>FormSubmit</strong> for certain employment-application forms;</li>
+            <li>cleaning professionals, contractors, and personnel who need information to quote, schedule, perform, or support a requested service;</li>
+            <li>accountants, insurers, attorneys, professional advisers, and authorities when reasonably necessary for business, legal, safety, fraud-prevention, or compliance purposes; and</li>
+            <li>a successor or involved party in a merger, financing, acquisition, reorganization, sale of assets, bankruptcy, or similar business transaction, subject to applicable law.</li>
+          </ul>
+          <h3>No sale or targeted advertising</h3>
+          <p>We do not sell or rent personal information, and we do not use personal information for cross-context behavioral advertising. Service providers may process information for us under their own contracts and privacy terms. If our practices materially change, we will update this policy and provide choices required by applicable law.</p>
         </section>
 
-        <section class="legal-section">
-          <h2>Contact</h2>
-          <p>Iman Cleaning Service LLC<br><a href="mailto:Info@imancleaningservice.com">Info@imancleaningservice.com</a><br><a href="tel:+19298034053">929-803-4053</a></p>
+        <section class="legal-section" id="choices">
+          <h2>8. Your privacy choices and requests</h2>
+          <p>You may ask us to access, correct, or delete personal information associated with you, or to close an account. You may also ask questions about how we use or disclose your information. We will review and respond to requests as required by applicable law and, where practicable, as a courtesy.</p>
+          <p>Submit a request by emailing <a href="mailto:Info@imancleaningservice.com?subject=Privacy%20Request">Info@imancleaningservice.com</a> with the subject line <strong>Privacy Request</strong>, or call <a href="tel:+19298034053">929-803-4053</a>. Describe your request and provide the email address or telephone number you used with us. We may need to verify your identity or authority before acting. An authorized agent may submit a request where applicable law permits, but we may require proof of authority and identity.</p>
+          <p>We may deny or limit a request when permitted by law—for example, when we need information to complete a service, protect security, prevent fraud, keep legally required transaction or tax records, establish or defend legal claims, or protect another person’s rights. We will not unlawfully discriminate against you for making a privacy request.</p>
+        </section>
+
+        <section class="legal-section" id="retention">
+          <h2>9. Retention</h2>
+          <p>We do not use one fixed retention period for every category of information. Retention depends on the type of record and why it is needed. We may retain information for as long as reasonably necessary to provide and document services; maintain accounts; process payments; send requested communications; administer applications; meet tax, accounting, insurance, legal, and contractual obligations; protect security; prevent fraud; resolve disputes; and enforce agreements. We may delete or de-identify information when it is no longer reasonably needed.</p>
+          <p>A saved-quote link may expire after 90 days, but expiration of a link does not necessarily delete the underlying quote, email, photo, or business record. Records may also remain for a limited period in backups or in systems operated by our service providers, subject to their practices and our legal obligations.</p>
+        </section>
+
+        <section class="legal-section" id="security">
+          <h2>10. Data security</h2>
+          <p>We use administrative, technical, and physical safeguards designed to protect personal information in light of the nature of the information and our operations. These may include restricted access, secure authentication cookies, encrypted connections in transit where supported, provider access controls, monitoring, and business procedures.</p>
+          <p>No website, email, text message, cloud system, or internet transmission can be guaranteed completely secure. Please use a unique password, protect your devices and account credentials, and avoid sending unnecessary sensitive information. If you believe your information or account may have been compromised, contact us promptly.</p>
+        </section>
+
+        <section class="legal-section" id="children">
+          <h2>11. Children’s privacy</h2>
+          <p>Our website and services are intended for adults and are not directed to children under 18. We do not knowingly collect personal information directly from children. If you believe a child submitted personal information to us, contact us so we can review and, where appropriate, delete it.</p>
+        </section>
+
+        <section class="legal-section" id="changes">
+          <h2>12. Changes to this policy</h2>
+          <p>We may update this Privacy Policy as our services, providers, or legal obligations change. We will post the revised policy on this page and change the “Last updated and effective” date. If a change materially affects how we use information already collected, we will provide any additional notice or choice required by applicable law.</p>
+        </section>
+
+        <section class="legal-section" id="contact">
+          <h2>13. Contact us</h2>
+          <p>For privacy questions, requests, or concerns, contact:</p>
+          <p><strong>Iman Cleaning Service LLC</strong><br><a href="mailto:Info@imancleaningservice.com?subject=Privacy%20Request">Info@imancleaningservice.com</a><br><a href="tel:+19298034053">929-803-4053</a></p>
         </section>
       </article>
     </main>
