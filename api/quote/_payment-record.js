@@ -6,7 +6,8 @@ const {
   json,
   readJsonBody
 } = require("./_shared");
-const { confirmBooking, updateBooking } = require("../booking/_shared");
+const { confirmBooking, getBooking, updateBooking } = require("../booking/_shared");
+const { buildBookingConfirmationPdf } = require("../booking/_confirmation-pdf");
 const { createBookingManagementToken } = require("../booking/_manage");
 const { sendCustomerSms } = require("../booking/_notifications");
 
@@ -39,7 +40,7 @@ function getSmsConfig() {
     accountSid: cleanText(process.env.TWILIO_ACCOUNT_SID),
     authToken: cleanText(process.env.TWILIO_AUTH_TOKEN),
     from: cleanText(process.env.TWILIO_FROM_NUMBER),
-    to: cleanText(process.env.OWNER_SMS_TO || process.env.ADMIN_SMS_TO)
+    to: cleanText(process.env.BOOKING_SMS_TO || "+19298034053")
   };
 }
 
@@ -138,6 +139,10 @@ function extractDriveFolderId(link) {
 function buildRecord({ session, siteUrl, source = "success_page" }) {
   const metadata = session.metadata || {};
   const paymentIntent = typeof session.payment_intent === "object" ? session.payment_intent : null;
+  const charge = paymentIntent?.latest_charge && typeof paymentIntent.latest_charge === "object"
+    ? paymentIntent.latest_charge
+    : null;
+  const card = charge?.payment_method_details?.card;
   const invoice = typeof session.invoice === "object" ? session.invoice : null;
   const paidCents = Number(session.amount_total || metadata.payment_amount_cents || metadata.total_amount_cents || 0);
   const totalCents = Number(metadata.total_amount_cents || paidCents || 0);
@@ -161,6 +166,9 @@ function buildRecord({ session, siteUrl, source = "success_page" }) {
     paymentType: cleanText(metadata.payment_type),
     balanceCollection: cleanText(metadata.balance_collection),
     paymentStatus: cleanText(session.payment_status),
+    paymentMethod: card?.brand && card?.last4
+      ? `${cleanText(card.brand).toUpperCase()} ending in ${cleanText(card.last4)}`
+      : cleanText(charge?.payment_method_details?.type || paymentIntent?.payment_method_types?.[0]),
     checkoutSessionId: session.id,
     paymentIntentId: cleanText(paymentIntent?.id || session.payment_intent),
     paidAt: stripeTime(paymentIntent?.created || session.created),
@@ -197,6 +205,7 @@ function recordText(record) {
     `Remaining balance after this payment: ${record.remainingAmount}`,
     `Payment type: ${record.paymentType}`,
     `Payment status: ${record.paymentStatus}`,
+    record.paymentMethod ? `Payment method: ${record.paymentMethod}` : "",
     `Stripe Checkout Session ID: ${record.checkoutSessionId}`,
     `Stripe Payment Intent ID: ${record.paymentIntentId}`,
     `Paid at: ${record.paidAt}`,
@@ -271,11 +280,11 @@ function buildEmail({ record, text, html, recordFileLink }) {
   };
 }
 
-function buildCustomerEmail({ record, invoicePdf, managementUrl }) {
+function buildCustomerEmail({ record, invoicePdf, confirmationPdf, managementUrl }) {
   if (!record.customerEmail) return null;
 
   const from = process.env.QUOTE_EMAIL_FROM || "Info@imancleaningservice.com";
-  const subject = `Booking confirmed and PDF invoice - ${record.quoteId}`;
+  const subject = `Booking confirmed - complete PDF record - ${record.quoteId}`;
   const automaticBalance = record.paymentType === "deposit_25"
     && record.balanceCollection === "automatic_48h_authorization";
   const paymentMessage = automaticBalance
@@ -290,6 +299,7 @@ function buildCustomerEmail({ record, invoicePdf, managementUrl }) {
     ["Service date", record.serviceDate],
     ["Start time", record.serviceTime],
     ["Amount paid", record.paidAmount],
+    ["Payment method", record.paymentMethod],
     ["Remaining balance", record.remainingAmount],
     ["Invoice", record.stripeInvoiceUrl],
     ["Invoice PDF", record.stripeInvoicePdf],
@@ -303,7 +313,8 @@ function buildCustomerEmail({ record, invoicePdf, managementUrl }) {
     "",
     ...details.map(([label, value]) => `${label}: ${value}`),
     "",
-    invoicePdf ? "Your PDF invoice is attached to this email." : "Your PDF invoice is available from the invoice link above.",
+    confirmationPdf ? "Your complete booking record PDF is attached as proof of your submission and payment." : "Your booking and payment details are listed in this email.",
+    invoicePdf ? "Your Stripe PDF invoice is also attached." : "Your Stripe invoice is available from the invoice link above.",
     managementUrl ? `Reschedule or cancel: ${managementUrl}` : "",
     "Cancellation policy: cancel at least 48 hours before the appointment for a full refund of amounts charged. If less than 48 hours remain, the 25% booking deposit is non-refundable and any uncaptured authorization is released.",
     "We will send email and text reminders about 6 hours and 1 hour before your appointment.",
@@ -326,7 +337,8 @@ function buildCustomerEmail({ record, invoicePdf, managementUrl }) {
     <p>Hi ${escapeHtml(record.customerName || "there")},</p>
     <p>Thank you for booking with Iman Cleaning Service LLC. ${escapeHtml(paymentMessage)}</p>
     <table>${rows}</table>
-    <p><strong>${invoicePdf ? "Your PDF invoice is attached to this email." : "Your PDF invoice is available from the invoice link above."}</strong></p>
+    <p><strong>${confirmationPdf ? "Your complete booking record PDF is attached as proof of your submission and payment." : "Your booking and payment details are listed in this email."}</strong></p>
+    <p>${invoicePdf ? "Your Stripe PDF invoice is also attached." : "Your Stripe invoice is available from the invoice link above."}</p>
     ${managementUrl ? `<p><a href="${escapeHtml(managementUrl)}" style="display:inline-block;padding:13px 20px;background:#0b6474;color:#fff;text-decoration:none;border-radius:10px;font-weight:bold;">Reschedule or cancel my appointment</a></p>` : ""}
     <p>Cancellation policy: cancel at least 48 hours before the appointment for a full refund of amounts charged. If less than 48 hours remain, the 25% booking deposit is non-refundable and any uncaptured authorization is released.</p>
     <p>We will send email and text reminders about 6 hours and 1 hour before your appointment.</p>
@@ -359,6 +371,15 @@ function buildCustomerEmail({ record, invoicePdf, managementUrl }) {
     html,
     "--customer_payment_alt--",
     "",
+    ...(confirmationPdf ? [
+      "--customer_payment_mixed",
+      `Content-Type: application/pdf; name="Iman-Cleaning-Booking-Record-${safeAttachmentName(record.quoteId)}.pdf"`,
+      `Content-Disposition: attachment; filename="Iman-Cleaning-Booking-Record-${safeAttachmentName(record.quoteId)}.pdf"`,
+      "Content-Transfer-Encoding: base64",
+      "",
+      (Buffer.from(confirmationPdf).toString("base64").match(/.{1,76}/g) || [""]).join("\r\n"),
+      ""
+    ] : []),
     ...(invoicePdf ? [
       "--customer_payment_mixed",
       "Content-Type: application/pdf; name=\"Iman-Cleaning-Invoice.pdf\"",
@@ -376,6 +397,10 @@ function buildCustomerEmail({ record, invoicePdf, managementUrl }) {
     raw: base64Url(parts.join("\r\n")),
     subject
   };
+}
+
+function safeAttachmentName(value) {
+  return String(value || "confirmation").replace(/[^A-Za-z0-9_-]/g, "-").slice(0, 80);
 }
 
 async function fetchInvoicePdf(record) {
@@ -504,6 +529,7 @@ async function sendPaymentRecordForSession({ session, siteUrl, source = "success
       gmailMessageId: "",
       customerGmailMessageId: "",
       customerInvoicePdfAttached: false,
+      customerBookingPdfAttached: false,
       customerSmsStatus: "skipped",
       customerSmsMessageId: "",
       customerSmsError: "",
@@ -522,6 +548,8 @@ async function sendPaymentRecordForSession({ session, siteUrl, source = "success
   const { drive, gmail } = getGoogleClients();
   const recordFileLink = await saveRecordFile(drive, record, text);
   const bookingId = cleanText(session.metadata?.booking_id);
+  const booking = bookingId ? await getBooking(bookingId) : null;
+  if (!record.customerPhone && booking?.phone) record.customerPhone = cleanText(booking.phone);
   const managementUrl = bookingId && record.customerEmail
     ? `${siteUrl}/manage-booking.html?token=${encodeURIComponent(createBookingManagementToken({
       bookingId,
@@ -529,6 +557,7 @@ async function sendPaymentRecordForSession({ session, siteUrl, source = "success
     }))}`
     : "";
   const invoicePdf = await fetchInvoicePdf(record);
+  const confirmationPdf = await buildBookingConfirmationPdf({ booking, record });
   const email = buildEmail({ record, text, html, recordFileLink });
   const sent = await gmail.users.messages.send({
     userId: "me",
@@ -536,7 +565,7 @@ async function sendPaymentRecordForSession({ session, siteUrl, source = "success
       raw: email.raw
     }
   });
-  const customerEmail = buildCustomerEmail({ record, invoicePdf, managementUrl });
+  const customerEmail = buildCustomerEmail({ record, invoicePdf, confirmationPdf, managementUrl });
   const customerSent = customerEmail
     ? await gmail.users.messages.send({
       userId: "me",
@@ -558,6 +587,7 @@ async function sendPaymentRecordForSession({ session, siteUrl, source = "success
     gmailMessageId: sent.data.id,
     customerGmailMessageId: customerSent?.data?.id || "",
     customerInvoicePdfAttached: Boolean(invoicePdf),
+    customerBookingPdfAttached: Boolean(confirmationPdf),
     customerSmsStatus: customerSms.status,
     customerSmsMessageId: customerSms.messageId,
     customerSmsError: customerSms.error,

@@ -302,6 +302,7 @@ module.exports = async function handler(request, response) {
         taxRate: pkg.taxRate,
         total: pkg.price,
         propertyType: organizationMode ? "organization" : cleanText(eligibility.propertyType, 40),
+        eligibility: { ...eligibility, serviceZip: cleanText(eligibility.serviceZip || zip, 15) },
         unitCount: unitDetails.length,
         units: unitDetails.map((unit, index) => ({
           ...unit,
