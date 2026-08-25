@@ -35,9 +35,8 @@ function Hero() {
 
   React.useEffect(() => {
     const reducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)");
-    const smallScreen = window.matchMedia("(max-width: 620px)");
     const updateVideoPreference = () => {
-      const enabled = !reducedMotion.matches && !smallScreen.matches;
+      const enabled = !reducedMotion.matches;
       setVideoEnabled(enabled);
       if (!enabled) setShowVideoPlayButton(false);
     };
@@ -52,10 +51,8 @@ function Hero() {
 
     updateVideoPreference();
     addChangeListener(reducedMotion);
-    addChangeListener(smallScreen);
     return () => {
       removeChangeListener(reducedMotion);
-      removeChangeListener(smallScreen);
     };
   }, []);
 
