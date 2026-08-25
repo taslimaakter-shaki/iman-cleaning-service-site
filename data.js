@@ -101,6 +101,17 @@ window.IMAN_DATA = {
         { name: "Offices & Storefronts", price: "Custom quote", href: "./quote.html?service=window-cleaning" },
       ],
     },
+    {
+      title: "Post-Construction Cleaning", kicker: "Homes & businesses",
+      image: "./assets/home-post-construction-cleaning-card.jpg",
+      imageAlt: "Post-construction dust and debris in a newly renovated home",
+      imageWidth: 1200,
+      imageHeight: 800,
+      services: [
+        { name: "Residential Post-Construction Cleaning", price: "$400", href: "./post-construction-cleaning.html" },
+        { name: "Commercial Post-Construction Cleaning", price: "Custom quote", href: "./quote.html?service=post-construction" },
+      ],
+    },
   ],
   serviceAreas: [
     { name: "Manhattan" },

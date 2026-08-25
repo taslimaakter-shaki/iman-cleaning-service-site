@@ -398,7 +398,7 @@
 .window-service-panel > p { color: rgba(255,255,255,.72); font-size: .88rem; line-height: 1.55; }
 .services-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 20px; }
 .services-grid.cols-3 { grid-template-columns: repeat(3, 1fr); }
-.two-cards { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: clamp(18px, 2.5vw, 28px); align-items: start; }
+.two-cards { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: clamp(18px, 2.5vw, 28px); align-items: start; }
 .service-category-accordion {
   overflow: hidden;
   background: var(--surface-card);
