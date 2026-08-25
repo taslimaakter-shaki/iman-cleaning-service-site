@@ -76,10 +76,10 @@ window.IMAN_DATA = {
     },
     {
       title: "Commercial Cleaning", kicker: "Offices & businesses",
-      image: "./assets/home-commercial-cleaning-card.webp",
-      imageAlt: "Professionally cleaned commercial restaurant interior",
+      image: "./assets/home-commercial-cleaning-card-2026.jpg",
+      imageAlt: "Clean modern retail store interior",
       imageWidth: 900,
-      imageHeight: 720,
+      imageHeight: 1350,
       services: [
         { name: "Office Cleaning", price: "Custom quote", href: "./office-cleaning.html" },
         { name: "Retail Store Cleaning", price: "Custom quote", href: "./retail-store-cleaning.html" },
