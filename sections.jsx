@@ -124,8 +124,8 @@ function Hero() {
         </p>
         <div className="page-hero-actions">
           <Button href="./book-now.html" variant="accent" size="lg"
-            aria-label="Get a free cleaning estimate" data-conv="book"
-            iconRight={<Icon name="arrow" size={18} />}>Get a Free Estimate</Button>
+            aria-label="Get my instant cleaning quote" data-conv="book"
+            iconRight={<Icon name="arrow" size={18} />}>Get My Instant Quote</Button>
         </div>
         <div className="hero-trust-line" aria-label="Reviews and business hours">
           <a href={D.googleReviewsHref} target="_blank" rel="noopener noreferrer"
