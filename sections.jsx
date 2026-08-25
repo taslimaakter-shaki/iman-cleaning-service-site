@@ -118,9 +118,9 @@ function Hero() {
       )}
       <div className="ds-shell page-hero-inner">
         <Badge tone="leaf" check size="sm">Fully Insured • Background-Checked Cleaners</Badge>
-        <h1>Reliable Cleaning Services in NYC</h1>
+        <h1>NYC’s #1 Choice for Reliable Cleaning</h1>
         <p className="ds-lead">
-          Residential and commercial cleaning with clear quotes, flexible scheduling, and easy online booking.
+          Residential and commercial cleaning with transparent pricing, flexible scheduling, and easy online booking.
         </p>
         <div className="page-hero-actions">
           <Button href="./book-now.html" variant="accent" size="lg"
