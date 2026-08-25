@@ -2356,7 +2356,15 @@ body.quote-embed .live-quote-form {
   }
   .final-actions > a { width: 100% !important; min-height: 52px !important; }
   .hdr-inner { gap: 12px; }
-  .hdr-words small { display: none; }
+  .hdr-brand { gap: 9px; flex-shrink: 0; }
+  .hdr-words strong { font-size: 1rem; }
+  .hdr-words small {
+    display: block;
+    margin-top: 2px;
+    font-size: .58rem;
+    line-height: 1.1;
+    white-space: nowrap;
+  }
   .hdr-actions > a:not(.hdr-phone) { display: none !important; }
   .home-hero-photo {
     min-height: clamp(640px, 100svh, 760px);
