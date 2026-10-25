@@ -2020,8 +2020,14 @@
       });
       booking.status = status;
       const paymentResult = data.payment || {};
+      const receiptResult = data.completionReceipt || {};
       const reviewResult = data.reviewRequest || {};
       if (status === "Completed") {
+        const receiptStatusMessage = receiptResult.status === "sent"
+          ? " Final paid receipt emailed."
+          : receiptResult.status === "already_sent"
+            ? " Final paid receipt was already sent."
+            : " Final receipt email needs attention; save Completed again to retry.";
         if (["captured", "already_captured"].includes(paymentResult.status)) {
           actionStatus.className = "crm-action-status is-success";
           const offerResult = data.additionalWork || {};
@@ -2030,6 +2036,7 @@
             : offerResult.status === "failed"
               ? "Booking completed and balance collected, but the additional-work message needs attention. Use Resend link."
               : "Booking completed and the remaining balance was captured. No additional-work link was sent.";
+          actionStatus.textContent += receiptStatusMessage;
           actionStatus.textContent += reviewResult.status === "sent"
             ? " Google review request sent."
             : reviewResult.status === "already_sent"
@@ -2038,7 +2045,7 @@
           toast(offerResult.status === "sent" ? "Booking completed and additional-work link sent." : "Booking completed and remaining balance collected.");
         } else if (paymentResult.status === "not_applicable") {
           actionStatus.className = "crm-action-status is-success";
-          actionStatus.textContent = `Booking marked completed. Automatic balance collection does not apply to this booking.${reviewResult.status === "sent" ? " Google review request sent." : reviewResult.status === "already_sent" ? " Google review request was already sent." : " Google review request needs attention; save Completed again to retry."}`;
+          actionStatus.textContent = `Booking marked completed. Automatic balance collection does not apply to this booking.${receiptStatusMessage}${reviewResult.status === "sent" ? " Google review request sent." : reviewResult.status === "already_sent" ? " Google review request was already sent." : " Google review request needs attention; save Completed again to retry."}`;
           toast("Booking marked completed.");
         } else {
           actionStatus.className = "crm-action-status is-error";

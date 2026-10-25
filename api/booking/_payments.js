@@ -288,7 +288,7 @@ async function captureRemainingBalance({
     const intent = await stripeCall({
       path: `payment_intents/${encodeURIComponent(remaining.paymentIntentId)}/capture`,
       idempotencyKey: `booking-balance-capture-${booking.id}`,
-      params: {}
+      params: { "expand[0]": "latest_charge.payment_method_details" }
     });
     const capturedAt = now.toISOString();
     const nextRemaining = {
@@ -296,6 +296,8 @@ async function captureRemainingBalance({
       status: "captured",
       capturedAt,
       chargeId: typeof intent.latest_charge === "string" ? intent.latest_charge : (intent.latest_charge?.id || ""),
+      cardBrand: cleanText(intent.latest_charge?.payment_method_details?.card?.brand, 40),
+      cardLast4: cleanText(intent.latest_charge?.payment_method_details?.card?.last4, 4),
       lastError: ""
     };
     const payment = booking.estimate?.payment || {};

@@ -18,6 +18,7 @@ const {
   refundBookingPayment
 } = require("../booking/_payments");
 const { sendAdditionalWorkOffer } = require("../booking/_additional-work");
+const { sendCompletionReceipt } = require("../booking/_completion-receipt");
 const { sendReviewRequest } = require("../booking/_review-request");
 const { createStandaloneCustomQuote, listCrmQuotes } = require("./_quotes");
 const { prepareQualityPhoto, recordQualityPhoto } = require("./_quality-photos");
@@ -405,6 +406,7 @@ async function updateStatus(body, request, response) {
   }
 
   let payment = { status: "not_applicable" };
+  let completionReceipt = { status: "not_requested" };
   let additionalWork = { status: "not_requested" };
   let reviewRequest = { status: "not_requested" };
   if (status === "Completed") {
@@ -434,18 +436,24 @@ async function updateStatus(body, request, response) {
 
     await updateBooking(id, { status });
     const refreshed = await getBooking(id) || { ...booking, status };
-    const priorOffer = refreshed.estimate?.additionalWork || {};
+    try {
+      completionReceipt = await sendCompletionReceipt({ booking: refreshed });
+    } catch (error) {
+      completionReceipt = { status: "failed", sent: false, error: error.message || "The final receipt could not be sent." };
+    }
+    const bookingAfterReceipt = await getBooking(id) || refreshed;
+    const priorOffer = bookingAfterReceipt.estimate?.additionalWork || {};
     const shouldSendOffer = Boolean(body.sendAdditionalWork || priorOffer.pendingUntilBalancePaid);
     if (shouldSendOffer) {
       try {
-        const result = await sendAdditionalWorkOffer({ booking: { ...refreshed, status }, baseUrl: getSiteUrl(request) });
+        const result = await sendAdditionalWorkOffer({ booking: { ...bookingAfterReceipt, status }, baseUrl: getSiteUrl(request) });
         additionalWork = { status: result.sent ? "sent" : "failed", ...result };
       } catch (error) {
         additionalWork = { status: "failed", error: error.message || "The additional-work link could not be sent." };
       }
     }
     try {
-      const bookingForReview = shouldSendOffer ? (await getBooking(id) || refreshed) : refreshed;
+      const bookingForReview = shouldSendOffer ? (await getBooking(id) || bookingAfterReceipt) : bookingAfterReceipt;
       reviewRequest = await sendReviewRequest({ booking: bookingForReview });
     } catch (error) {
       reviewRequest = { status: "failed", sent: false, error: error.message || "The Google review request could not be sent." };
@@ -520,7 +528,7 @@ async function updateStatus(body, request, response) {
       calendar = await updateBookingGoogleCalendar(current, status === 'Cancelled' ? 'cancel' : 'reschedule');
     } catch { calendar = { status: 'error', error: 'Google Calendar could not be updated. The CRM booking status was saved.' }; }
   }
-  return json(response, 200, { ok: true, payment, additionalWork, reviewRequest, calendar });
+  return json(response, 200, { ok: true, payment, completionReceipt, additionalWork, reviewRequest, calendar });
 }
 
 async function resendAdditionalWork(body, request, response) {
