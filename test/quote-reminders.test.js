@@ -8,28 +8,31 @@ const savedQuotes = require("../api/booking/_saved-quote");
 const now = new Date("2026-09-29T18:00:00.000Z");
 const baseRecord = {
   quoteId: "SAVED-TEST-1",
-  createdAt: now.getTime() - 24 * 60 * 60 * 1000,
-  quoteReminderEligibleAt: now.getTime() - 24 * 60 * 60 * 1000,
+  createdAt: now.getTime() - 48 * 60 * 60 * 1000,
+  quoteReminderEligibleAt: now.getTime() - 48 * 60 * 60 * 1000,
   expiresAt: now.getTime() + 30 * 24 * 60 * 60 * 1000,
   customer: { firstName: "Amina", email: "amina@example.com", phone: "+19295550123" },
   communicationConsent: { transactionalSms: { granted: true } }
 };
 
-assert.equal(reminders.reminderStage(baseRecord, now), "twentyFour");
+assert.equal(reminders.reminderStage(baseRecord, now), "fortyEight");
 assert.equal(reminders.reminderStage({ ...baseRecord, quoteOpenedAt: now.toISOString() }, now), "");
 assert.equal(reminders.reminderStage({ ...baseRecord, quoteReminderEligibleAt: undefined }, now), "");
-assert.equal(reminders.reminderStage({ ...baseRecord, quoteReminders: { twentyFour: { completedAt: now.toISOString() } } }, now), "");
-const twelveHourRecord = { ...baseRecord, createdAt: now.getTime() - 12 * 60 * 60 * 1000, quoteReminderEligibleAt: now.getTime() - 12 * 60 * 60 * 1000 };
-assert.equal(reminders.reminderStage(twelveHourRecord, now), "twelve");
-assert.equal(reminders.reminderStage({ ...twelveHourRecord, createdAt: now.getTime() - 11 * 60 * 60 * 1000, quoteReminderEligibleAt: now.getTime() - 11 * 60 * 60 * 1000 }, now), "");
-assert.equal(reminders.reminderStage({ ...twelveHourRecord, quoteReminders: { twelve: { claimedAt: now.toISOString() } } }, now), "");
+assert.equal(reminders.reminderStage({ ...baseRecord, quoteReminders: { fortyEight: { completedAt: now.toISOString() } } }, now), "");
+assert.equal(reminders.reminderStage({ ...baseRecord, quoteReminders: { twelve: { completedAt: now.toISOString() } } }, now), "", "legacy first-reminder history prevents a duplicate");
+const fortySevenHourRecord = { ...baseRecord, createdAt: now.getTime() - 47 * 60 * 60 * 1000, quoteReminderEligibleAt: now.getTime() - 47 * 60 * 60 * 1000 };
+assert.equal(reminders.reminderStage(fortySevenHourRecord, now), "");
+const oneWeekRecord = { ...baseRecord, createdAt: now.getTime() - 7 * 24 * 60 * 60 * 1000, quoteReminderEligibleAt: now.getTime() - 7 * 24 * 60 * 60 * 1000 };
+assert.equal(reminders.reminderStage(oneWeekRecord, now), "oneWeek");
+assert.equal(reminders.reminderStage({ ...oneWeekRecord, quoteReminders: { oneWeek: { claimedAt: now.toISOString() } } }, now), "");
+assert.equal(reminders.reminderStage({ ...oneWeekRecord, quoteReminders: { twentyFour: { completedAt: now.toISOString() } } }, now), "", "legacy final-reminder history prevents a duplicate");
 
-const twelve = reminders.reminderCopy("twelve", baseRecord, "https://example.com/q");
-assert.equal(twelve.subject, "A friendly reminder about your cleaning estimate");
-assert.match(twelve.sms, /clean, comfortable space/);
-assert.match(twelve.sms, /https:\/\/example\.com\/q/);
-assert.match(twelve.sms, /Reply STOP to unsubscribe or HELP for help/);
-const finalReminder = reminders.reminderCopy("twentyFour", baseRecord, "https://example.com/q");
+const fortyEight = reminders.reminderCopy("fortyEight", baseRecord, "https://example.com/q");
+assert.equal(fortyEight.subject, "A friendly reminder about your cleaning estimate");
+assert.match(fortyEight.sms, /clean, comfortable space/);
+assert.match(fortyEight.sms, /https:\/\/example\.com\/q/);
+assert.match(fortyEight.sms, /Reply STOP to unsubscribe or HELP for help/);
+const finalReminder = reminders.reminderCopy("oneWeek", baseRecord, "https://example.com/q");
 assert.equal(finalReminder.subject, "A final reminder about your cleaning estimate");
 assert.match(finalReminder.sms, /final reminder/);
 
@@ -58,7 +61,7 @@ assert.equal(savedQuotes.bookingDisablesQuote({ status: "Confirmed", estimate: {
   });
   assert.deepEqual(sent, ["email", "sms"]);
   assert.equal(result.due, 1);
-  assert.ok(saved[0].quoteReminders.twentyFour.completedAt);
+  assert.ok(saved[0].quoteReminders.fortyEight.completedAt);
 
   const bookedResult = await reminders.processDueQuoteReminders({
     now,

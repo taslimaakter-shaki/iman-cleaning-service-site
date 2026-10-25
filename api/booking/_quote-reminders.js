@@ -3,7 +3,6 @@ const { encodeSavedQuote } = require("./_saved-quote");
 const { sendCustomerSms } = require("./_notifications");
 
 const DAY_MS = 24 * 60 * 60 * 1000;
-const HOUR_MS = 60 * 60 * 1000;
 const MAX_REMINDERS_PER_RUN = 10;
 
 function authorized(request) {
@@ -30,15 +29,19 @@ function reminderStage(record, now = new Date()) {
   const createdAt = Number(record?.createdAt || 0);
   const age = now.getTime() - createdAt;
   const reminders = record?.quoteReminders || {};
-  if (!createdAt || Number(record?.quoteReminderEligibleAt || 0) !== createdAt || age < 12 * HOUR_MS || record?.quoteOpenedAt || record?.crmQuote?.deletedAt || Number(record?.expiresAt || 0) <= now.getTime()) return "";
-  if (age >= DAY_MS) return reminders.twentyFour?.completedAt || reminders.twentyFour?.claimedAt ? "" : "twentyFour";
-  if (!reminders.twelve?.completedAt && !reminders.twelve?.claimedAt) return "twelve";
+  const handled = (currentStage, legacyStage) => Boolean(
+    reminders[currentStage]?.completedAt || reminders[currentStage]?.claimedAt
+    || reminders[legacyStage]?.completedAt || reminders[legacyStage]?.claimedAt
+  );
+  if (!createdAt || Number(record?.quoteReminderEligibleAt || 0) !== createdAt || age < 2 * DAY_MS || record?.quoteOpenedAt || record?.crmQuote?.deletedAt || Number(record?.expiresAt || 0) <= now.getTime()) return "";
+  if (age >= 7 * DAY_MS) return handled("oneWeek", "twentyFour") ? "" : "oneWeek";
+  if (!handled("fortyEight", "twelve")) return "fortyEight";
   return "";
 }
 
 function reminderCopy(stage, record, quoteUrl) {
   const firstName = cleanText(record?.customer?.firstName, 80) || "there";
-  if (stage === "twentyFour") {
+  if (stage === "oneWeek") {
     return {
       subject: "A final reminder about your cleaning estimate",
       sms: `A clean space gives you more time for what matters most. A final reminder from IMAN Cleaning Service: Your estimate remains available. Review it here: ${quoteUrl} For assistance, call 929-232-1930. Reply STOP to unsubscribe or HELP for help.`,
