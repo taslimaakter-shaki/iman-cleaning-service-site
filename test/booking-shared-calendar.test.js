@@ -4,6 +4,7 @@ const path = require('node:path');
 const { PGlite } = require(process.env.PGLITE_TEST_MODULE || '@electric-sql/pglite');
 const root = path.join(__dirname, '..');
 const migration = fs.readFileSync(path.join(root, 'supabase/migrations/20260910_shared_booking_calendar.sql'), 'utf8');
+const flexibleArrivalMigration = fs.readFileSync(path.join(root, 'supabase/migrations/20261025_flexible_arrival_reservations.sql'), 'utf8');
 const table = fs.readFileSync(path.join(root, 'supabase-schema.sql'), 'utf8').match(/create table if not exists public.bookings \([\s\S]*?\n\);/)[0];
 const shared = require('../api/booking/_shared');
 
@@ -26,7 +27,8 @@ async function insert(db, b) {
   const db = await database();
   await insert(db, record('existing-custom', '08:00', 9));
   await db.exec(migration);
-  assert.equal((await db.query('select iman_booking_calendar_version() as v')).rows[0].v, 1);
+  await db.exec(flexibleArrivalMigration);
+  assert.equal((await db.query('select iman_booking_calendar_version() as v')).rows[0].v, 2);
   assert.equal((await db.query('select count(*)::int as n from booking_calendar_slots')).rows[0].n, 1);
   await assert.rejects(insert(db, record('instant-overlap', '10:00')), /conflicts/);
   await assert.rejects(insert(db, record('instant-too-soon', '19:30')), /conflicts/);
@@ -35,6 +37,7 @@ async function insert(db, b) {
   assert.deepEqual(shared.availableSlotsForDate({teamHours: 0.5}, '2030-09-12', [record('custom', '08:00', 9)]).map(s=>s.time), ['20:00']);
   // Price never determines time; fractional on-site duration is not forced to one hour.
   assert.equal(shared.bookingDurationHours(record('fractional', '08:00', .25)), .25);
+  assert.equal(shared.bookingDurationHours(record('flexible', '08:00', 3, 'Confirmed', {calendarReservationHours: 4})), 4);
   await assert.rejects(db.query("update bookings set schedule = '2030-09-12T19:00:00-04:00' where id = 'instant-boundary'"), /conflicts/);
   assert.match((await db.query("select schedule from bookings where id='instant-boundary'")).rows[0].schedule, /20:00/);
   await assert.rejects(db.query("update bookings set estimate = '{\"teamHours\":10}' where id = 'existing-custom'"), /conflicts/);

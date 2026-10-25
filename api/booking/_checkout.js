@@ -19,6 +19,13 @@ const {
 } = require("./_shared");
 const { authenticatedUser } = require("../account/_shared");
 const calendar = require('./_calendar');
+const {
+  applyArrivalDiscount,
+  assertArrivalPreferenceEligible,
+  arrivalPreferenceForKey,
+  arrivalWindowLabel,
+  slotMatchesArrivalPreference
+} = require('./_arrival-preference');
 
 const AGREEMENT_VERSION = "2026-10-12-hourly-minimum-v5";
 const AGREEMENT_ACCEPTANCE_TEXT = "I have reviewed and agree to the Service Agreement and payment terms. I authorize the 25% deposit, the remaining-balance authorization described above, and any customer-caused access charge described in the agreement.";
@@ -295,11 +302,13 @@ module.exports = async function handler(request, response) {
       }
     }
 
+    const arrivalPreference = arrivalPreferenceForKey(body.arrivalPreference || "exact");
+    assertArrivalPreferenceEligible(pkg, arrivalPreference);
     const selectedSlot = cleanText(body.schedule, 80);
     const slots = await availableSlotsForPackage(pkg);
-    const slot = slots.find((item) => item.value === selectedSlot);
+    const slot = slots.find((item) => item.value === selectedSlot && slotMatchesArrivalPreference(item, arrivalPreference));
     if (!slot) {
-      return json(response, 409, { error: "That appointment is no longer available. Please choose another time." });
+      return json(response, 409, { error: "That arrival option is no longer available. Please choose another time." });
     }
 
     const customer = body.customer || {};
@@ -374,6 +383,7 @@ module.exports = async function handler(request, response) {
       }, promotion);
       pkg = promo.applyPromotion(pkg, promotion);
     }
+    pkg = applyArrivalDiscount(pkg, arrivalPreference);
 
     const agreements = body.agreements || {};
     if (!agreements.laborHours || !agreements.completion || !agreements.condition || !agreements.terms) {
@@ -428,13 +438,19 @@ module.exports = async function handler(request, response) {
           : "Whole property: no current pets or pet-related buildup reported.";
       unitSummary = `${unitSummary} ${propertyPetSummary}`.trim();
     }
+    const customerScheduleDate = new Intl.DateTimeFormat("en-US", {
+      timeZone: "America/New_York", weekday: "long", year: "numeric", month: "long", day: "numeric"
+    }).format(new Date(slot.value));
+    const customerScheduleLabel = arrivalPreference.flexible
+      ? `${customerScheduleDate} · Estimated arrival ${arrivalWindowLabel(arrivalPreference, pkg.teamHours)}`
+      : slot.label;
     const booking = {
       id: bookingId,
       status: "New",
       service: pkg.serviceKey,
       service_label: pkg.serviceLabel,
       schedule: slot.value,
-      schedule_label: slot.label,
+      schedule_label: customerScheduleLabel,
       bedrooms_label: pkg.bedroomsLabel,
       bathrooms_label: pkg.bathroomsLabel,
       sqft: bookingSquareFootage,
@@ -465,6 +481,18 @@ module.exports = async function handler(request, response) {
         manualDiscount: pkg.manualDiscount || null,
         promoCode: pkg.promoCode || "",
         promoDiscount: pkg.promoDiscount || null,
+        arrivalPreference: {
+          key: arrivalPreference.key,
+          label: arrivalPreference.label,
+          flexible: arrivalPreference.flexible,
+          windowStart: arrivalPreference.start,
+          windowEnd: arrivalPreference.end,
+          windowLabel: arrivalWindowLabel(arrivalPreference, pkg.teamHours),
+          provisionalStart: slot.value,
+          confirmationStatus: arrivalPreference.flexible ? "pending" : "confirmed"
+        },
+        arrivalDiscount: pkg.arrivalDiscount || null,
+        calendarReservationHours: pkg.teamHours + 1,
         recurringDiscount: pkg.recurringDiscount || null,
         previousOrderNumber: recurringDiscount?.previousOrderNumber || "",
         originalTotalCents: pkg.originalTotalCents || null,
@@ -546,11 +574,12 @@ module.exports = async function handler(request, response) {
       pkg.clutterAdjustment?.amountCents ? "Clutter/access cleaning fee included." : "",
       pkg.moldAdjustment?.amountCents ? "Surface mold and mildew cleaning fee included." : ""
     ].filter(Boolean).join(" ");
-    const visibleDiscount = pkg.promoDiscount?.amountCents
-      ? pkg.promoDiscount
-      : pkg.manualDiscount?.amountCents
-      ? pkg.manualDiscount
-      : null;
+    const appliedDiscounts = [pkg.promoDiscount, pkg.manualDiscount, pkg.arrivalDiscount]
+      .filter((discount) => Number(discount?.amountCents || 0) > 0);
+    const visibleDiscount = appliedDiscounts.length ? {
+      label: appliedDiscounts.map((discount) => [discount.code, discount.label].filter(Boolean).join(" — ")).join(" + "),
+      amountCents: appliedDiscounts.reduce((sum, discount) => sum + Number(discount.amountCents || 0), 0)
+    } : null;
     const originalTotalCents = Number(pkg.originalTotalCents || 0) ||
       (visibleDiscount ? pkg.priceCents + Number(visibleDiscount.amountCents || 0) : pkg.priceCents);
     const discountName = visibleDiscount
@@ -621,6 +650,12 @@ module.exports = async function handler(request, response) {
       "metadata[promo_percent]": pkg.promoDiscount?.percent || 0,
       "metadata[promo_discount_cents]": pkg.promoDiscount?.amountCents || 0,
       "metadata[promo_discount_application]": pkg.promoDiscount?.application || '',
+      "metadata[arrival_preference]": arrivalPreference.key,
+      "metadata[arrival_window]": arrivalWindowLabel(arrivalPreference, pkg.teamHours),
+      "metadata[arrival_discount_label]": pkg.arrivalDiscount?.label || '',
+      "metadata[arrival_discount_percent]": pkg.arrivalDiscount?.percent || 0,
+      "metadata[arrival_discount_cents]": pkg.arrivalDiscount?.amountCents || 0,
+      "metadata[arrival_discount_application]": pkg.arrivalDiscount?.application || '',
       "metadata[discounted_subtotal_cents]": pkg.discountedSubtotalCents || '',
       "metadata[promo_expires_at]": pkg.promoDiscount?.expiresAt || '',
       "metadata[original_total_cents]": originalTotalCents,
@@ -632,7 +667,7 @@ module.exports = async function handler(request, response) {
       "metadata[service]": pkg.serviceLabel,
       "metadata[service_date]": slot.date,
       "metadata[service_time]": slot.time,
-      "metadata[schedule_label]": slot.label,
+      "metadata[schedule_label]": customerScheduleLabel,
       "metadata[package_id]": pkg.id,
       "metadata[package_ids]": pkg.packageIds.join(","),
       "metadata[pricing_mode]": formulaMode ? pkg.pricingMode : "published_package",

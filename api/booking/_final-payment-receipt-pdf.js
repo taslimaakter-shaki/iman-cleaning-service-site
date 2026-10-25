@@ -54,10 +54,15 @@ function receiptAmounts(booking = {}) {
   const payment = estimate.payment || {};
   const totalCents = Math.max(0, Math.round(Number(payment.totalCents) || centsFromAmount(estimate.total)));
   const discount = discountDetails(estimate);
+  const arrivalDiscountCents = Math.max(0, Math.round(Number(estimate.arrivalDiscount?.amountCents) || 0));
+  const arrivalDiscount = arrivalDiscountCents ? {
+    amountCents: arrivalDiscountCents,
+    label: safeText(estimate.arrivalDiscount?.label || "Flexible arrival discount")
+  } : null;
   const subtotalCents = centsFromAmount(estimate.subtotal);
   const discountedSubtotalCents = centsFromAmount(Number.isFinite(Number(estimate.discountedSubtotal))
     ? estimate.discountedSubtotal
-    : (subtotalCents - discount.amountCents) / 100);
+    : (subtotalCents - discount.amountCents - (arrivalDiscount?.amountCents || 0)) / 100);
   const taxCents = Math.max(0, Math.round(Number.isFinite(Number(estimate.tax))
     ? Number(estimate.tax) * 100
     : totalCents - discountedSubtotalCents));
@@ -65,7 +70,17 @@ function receiptAmounts(booking = {}) {
   const finalPaymentCents = Math.max(0, Math.round(Number(payment.remaining?.amountCents)
     || (payment.paymentType === "deposit_25" ? totalCents - depositCents : 0)));
   const paidCents = Math.max(0, Math.round(Number(payment.paidCents) || totalCents));
-  return { totalCents, subtotalCents, discountedSubtotalCents, taxCents, depositCents, finalPaymentCents, paidCents, discount };
+  return {
+    totalCents,
+    subtotalCents,
+    discountedSubtotalCents,
+    taxCents,
+    depositCents,
+    finalPaymentCents,
+    paidCents,
+    discount,
+    ...(arrivalDiscount ? { arrivalDiscount } : {})
+  };
 }
 
 function paymentMethodLabel(booking = {}) {
@@ -196,7 +211,8 @@ function buildFinalPaymentReceiptPdf({ booking }) {
     moneyRows([
       ["Service subtotal", money(amounts.subtotalCents)],
       [amounts.discount.label, amounts.discount.amountCents ? `-${money(amounts.discount.amountCents)}` : ""],
-      ["Discounted subtotal", amounts.discount.amountCents ? money(amounts.discountedSubtotalCents) : ""],
+      [amounts.arrivalDiscount?.label || "", amounts.arrivalDiscount?.amountCents ? `-${money(amounts.arrivalDiscount.amountCents)}` : ""],
+      ["Discounted subtotal", amounts.discount.amountCents || amounts.arrivalDiscount?.amountCents ? money(amounts.discountedSubtotalCents) : ""],
       ["NY sales tax (8.875%)", money(amounts.taxCents)],
       ["Final service price", money(amounts.totalCents)]
     ], new Set(["Final service price"]));

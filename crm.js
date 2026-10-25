@@ -1849,6 +1849,7 @@
       <div class="crm-detail-grid">
         <div class="crm-detail"><span>Service</span><strong>${escapeHtml(booking.serviceLabel || booking.service || "Cleaning service")}</strong></div>
         <div class="crm-detail"><span>Appointment</span><strong>${escapeHtml(appointmentDate(booking))}</strong></div>
+        ${booking.estimate?.arrivalPreference?.flexible ? `<div class="crm-detail"><span>Customer arrival window</span><strong>${escapeHtml(booking.estimate.arrivalPreference.windowLabel || booking.scheduleLabel || "Flexible arrival")}</strong></div><div class="crm-detail"><span>Arrival confirmation</span><strong>${escapeHtml(booking.estimate.arrivalPreference.confirmationStatus === "confirmed" ? "Confirmed with customer" : "Exact arrival still needs confirmation")}</strong></div>` : ""}
         <div class="crm-detail"><span>Phone</span>${booking.phone ? `<a href="tel:${escapeHtml(booking.phone)}">${escapeHtml(booking.phone)}</a>` : "<strong>Not provided</strong>"}</div>
         <div class="crm-detail"><span>Email</span>${booking.email ? `<a href="mailto:${escapeHtml(booking.email)}">${escapeHtml(booking.email)}</a>` : "<strong>Not provided</strong>"}</div>
         <div class="crm-detail crm-detail-wide"><span>Address</span><strong>${escapeHtml(booking.address || "Not provided")}</strong></div>

@@ -322,6 +322,9 @@
     highestStageReached: 1,
     promo: null,
     packageBeforePromo: null,
+    arrivalPreference: "",
+    arrivalDiscount: null,
+    packageBeforeArrivalDiscount: null,
     agreementReview: {
       version: AGREEMENT_VERSION,
       openedAt: "",
@@ -425,6 +428,8 @@
   const calendarNext = form.querySelector("[data-calendar-next]");
   const selectedDateLabel = form.querySelector("[data-selected-date-label]");
   const timeSlots = form.querySelector("[data-time-slots]");
+  const arrivalOptions = form.querySelector("[data-arrival-options]");
+  const arrivalNote = form.querySelector("[data-arrival-note]");
   const schedulerStatus = form.querySelector("[data-scheduler-status]");
   const sameDayDialog = document.querySelector("[data-same-day-dialog]");
   const sameDayForm = document.querySelector("[data-same-day-form]");
@@ -749,7 +754,10 @@
           selectedDate: state.selectedDate,
           highestStageReached: state.highestStageReached,
           promo: state.promo,
-          packageBeforePromo: state.packageBeforePromo
+          packageBeforePromo: state.packageBeforePromo,
+          arrivalPreference: state.arrivalPreference,
+          arrivalDiscount: state.arrivalDiscount,
+          packageBeforeArrivalDiscount: state.packageBeforeArrivalDiscount
         },
         view: {
           mobileQuestionIndex,
@@ -2526,6 +2534,81 @@
     return `${displayHour}:${minute} ${suffix}`;
   };
   const slotsForDate = (dateString) => state.availableSlots.filter((slot) => slot.date === dateString);
+  const ARRIVAL_OPTIONS = [
+    { key: "any_day", title: "Anytime that day", detail: "Estimated arrival 8:00 AM–4:00 PM", percent: 5, start: "08:00", end: "16:00", flexible: true },
+    { key: "morning", title: "Morning", detail: "Estimated arrival 8:00 AM–12:00 PM", percent: 2, start: "08:00", end: "12:00", flexible: true },
+    { key: "afternoon", title: "Afternoon", detail: "Estimated arrival 12:00 PM–4:00 PM", percent: 2, start: "12:00", end: "16:00", flexible: true },
+    { key: "exact", title: "Choose an exact arrival time", detail: "Select a specific available time", percent: 0, start: "08:00", end: "20:30", flexible: false }
+  ];
+  const arrivalOption = (key) => ARRIVAL_OPTIONS.find((option) => option.key === key) || null;
+  const timeMinutes = (time) => {
+    const [hour, minute] = String(time || "").split(":").map(Number);
+    return Number.isFinite(hour) && Number.isFinite(minute) ? hour * 60 + minute : NaN;
+  };
+  const slotsForArrivalOption = (option) => slotsForDate(state.selectedDate).filter((slot) => {
+    if (slot.flexibleEligible !== true) return false;
+    if (!option?.flexible) return true;
+    const value = timeMinutes(slot.time);
+    return value >= timeMinutes(option.start)
+      && value <= timeMinutes(option.end);
+  });
+  const hasExtendedLabor = () => Number(state.package?.manHours || 0) > 8;
+  const visibleArrivalOptions = () => hasExtendedLabor()
+    ? ARRIVAL_OPTIONS.filter((option) => option.key === "any_day" || option.key === "exact")
+    : ARRIVAL_OPTIONS;
+  const arrivalWindowText = (option) => {
+    if (!option?.flexible) return option?.detail || "";
+    const serviceHours = Number(state.package?.teamHours);
+    const reservedMinutes = (serviceHours + 1) * 60;
+    const latestStart = Number.isFinite(reservedMinutes) ? timeMinutes("20:30") - reservedMinutes : timeMinutes(option.end);
+    const effectiveEnd = Math.min(timeMinutes(option.end), latestStart);
+    const endTime = `${String(Math.floor(effectiveEnd / 60)).padStart(2, "0")}:${String(effectiveEnd % 60).padStart(2, "0")}`;
+    return `Estimated arrival ${displayTime(option.start)}–${displayTime(endTime)}`;
+  };
+  const clearArrivalDiscount = () => {
+    if (state.packageBeforeArrivalDiscount) state.package = state.packageBeforeArrivalDiscount;
+    state.packageBeforeArrivalDiscount = null;
+    state.arrivalDiscount = null;
+  };
+  const applyArrivalDiscount = (option) => {
+    clearArrivalDiscount();
+    if (!option?.percent || !state.package) return;
+    const original = state.package;
+    const originalSubtotalCents = Math.max(0, Math.round(Number(original.originalSubtotalCents ?? original.subtotalCents) || 0));
+    const promo = original.promoDiscount?.amountCents ? original.promoDiscount : null;
+    const manual = original.manualDiscount?.amountCents ? original.manualDiscount : null;
+    const pretaxPromoCents = promo?.application === "before_tax" ? Number(promo.amountCents || 0) : 0;
+    const afterTaxDiscountCents = (promo && promo.application !== "before_tax" ? Number(promo.amountCents || 0) : 0)
+      + Number(manual?.amountCents || 0);
+    const amountCents = Math.round(originalSubtotalCents * option.percent / 100);
+    const discountedSubtotalCents = Math.max(0, originalSubtotalCents - pretaxPromoCents - amountCents);
+    const taxRate = Number(original.taxRate) || 0.08875;
+    const taxCents = Math.round(discountedSubtotalCents * taxRate);
+    const totalCents = Math.max(0, discountedSubtotalCents + taxCents - afterTaxDiscountCents);
+    state.packageBeforeArrivalDiscount = original;
+    state.arrivalDiscount = {
+      code: option.key.toUpperCase(),
+      label: `${option.title} arrival discount`,
+      percent: option.percent,
+      amountCents,
+      application: "before_tax",
+      windowStart: option.start,
+      windowEnd: option.end,
+      windowLabel: arrivalWindowText(option).replace("Estimated arrival ", "")
+    };
+    state.package = {
+      ...original,
+      discountedSubtotalCents,
+      discountedSubtotal: discountedSubtotalCents / 100,
+      taxCents,
+      tax: taxCents / 100,
+      priceCents: totalCents,
+      price: totalCents / 100,
+      totalCents,
+      total: totalCents / 100,
+      arrivalDiscount: state.arrivalDiscount
+    };
+  };
   const setSchedulerStatus = (message = "", type = "") => {
     if (!schedulerStatus) return;
     schedulerStatus.textContent = message;
@@ -2535,7 +2618,10 @@
     if (!timeSlots || !selectedDateLabel) return;
     timeSlots.replaceChildren();
     if (!state.selectedDate) {
-      selectedDateLabel.textContent = "Select a date to see available times.";
+      if (arrivalOptions) arrivalOptions.hidden = true;
+      if (arrivalNote) arrivalNote.hidden = true;
+      timeSlots.hidden = false;
+      selectedDateLabel.textContent = "Select a date to see arrival options.";
       const message = document.createElement("p");
       message.className = "booking-time-empty";
       message.textContent = "Choose a highlighted date from the calendar.";
@@ -2544,6 +2630,54 @@
     }
 
     selectedDateLabel.textContent = longDate(state.selectedDate);
+    if (arrivalOptions) {
+      arrivalOptions.hidden = false;
+      arrivalOptions.replaceChildren();
+      if (hasExtendedLabor() && (state.arrivalPreference === "morning" || state.arrivalPreference === "afternoon")) {
+        state.arrivalPreference = "";
+        clearArrivalDiscount();
+        if (scheduleSelect) scheduleSelect.value = "";
+      }
+      visibleArrivalOptions().forEach((option) => {
+        const optionSlots = slotsForArrivalOption(option);
+        const button = document.createElement("button");
+        button.type = "button";
+        button.className = `booking-arrival-option${state.arrivalPreference === option.key ? " is-selected" : ""}`;
+        button.disabled = !optionSlots.length;
+        button.setAttribute("role", "radio");
+        button.setAttribute("aria-checked", String(state.arrivalPreference === option.key));
+        const title = document.createElement("strong");
+        title.textContent = option.title;
+        const detail = document.createElement("span");
+        detail.textContent = optionSlots.length ? arrivalWindowText(option) : "Unavailable for this date and service duration";
+        const saving = document.createElement("em");
+        saving.textContent = option.percent ? `Save ${option.percent}%` : "No added discount";
+        button.append(title, detail, saving);
+        button.addEventListener("click", () => {
+          state.arrivalPreference = option.key;
+          applyArrivalDiscount(option);
+          if (scheduleSelect) {
+            scheduleSelect.value = option.flexible ? optionSlots[0]?.value || "" : "";
+            scheduleSelect.dispatchEvent(new Event("change", { bubbles: true }));
+          }
+          renderQuoteOverview(state.package);
+          renderPriceBreakdown(state.package);
+          resetAgreementReview();
+          setSchedulerStatus(option.flexible
+            ? `${option.title} selected for ${longDate(state.selectedDate)}. We’ll confirm a more precise arrival time before the appointment.`
+            : "Choose an exact arrival time below.", "success");
+          renderTimeSlots();
+          persistBookingDraft();
+        });
+        arrivalOptions.append(button);
+      });
+    }
+    if (arrivalNote) arrivalNote.hidden = !state.arrivalPreference;
+    if (state.arrivalPreference !== "exact") {
+      timeSlots.hidden = true;
+      return;
+    }
+    timeSlots.hidden = false;
     const slots = slotsForDate(state.selectedDate);
     slots.forEach((slot) => {
       const button = document.createElement("button");
@@ -2611,6 +2745,10 @@
         button.addEventListener("click", () => {
           if (state.selectedDate !== dateString && scheduleSelect) scheduleSelect.value = "";
           state.selectedDate = dateString;
+          if (state.arrivalPreference && state.arrivalPreference !== "exact" && scheduleSelect) {
+            const matchingSlots = slotsForArrivalOption(arrivalOption(state.arrivalPreference));
+            scheduleSelect.value = matchingSlots[0]?.value || "";
+          }
           setSchedulerStatus("");
           renderCalendar();
           renderTimeSlots();
@@ -2640,6 +2778,8 @@
     state.availableMonths = [...new Set(state.availableDates.map(monthKeyForDate))];
     state.calendarMonthIndex = 0;
     state.selectedDate = "";
+    state.arrivalPreference = "";
+    clearArrivalDiscount();
     setSchedulerStatus("");
 
     if (scheduleSelect) {
@@ -2837,9 +2977,19 @@
       document.querySelector('[data-quote-discount]').textContent = `−${money((displayedDiscount?.amountCents || 0) / 100)}`;
     }
     const discountedSubtotalRow = document.querySelector('[data-quote-discounted-subtotal-row]');
+    const arrivalDiscountRow = document.querySelector('[data-quote-arrival-discount-row]');
+    if (arrivalDiscountRow) {
+      arrivalDiscountRow.hidden = !state.arrivalDiscount?.amountCents;
+      if (!arrivalDiscountRow.hidden) {
+        document.querySelector('[data-quote-arrival-discount-label]').textContent = `${state.arrivalDiscount.label} (${state.arrivalDiscount.percent}%)`;
+        document.querySelector('[data-quote-arrival-discount]').textContent = `−${money(state.arrivalDiscount.amountCents / 100)}`;
+      }
+    }
     if (discountedSubtotalRow) {
-      const discountedSubtotalCents = Number(pkg.promoDiscount?.discountedSubtotalCents ?? pkg.discountedSubtotalCents);
-      discountedSubtotalRow.hidden = !pkg.promoDiscount?.amountCents || !Number.isFinite(discountedSubtotalCents);
+      const discountedSubtotalCents = Number(state.arrivalDiscount?.amountCents
+        ? pkg.discountedSubtotalCents
+        : pkg.promoDiscount?.discountedSubtotalCents ?? pkg.discountedSubtotalCents);
+      discountedSubtotalRow.hidden = !(pkg.promoDiscount?.amountCents || state.arrivalDiscount?.amountCents) || !Number.isFinite(discountedSubtotalCents);
       if (!discountedSubtotalRow.hidden) {
         document.querySelector('[data-quote-discounted-subtotal]').textContent = money(discountedSubtotalCents / 100);
       }
@@ -3632,8 +3782,11 @@
       checkoutTeamDescription.textContent = staffingSummary(state.package, { compact: true });
     }
     const selectedSlot = state.availableSlots.find((slot) => slot.value === value("schedule"));
+    const selectedArrivalOption = arrivalOption(state.arrivalPreference);
     document.querySelector("[data-checkout-schedule]").textContent = selectedSlot
-      ? `${longDate(selectedSlot.date)} at ${displayTime(selectedSlot.time)}`
+      ? selectedArrivalOption?.flexible
+        ? `${longDate(selectedSlot.date)} · ${arrivalWindowText(selectedArrivalOption)}`
+        : `${longDate(selectedSlot.date)} at ${displayTime(selectedSlot.time)}`
       : form.elements.schedule.options[form.elements.schedule.selectedIndex].textContent;
     const deposit = bookingDeposit(state.package.price);
     const balance = Math.round((Number(state.package.price || 0) - deposit) * 100) / 100;
@@ -3641,10 +3794,12 @@
     document.querySelector("[data-checkout-total]").textContent = money(state.package.price);
     document.querySelector("[data-checkout-balance]").textContent = money(balance);
     const promoRow = document.querySelector("[data-checkout-promo-row]");
+    const arrivalDiscountRow = document.querySelector("[data-checkout-arrival-discount-row]");
     const originalRow = document.querySelector("[data-checkout-original-total-row]");
     const discountedSubtotalRow = document.querySelector("[data-checkout-discounted-subtotal-row]");
     const taxRow = document.querySelector("[data-checkout-tax-row]");
     if (promoRow) promoRow.hidden = !state.promo;
+    if (arrivalDiscountRow) arrivalDiscountRow.hidden = !state.arrivalDiscount;
     if (originalRow) originalRow.hidden = !state.promo;
     if (discountedSubtotalRow) discountedSubtotalRow.hidden = !state.promo;
     if (taxRow) taxRow.hidden = !state.promo;
@@ -3656,6 +3811,18 @@
       document.querySelector("[data-checkout-promo-discount]").textContent = `−${money(state.promo.amountCents / 100)}`;
       document.querySelector("[data-checkout-discounted-subtotal]").textContent = money(discountedSubtotalCents / 100);
       document.querySelector("[data-checkout-tax]").textContent = money(Number(state.package.taxCents || 0) / 100);
+    }
+    if (state.arrivalDiscount) {
+      document.querySelector("[data-checkout-arrival-discount-label]").textContent = `${state.arrivalDiscount.label} (${state.arrivalDiscount.percent}% before tax)`;
+      document.querySelector("[data-checkout-arrival-discount]").textContent = `−${money(state.arrivalDiscount.amountCents / 100)}`;
+      const discountedSubtotalCents = Math.round(Number(state.package.discountedSubtotalCents) || 0);
+      document.querySelector("[data-checkout-discounted-subtotal]").textContent = money(discountedSubtotalCents / 100);
+      document.querySelector("[data-checkout-tax]").textContent = money(Number(state.package.taxCents || 0) / 100);
+      if (discountedSubtotalRow) discountedSubtotalRow.hidden = false;
+      if (taxRow) taxRow.hidden = false;
+      if (originalRow) originalRow.hidden = false;
+      const originalSubtotalCents = Math.round(Number(state.package.originalSubtotalCents ?? state.packageBeforePromo?.subtotalCents ?? state.package.subtotalCents) || 0);
+      document.querySelector("[data-checkout-original-total]").textContent = money(originalSubtotalCents / 100);
     }
     if (promoInput) {
       promoInput.value = state.promo?.code || promoInput.value;
@@ -3673,7 +3840,9 @@
     }
   };
 
-  const removePromo = ({ announce = true } = {}) => {
+  const removePromo = ({ announce = true, preserveArrival = true } = {}) => {
+    const selectedArrival = preserveArrival ? arrivalOption(state.arrivalPreference) : null;
+    clearArrivalDiscount();
     if (state.packageBeforePromo) state.package = state.packageBeforePromo;
     state.packageBeforePromo = null;
     state.promo = null;
@@ -3683,6 +3852,9 @@
     }
     if (removePromoButton) removePromoButton.hidden = true;
     if (applyPromoButton) applyPromoButton.disabled = false;
+    if (selectedArrival) applyArrivalDiscount(selectedArrival);
+    renderQuoteOverview(state.package);
+    renderPriceBreakdown(state.package);
     resetAgreementReview();
     syncCheckoutReview();
     if (announce) setStatus(promoStatus, "Promo code removed.", "info");
@@ -3690,7 +3862,9 @@
   };
 
   const applyPromoData = (data) => {
-    if (state.promo) removePromo({ announce: false });
+    const selectedArrival = arrivalOption(state.arrivalPreference);
+    clearArrivalDiscount();
+    if (state.promo) removePromo({ announce: false, preserveArrival: false });
     const original = state.package;
     const originalSubtotalCents = Math.round(Number(original.subtotalCents) || 0);
     const originalTotalCents = Math.round(Number(original.priceCents || original.totalCents) || 0);
@@ -3723,6 +3897,7 @@
       totalCents,
       total: totalCents / 100
     };
+    if (selectedArrival) applyArrivalDiscount(selectedArrival);
     if (promoInput) {
       promoInput.value = data.code;
       promoInput.disabled = true;
@@ -3779,10 +3954,10 @@
   removePromoButton?.addEventListener("click", () => removePromo());
 
   document.querySelector("[data-continue-contact]").addEventListener("click", async () => {
-    if (!value("schedule")) {
+    if (!state.arrivalPreference || !value("schedule")) {
       setSchedulerStatus(
         state.selectedDate
-          ? "Please choose an available time to continue."
+          ? "Please choose an arrival-time option to continue."
           : "Please choose an available date, then select a time.",
         "error"
       );
@@ -3891,6 +4066,7 @@
         ...unit
       })),
       schedule: value("schedule"),
+      arrivalPreference: state.arrivalPreference || "exact",
       priorities,
       notes: value("notes"),
       promoCode: state.promo?.code || "",
@@ -4081,7 +4257,10 @@
         "selectedDate",
         "highestStageReached",
         "promo",
-        "packageBeforePromo"
+        "packageBeforePromo",
+        "arrivalPreference",
+        "arrivalDiscount",
+        "packageBeforeArrivalDiscount"
       ].forEach((key) => {
         if (Object.prototype.hasOwnProperty.call(savedState, key)) state[key] = savedState[key];
       });
@@ -4196,6 +4375,9 @@
       state.package = null;
       state.promo = null;
       state.packageBeforePromo = null;
+      state.arrivalPreference = "";
+      state.arrivalDiscount = null;
+      state.packageBeforeArrivalDiscount = null;
       state.initialSlots = [];
       state.availableSlots = [];
       state.availableDates = [];

@@ -1768,7 +1768,7 @@ function activeBooking(record, now = Date.now()) {
 }
 
 function bookingDurationHours(record) {
-  const hours = Number(record.estimate?.teamHours ?? record.estimate?.hours ?? 2);
+  const hours = Number(record.estimate?.calendarReservationHours ?? record.estimate?.teamHours ?? record.estimate?.hours ?? 2);
   if (!Number.isFinite(hours) || hours <= 0 || hours > 200) throw Object.assign(new Error("Enter a valid appointment duration."), { statusCode: 400 });
   return hours;
 }
@@ -2082,7 +2082,11 @@ async function availableSlotsForPackage(pkg, days = MAX_ADVANCE_BOOKING_DAYS, no
     const date = new Date(base.getTime() + dayIndex * 24 * 60 * 60 * 1000);
     const dateString = localDateString(date);
     availableSlotsForDate(pkg, dateString, bookings, minimumStartMs).forEach((slot) => {
-      slots.push({ ...slot, calendarChecked: calendarAvailability.connected });
+      const extendedHours = Number(pkg.teamHours) + 1;
+      const extendedEnd = new Date(slot.value).getTime() + extendedHours * 60 * 60 * 1000;
+      const closesAt = new Date(toZonedIso(dateString, CLOSE_TIME)).getTime();
+      const flexibleEligible = extendedEnd <= closesAt && slotAvailable(slot.value, extendedHours, bookings);
+      slots.push({ ...slot, flexibleEligible, flexibleTeamHours: extendedHours, calendarChecked: calendarAvailability.connected });
     });
   }
   return slots;

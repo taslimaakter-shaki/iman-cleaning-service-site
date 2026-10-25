@@ -25,13 +25,14 @@ function load(file, dependencies, extras = {}) {
     discountCents: 5000, discountLabel: 'Welcome' });
   const revision = (await f.api.load('saved', 'SAVED-1')).state.revision;
   const pkg = await f.api.applySavedDiscount('VALID', shared.calculateHourlyCleaningQuote(4), revision);
-  const slot = { value: '2030-09-15T13:00:00Z', label: 'Test appointment', date: '2030-09-15', time: '09:00' };
+  const slot = { value: '2030-09-15T13:00:00Z', label: 'Test appointment', date: '2030-09-15', time: '09:00', flexibleEligible: true };
   let body, result, stripe, booking, afterStripe;
   const handler = load('api/booking/_checkout.js', {
     './_shared': { ...shared, readJsonBody: async () => body, json: (_, status, value) => { result = { status, ...value }; },
       availableSlotsForPackage: async p => { assert.equal(p.manHours, 4); assert.equal(p.teamHours, 2); return [slot]; },
       createBooking: async b => { booking = clone(b); }, deletePendingBooking: async () => {}, makeUniqueOrderNumber: async () => 'TEST-ORDER' },
     '../crm/_quote-admin': f.api, '../account/_shared': { authenticatedUser: async () => null },
+    './_arrival-preference': require('../api/booking/_arrival-preference'),
     './_calendar': { newReservation: () => ({ attempt: 'test' }), attachCheckout: async () => {}, cleanupCheckout: async () => {} }
   }, { fetch: async (url, options) => {
     assert.equal(url, 'https://api.stripe.com/v1/checkout/sessions');

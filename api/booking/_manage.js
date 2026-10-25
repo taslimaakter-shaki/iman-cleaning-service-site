@@ -16,6 +16,7 @@ const {
 } = require("./_notifications");
 const { cancelRemainingAuthorization } = require("./_payments");
 const { trySendFormSubmissionNotification } = require("../_form-notifications");
+const { arrivalWindowLabel, slotMatchesArrivalPreference } = require("./_arrival-preference");
 
 const TOKEN_LIFETIME_MS = 90 * 24 * 60 * 60 * 1000;
 const VERIFICATION_LIFETIME_MS = 10 * 60 * 1000;
@@ -239,6 +240,7 @@ function safeBooking(booking) {
     service: booking.service_label || booking.service,
     schedule: booking.schedule,
     scheduleLabel: booking.schedule_label || formatAppointment(booking.schedule),
+    arrivalPreference: booking.estimate?.arrivalPreference || null,
     address: booking.address,
     total: Number(booking.estimate?.total || booking.estimate?.high || booking.estimate?.low || 0),
     cancellation: {
@@ -250,6 +252,26 @@ function safeBooking(booking) {
       retainedCents
     }
   };
+}
+
+function customerRescheduleSlots(booking, slots) {
+  const preference = booking.estimate?.arrivalPreference;
+  if (!preference?.key) return slots;
+  const eligibleSlots = (slots || []).filter((slot) => slotMatchesArrivalPreference(slot, preference.key));
+  if (!preference.flexible) return eligibleSlots;
+  const seenDates = new Set();
+  return eligibleSlots
+    .filter((slot) => {
+      if (seenDates.has(slot.date)) return false;
+      seenDates.add(slot.date);
+      return true;
+    })
+    .map((slot) => ({
+      ...slot,
+      label: `${new Intl.DateTimeFormat("en-US", {
+        timeZone: "America/New_York", weekday: "long", year: "numeric", month: "long", day: "numeric"
+      }).format(new Date(slot.value))} · Estimated arrival ${preference.windowLabel || arrivalWindowLabel(preference.key)}`
+    }));
 }
 
 async function bookingForToken(token) {
@@ -364,7 +386,7 @@ async function handler(request, response) {
       const slots = ["Confirmed", "Cleaner assigned"].includes(booking.status)
         ? await availableSlotsForPackage(pkg, undefined, new Date(), booking.id)
         : [];
-      return json(response, 200, { booking: safeBooking(booking), slots });
+      return json(response, 200, { booking: safeBooking(booking), slots: customerRescheduleSlots(booking, slots) });
     }
 
     const action = cleanText(body.action, 30);
@@ -373,7 +395,7 @@ async function handler(request, response) {
         return json(response, 409, { error: "This booking can no longer be rescheduled online." });
       }
       const pkg = { teamHours: Number(booking.estimate?.teamHours || booking.estimate?.hours || 2) };
-      const slots = await availableSlotsForPackage(pkg, undefined, new Date(), booking.id);
+      const slots = customerRescheduleSlots(booking, await availableSlotsForPackage(pkg, undefined, new Date(), booking.id));
       const slot = slots.find((item) => item.value === cleanText(body.schedule, 100));
       if (!slot) return json(response, 409, { error: "That appointment is no longer available. Please choose another time." });
       const estimate = {

@@ -42,6 +42,7 @@ function formatDateTime(value) {
 function appointmentParts(booking, record) {
   const date = booking?.schedule ? new Date(booking.schedule) : null;
   if (date && Number.isFinite(date.getTime())) {
+    const arrival = booking?.estimate?.arrivalPreference || {};
     return {
       date: new Intl.DateTimeFormat("en-US", {
         timeZone: "America/New_York",
@@ -50,14 +51,16 @@ function appointmentParts(booking, record) {
         month: "long",
         day: "numeric"
       }).format(date),
-      time: new Intl.DateTimeFormat("en-US", {
+      time: arrival.flexible && arrival.windowLabel
+        ? `${arrival.windowLabel} estimated arrival window`
+        : new Intl.DateTimeFormat("en-US", {
         timeZone: "America/New_York",
         hour: "numeric",
         minute: "2-digit"
       }).format(date)
     };
   }
-  return { date: safeText(record?.serviceDate), time: safeText(record?.serviceTime) };
+  return { date: safeText(record?.serviceDate), time: safeText(record?.arrivalWindow ? `${record.arrivalWindow} estimated arrival window` : record?.serviceTime) };
 }
 
 function paymentTypeLabel(value) {
@@ -227,6 +230,7 @@ function buildPaymentReceiptPdf({ booking = null, record }) {
     moneyRows([
       ["Service subtotal", record?.subtotalBeforeTax],
       [discountLabel, record?.discountAmount],
+      [record?.arrivalDiscountLabel || "Flexible arrival discount", record?.arrivalDiscountAmount],
       ["Discounted subtotal", record?.discountedSubtotalBeforeTax],
       ["NY sales tax (8.875%)", record?.salesTax],
       ["Final service price", record?.totalAmount]

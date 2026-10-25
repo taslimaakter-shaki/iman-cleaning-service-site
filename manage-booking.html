@@ -167,7 +167,9 @@
         document.querySelector("[data-policy]").textContent = cancellation.lessThan48Hours
           ? `Less than 48 hours remain. If you cancel now, the ${money(cancellation.retainedCents / 100)} booking deposit will be retained and any uncaptured authorization will be released.`
           : `At least 48 hours remain. If you cancel now, the full ${money(cancellation.refundCents / 100)} amount charged will be refunded and any uncaptured authorization will be released.`;
-        slotSelect.innerHTML = '<option value="">Choose an available date and time</option>';
+        slotSelect.innerHTML = booking.arrivalPreference?.flexible
+          ? '<option value="">Choose an available date for the same arrival window</option>'
+          : '<option value="">Choose an available date and time</option>';
         let lastDate = "";
         let group = null;
         (data.slots || []).forEach((slot) => {

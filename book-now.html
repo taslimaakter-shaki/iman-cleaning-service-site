@@ -25,7 +25,7 @@
   <script>window.dataLayer=window.dataLayer||[];function gtag(){dataLayer.push(arguments)}gtag('js',new Date());gtag('config','G-6MEJH73E0H');</script>
   <link rel="stylesheet" href="./design-system.css">
   <link rel="stylesheet" href="./site.css?v=20260929-restored-menu-size">
-  <link rel="stylesheet" href="./booking.css?v=20261012-promo-breakdown-v5">
+  <link rel="stylesheet" href="./booking.css?v=20261025-flexible-arrival-v1">
   <script type="application/ld+json">
   {
     "@context": "https://schema.org",
@@ -421,6 +421,7 @@
                       <div data-addon-total-row><dt>Selected add-ons before tax</dt><dd data-addon-total></dd></div>
                       <div><dt>Price before tax</dt><dd data-quote-subtotal></dd></div>
                       <div data-quote-discount-row hidden><dt><span data-quote-discount-label>Promo discount</span><small data-quote-discount-description></small></dt><dd data-quote-discount></dd></div>
+                      <div data-quote-arrival-discount-row hidden><dt><span data-quote-arrival-discount-label>Flexible arrival discount</span><small>Applied before tax</small></dt><dd data-quote-arrival-discount></dd></div>
                       <div data-quote-discounted-subtotal-row hidden><dt>Discounted subtotal before tax</dt><dd data-quote-discounted-subtotal></dd></div>
                       <div><dt data-quote-tax-label>NY sales tax (8.875%)</dt><dd data-quote-tax></dd></div>
                       <div class="booking-price-breakdown-total"><dt>Total estimated price</dt><dd data-quote-total></dd></div>
@@ -511,13 +512,15 @@
                 <div class="booking-scheduler-heading">
                   <span class="booking-scheduler-step">2</span>
                   <div>
-                    <h3 id="booking-time-title">Choose a time</h3>
-                    <p data-selected-date-label>Select a date to see available times.</p>
+                    <h3 id="booking-time-title">How flexible is your arrival time?</h3>
+                    <p data-selected-date-label>Select a date to see arrival options.</p>
                   </div>
                 </div>
+                <div class="booking-arrival-options" data-arrival-options role="radiogroup" aria-label="Arrival-time preference" hidden></div>
                 <div class="booking-time-slots" data-time-slots role="radiogroup" aria-label="Available cleaning times">
                   <p class="booking-time-empty">Choose a highlighted date from the calendar.</p>
                 </div>
+                <p class="booking-arrival-note" data-arrival-note hidden>Cleaning time begins when our team arrives. For flexible appointments, we’ll confirm a more precise estimated arrival time before your appointment. The additional reserved hour is scheduling capacity only and is not automatically added to your service or price.</p>
               </section>
 
               <select class="booking-schedule-control" name="schedule" required data-schedule tabindex="-1" aria-hidden="true">
@@ -587,6 +590,7 @@
                 <dl class="booking-final-totals">
                   <div data-checkout-original-total-row hidden><dt>Service subtotal before tax</dt><dd data-checkout-original-total></dd></div>
                   <div data-checkout-promo-row hidden><dt data-checkout-promo-label>Promo discount</dt><dd data-checkout-promo-discount></dd></div>
+                  <div data-checkout-arrival-discount-row hidden><dt data-checkout-arrival-discount-label>Flexible arrival discount</dt><dd data-checkout-arrival-discount></dd></div>
                   <div data-checkout-discounted-subtotal-row hidden><dt>Discounted subtotal before tax</dt><dd data-checkout-discounted-subtotal></dd></div>
                   <div data-checkout-tax-row hidden><dt>NY sales tax (8.875%)</dt><dd data-checkout-tax></dd></div>
                   <div><dt>Estimated total</dt><dd data-checkout-total></dd></div>
@@ -884,7 +888,7 @@
         </div>
   </main>
   <script src="./booking-service-area.js?v=20261006-pause-bronx-staten-island"></script>
-  <script src="./book-now.js?v=20261024-fall10-before-tax"></script>
+  <script src="./book-now.js?v=20261025-flexible-arrival-v1"></script>
 <script defer src="./site-reviews.js?v=20260911-trusted-title"></script>
 </body>
 </html>

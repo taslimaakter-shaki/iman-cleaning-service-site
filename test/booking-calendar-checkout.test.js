@@ -18,7 +18,7 @@ const clone = x => JSON.parse(JSON.stringify(x));
     calls.push({url,method:options.method || 'GET'});
     const u = new URL(url);
     if (u.origin === 'https://calendar.test') {
-      if (u.pathname.endsWith('/rpc/iman_booking_calendar_version')) return response(ready ? 1 : {error:'missing'}, ready ? 200 : 404);
+      if (u.pathname.endsWith('/rpc/iman_booking_calendar_version')) return response(ready ? 2 : {error:'missing'}, ready ? 200 : 404);
       assert.equal(u.pathname, '/rest/v1/bookings');
       try {
         const params = [], filters = [];

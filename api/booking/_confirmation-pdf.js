@@ -184,16 +184,19 @@ function formatTeamTime(estimate = {}) {
 function formatAppointmentParts(booking, record) {
   const schedule = booking?.schedule ? new Date(booking.schedule) : null;
   if (schedule && Number.isFinite(schedule.getTime())) {
+    const arrival = booking?.estimate?.arrivalPreference || {};
     return {
       date: new Intl.DateTimeFormat("en-US", {
         timeZone: "America/New_York", weekday: "long", year: "numeric", month: "long", day: "numeric"
       }).format(schedule),
-      time: new Intl.DateTimeFormat("en-US", {
+      time: arrival.flexible && arrival.windowLabel
+        ? `${arrival.windowLabel} estimated arrival window`
+        : new Intl.DateTimeFormat("en-US", {
         timeZone: "America/New_York", hour: "numeric", minute: "2-digit"
       }).format(schedule)
     };
   }
-  return { date: record?.serviceDate || "", time: record?.serviceTime || "" };
+  return { date: record?.serviceDate || "", time: record?.arrivalWindow ? `${record.arrivalWindow} estimated arrival window` : record?.serviceTime || "" };
 }
 
 function buildSections({ booking, record }) {

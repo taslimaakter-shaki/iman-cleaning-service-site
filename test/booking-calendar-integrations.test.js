@@ -73,6 +73,7 @@ async function rescheduleTests() {
     './_shared':shared,
     './_notifications':{formatAppointment:x=>x,sendCustomerSms:async()=>{calls.push('sms');return {status:'sent'};}},
     './_payments':{cancelRemainingAuthorization:async()=>{calls.push('payment');if(paymentOutage)throw new Error('Test payment outage');}},
+    './_arrival-preference':{arrivalWindowLabel:()=>'',slotMatchesArrivalPreference:()=>true},
     '../_form-notifications':{trySendFormSubmissionNotification:async()=>{calls.push('team-alert');}},
     '../quote/_shared':{getGoogleClients:()=>({gmail:{users:{messages:{send:async()=>({data:{id:'test'}})}}}})}
   });

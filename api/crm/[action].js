@@ -208,9 +208,11 @@ async function updateBookingDetails(body, response) {
   }
 
   const scheduleChanged = new Date(schedule).getTime() !== new Date(booking.schedule).getTime();
-  const durationChanged = Math.abs(teamHours - bookingDurationHours(booking)) > 0.001;
+  const priorServiceHours = Number(estimate.teamHours ?? estimate.hours ?? bookingDurationHours(booking));
+  const calendarReservationHours = teamHours + (estimate.arrivalPreference?.key ? 1 : 0);
+  const durationChanged = Math.abs(teamHours - priorServiceHours) > 0.001;
   if ((scheduleChanged || durationChanged) && !["Completed", "Cancelled"].includes(booking.status)) {
-    await assertScheduleAvailable(schedule, teamHours, id);
+    await assertScheduleAvailable(schedule, calendarReservationHours, id);
   }
 
   const remainingCents = Math.max(0, totalCents - paidCents);
@@ -240,6 +242,7 @@ async function updateBookingDetails(body, response) {
     laborHours,
     teamHours,
     hours: teamHours,
+    calendarReservationHours,
     cleanerCount,
     payment,
     ...(scheduleChanged ? {

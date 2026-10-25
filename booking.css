@@ -5479,6 +5479,48 @@ body.booking-agreement-open {
   scrollbar-color: var(--teal-200) transparent;
 }
 
+.booking-arrival-options {
+  display: grid;
+  gap: 10px;
+  margin: 4px 0 14px;
+}
+
+.booking-arrival-options[hidden],
+.booking-time-slots[hidden],
+.booking-arrival-note[hidden] { display: none; }
+
+.booking-arrival-option {
+  width: 100%;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  gap: 4px 12px;
+  align-items: center;
+  padding: 14px 16px;
+  border: 1px solid #cfe3e4;
+  border-radius: 14px;
+  background: #fff;
+  color: #123d43;
+  text-align: left;
+  cursor: pointer;
+}
+
+.booking-arrival-option strong { font-size: .94rem; }
+.booking-arrival-option span { color: #607579; font-size: .82rem; }
+.booking-arrival-option em {
+  grid-row: 1 / span 2;
+  grid-column: 2;
+  padding: 5px 9px;
+  border-radius: 999px;
+  background: #eef7e8;
+  color: #4f7f2e;
+  font-size: .76rem;
+  font-style: normal;
+  font-weight: 800;
+}
+.booking-arrival-option.is-selected { border-color: #0b7285; box-shadow: 0 0 0 2px rgba(11,114,133,.12); background: #f2faf9; }
+.booking-arrival-option:disabled { cursor: not-allowed; opacity: .5; }
+.booking-arrival-note { margin: 10px 0 0; color: #607579; font-size: .82rem; line-height: 1.5; }
+
 .booking-time-slot {
   display: grid;
   gap: 2px;

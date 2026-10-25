@@ -146,7 +146,9 @@ function buildRecord({ session, siteUrl, source = "success_page" }) {
   const invoice = typeof session.invoice === "object" ? session.invoice : null;
   const paidCents = Number(session.amount_total || metadata.payment_amount_cents || metadata.total_amount_cents || 0);
   const totalCents = Number(metadata.total_amount_cents || paidCents || 0);
-  const discountCents = Number(metadata.visible_discount_cents || metadata.promo_discount_cents || metadata.discount_cents || 0);
+  const promoDiscountCents = Number(metadata.promo_discount_cents || metadata.discount_cents || 0);
+  const arrivalDiscountCents = Number(metadata.arrival_discount_cents || 0);
+  const discountCents = promoDiscountCents + arrivalDiscountCents;
   const originalTotalCents = Number(metadata.original_total_cents || (totalCents + discountCents) || 0);
   const subtotalCents = Number(metadata.subtotal_cents || 0);
   const discountedSubtotalCents = Number(metadata.discounted_subtotal_cents || 0);
@@ -167,14 +169,18 @@ function buildRecord({ session, siteUrl, source = "success_page" }) {
     serviceDescriptionUrl: cleanText(metadata.service_description_url),
     serviceDate: cleanText(metadata.service_date),
     serviceTime: cleanText(metadata.service_time),
+    arrivalPreference: cleanText(metadata.arrival_preference),
+    arrivalWindow: cleanText(metadata.arrival_window),
     totalAmount: money(totalCents),
     originalAmount: discountCents ? money(originalTotalCents) : "",
     subtotalBeforeTax: subtotalCents ? money(subtotalCents) : "",
     discountedSubtotalBeforeTax: discountedSubtotalCents ? money(discountedSubtotalCents) : "",
     salesTax: taxCents ? money(taxCents) : "",
     discountApplication,
-    discountLabel: discountCents ? cleanText(metadata.visible_discount_label || metadata.promo_code || metadata.discount_label || "Discount") : "",
-    discountAmount: discountCents ? `-${money(discountCents)}` : "",
+    discountLabel: promoDiscountCents ? cleanText(metadata.promo_code || metadata.discount_label || "Discount") : "",
+    discountAmount: promoDiscountCents ? `-${money(promoDiscountCents)}` : "",
+    arrivalDiscountLabel: arrivalDiscountCents ? cleanText(metadata.arrival_discount_label || "Flexible arrival discount") : "",
+    arrivalDiscountAmount: arrivalDiscountCents ? `-${money(arrivalDiscountCents)}` : "",
     paidAmount: money(paidCents),
     remainingAmount: money(Number(metadata.remaining_amount_cents || 0)),
     paymentType: cleanText(metadata.payment_type),
@@ -228,6 +234,7 @@ function recordText(record) {
     `Service start time: ${record.serviceTime}`,
     record.subtotalBeforeTax ? `Service subtotal before tax: ${record.subtotalBeforeTax}` : "",
     record.discountAmount ? `${record.discountLabel}${record.discountApplication === "before_tax" ? " (before tax)" : ""}: ${record.discountAmount}` : "",
+    record.arrivalDiscountAmount ? `${record.arrivalDiscountLabel} (before tax): ${record.arrivalDiscountAmount}` : "",
     record.discountedSubtotalBeforeTax ? `Discounted subtotal before tax: ${record.discountedSubtotalBeforeTax}` : "",
     record.salesTax ? `NY sales tax (8.875%): ${record.salesTax}` : "",
     `Final service price: ${record.totalAmount}`,
@@ -317,6 +324,7 @@ function customerFirstName(value) {
 function formatAppointmentParts(booking, record) {
   const scheduled = booking?.schedule ? new Date(booking.schedule) : null;
   if (scheduled && Number.isFinite(scheduled.getTime())) {
+    const arrival = booking?.estimate?.arrivalPreference || {};
     return {
       date: new Intl.DateTimeFormat("en-US", {
         timeZone: "America/New_York",
@@ -325,14 +333,16 @@ function formatAppointmentParts(booking, record) {
         month: "long",
         day: "numeric"
       }).format(scheduled),
-      time: new Intl.DateTimeFormat("en-US", {
+      time: arrival.flexible && arrival.windowLabel
+        ? `${arrival.windowLabel} estimated arrival window`
+        : new Intl.DateTimeFormat("en-US", {
         timeZone: "America/New_York",
         hour: "numeric",
         minute: "2-digit"
       }).format(scheduled)
     };
   }
-  return { date: record.serviceDate, time: record.serviceTime };
+  return { date: record.serviceDate, time: record.arrivalWindow ? `${record.arrivalWindow} estimated arrival window` : record.serviceTime };
 }
 
 function formatMaximumTime(hours) {
@@ -429,6 +439,7 @@ function buildCustomerEmail({ record, booking = null, invoicePdf, confirmationPd
   const paymentDetails = [
     ["Service subtotal", record.subtotalBeforeTax],
     [discountLabel, record.discountAmount],
+    [record.arrivalDiscountLabel || "Flexible arrival discount", record.arrivalDiscountAmount],
     ["Discounted subtotal", record.discountedSubtotalBeforeTax],
     ["NY sales tax (8.875%)", record.salesTax],
     ["Final service price", record.totalAmount],
