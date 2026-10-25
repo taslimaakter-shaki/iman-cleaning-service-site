@@ -345,6 +345,38 @@ function formatMaximumTime(hours) {
   ].filter(Boolean).join(" ");
 }
 
+function selectedServiceDetailsUrl(record, booking) {
+  const supplied = cleanText(record.serviceDescriptionUrl || booking?.estimate?.serviceDescriptionUrl, 500);
+  if (supplied) {
+    try {
+      const url = new URL(supplied);
+      if (url.protocol === "https:") return url.toString();
+    } catch {
+      // Use the service-name fallback below when a saved link is incomplete.
+    }
+  }
+
+  const service = [
+    booking?.service,
+    booking?.service_label,
+    booking?.estimate?.eligibility?.requestedService,
+    record.service
+  ].filter(Boolean).join(" ").toLowerCase();
+  const site = "https://www.imancleaningservice.com";
+  if (/move[\s-]*(in|out)|moving/.test(service)) return `${site}/deep-cleaning.html`;
+  if (/deep|detail/.test(service)) return `${site}/deep-cleaning.html`;
+  if (/post[\s-]*construction/.test(service)) return `${site}/post-construction-cleaning.html`;
+  if (/airbnb|vacation rental/.test(service)) return `${site}/airbnb-cleaning.html`;
+  if (/office/.test(service)) return `${site}/office-cleaning.html`;
+  if (/retail/.test(service)) return `${site}/retail-store-cleaning.html`;
+  if (/restaurant/.test(service)) return `${site}/restaurant-cleaning.html`;
+  if (/medical|clinic/.test(service)) return `${site}/medical-clinic-cleaning.html`;
+  if (/janitorial/.test(service)) return `${site}/janitorial-recurring-cleaning.html`;
+  if (/commercial/.test(service)) return `${site}/commercial-cleaning.html`;
+  if (/standard|recurring|hourly/.test(service)) return `${site}/standard-cleaning.html`;
+  return `${site}/services-hub.html`;
+}
+
 function buildCustomerEmail({ record, booking = null, invoicePdf, confirmationPdf, managementUrl }) {
   if (!record.customerEmail) return null;
 
@@ -356,6 +388,7 @@ function buildCustomerEmail({ record, booking = null, invoicePdf, confirmationPd
   const appointment = formatAppointmentParts(booking, record);
   const cleanerCount = Number(booking?.estimate?.cleanerCount || 0);
   const maximumTime = formatMaximumTime(booking?.estimate?.teamHours);
+  const serviceDetailsUrl = selectedServiceDetailsUrl(record, booking);
   const staffing = cleanerCount
     ? `${cleanerCount} cleaning ${cleanerCount === 1 ? "professional" : "professionals"}${maximumTime ? `, up to ${maximumTime}` : ""}`
     : maximumTime
@@ -406,6 +439,8 @@ function buildCustomerEmail({ record, booking = null, invoicePdf, confirmationPd
       : `Thank you for choosing IMAN Cleaning Service! Your ${record.paymentType === "deposit_25" ? "deposit" : "payment"} has been successfully received, and your cleaning appointment is confirmed.`,
     "",
     ...(awaitingSchedule ? [] : ["Appointment Details", "", ...appointmentDetails.map(([label, value]) => `${label}: ${value}`), ""]),
+    `View what is included in your service: ${serviceDetailsUrl}`,
+    "",
     "Your Payment Summary",
     "",
     ...paymentDetails.map(([label, value]) => `${label}: ${value}`),
@@ -419,7 +454,7 @@ function buildCustomerEmail({ record, booking = null, invoicePdf, confirmationPd
     "- Make sure the areas being cleaned are accessible.",
     "- Contact us before the appointment if your property condition or requested cleaning tasks have changed.",
     "",
-    "Important: Your booking includes the services and maximum labor time shown in your attached booking record. Additional work, including extensive wall scrubbing, requires confirmation of the scope and any applicable charges before proceeding.",
+    "Important: Your booking includes the services and maximum labor time shown in your attached booking record. Additional work (not included in the service details) requires confirmation of the scope and any applicable charges before proceeding.",
     "",
     ...(managementUrl && !awaitingSchedule ? ["Need to Make Changes?", "", "You can reschedule or cancel your appointment using the secure link below.", managementUrl, ""] : []),
     awaitingSchedule
@@ -453,6 +488,7 @@ function buildCustomerEmail({ record, booking = null, invoicePdf, confirmationPd
           ? "Thank you for choosing IMAN Cleaning Service! Your payment has been successfully received. We will contact you to schedule your cleaning appointment."
           : `Thank you for choosing IMAN Cleaning Service! Your ${record.paymentType === "deposit_25" ? "deposit" : "payment"} has been successfully received, and your cleaning appointment is confirmed.`)}</p>
         ${awaitingSchedule ? "" : `<h2 style="color:#073f49;font-size:20px;margin:28px 0 8px;">Appointment Details</h2><table style="width:100%;border-collapse:collapse;">${appointmentRows}</table>`}
+        <p><a href="${escapeHtml(serviceDetailsUrl)}" style="color:#0b6474;font-weight:bold;">View What Is Included in Your Service</a></p>
         <h2 style="color:#073f49;font-size:20px;margin:28px 0 8px;">Your Payment Summary</h2>
         <table style="width:100%;border-collapse:collapse;">${paymentRows}</table>
         <p style="margin-top:18px;">${escapeHtml(balanceMessage)}</p>
@@ -463,7 +499,7 @@ function buildCustomerEmail({ record, booking = null, invoicePdf, confirmationPd
           <li>Make sure the areas being cleaned are accessible.</li>
           <li>Contact us before the appointment if your property condition or requested cleaning tasks have changed.</li>
         </ul>
-        <p><strong>Important:</strong> Your booking includes the services and maximum labor time shown in your attached booking record. Additional work, including extensive wall scrubbing, requires confirmation of the scope and any applicable charges before proceeding.</p>
+        <p><strong>Important:</strong> Your booking includes the services and maximum labor time shown in your attached booking record. Additional work (not included in the service details) requires confirmation of the scope and any applicable charges before proceeding.</p>
         ${managementUrl && !awaitingSchedule ? `<h2 style="color:#073f49;font-size:20px;margin:28px 0 8px;">Need to Make Changes?</h2><p>You can reschedule or cancel your appointment using the secure link below.</p><p><a href="${escapeHtml(managementUrl)}" style="display:inline-block;padding:13px 20px;background:#0b6474;color:#fff;text-decoration:none;border-radius:999px;font-weight:bold;">Manage Your Appointment</a></p>` : ""}
         <p>${escapeHtml(awaitingSchedule
           ? "Cancellation timing will be measured from the appointment after it is scheduled."

@@ -113,6 +113,7 @@ const record = {
 
   const emailRecord = {
     ...record,
+    service: "Move-In Cleaning",
     subtotalBeforeTax: "$514.58",
     discountLabel: "FALL10 discount",
     discountAmount: "-$51.46",
@@ -123,9 +124,14 @@ const record = {
     paidAmount: "$126.06",
     remainingAmount: "$378.16"
   };
+  const emailBooking = {
+    ...booking,
+    service: "move",
+    service_label: "Move-In Cleaning"
+  };
   const email = buildCustomerEmail({
     record: emailRecord,
-    booking,
+    booking: emailBooking,
     invoicePdf: Buffer.from("stripe-invoice"),
     confirmationPdf: pdf,
     managementUrl: "https://www.imancleaningservice.com/manage-booking.html?token=test"
@@ -137,6 +143,8 @@ const record = {
   assert.match(decoded, /Hi Amina,/);
   assert.match(decoded, /Appointment Details/);
   assert.match(decoded, /2 cleaning professionals, up to 2 hours 30 minutes/);
+  assert.match(decoded, /https:\/\/www\.imancleaningservice\.com\/deep-cleaning\.html/);
+  assert.match(decoded, /View What Is Included in Your Service/);
   assert.match(decoded, /Your Payment Summary/);
   assert.ok(decoded.indexOf("Service subtotal") < decoded.indexOf("FALL10 discount"));
   assert.ok(decoded.indexOf("FALL10 discount") < decoded.indexOf("NY sales tax \(8\.875%\)"));
@@ -148,6 +156,7 @@ const record = {
   assert.match(decoded, /Deposit paid: -\$126\.06/);
   assert.match(decoded, /Remaining balance: \$378\.16/);
   assert.match(decoded, /Before Our Team Arrives/);
+  assert.match(decoded, /Additional work \(not included in the service details\) requires confirmation/);
   assert.match(decoded, /Manage Your Appointment/);
   assert.match(decoded, /Your booking record and payment receipt are attached/);
   console.log("booking confirmation PDF tests passed");
