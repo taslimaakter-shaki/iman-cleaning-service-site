@@ -1,0 +1,799 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Service Agreement | Iman Cleaning Service LLC</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap"
+      rel="stylesheet"
+    />
+    <style>
+      :root {
+        --green: #075f5d;
+        --green-dark: #034341;
+        --green-deep: #022f2e;
+        --ink: #1f2933;
+        --muted: #5f6b7a;
+        --paper: #ffffff;
+        --soft: #f4f8f7;
+        --line: #d9e6e3;
+        --radius: 8px;
+      }
+
+      * {
+        box-sizing: border-box;
+      }
+
+      body {
+        margin: 0;
+        background: var(--soft);
+        color: var(--ink);
+        font-family: Inter, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+        line-height: 1.6;
+      }
+
+      a {
+        color: inherit;
+      }
+
+      .shell {
+        width: min(1040px, calc(100% - 32px));
+        margin: 0 auto;
+      }
+
+      .topbar {
+        background: var(--green-dark);
+        color: #ffffff;
+      }
+
+      .nav {
+        display: flex;
+        min-height: 82px;
+        align-items: center;
+        justify-content: space-between;
+        gap: 24px;
+      }
+
+      .brand {
+        display: inline-flex;
+        align-items: center;
+        gap: 14px;
+        font-weight: 800;
+        text-decoration: none;
+      }
+
+      .brand img {
+        width: 118px;
+        height: 52px;
+        border-radius: var(--radius);
+        background: #ffffff;
+        object-fit: contain;
+        padding: 5px 8px;
+      }
+
+      .nav-actions {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 16px;
+        font-weight: 700;
+      }
+
+      .nav-actions a {
+        text-decoration: none;
+      }
+
+      .nav-actions .nav-call,
+      .nav-actions .nav-quote {
+        display: inline-flex;
+        min-height: 42px;
+        align-items: center;
+        justify-content: center;
+        padding: 0 18px;
+        border-radius: 999px;
+        white-space: nowrap;
+      }
+
+      .nav-actions .nav-call {
+        background: #ffffff;
+        color: var(--green);
+      }
+
+      .nav-actions .nav-quote {
+        background: #8fc84f;
+        color: var(--green-dark);
+      }
+
+      .hero {
+        background: var(--green);
+        color: #ffffff;
+        padding: clamp(48px, 7vw, 84px) 0;
+      }
+
+      .hero h1 {
+        max-width: 760px;
+        margin: 0;
+        font-size: clamp(2.3rem, 6vw, 4.8rem);
+        line-height: 1.05;
+        letter-spacing: 0;
+      }
+
+      .hero p {
+        max-width: 740px;
+        margin: 22px 0 0;
+        color: rgba(255, 255, 255, 0.86);
+        font-size: 1.08rem;
+      }
+
+      main {
+        padding: clamp(34px, 5vw, 58px) 0 clamp(64px, 8vw, 92px);
+      }
+
+      .notice,
+      .agreement {
+        border: 1px solid var(--line);
+        border-radius: var(--radius);
+        background: var(--paper);
+      }
+
+      .notice {
+        margin-bottom: 22px;
+        padding: 18px 20px;
+        color: var(--muted);
+        font-size: 0.96rem;
+      }
+
+      .agreement {
+        padding: clamp(24px, 4vw, 46px);
+      }
+
+      .section {
+        padding: 26px 0;
+        border-top: 1px solid var(--line);
+      }
+
+      .section:first-child {
+        padding-top: 0;
+        border-top: 0;
+      }
+
+      h2 {
+        margin: 0 0 10px;
+        color: var(--green-dark);
+        font-size: 1.25rem;
+        line-height: 1.25;
+      }
+
+      .section h3 {
+        margin: 18px 0 6px;
+        color: var(--green-dark);
+        font-size: .88rem;
+        letter-spacing: .035em;
+        text-transform: uppercase;
+      }
+
+      p,
+      ul {
+        margin: 0;
+      }
+
+      .section p + p,
+      .section p + ul,
+      .section ul + p {
+        margin-top: 12px;
+      }
+
+      .agreement-time-warning {
+        position: relative;
+        overflow: hidden;
+        margin: 4px 0 8px;
+        padding: clamp(20px, 3vw, 28px);
+        background: linear-gradient(135deg, #fff8e8, #fffdf7);
+        border: 2px solid #d9a334;
+        border-radius: 12px;
+        box-shadow: 0 14px 32px rgba(128, 82, 8, .14);
+      }
+
+      .agreement-time-warning::before {
+        position: absolute;
+        inset: 0 0 auto;
+        height: 6px;
+        background: linear-gradient(90deg, #d99b1d 0 34%, #168393 34% 67%, #79ad42 67%);
+        content: "";
+      }
+
+      .agreement-time-warning h2 {
+        display: inline-flex;
+        align-items: center;
+        padding: 7px 11px;
+        border: 1px solid #e5b74d;
+        border-radius: 8px;
+        background: #fff1c9;
+        color: #704600;
+        font-size: .78rem;
+        letter-spacing: .06em;
+        text-transform: uppercase;
+      }
+
+      .agreement-warning-icon {
+        display: inline-grid;
+        width: 20px;
+        height: 20px;
+        margin-right: 7px;
+        place-items: center;
+        border-radius: 50%;
+        background: #d28e0a;
+        color: #fff;
+        font-size: .78rem;
+        line-height: 1;
+      }
+
+      .agreement-time-warning h3 {
+        margin: 18px 0 6px;
+        color: var(--green-dark);
+        font-size: .82rem;
+        letter-spacing: .045em;
+        text-transform: uppercase;
+      }
+
+      .agreement-time-warning .agreement-warning-title {
+        margin: 5px 0 8px;
+        color: var(--green-deep);
+        font-size: 1.25rem;
+      }
+
+      .agreement-warning-grid {
+        display: grid;
+        grid-template-columns: repeat(3, minmax(0, 1fr));
+        gap: 12px;
+        margin: 18px 0 12px;
+      }
+
+      .agreement-warning-card {
+        padding: 16px;
+        border: 1px solid #cfe0dd;
+        border-left-width: 4px;
+        border-radius: 10px;
+      }
+
+      .agreement-warning-card h3 {
+        margin-top: 0;
+      }
+
+      .agreement-warning-card--conditions {
+        border-left-color: #168393;
+        background: #edf8fa;
+      }
+
+      .agreement-warning-card--approval {
+        border-left-color: #79ad42;
+        background: #f2f8e9;
+      }
+
+      .agreement-warning-card--charges {
+        border-left-color: #db755d;
+        background: #fff2ed;
+      }
+
+      ul {
+        padding-left: 20px;
+      }
+
+      li + li {
+        margin-top: 8px;
+      }
+
+      .acceptance {
+        margin-top: 28px;
+        border-radius: var(--radius);
+        background: var(--green-deep);
+        color: #ffffff;
+        padding: 24px;
+      }
+
+      .acceptance h2 {
+        color: #ffffff;
+      }
+
+      .acceptance p {
+        color: rgba(255, 255, 255, 0.84);
+      }
+
+      .footer {
+        border-top: 1px solid var(--line);
+        padding: 28px 0;
+        color: var(--muted);
+        font-size: 0.92rem;
+      }
+
+      @media (max-width: 680px) {
+        .agreement-warning-grid {
+          grid-template-columns: 1fr;
+        }
+
+        .nav {
+          align-items: flex-start;
+          flex-direction: column;
+          padding: 16px 0;
+        }
+
+        .nav-actions {
+          width: 100%;
+          gap: 10px;
+        }
+
+        .nav-actions .nav-call,
+        .nav-actions .nav-quote {
+          flex: 1;
+          padding-inline: 12px;
+          font-size: 0.82rem;
+        }
+      }
+    </style>
+      <link rel="stylesheet" href="./homepage-footer.css?v=20260929-compact-footer-v2" />
+  </head>
+  <body>
+    <header class="topbar">
+      <nav class="shell nav" aria-label="Iman agreement navigation">
+        <a class="brand" href="https://www.imancleaningservice.com">
+          <img src="assets/iman-logo.png" alt="Iman Cleaning Service LLC" />
+          <span>Service Agreement</span>
+        </a>
+        <div class="nav-actions">
+          <a class="nav-call" href="tel:+19292321930">Call Us</a>
+        </div>
+      </nav>
+    </header>
+
+    <section class="hero">
+      <div class="shell">
+        <h1>Iman Cleaning Service LLC service agreement</h1>
+        <p>
+          Please review these terms before approving a quote, making a payment, or allowing service
+          to begin.
+        </p>
+      </div>
+    </section>
+
+    <main>
+      <div class="shell">
+        <p class="notice">
+          By booking a service, making full payment, making any payment, checking the
+          agreement box in Stripe Checkout, or allowing Iman Cleaning Service LLC to begin service,
+          the Client agrees to this Service Agreement, Terms &amp; Conditions.
+        </p>
+
+        <article class="agreement">
+          <section class="section">
+            <h2>IMAN CLEANING SERVICE LLC SERVICE AGREEMENT</h2>
+            <p>
+              <strong>Effective Date:</strong> October 12, 2026<br>
+              <strong>Company:</strong> Iman Cleaning Service LLC<br>
+              <strong>Client:</strong> The person booking, scheduling, purchasing, or receiving services
+            </p>
+            <p>
+              By booking, scheduling, purchasing, or receiving services from Iman Cleaning Service LLC
+              ("Company"), the Client agrees to the following Terms and Conditions.
+            </p>
+          </section>
+
+          <section class="section agreement-time-warning" role="note" aria-label="Important information to read before payment">
+            <h2><span class="agreement-warning-icon" aria-hidden="true">!</span>Important · Please Read Before Payment</h2>
+            <p class="agreement-warning-title"><strong>Your time and budget stay in your control</strong></p>
+            <p>Your estimate is based on the information and details provided before your appointment. We do our best to estimate the required cleaning time accurately; however, the full condition and scope of work can only be confirmed once our cleaning team sees the property in person.</p>
+            <div class="agreement-warning-grid">
+              <div class="agreement-warning-card agreement-warning-card--conditions">
+                <h3>Property Conditions</h3>
+                <p>If the actual condition, level of buildup, or work required differs from what could reasonably be determined beforehand, the service may require additional time.</p>
+              </div>
+              <div class="agreement-warning-card agreement-warning-card--approval">
+                <h3>Approval Before Extra Time</h3>
+                <p><strong>Your cleaning team will work within the maximum labor-hours shown in your estimate. The service may be completed sooner. If additional time is recommended, we’ll explain why and get your approval before continuing.</strong></p>
+              </div>
+              <div class="agreement-warning-card agreement-warning-card--charges">
+                <h3>No Surprise Charges</h3>
+                <p>The total price for any additional time will be shown for your approval and will <strong>never be added without your permission.</strong></p>
+              </div>
+            </div>
+            <p>This is a maximum estimate, not a guaranteed duration. Your cleaning may be completed sooner.</p>
+            <p>Please confirm your address and appointment details before making payment. If anything needs to be updated, contact us at <strong><a href="tel:+19292321930">(929) 232-1930</a></strong>.</p>
+          </section>
+
+          <section class="section">
+            <h2>Cleaner Break Time</h2>
+            <p>For longer appointments, our cleaning team may take reasonable meal or rest breaks. Break time does not count toward the maximum labor-hours included in your estimate and will not result in an additional charge.</p>
+          </section>
+
+          <section class="section">
+            <h2>1. Services</h2>
+            <p>
+              The Company provides residential and commercial cleaning services, including but not
+              limited to standard cleaning, deep cleaning, move-in cleaning, move-out cleaning, Airbnb
+              turnover cleaning, office cleaning, and related cleaning services.
+            </p>
+            <p>
+              The scope of work shall be limited to the services outlined in the estimate, invoice,
+              booking confirmation, or written agreement.
+            </p>
+            <p>
+              Floor scrubbing is not included in any service rate unless it is expressly included in
+              a separate written estimate or agreement.
+            </p>
+          </section>
+
+          <section class="section">
+            <h2>Hourly Cleaning Minimum Charge</h2>
+            <p><strong>Hourly Cleaning Service has a four-work-hour minimum. The Client agrees to pay for all work-hours booked, including the four-work-hour minimum, even if the requested cleaning is completed in less time.</strong></p>
+            <p>Booked work-hours represent the combined labor of the assigned cleaners. For example, four work-hours may be provided by two cleaners working for approximately two hours each. Unused booked time is not prorated, refunded, credited, or transferred when the service is completed sooner than the number of work-hours reserved.</p>
+          </section>
+
+          <section class="section">
+            <h2>2. Deposit and Remaining Balance Authorization</h2>
+            <p>For an Instant Pricing appointment, a 25% deposit is charged immediately to secure the appointment. Other written quotes follow the payment schedule shown on their approval and checkout pages.</p>
+            <p>By booking an Instant Pricing appointment, the Client authorizes the Company and its payment processor to save the selected payment method and place a temporary authorization hold for the remaining 75% approximately 48 hours before the appointment.</p>
+            <p>The remaining 75% is captured only after the scheduled service is completed. An authorization can temporarily reduce the Client’s available credit or funds even though it is not yet a completed charge.</p>
+            <p>If the authorization is declined or requires additional authentication, the Client must provide another approved payment method before service proceeds.</p>
+          </section>
+
+          <section class="section">
+            <h2>3. Cancellation Policy</h2>
+            <p>
+              If the Client cancels less than 48 hours before the scheduled appointment, 25%
+              of the total service price is non-refundable.
+            </p>
+            <p>
+              If the Client cancels at least 48 hours before the scheduled appointment, no
+              cancellation fee will apply and the booking deposit will be fully refundable.
+            </p>
+          </section>
+
+          <section class="section">
+            <h2>4. Rescheduling Policy</h2>
+            <p>
+              Rescheduling requests made at least 48 hours before the appointment will be accommodated
+              at no additional charge, subject to availability.
+            </p>
+            <p>
+              Rescheduling requests made less than 48 hours before the appointment are not guaranteed
+              and are subject to Company availability.
+            </p>
+            <p>If a late rescheduled appointment is later cancelled, 25% of the total service price remains non-refundable.</p>
+          </section>
+
+          <section class="section">
+            <h2>5. Payment Terms</h2>
+            <p>Instant Pricing appointments require the 25% deposit before confirmation. A temporary authorization hold for the remaining 75% is placed approximately 48 hours before the appointment. It is not a completed charge, and the balance becomes due when service is completed. Other written quotes follow the payment schedule presented at checkout.</p>
+            <p>Additional labor or services are never charged without the Client’s approval and must be paid before the additional work begins unless otherwise agreed in writing.</p>
+            <p>Failure to make payment when due may result in collection efforts and additional fees permitted by law.</p>
+          </section>
+
+          <section class="section">
+            <h2>6. Estimates and Price Adjustments</h2>
+            <p>All estimates are based on information provided by the Client.</p>
+            <p>The Company reserves the right to adjust pricing if:</p>
+            <ul>
+              <li>the property size differs from what was disclosed;</li>
+              <li>additional rooms or areas are discovered;</li>
+              <li>excessive dirt, buildup, pet hair, clutter, or other conditions require additional labor;</li>
+              <li>the actual condition of the property differs materially from photographs, videos, or descriptions provided by the Client.</li>
+            </ul>
+            <p>The Company may pause or discontinue service until revised pricing is approved.</p>
+          </section>
+
+          <section class="section">
+            <h2>7. Access to Property</h2>
+            <p>The Client is responsible for providing safe and timely access to the property, accurate entry instructions, any building authorization required for entry, and a work area where the scheduled service can be performed.</p>
+            <p>If the team arrives as scheduled but cannot begin or continue because access is unavailable, entry instructions are incorrect, a building refuses entry, required utilities are unavailable, unsafe or undisclosed conditions prevent service, or the Client otherwise prevents the scheduled work, the Company will make a reasonable attempt to contact the Client and, when reasonably possible, allow a 15-minute grace period.</p>
+            <p>If the issue is not resolved, the appointment will be treated as a customer-caused same-day cancellation. The 25% booking deposit is non-refundable, and the Client authorizes an additional charge equal to 25% of the scheduled service price to the saved payment method, for a total charge of 50% of the scheduled service price.</p>
+            <p>This charge does not apply when the Company or its team caused the inability to perform the scheduled service.</p>
+          </section>
+
+          <section class="section">
+            <h2>8. Client Responsibilities</h2>
+            <p>The Client agrees to:</p>
+            <ul>
+              <li>provide accurate information regarding the condition of the property;</li>
+              <li>provide access to running water and electricity;</li>
+              <li>secure pets;</li>
+              <li>secure valuables and important documents;</li>
+              <li>remove excessive clutter that would interfere with cleaning.</li>
+            </ul>
+            <p>
+              Failure to satisfy these requirements may result in additional charges, modification of
+              services, rescheduling, or cancellation.
+            </p>
+          </section>
+
+          <section class="section">
+            <h2>9. Condition of Property</h2>
+            <p>
+              The Client agrees to accurately disclose any conditions that may affect the cleaning
+              service, including but not limited to:
+            </p>
+            <ul>
+              <li>excessive clutter;</li>
+              <li>hoarding conditions;</li>
+              <li>mold;</li>
+              <li>pest infestations;</li>
+              <li>human or animal waste;</li>
+              <li>smoke damage;</li>
+              <li>biohazards;</li>
+              <li>construction debris;</li>
+              <li>unsafe environments;</li>
+              <li>any condition requiring specialized cleaning procedures.</li>
+            </ul>
+            <p>If the actual condition of the property differs materially from information provided during booking, the Company reserves the right to:</p>
+            <ul>
+              <li>adjust pricing;</li>
+              <li>modify the scope of work;</li>
+              <li>reschedule the appointment;</li>
+              <li>refuse service;</li>
+              <li>cancel the appointment.</li>
+            </ul>
+            <p>
+              If the Company determines that the property presents safety concerns, health hazards, or
+              conditions outside the Company's normal cleaning scope, service may be refused or terminated
+              immediately.
+            </p>
+            <p>Deposits remain subject to the cancellation and rescheduling policies.</p>
+          </section>
+
+          <section class="section">
+            <h2>10. Clutter Policy</h2>
+            <p>Excessive clutter must be removed before the scheduled cleaning appointment.</p>
+            <p>
+              The Company reserves the right to charge additional fees, exclude certain areas from
+              service, reschedule the appointment, or cancel service if excessive clutter prevents
+              normal cleaning operations.
+            </p>
+          </section>
+
+          <section class="section">
+            <h2>11. Pet Policy</h2>
+            <p>Clients must secure aggressive or disruptive pets before service begins.</p>
+            <p>The Company reserves the right to refuse service if pets create unsafe working conditions.</p>
+            <p>Additional charges may apply for excessive pet hair, pet waste, or pet-related cleaning conditions.</p>
+          </section>
+
+          <section class="section">
+            <h2>12. Arrival Window</h2>
+            <p>The Company provides estimated appointment times only.</p>
+            <p>
+              Actual arrival times may vary due to traffic, weather, prior appointments, emergencies,
+              staffing issues, or other circumstances beyond the Company's control.
+            </p>
+            <p>Such delays shall not constitute a breach of this Agreement.</p>
+          </section>
+
+          <section class="section">
+            <h2>13. Limitations of Cleaning Services</h2>
+            <p>The Company does not guarantee removal of:</p>
+            <ul>
+              <li>permanent stains;</li>
+              <li>rust stains;</li>
+              <li>hard water stains;</li>
+              <li>mold staining;</li>
+              <li>paint stains;</li>
+              <li>odors;</li>
+              <li>smoke damage;</li>
+              <li>pet odors;</li>
+              <li>discoloration;</li>
+              <li>wear and tear.</li>
+            </ul>
+            <p><strong>Possible mold or mildew pricing applies only to cleaning accessible surface-level mold or mildew disclosed during booking.</strong> It does not include mold inspection, testing, remediation, concealed growth, removal of contaminated building materials, or treatment of hazardous mold conditions. If the condition cannot be safely handled as ordinary surface cleaning, the Company may stop or modify the service and recommend an appropriate specialist.</p>
+            <p>Cleaning services improve cleanliness but do not restore damaged surfaces or materials to new condition.</p>
+          </section>
+
+          <section class="section">
+            <h2>14. Pre-Existing Damage</h2>
+            <p>The Company shall not be responsible for damage resulting from:</p>
+            <ul>
+              <li>existing damage;</li>
+              <li>normal wear and tear;</li>
+              <li>improperly installed fixtures;</li>
+              <li>loose tiles;</li>
+              <li>loose flooring;</li>
+              <li>loose countertops;</li>
+              <li>damaged blinds;</li>
+              <li>aged or brittle materials;</li>
+              <li>manufacturer defects;</li>
+              <li>deteriorated caulking or grout.</li>
+            </ul>
+            <p>The Company may document pre-existing damage before, during, or after service.</p>
+          </section>
+
+          <section class="section">
+            <h2>15. Valuables</h2>
+            <p>The Client is solely responsible for securing:</p>
+            <ul>
+              <li>cash;</li>
+              <li>jewelry;</li>
+              <li>firearms;</li>
+              <li>collectibles;</li>
+              <li>electronics;</li>
+              <li>important documents;</li>
+              <li>other valuables.</li>
+            </ul>
+            <p>The Company shall not be liable for loss or damage to unsecured valuables.</p>
+          </section>
+
+          <section class="section">
+            <h2>16. Photos &amp; Videos</h2>
+            <p>As part of our standard service process, Iman Cleaning Service LLC may take <strong>before, during, and after photos or videos</strong> of the areas being serviced.</p>
+            <h3>Service Documentation &amp; Quality Control</h3>
+            <p>Photos and videos may be taken to document property conditions, verify completed work, maintain quality standards, and address any service-related concerns.</p>
+            <h3>Marketing Use</h3>
+            <p>We may also use selected photos or videos of our cleaning work for marketing purposes, including our website, social media, Google Business Profile, and advertisements.</p>
+            <p><strong>Your privacy is important to us.</strong> Customers will not be intentionally photographed or recorded, and we will not publish the property address or other identifying information. We will also make reasonable efforts to avoid capturing personal or sensitive information.</p>
+            <p>If you <strong>do not want photos or videos taken, or do not want them used for marketing</strong>, please notify us before your service begins. Otherwise, we will proceed with our standard photo and video process.</p>
+          </section>
+
+          <section class="section">
+            <h2>17. Satisfaction Guarantee</h2>
+            <p>
+              If the Client believes an area covered by the agreed scope of work was missed, the Client
+              must notify the Company within 24 hours of service completion.
+            </p>
+            <p>The Company shall be given a reasonable opportunity to inspect and, if appropriate, re-clean the affected area.</p>
+            <p>The Client agrees that a re-clean shall be the exclusive remedy for cleaning-related complaints.</p>
+            <p>Refunds are not guaranteed and are issued solely at the Company's discretion.</p>
+          </section>
+
+          <section class="section">
+            <h2>18. Damage Claims</h2>
+            <p>Any claim for property damage must be submitted in writing within 24 hours of service completion.</p>
+            <p>The Client must provide:</p>
+            <ul>
+              <li>photographs;</li>
+              <li>description of the alleged damage;</li>
+              <li>reasonable access for inspection.</li>
+            </ul>
+            <p>Failure to report alleged damage within 24 hours constitutes a waiver of the claim to the fullest extent permitted by law.</p>
+          </section>
+
+          <section class="section">
+            <h2>19. No Chargeback Agreement</h2>
+            <p>
+              The Client agrees not to initiate a chargeback, payment dispute, or payment reversal
+              without first contacting the Company and providing a reasonable opportunity to resolve
+              the matter.
+            </p>
+            <p>The Client remains responsible for payment for all services rendered.</p>
+            <p>
+              If the Company prevails in a chargeback dispute, the Client agrees to reimburse any fees,
+              collection costs, administrative costs, attorney's fees, and expenses incurred by the
+              Company to the extent permitted by law.
+            </p>
+          </section>
+
+          <section class="section">
+            <h2>20. Limitation of Liability</h2>
+            <p>
+              To the fullest extent permitted by law, the Company's total liability for any claim arising
+              out of or relating to services provided shall not exceed the amount paid by the Client for
+              the specific service giving rise to the claim.
+            </p>
+            <p>Under no circumstances shall the Company be liable for:</p>
+            <ul>
+              <li>consequential damages;</li>
+              <li>incidental damages;</li>
+              <li>special damages;</li>
+              <li>lost profits;</li>
+              <li>lost income;</li>
+              <li>emotional distress;</li>
+              <li>business interruption;</li>
+              <li>indirect damages.</li>
+            </ul>
+          </section>
+
+          <section class="section">
+            <h2>21. Safety and Right to Refuse Service</h2>
+            <p>The Company reserves the right to refuse, discontinue, or cancel service at any time if cleaners encounter:</p>
+            <ul>
+              <li>unsafe working conditions;</li>
+              <li>harassment;</li>
+              <li>threatening behavior;</li>
+              <li>illegal activity;</li>
+              <li>hazardous materials;</li>
+              <li>aggressive animals;</li>
+              <li>conditions that pose a risk to health or safety.</li>
+            </ul>
+            <p>In such cases, the Company may leave the premises immediately and no refund shall be owed.</p>
+          </section>
+
+          <section class="section">
+            <h2>22. Force Majeure</h2>
+            <p>
+              The Company shall not be liable for delays, cancellations, or inability to perform services
+              due to circumstances beyond its reasonable control, including but not limited to weather,
+              natural disasters, government actions, transportation issues, labor shortages, emergencies,
+              power outages, or other unforeseen events.
+            </p>
+          </section>
+
+          <section class="section">
+            <h2>23. Governing Law</h2>
+            <p>This Agreement shall be governed by and interpreted in accordance with the laws of the State of New York.</p>
+          </section>
+
+          <section class="section">
+            <h2>24. Attorney's Fees and Collection Costs</h2>
+            <p>
+              To the extent permitted by law, the Client agrees to reimburse the Company for reasonable
+              attorney's fees, court costs, collection costs, and related expenses incurred in collecting
+              unpaid balances or enforcing this Agreement.
+            </p>
+          </section>
+
+          <section class="section">
+            <h2>25. Severability</h2>
+            <p>
+              If any provision of this Agreement is found unenforceable, invalid, or unlawful, the
+              remaining provisions shall remain in full force and effect.
+            </p>
+          </section>
+
+          <section class="section">
+            <h2>26. Entire Agreement</h2>
+            <p>
+              This Agreement constitutes the entire agreement between the Client and the Company and
+              supersedes all prior discussions, representations, estimates, or understandings.
+            </p>
+          </section>
+
+          <section class="section">
+            <h2>Client Acknowledgment</h2>
+            <p>I have read, understood, and agree to the Iman Cleaning Service LLC Service Agreement.</p>
+          </section>
+        </article>
+      </div>
+    </main>
+
+<footer class="site-footer" aria-label="Website footer">
+  <div class="ds-shell">
+    <div class="footer-brand">
+      <span class="footer-mark" aria-hidden="true"></span>
+      <div><strong>Iman Cleaning Service LLC</strong><span>Residential &amp; commercial cleaning</span></div>
+    </div>
+    <div class="footer-grid">
+      <div class="footer-cell">
+        <span class="footer-ico" aria-hidden="true"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="5" width="18" height="14" rx="2"/><path d="M4 7l8 6 8-6"/></svg></span>
+        <h4>Email us</h4>
+        <p><a href="mailto:Info@imancleaningservice.com">Info@imancleaningservice.com</a></p>
+      </div>
+      <div class="footer-cell">
+        <span class="footer-ico" aria-hidden="true"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 21s7-5.6 7-11a7 7 0 1 0-14 0c0 5.4 7 11 7 11z"/><circle cx="12" cy="10" r="2.6"/></svg></span>
+        <h4>Service area</h4>
+        <p><a href="./areas.html">Brooklyn, Queens, and Manhattan</a></p>
+      </div>
+      <div class="footer-cell">
+        <span class="footer-ico" aria-hidden="true"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M5 4h3l1.5 4.5L7.5 10a12 12 0 0 0 6 6l1.5-2 4.5 1.5V19a2 2 0 0 1-2 2A16 16 0 0 1 4 6a2 2 0 0 1 1-2z"/></svg></span>
+        <h4>Call us</h4>
+        <p><a href="tel:+19292321930">929-232-1930</a></p>
+      </div>
+      <div class="footer-cell">
+        <span class="footer-ico" aria-hidden="true"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3.5 2"/></svg></span>
+        <h4>Business hours</h4>
+        <p>Open 24 hours · 7 days a week</p>
+      </div>
+    </div>
+
+    <div class="footer-follow">
+      <h4>Follow us for more</h4>
+      <div class="social-row">
+        <a class="social-ico" href="https://www.instagram.com/imancleaningservicellc/" target="_blank" rel="noopener noreferrer" aria-label="Instagram" style="background: radial-gradient(circle at 30% 110%, #ffd35c 0%, #ff9a4d 22%, #fd3f6c 46%, #d534b8 70%, #3f5cff 100%); color: #fff;"><svg width="22" height="22" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M7.8 3h8.4A4.8 4.8 0 0 1 21 7.8v8.4A4.8 4.8 0 0 1 16.2 21H7.8A4.8 4.8 0 0 1 3 16.2V7.8A4.8 4.8 0 0 1 7.8 3Zm0 1.8A3 3 0 0 0 4.8 7.8v8.4a3 3 0 0 0 3 3h8.4a3 3 0 0 0 3-3V7.8a3 3 0 0 0-3-3H7.8Zm8.9 1.3a1.1 1.1 0 1 1 0 2.2 1.1 1.1 0 0 1 0-2.2ZM12 7a5 5 0 1 1 0 10 5 5 0 0 1 0-10Zm0 1.8a3.2 3.2 0 1 0 0 6.4 3.2 3.2 0 0 0 0-6.4Z"/></svg></a>
+        <a class="social-ico" href="https://www.facebook.com/Imancleaningservicellc/" target="_blank" rel="noopener noreferrer" aria-label="Facebook" style="background: #1877f2; color: #fff;"><svg width="22" height="22" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M13.5 21v-7h2.4l.4-3h-2.8V9.1c0-.9.3-1.6 1.6-1.6H16V4.8c-.2 0-.9-.1-1.8-.1-2.7 0-4.3 1.6-4.3 4.5V11H7.5v3h2.4v7h3.6Z"/></svg></a>
+        <a class="social-ico" href="https://www.youtube.com/@ImanCleaningServiceLLC" target="_blank" rel="noopener noreferrer" aria-label="YouTube" style="background: #ff0000; color: #fff;"><svg width="22" height="22" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M21.6 7.2a2.9 2.9 0 0 0-2-2A34.6 34.6 0 0 0 12 4.8a34.6 34.6 0 0 0-7.6.4 2.9 2.9 0 0 0-2 2A31 31 0 0 0 2 12a31 31 0 0 0 .4 4.8 2.9 2.9 0 0 0 2 2 34.6 34.6 0 0 0 7.6.4 34.6 34.6 0 0 0 7.6-.4 2.9 2.9 0 0 0 2-2A31 31 0 0 0 22 12a31 31 0 0 0-.4-4.8ZM10 15.5v-7l6 3.5-6 3.5Z"/></svg></a>
+        <a class="social-ico" href="https://www.tiktok.com/@imancleaningservicellc" target="_blank" rel="noopener noreferrer" aria-label="TikTok" style="background: #111; color: #fff;"><svg width="22" height="22" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M14.6 3c.3 2 1.5 3.5 3.4 4.1v2.7a6.7 6.7 0 0 1-3.4-1.1v6.3a5 5 0 1 1-4.1-4.9v2.8a2.2 2.2 0 1 0 1.4 2V3h2.7Z"/></svg></a>
+        <a class="social-ico is-google" href="https://share.google/EAX7wC22J4PyMKcNx" target="_blank" rel="noopener noreferrer" aria-label="Google Business Profile" style="background: #fff; color: #fff;"><svg width="22" height="22" viewBox="0 0 24 24" aria-hidden="true"><path fill="#4285F4" d="M23.5 12.3c0-.8-.1-1.5-.2-2.2H12v4.2h6.5c-.3 1.4-1.1 2.7-2.4 3.6v3h3.8c2.2-2.1 3.6-5.1 3.6-8.6Z"/><path fill="#34A853" d="M12 24c3.2 0 5.9-1.1 7.8-3.1l-3.8-3c-1 .7-2.3 1.2-4 1.2-3.1 0-5.7-2.1-6.6-4.9H1.5v3.1A12 12 0 0 0 12 24Z"/><path fill="#FBBC04" d="M5.4 14.2c-.2-.7-.4-1.4-.4-2.2s.1-1.5.4-2.2V6.7H1.5A12 12 0 0 0 0 12c0 1.9.5 3.7 1.5 5.3l3.9-3.1Z"/><path fill="#EA4335" d="M12 4.8c1.7 0 3.2.6 4.4 1.7l3.3-3.3C17.9 1.1 15.2 0 12 0A12 12 0 0 0 1.5 6.7l3.9 3.1c.9-2.8 3.5-5 6.6-5Z"/></svg></a>
+      </div>
+    </div>
+    <div class="footer-bottom"><span>© 2026 Iman Cleaning Service LLC. All rights reserved.</span><nav class="footer-legal" aria-label="Legal"><a href="./privacy-policy.html">Privacy Policy</a><a href="./sms-terms.html">SMS Terms</a></nav></div>
+  </div>
+</footer>
+  <script defer src="./site-footer.js?v=20260827-unified-footer"></script>
+  <script defer src="./site-reviews.js?v=20260911-trusted-title"></script>
+</body>
+</html>

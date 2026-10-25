@@ -1,0 +1,107 @@
+{
+  "$schema": "https://openapi.vercel.sh/vercel.json",
+  "crons": [
+    {
+      "path": "/api/booking/payments",
+      "schedule": "0 13 * * *"
+    },
+    {
+      "path": "/api/booking/quote-reminders",
+      "schedule": "15 * * * *"
+    },
+    {
+      "path": "/api/booking/reminders",
+      "schedule": "*/15 * * * *"
+    }
+  ],
+  "redirects": [
+    {
+      "source": "/:page(details-cleaning|extreme-cleaning).html",
+      "destination": "/services-hub.html",
+      "permanent": true
+    },
+    {
+      "source": "/why-us.html",
+      "destination": "/",
+      "permanent": true
+    },
+    {
+      "source": "/:page(bronx-cleaning-service|staten-island-cleaning-service|cleaning-services-nyc|apartment-cleaning-queens|house-cleaning-jamaica-ny|house-cleaning-flushing-ny).html",
+      "destination": "/areas.html",
+      "permanent": true
+    }
+  ],
+  "rewrites": [
+    {
+      "source": "/quote.html",
+      "destination": "/api/gone?path=quote.html"
+    },
+    {
+      "source": "/organization-services.html",
+      "destination": "/api/gone?path=organization-services.html"
+    },
+    {
+      "source": "/q/:code",
+      "destination": "/approve-quote.html?code=:code"
+    },
+    {
+      "source": "/api/cleaners/:id",
+      "destination": "/api/cleaners?id=:id"
+    },
+    {
+      "source": "/homepage",
+      "destination": "/index.html"
+    },
+    {
+      "source": "/crm",
+      "destination": "/crm.html"
+    }
+  ],
+  "headers": [
+    {
+      "source": "/:page(account-confirmed|account|additional-work-paid|additional-work|agreement|airbnb-cleaning|app|approve-quote|book-now|booking-confirmed|calendar-connect|cleaner-app|commercial-cleaning|crm|iman-footer-contact-section|login|manage-booking|our-work|privacy-policy|quote-paid|quote-payment|quote-photo-upload|remaining-balance|reset-password|service-concern|service-detail|services|sms-terms|thanks|unsubscribe|walkthrough).html",
+      "headers": [
+        {
+          "key": "X-Robots-Tag",
+          "value": "noindex, nofollow"
+        }
+      ]
+    },
+    {
+      "source": "/q/:code",
+      "headers": [
+        {
+          "key": "Cache-Control",
+          "value": "private, no-store, max-age=0"
+        }
+      ]
+    },
+    {
+      "source": "/approve-quote.html",
+      "headers": [
+        {
+          "key": "Cache-Control",
+          "value": "private, no-store, max-age=0"
+        }
+      ]
+    },
+    {
+      "source": "/book-now.html",
+      "headers": [
+        {
+          "key": "Cache-Control",
+          "value": "private, no-store, max-age=0"
+        }
+      ]
+    },
+    {
+      "source": "/book-now.js",
+      "headers": [
+        {
+          "key": "Cache-Control",
+          "value": "no-cache, max-age=0, must-revalidate"
+        }
+      ]
+    }
+  ]
+}

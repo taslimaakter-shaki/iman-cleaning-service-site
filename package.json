@@ -1,0 +1,35 @@
+{
+  "name": "playground",
+  "version": "1.0.0",
+  "description": "Production website for IMAN CLEANING SERVICE LLC.",
+  "scripts": {
+    "build:crm-voice": "esbuild crm-voice-sdk.js --bundle --minify --platform=browser --outfile=assets/crm-voice-sdk.min.js",
+    "test": "node test/run-tests.js"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/taslimaakter-shaki/iman-cleaning-service-site.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "type": "commonjs",
+  "bugs": {
+    "url": "https://github.com/taslimaakter-shaki/iman-cleaning-service-site/issues"
+  },
+  "homepage": "https://github.com/taslimaakter-shaki/iman-cleaning-service-site#readme",
+  "dependencies": {
+    "@elevenlabs/elevenlabs-js": "^2.56.0",
+    "@twilio/voice-sdk": "^2.18.4",
+    "busboy": "^1.6.0",
+    "google-auth-library": "^10.6.2",
+    "googleapis": "^173.0.0",
+    "pdfkit": "^0.17.2",
+    "retell-sdk": "^5.64.0",
+    "twilio": "^6.1.0"
+  },
+  "devDependencies": {
+    "@electric-sql/pglite": "^0.5.10",
+    "esbuild": "^0.28.2"
+  }
+}

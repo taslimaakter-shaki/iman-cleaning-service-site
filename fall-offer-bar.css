@@ -1,0 +1,48 @@
+.seasonal-offer-bar {
+  position: fixed;
+  inset: 0 0 auto;
+  z-index: 230;
+  display: flex;
+  min-height: 42px;
+  align-items: center;
+  justify-content: center;
+  gap: 18px;
+  padding: 8px 20px;
+  color: #f7fff0;
+  background: linear-gradient(90deg, #71451d, #9a652a 48%, #6b401a);
+  box-shadow: 0 4px 16px rgba(48, 28, 9, 0.18);
+  font: 600 0.88rem/1.35 var(--font-sans, "DM Sans", sans-serif);
+  text-align: center;
+}
+.seasonal-offer-bar p { margin: 0; color: inherit; }
+.seasonal-offer-bar strong { color: #fff; }
+.seasonal-offer-bar button {
+  display: inline-flex;
+  flex: 0 0 auto;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  width: 32px;
+  height: 32px;
+  padding: 0;
+  border: 1px solid rgba(255, 255, 255, 0.55);
+  border-radius: 50%;
+  color: #fff;
+  background: rgba(255, 255, 255, 0.12);
+  font: inherit;
+  font-size: 1.35rem;
+  font-weight: 800;
+  line-height: 1;
+  cursor: pointer;
+}
+.seasonal-offer-bar button:hover { background: rgba(255, 255, 255, 0.24); }
+.seasonal-offer-bar button:focus-visible { outline: 3px solid #fff; outline-offset: 2px; }
+.home-page:has(.seasonal-offer-bar:not([hidden])) .site-header { top: 42px; }
+.home-page:has(.seasonal-offer-bar:not([hidden])) .home-hero-photo { padding-top: calc(clamp(132px, 16vh, 188px) + 42px); }
+@media (max-width: 680px) {
+  .seasonal-offer-bar { min-height: 58px; gap: 8px; padding: 7px 12px; font-size: 0.76rem; }
+  .seasonal-offer-bar p { max-width: 250px; }
+  .seasonal-offer-bar button { width: 30px; height: 30px; font-size: 1.2rem; }
+  .home-page:has(.seasonal-offer-bar:not([hidden])) .site-header { top: 58px; }
+  .home-page:has(.seasonal-offer-bar:not([hidden])) .home-hero-photo { padding-top: calc(clamp(132px, 16vh, 188px) + 58px); }
+}

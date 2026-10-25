@@ -1,0 +1,19 @@
+{
+	"appId": "com.imancleaningservice.app",
+	"appName": "IMAN CRM",
+	"webDir": "www",
+	"server": {
+		"url": "https://www.imancleaningservice.com/crm",
+		"cleartext": false,
+		"allowNavigation": [
+			"www.imancleaningservice.com",
+			"imancleaningservice.com"
+		]
+	},
+	"ios": {
+		"backgroundColor": "#073f49",
+		"contentInset": "automatic",
+		"preferredContentMode": "mobile"
+	},
+	"packageClassList": []
+}

@@ -1,0 +1,263 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Customer Login | Iman Cleaning Service LLC</title>
+  <meta name="description" content="Securely log in to your Iman Cleaning Service customer portal to manage appointments and invoices.">
+  <meta name="robots" content="noindex">
+  <link rel="stylesheet" href="./customer-account.css?v=20260824-google-login">
+  <script src="./account-auth-callback.js?v=20260824-recovery"></script>
+</head>
+<body class="account-page login-page">
+  <header class="login-header">
+    <nav class="login-header-inner" aria-label="Customer portal navigation">
+      <a class="login-brand" href="./index.html" aria-label="Iman Cleaning Service home">
+        <img src="./assets/iman-logo-icon.png" alt="">
+        <span>Iman Cleaning Service LLC</span>
+      </a>
+      <a class="login-back-link" href="./index.html">Back to website</a>
+    </nav>
+  </header>
+
+  <main class="login-main">
+    <section class="login-card" data-login-view aria-labelledby="login-title">
+      <p class="login-eyebrow">Customer portal</p>
+      <h1 id="login-title">Welcome back</h1>
+      <p class="login-intro">Manage your appointments and invoices.</p>
+
+      <form class="login-form" data-login-form novalidate>
+        <label class="login-field">
+          <span>Email address</span>
+          <input type="email" name="email" autocomplete="email" inputmode="email" placeholder="you@example.com" data-login-email required>
+        </label>
+
+        <div class="login-field">
+          <label for="login-password">Password</label>
+          <div class="login-password-wrap">
+            <input id="login-password" type="password" name="password" autocomplete="current-password" required>
+            <button class="login-password-toggle" type="button" aria-controls="login-password" aria-pressed="false" data-password-toggle>Show</button>
+          </div>
+        </div>
+
+        <button class="login-forgot" type="button" data-forgot-password>Forgot password?</button>
+        <div class="account-status login-status" data-login-status role="status" aria-live="polite" tabindex="-1"></div>
+        <button class="login-submit" type="submit">Log in</button>
+
+        <div class="login-divider" aria-hidden="true"><span>or continue with</span></div>
+        <button class="login-secondary login-google" type="button" data-google-login>
+          <svg viewBox="0 0 24 24" aria-hidden="true" focusable="false">
+            <path fill="#4285F4" d="M21.6 12.23c0-.71-.06-1.4-.18-2.07H12v3.92h5.38a4.6 4.6 0 0 1-2 3.02v2.55h3.24c1.9-1.75 2.98-4.33 2.98-7.42Z"/>
+            <path fill="#34A853" d="M12 22c2.7 0 4.98-.9 6.63-2.35l-3.24-2.55c-.9.6-2.05.96-3.39.96-2.61 0-4.82-1.76-5.61-4.13H3.04v2.63A10 10 0 0 0 12 22Z"/>
+            <path fill="#FBBC05" d="M6.39 13.93A6.02 6.02 0 0 1 6.08 12c0-.67.11-1.32.31-1.93V7.44H3.04A10 10 0 0 0 2 12c0 1.61.38 3.14 1.04 4.56l3.35-2.63Z"/>
+            <path fill="#EA4335" d="M12 5.94c1.47 0 2.79.5 3.83 1.5l2.87-2.87A9.63 9.63 0 0 0 12 2a10 10 0 0 0-8.96 5.44l3.35 2.63C7.18 7.7 9.39 5.94 12 5.94Z"/>
+          </svg>
+          <span data-button-label>Log in with Google</span>
+        </button>
+      </form>
+
+      <p class="login-switch">New to Iman Cleaning? <a href="./login.html?mode=signup" data-signup-link>Create an account</a></p>
+      <div class="login-card-footer">
+        <span aria-hidden="true">🔒</span>
+        <span>Secure customer account</span>
+        <span aria-hidden="true">·</span>
+        <a href="./privacy-policy.html">Privacy Policy</a>
+      </div>
+    </section>
+
+    <section class="login-card" data-signup-view aria-labelledby="signup-title" hidden>
+      <p class="login-eyebrow">Customer portal</p>
+      <h1 id="signup-title">Create your account</h1>
+      <p class="login-intro">Manage future appointments and invoices securely.</p>
+
+      <form class="login-form" data-signup-form novalidate>
+        <label class="login-field">
+          <span>Full name</span>
+          <input name="fullName" autocomplete="name" required>
+        </label>
+        <label class="login-field">
+          <span>Email address</span>
+          <input type="email" name="email" autocomplete="email" inputmode="email" placeholder="you@example.com" required>
+        </label>
+        <label class="login-field">
+          <span>Mobile phone</span>
+          <input type="tel" name="phone" autocomplete="tel" inputmode="tel" required>
+        </label>
+        <div class="login-field">
+          <label for="signup-password">Create password</label>
+          <div class="login-password-wrap">
+            <input id="signup-password" type="password" name="password" autocomplete="new-password" minlength="8" required>
+            <button class="login-password-toggle" type="button" aria-controls="signup-password" aria-pressed="false" data-password-toggle>Show</button>
+          </div>
+        </div>
+        <p class="login-help">Use at least 8 characters.</p>
+        <div class="account-status login-status" data-signup-status role="status" aria-live="polite" tabindex="-1"></div>
+        <button class="login-submit" type="submit">Create account</button>
+      </form>
+
+      <p class="login-switch">Already have an account? <a href="./login.html" data-login-link>Log in</a></p>
+      <div class="login-card-footer">
+        <span aria-hidden="true">🔒</span>
+        <span>Secure customer account</span>
+        <span aria-hidden="true">·</span>
+        <a href="./privacy-policy.html">Privacy Policy</a>
+      </div>
+    </section>
+
+    <p class="login-estimate">Need a cleaning? <a href="./book-now.html">Get a free estimate</a> — no account required.</p>
+  </main>
+
+  <script>
+    (() => {
+      const loginView = document.querySelector("[data-login-view]");
+      const signupView = document.querySelector("[data-signup-view]");
+      const loginForm = document.querySelector("[data-login-form]");
+      const signupForm = document.querySelector("[data-signup-form]");
+      const loginStatus = document.querySelector("[data-login-status]");
+      const signupStatus = document.querySelector("[data-signup-status]");
+      const loginEmail = document.querySelector("[data-login-email]");
+
+      const safeReturnTo = () => {
+        const fallback = "/account.html";
+        const value = new URLSearchParams(location.search).get("return_to") || fallback;
+        if (value.startsWith("//") || value.includes("\\")) return fallback;
+        try {
+          const destination = new URL(value, location.href);
+          if (destination.origin !== location.origin) return fallback;
+          return `${destination.pathname}${destination.search}${destination.hash}`;
+        } catch {
+          return fallback;
+        }
+      };
+
+      const accountLink = (mode) => {
+        const url = new URL("./login.html", location.href);
+        if (mode) url.searchParams.set("mode", mode);
+        const destination = safeReturnTo();
+        if (destination !== "/account.html") url.searchParams.set("return_to", destination);
+        return `${url.pathname}${url.search}`;
+      };
+
+      const setStatus = (element, message, type = "error") => {
+        element.textContent = message;
+        element.className = `account-status login-status${message ? " show" : ""}${message ? ` ${type}` : ""}`;
+        if (message && type === "error") element.focus({ preventScroll: true });
+      };
+
+      const setBusy = (button, busy, busyText) => {
+        const label = button.querySelector("[data-button-label]") || button;
+        if (!button.dataset.idleText) button.dataset.idleText = label.textContent;
+        button.disabled = busy;
+        label.textContent = busy ? busyText : button.dataset.idleText;
+      };
+
+      const request = async (action, body) => {
+        const response = await fetch(`/api/account/${action}`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(body)
+        });
+        const data = await response.json().catch(() => ({}));
+        if (!response.ok) throw new Error(data.error || "Your account request could not be completed. Please try again.");
+        return data;
+      };
+
+      const showMode = (mode) => {
+        const showSignup = mode === "signup";
+        loginView.hidden = showSignup;
+        signupView.hidden = !showSignup;
+        document.title = showSignup
+          ? "Create Customer Account | Iman Cleaning Service LLC"
+          : "Customer Login | Iman Cleaning Service LLC";
+      };
+
+      document.querySelector("[data-signup-link]").href = accountLink("signup");
+      document.querySelector("[data-login-link]").href = accountLink("");
+
+      document.querySelectorAll("[data-password-toggle]").forEach((button) => {
+        button.addEventListener("click", () => {
+          const input = document.getElementById(button.getAttribute("aria-controls"));
+          const show = input.type === "password";
+          input.type = show ? "text" : "password";
+          button.textContent = show ? "Hide" : "Show";
+          button.setAttribute("aria-pressed", String(show));
+        });
+      });
+
+      loginForm.addEventListener("submit", async (event) => {
+        event.preventDefault();
+        if (!loginForm.checkValidity()) return loginForm.reportValidity();
+        const button = loginForm.querySelector("button[type=submit]");
+        setBusy(button, true, "Logging in…");
+        setStatus(loginStatus, "", "info");
+        try {
+          await request("login", Object.fromEntries(new FormData(loginForm)));
+          location.assign(safeReturnTo());
+        } catch (error) {
+          setStatus(loginStatus, error.message);
+        } finally {
+          setBusy(button, false, "");
+        }
+      });
+
+      signupForm.addEventListener("submit", async (event) => {
+        event.preventDefault();
+        if (!signupForm.checkValidity()) return signupForm.reportValidity();
+        const button = signupForm.querySelector("button[type=submit]");
+        setBusy(button, true, "Creating account…");
+        setStatus(signupStatus, "", "info");
+        try {
+          const data = await request("signup", Object.fromEntries(new FormData(signupForm)));
+          if (data.signedIn) location.assign(safeReturnTo());
+          else setStatus(signupStatus, "Account created. Check your email and select the verification link to continue.", "success");
+        } catch (error) {
+          setStatus(signupStatus, error.message);
+        } finally {
+          setBusy(button, false, "");
+        }
+      });
+
+      document.querySelector("[data-forgot-password]").addEventListener("click", async (event) => {
+        if (!loginEmail.checkValidity()) {
+          loginEmail.reportValidity();
+          loginEmail.focus();
+          return;
+        }
+        const button = event.currentTarget;
+        setBusy(button, true, "Sending reset email…");
+        setStatus(loginStatus, "", "info");
+        try {
+          const data = await request("forgot-password", { email: loginEmail.value });
+          setStatus(loginStatus, data.message || "If an account exists for that email, a password-reset link is on its way.", "success");
+        } catch (error) {
+          setStatus(loginStatus, error.message);
+        } finally {
+          setBusy(button, false, "");
+        }
+      });
+
+      document.querySelector("[data-google-login]").addEventListener("click", async (event) => {
+        const button = event.currentTarget;
+        setBusy(button, true, "Connecting to Google…");
+        setStatus(loginStatus, "", "info");
+        try {
+          const data = await request("google-login", {});
+          if (!data.url) throw new Error("Google login is temporarily unavailable. Please try again.");
+          location.assign(data.url);
+        } catch (error) {
+          setStatus(loginStatus, error.message);
+          setBusy(button, false, "");
+        }
+      });
+
+      const mode = new URLSearchParams(location.search).get("mode") === "signup" ? "signup" : "login";
+      showMode(mode);
+      fetch("/api/account/session")
+        .then((response) => response.json())
+        .then((data) => { if (data.signedIn) location.replace(safeReturnTo()); })
+        .catch(() => {});
+    })();
+  </script>
+<script defer src="./site-reviews.js?v=20260911-trusted-title"></script>
+</body>
+</html>

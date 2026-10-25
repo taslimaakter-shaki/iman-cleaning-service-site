@@ -1,0 +1,96 @@
+/* ===========================================================================
+   Iman Cleaning Service — Color tokens
+   Anchored on the brand mark: deep teal water droplet + fresh leaf green.
+   Base palette first, semantic aliases second.
+   =========================================================================== */
+
+:root {
+  /* --- Brand: Teal (the water droplet) --------------------------------- */
+  --teal-950: #042831;
+  --teal-900: #053640;
+  --teal-800: #07505e;
+  --teal-700: #0b6474; /* brand primary — sampled from the logo droplet */
+  --teal-600: #0e7488;
+  --teal-500: #1693a8;
+  --teal-400: #3bafc2;
+  --teal-200: #a9dbe4;
+  --teal-100: #d7edf1;
+  --teal-50:  #eef7f9;
+
+  /* --- Accent: Leaf green (the leaves) --------------------------------- */
+  --leaf-800: #4d7a2b;
+  --leaf-700: #5d8f33; /* text-safe green on light */
+  --leaf-600: #6fa63e;
+  --leaf-500: #96c167; /* brand leaf — sampled from the logo */
+  --leaf-300: #c2dca0;
+  --leaf-100: #e9f2dc;
+  --leaf-50:  #f3f8ec;
+
+  /* --- Neutrals: warm, clean, slightly teal-tinted --------------------- */
+  --ink:       #102529;
+  --slate-800: #1d3338;
+  --slate-700: #35494d;
+  --slate-600: #4a5d61;
+  --slate-500: #61736f; /* muted body copy */
+  --slate-400: #8a9896;
+  --slate-300: #b7c1bf;
+  --slate-200: #d9e0de;
+  --slate-100: #e8edeb;
+
+  --line:   #e3eae8;
+  --mist:   #f3f6f5; /* cool light surface */
+  --cream:  #f8f6f0; /* warm light surface */
+  --paper:  #ffffff;
+
+  /* --- Status --------------------------------------------------------- */
+  --success: #2f8f4e;
+  --success-soft: #e6f4ea;
+  --warning: #c98a18;
+  --warning-soft: #fbf1dd;
+  --danger:  #d0392b;
+  --danger-soft: #fbe9e7;
+  --info:    var(--teal-600);
+
+  /* =========================================================================
+     Semantic aliases — reference these in components, not the raw scale.
+     ========================================================================= */
+
+  /* Brand */
+  --brand:          var(--teal-700);
+  --brand-deep:     var(--teal-900);
+  --brand-hover:    var(--teal-800);
+  --brand-contrast: #ffffff;
+  --accent:         var(--leaf-500);
+  --accent-deep:    var(--leaf-700);
+  --accent-contrast: var(--teal-900);
+
+  /* Backgrounds & surfaces */
+  --bg-page:        var(--cream);
+  --bg-subtle:      var(--mist);
+  --surface-card:   var(--paper);
+  --surface-raised: var(--paper);
+  --surface-sunken: var(--teal-50);
+  --surface-brand:  var(--teal-900);
+  --surface-inverse: var(--teal-900);
+
+  /* Text */
+  --text-strong:  var(--ink);
+  --text-body:    var(--slate-600);
+  --text-muted:   var(--slate-500);
+  --text-faint:   var(--slate-400);
+  --text-inverse: #ffffff;
+  --text-on-brand: rgba(255, 255, 255, 0.92);
+  --text-link:    var(--teal-700);
+  --text-link-hover: var(--teal-900);
+
+  /* Borders */
+  --border-subtle: var(--line);
+  --border:        var(--slate-200);
+  --border-strong: var(--slate-300);
+  --border-brand:  rgba(11, 100, 116, 0.22);
+  --ring:          rgba(11, 100, 116, 0.28);
+
+  /* Accent washes used behind sections / badges */
+  --wash-teal:  var(--teal-50);
+  --wash-leaf:  var(--leaf-50);
+}

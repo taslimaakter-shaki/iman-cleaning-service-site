@@ -1,0 +1,13 @@
+.DS_Store
+.vercel/
+.env
+.env.*
+!.env.example
+node_modules/
+**/node_modules/
+tmp/
+output/
+coverage/
+*.log
+*.pid
+

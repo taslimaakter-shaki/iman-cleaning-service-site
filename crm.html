@@ -1,0 +1,384 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>IMAN CRM | Booking & Customer Management</title>
+  <meta name="robots" content="noindex, nofollow, noarchive">
+  <meta name="theme-color" content="#073f49">
+  <meta name="mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="apple-mobile-web-app-title" content="IMAN CRM">
+  <link rel="manifest" href="./crm.webmanifest">
+  <link rel="apple-touch-icon" sizes="180x180" href="./assets/iman-crm-apple-touch-icon.png">
+  <link rel="icon" href="./assets/iman-logo-icon.png">
+  <link rel="stylesheet" href="./crm.css?v=20261016-cancellation-source">
+  <link rel="stylesheet" href="./crm-quote-editor.css?v=20260910-custom-units-v1">
+  <link rel="stylesheet" href="./crm-walkthrough.css?v=20260911-walkthrough-v1">
+</head>
+<body>
+  <section class="crm-login" data-login-view>
+    <div class="crm-login-card">
+      <a class="crm-login-brand" href="./index.html" aria-label="Iman Cleaning Service home">
+        <img src="./assets/iman-logo-icon.png" width="58" height="58" alt="Iman Cleaning Service LLC">
+        <span><strong>IMAN</strong><small>Cleaning Service LLC</small></span>
+      </a>
+      <p class="crm-eyebrow">OWNER CRM</p>
+      <h1>Welcome back</h1>
+      <p class="crm-login-intro">Enter your private admin access key to manage bookings, customers, and payment status.</p>
+      <form data-login-form>
+        <label for="crm-token">Admin access key</label>
+        <div class="crm-password-row">
+          <input id="crm-token" name="adminToken" type="password" autocomplete="current-password" required>
+          <button type="button" data-toggle-password aria-label="Show access key">Show</button>
+        </div>
+        <button class="crm-primary crm-login-submit" type="submit">Open CRM</button>
+        <p class="crm-form-status" data-login-status role="status"></p>
+      </form>
+      <aside class="crm-ios-install" data-ios-install hidden aria-label="Install IMAN CRM on this iPhone">
+        <div class="crm-ios-install-icon" aria-hidden="true">⇧</div>
+        <div>
+          <strong>Install IMAN CRM on your iPhone</strong>
+          <p>Tap the Share button, then choose <b>Add to Home Screen</b>.</p>
+        </div>
+        <button type="button" data-dismiss-ios-install aria-label="Dismiss installation instructions">×</button>
+      </aside>
+    </div>
+  </section>
+
+  <div class="crm-app" data-crm-app hidden>
+    <aside class="crm-sidebar" data-sidebar>
+      <div class="crm-sidebar-head">
+        <a class="crm-brand" href="./index.html">
+          <img src="./assets/iman-logo-icon.png" width="44" height="44" alt="">
+          <span><strong>IMAN CRM</strong><small>Cleaning Service LLC</small></span>
+        </a>
+        <button class="crm-sidebar-close" type="button" data-close-menu aria-label="Close menu">×</button>
+      </div>
+      <nav class="crm-nav" aria-label="CRM navigation">
+        <button class="is-active" type="button" data-view-button="overview"><span>⌂</span>Overview</button>
+        <button type="button" data-view-button="bookings"><span>▦</span>Bookings <b data-nav-booking-count>0</b></button>
+        <button type="button" data-view-button="quotes"><span>◇</span>Quotes <b data-nav-quote-count>0</b></button>
+        <button type="button" data-view-button="walkthroughs"><span aria-hidden="true">▤</span>Walkthrough requests <b data-nav-walkthrough-count>0</b></button>
+        <button type="button" data-view-button="customers"><span>♙</span>Customers <b data-nav-customer-count>0</b></button>
+        <button type="button" data-view-button="calls"><span>☏</span>Call history <b data-nav-call-count>0</b></button>
+        <button type="button" data-view-button="conversations"><span>✉</span>AI Conversations <b data-nav-conversation-count>0</b></button>
+        <button type="button" data-view-button="callbacks"><span>☎</span>Callbacks <b data-nav-callback-count>0</b></button>
+        <button type="button" data-view-button="same-day"><span>⚡</span>Same-day requests <b data-nav-same-day-count>0</b></button>
+        <button type="button" data-view-button="concerns"><span>!</span>Complaints &amp; Concerns <b data-nav-concern-count>0</b></button>
+        <button type="button" data-view-button="marketing"><span>✦</span>Marketing <b data-nav-marketing-count>0</b></button>
+        <button type="button" data-view-button="trash"><span aria-hidden="true">♲</span>Trash <b data-nav-trash-count>0</b></button>
+      </nav>
+      <div class="crm-sidebar-links">
+        <a href="#" data-new-custom-payment><span>＋</span>Create custom payment link</a>
+        <a href="./index.html" target="_blank" rel="noopener"><span>↗</span>Open website</a>
+      </div>
+      <button class="crm-signout" type="button" data-sign-out>Sign out</button>
+    </aside>
+
+    <div class="crm-sidebar-scrim" data-sidebar-scrim></div>
+
+    <main class="crm-main">
+      <header class="crm-topbar">
+        <button class="crm-menu-button" type="button" data-open-menu aria-label="Open menu">☰</button>
+        <div class="crm-heading">
+          <p data-date-label></p>
+          <h1 data-page-title>Business overview</h1>
+        </div>
+        <div class="crm-top-actions">
+          <label class="crm-search">
+            <span aria-hidden="true">⌕</span>
+            <input type="search" data-global-search placeholder="Search customers, bookings or conversations" aria-label="Search customers, bookings, quotes, calls, conversations or concerns">
+          </label>
+          <button class="crm-primary crm-call-button" type="button" data-open-dialer>☎ Call</button>
+          <button class="crm-primary" type="button" data-open-message>✉ Text</button>
+          <button class="crm-icon-button" type="button" data-refresh aria-label="Refresh CRM" title="Refresh">↻</button>
+          <button class="crm-primary crm-new-quote" type="button" data-new-custom-payment>＋ New custom payment link</button>
+        </div>
+      </header>
+
+      <div class="crm-content">
+        <section class="crm-view" data-view="overview">
+          <div class="crm-welcome">
+            <div>
+              <p class="crm-eyebrow">LIVE BUSINESS PULSE</p>
+              <h2>Here’s what needs your attention.</h2>
+              <p>Track appointments and payments from deposit through completion.</p>
+            </div>
+            <span class="crm-live"><i></i>Live data</span>
+          </div>
+
+          <div class="crm-stat-grid" data-stat-grid></div>
+
+          <div class="crm-overview-grid">
+            <section class="crm-panel">
+              <div class="crm-panel-head">
+                <div><p class="crm-eyebrow">SCHEDULE</p><h2>Upcoming bookings</h2></div>
+                <button type="button" class="crm-text-button" data-view-shortcut="bookings">View all</button>
+              </div>
+              <div data-upcoming-list></div>
+            </section>
+            <section class="crm-panel">
+              <div class="crm-panel-head">
+                <div><p class="crm-eyebrow">PAYMENTS</p><h2>Payment attention</h2></div>
+              </div>
+              <div data-payment-attention></div>
+            </section>
+          </div>
+        </section>
+
+        <section class="crm-view" data-view="bookings" hidden>
+          <div class="crm-view-head">
+            <div><p class="crm-eyebrow">OPERATIONS</p><h2>All bookings</h2><p>Update progress and collect the remaining balance after service.</p></div>
+          </div>
+          <div class="crm-filterbar">
+            <div class="crm-filter-pills" data-status-filters></div>
+            <label class="crm-sort">Sort
+              <select data-booking-sort>
+                <option value="soonest">Appointment: soonest</option>
+                <option value="newest">Created: newest</option>
+                <option value="highest">Value: highest</option>
+              </select>
+            </label>
+          </div>
+          <div class="crm-table-wrap">
+            <table class="crm-table">
+              <thead><tr><th>Customer</th><th>Service</th><th>Appointment</th><th>Payment</th><th>Status</th><th></th></tr></thead>
+              <tbody data-bookings-table></tbody>
+            </table>
+            <div class="crm-mobile-bookings" data-mobile-bookings></div>
+          </div>
+          <div class="crm-empty" data-bookings-empty hidden><span>⌕</span><h3>No bookings found</h3><p>Try a different search or status filter.</p></div>
+        </section>
+
+        <section class="crm-view" data-view="customers" hidden>
+          <div class="crm-view-head">
+            <div><p class="crm-eyebrow">RELATIONSHIPS</p><h2>Customers</h2><p>See booking history and customer value in one place.</p></div>
+          </div>
+          <details class="crm-panel crm-contact-entry">
+            <summary>+ Add an existing customer</summary>
+            <form data-contact-form>
+              <div class="crm-contact-form-grid">
+                <label><span>Customer name *</span><input name="name" required></label>
+                <label><span>Customer type *</span><select name="customerType" required><option value="monthly_recurring">Monthly or recurring client</option><option value="past_inactive">Past client who did not return</option></select></label>
+                <label><span>Email address</span><input type="email" name="email"></label>
+                <label><span>Phone number</span><input type="tel" name="phone"></label>
+                <label class="crm-contact-wide"><span>Address</span><input name="address"></label>
+                <label><span>Last service date</span><input type="date" name="lastServiceDate"></label>
+                <label class="crm-contact-wide"><span>Notes</span><textarea name="notes" rows="3"></textarea></label>
+              </div>
+              <div class="crm-contact-permissions">
+                <label><input type="checkbox" name="emailMarketingEligible"> Include this customer in the email-marketing list. Every marketing email must include identification, the business postal address, and an unsubscribe option.</label>
+                <label><input type="checkbox" name="smsMarketingConsent" data-manual-sms-consent> Customer explicitly agreed to receive promotional text messages.</label>
+                <label data-sms-consent-source hidden><span>How and when did the customer give permission? *</span><input name="smsConsentSource" placeholder="Example: Written consent on September 7, 2026"></label>
+              </div>
+              <button class="crm-primary" type="submit">Save customer</button>
+              <p class="crm-action-status" data-contact-status aria-live="polite"></p>
+            </form>
+          </details>
+          <div class="crm-customer-grid" data-customer-grid></div>
+          <div class="crm-empty" data-customers-empty hidden><span>⌕</span><h3>No customers found</h3><p>Try another name, email, or phone number.</p></div>
+        </section>
+
+        <section class="crm-view" data-view="quotes" hidden>
+          <div class="crm-view-head">
+            <div><p class="crm-eyebrow">SALES PIPELINE</p><h2>All online quotes</h2><p>Instant prices and customized quote requests stay separate from active bookings until the deposit is paid.</p></div>
+          </div>
+          <div class="crm-filterbar">
+            <div class="crm-filter-pills" data-quote-filters></div>
+            <label class="crm-sort">Sort
+              <select data-quote-sort>
+                <option value="newest">Submitted: newest</option>
+                <option value="oldest">Submitted: oldest</option>
+                <option value="highest">Value: highest</option>
+              </select>
+            </label>
+          </div>
+          <div class="crm-table-wrap" data-quotes-wrap>
+            <table class="crm-table">
+              <thead><tr><th>Customer</th><th>Quote type</th><th>Service</th><th>Submitted</th><th>Value</th><th>Status</th><th></th></tr></thead>
+              <tbody data-quotes-table></tbody>
+            </table>
+            <div class="crm-mobile-bookings" data-mobile-quotes></div>
+          </div>
+          <div class="crm-empty" data-quotes-empty hidden><span>◇</span><h3>No quotes found</h3><p>Try a different search or quote type.</p></div>
+        </section>
+
+        <section class="crm-view" data-view="walkthroughs" hidden>
+          <div class="crm-view-head"><div><h2>Walkthrough requests</h2><p>Review commercial visit requests and confirm the date and time with each customer.</p></div></div>
+          <div class="crm-table-wrap" data-walkthroughs-wrap>
+            <table class="crm-table"><thead><tr><th>Customer</th><th>Commercial address</th><th>Preferred visit</th><th>Status</th><th></th></tr></thead><tbody data-walkthroughs-table></tbody></table>
+            <div class="crm-mobile-bookings" data-mobile-walkthroughs></div>
+          </div>
+          <div class="crm-empty" data-walkthroughs-empty hidden><h3>No walkthrough requests found</h3><p>New commercial walkthrough requests will appear here.</p></div>
+        </section>
+
+        <section class="crm-view" data-view="trash" hidden>
+          <div class="crm-view-head">
+            <div><h2>Trash</h2><p>Deleted quotes are kept here. Restore a quote to return it to your active list. Bookings, payments and uploaded files are retained.</p></div>
+          </div>
+          <div class="crm-trash-grid" data-trash-list></div>
+          <div class="crm-empty" data-trash-empty hidden><span aria-hidden="true">♲</span><h3 data-trash-empty-title>Trash is empty</h3><p data-trash-empty-copy>Deleted quotes will appear here.</p></div>
+        </section>
+
+        <section class="crm-view" data-view="marketing" hidden>
+          <div class="crm-view-head">
+            <div><p class="crm-eyebrow">MARKETING DIRECTORY</p><h2>Marketing contacts</h2><p>Email eligibility follows the CAN-SPAM opt-out model. SMS eligibility requires affirmative recorded consent.</p></div>
+          </div>
+          <div class="crm-panel crm-marketing-notice">
+            <strong>FALL10 campaign is ready.</strong>
+            <p>Only eligible contacts are included. Email unsubscribes, SMS opt-outs, missing SMS consent, duplicate recipients, and prior successful FALL10 deliveries are automatically suppressed.</p>
+            <div class="crm-campaign-actions">
+              <button class="crm-primary" type="button" data-preview-marketing-campaign>Refresh eligible counts</button>
+              <button class="crm-primary" type="button" data-send-marketing-channel="email" disabled>Send eligible emails</button>
+              <button class="crm-primary" type="button" data-send-marketing-channel="sms" disabled>Send eligible SMS</button>
+            </div>
+            <p class="crm-action-status" data-marketing-campaign-status aria-live="polite">Click “Refresh eligible counts” before sending.</p>
+            <button class="crm-primary" type="button" data-confirm-manual-sms-consent>Record owner-confirmed email and SMS consent</button>
+            <p class="crm-action-status" data-manual-sms-consent-status aria-live="polite"></p>
+          </div>
+          <div class="crm-filterbar">
+            <div class="crm-filter-pills" data-marketing-filters></div>
+          </div>
+          <div class="crm-table-wrap" data-marketing-wrap>
+            <table class="crm-table">
+              <thead><tr><th>Contact</th><th>Segment</th><th>Email marketing</th><th>SMS marketing</th><th>Consent recorded</th><th>Source</th></tr></thead>
+              <tbody data-marketing-table></tbody>
+            </table>
+            <div class="crm-mobile-bookings" data-mobile-marketing></div>
+          </div>
+          <div class="crm-empty" data-marketing-empty hidden><span>✦</span><h3>No marketing contacts yet</h3><p>Contacts will appear after submitting the instant quote contact form.</p></div>
+        </section>
+
+        <section class="crm-view" data-view="callbacks" hidden>
+          <div class="crm-view-head">
+            <div><p class="crm-eyebrow">PHONE FOLLOW-UP</p><h2>Customer callbacks</h2><p>Customers appear here when they ask for a team member and no representative answers.</p></div>
+          </div>
+          <div class="crm-filterbar">
+            <div class="crm-filter-pills" data-callback-filters></div>
+          </div>
+          <div class="crm-callback-list" data-callback-list></div>
+          <div class="crm-empty" data-callbacks-empty hidden><span>☎</span><h3>No callbacks found</h3><p>New unanswered transfer requests will appear here automatically.</p></div>
+        </section>
+
+        <section class="crm-view" data-view="same-day" hidden>
+          <div class="crm-view-head">
+            <div><p class="crm-eyebrow">URGENT SALES</p><h2>Same-day requests</h2><p>Review today’s requests, confirm a start time and send payment, or text the customer that today is unavailable.</p></div>
+          </div>
+          <div class="crm-callback-list" data-same-day-list></div>
+          <div class="crm-empty" data-same-day-empty hidden><span>⚡</span><h3>No same-day requests</h3><p>New requests will appear here and alert 929-803-4053 by text.</p></div>
+        </section>
+
+        <section class="crm-view" data-view="concerns" hidden>
+          <div class="crm-view-head">
+            <div><p class="crm-eyebrow">CUSTOMER CARE</p><h2>Complaints &amp; Concerns</h2><p>All service-concern form submissions, including past cases. Review details and evidence, keep internal notes, and track each resolution.</p></div>
+          </div>
+          <div class="crm-filterbar"><div class="crm-filter-pills" data-concern-filters></div></div>
+          <p class="crm-concern-error" data-concerns-error role="alert" hidden></p>
+          <div class="crm-table-wrap" data-concerns-wrap>
+            <table class="crm-table">
+              <thead><tr><th>Customer / Case</th><th>Concern</th><th>Service</th><th>Submitted</th><th>Status</th><th></th></tr></thead>
+              <tbody data-concerns-table></tbody>
+            </table>
+            <div class="crm-mobile-bookings" data-mobile-concerns></div>
+          </div>
+          <div class="crm-empty" data-concerns-empty hidden><span>✓</span><h3>No concerns found</h3><p>Submitted concerns will appear here. Try a different search or status filter.</p></div>
+        </section>
+
+        <section class="crm-view" data-view="calls" hidden>
+          <div class="crm-view-head">
+            <div><p class="crm-eyebrow">PHONE ACTIVITY</p><h2>Call history</h2><p>Inbound AI calls and outbound team calls appear here with their available details.</p></div>
+          </div>
+          <div class="crm-table-wrap" data-calls-wrap>
+            <table class="crm-table">
+              <thead><tr><th>Caller</th><th>Call time</th><th>Reason</th><th>Duration</th><th>Outcome</th><th></th></tr></thead>
+              <tbody data-calls-table></tbody>
+            </table>
+            <div class="crm-mobile-bookings" data-mobile-calls></div>
+          </div>
+          <div class="crm-empty" data-calls-empty hidden><span>☏</span><h3>No calls found</h3><p>Inbound calls will appear after the receptionist call log is received.</p></div>
+        </section>
+
+        <section class="crm-view" data-view="conversations" hidden>
+          <div class="crm-view-head">
+            <div><p class="crm-eyebrow">AI MESSAGING</p><h2>AI Conversations</h2><p>Every customer message and AI response is saved here in chronological order.</p></div>
+          </div>
+          <p class="crm-concern-error" data-conversations-error role="alert" hidden></p>
+          <div class="crm-table-wrap" data-conversations-wrap>
+            <table class="crm-table">
+              <thead><tr><th>Customer</th><th>Last activity</th><th>Channel</th><th>Messages</th><th>Latest message</th><th></th></tr></thead>
+              <tbody data-conversations-table></tbody>
+            </table>
+            <div class="crm-mobile-bookings" data-mobile-conversations></div>
+          </div>
+          <div class="crm-empty" data-conversations-empty hidden><span>✉</span><h3>No AI conversations yet</h3><p>Customer text conversations will appear here automatically.</p></div>
+        </section>
+      </div>
+    </main>
+  </div>
+
+  <dialog class="crm-dialog" data-booking-dialog>
+    <div data-booking-detail></div>
+  </dialog>
+
+  <dialog class="crm-delete-confirm" data-delete-quote-dialog role="alertdialog" aria-labelledby="crm-delete-title" aria-describedby="crm-delete-description">
+    <form method="dialog">
+      <h2 id="crm-delete-title">Are you sure you want to delete this quote?</h2>
+      <p id="crm-delete-description">It will move to Trash, where you can restore it. Its unpaid quote payment links will be disabled.</p>
+      <div class="crm-delete-confirm-actions">
+        <button type="submit" value="no" autofocus>No</button>
+        <button type="submit" value="yes" class="crm-delete-yes">Yes</button>
+      </div>
+    </form>
+  </dialog>
+
+  <dialog class="crm-dialog crm-dialer" data-dialer-dialog>
+    <div class="crm-dialog-head">
+      <div>
+        <p class="crm-eyebrow">OUTBOUND CALL</p>
+        <h2>Call from (929) 232-1930</h2>
+      </div>
+      <button class="crm-dialog-close" type="button" data-close-dialer aria-label="Close dialer">×</button>
+    </div>
+    <form class="crm-dialog-body crm-dialer-form" data-dialer-form>
+      <label for="crm-dial-number">Phone number</label>
+      <input id="crm-dial-number" name="phoneNumber" type="tel" inputmode="tel" autocomplete="tel" placeholder="(212) 555-0123" data-dialer-number required>
+      <p class="crm-dialer-help" data-dialer-help>Enter any U.S. or Canadian number. The recipient will see your business number as the caller ID.</p>
+      <p class="crm-dialer-status" data-dialer-status role="status">Ready to call.</p>
+      <div class="crm-dialer-actions">
+        <button class="crm-primary" type="submit" data-start-call>Call number</button>
+        <button class="crm-end-call" type="button" data-end-call disabled>End call</button>
+      </div>
+      <p class="crm-dialer-mic">Your browser will ask for microphone access the first time you call.</p>
+    </form>
+  </dialog>
+
+  <dialog class="crm-dialog crm-message-composer" data-message-dialog>
+    <div class="crm-dialog-head">
+      <div>
+        <p class="crm-eyebrow">CUSTOMER TEXT</p>
+        <h2>Text from (929) 232-1930</h2>
+      </div>
+      <button class="crm-dialog-close" type="button" data-close-message aria-label="Close text message">×</button>
+    </div>
+    <form class="crm-dialog-body crm-message-form" data-message-form>
+      <label for="crm-message-phone">Phone number</label>
+      <input id="crm-message-phone" name="phone" type="tel" inputmode="tel" autocomplete="tel" placeholder="(212) 555-0123" data-message-phone required>
+      <label for="crm-message-name">Name <span>(optional)</span></label>
+      <input id="crm-message-name" name="customerName" type="text" autocomplete="name" maxlength="160" placeholder="Customer name" data-message-customer-name>
+      <label for="crm-message-body">Message</label>
+      <textarea id="crm-message-body" name="message" rows="6" maxlength="1600" placeholder="Type your message…" required data-message-body></textarea>
+      <p class="crm-dialer-help">The message and future replies will appear in this customer’s text history.</p>
+      <p class="crm-dialer-status" data-message-status role="status">Ready to send.</p>
+      <button class="crm-primary" type="submit" data-send-message>Send text</button>
+    </form>
+  </dialog>
+
+  <div class="crm-toast" data-toast role="status" aria-live="polite"></div>
+  <div class="crm-loading" data-loading hidden><span></span><p>Updating your CRM…</p></div>
+
+  <script src="./assets/crm-voice-sdk.min.js?v=20260908-voice-v1"></script>
+  <script src="./crm.js?v=20261016-cancellation-source"></script>
+</body>
+</html>

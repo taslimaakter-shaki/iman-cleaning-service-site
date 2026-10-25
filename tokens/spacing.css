@@ -1,0 +1,50 @@
+/* ===========================================================================
+   Iman Cleaning Service — Spacing, radii, shadows, layout
+   =========================================================================== */
+
+:root {
+  /* Spacing scale (4px base) */
+  --space-1:  4px;
+  --space-2:  8px;
+  --space-3:  12px;
+  --space-4:  16px;
+  --space-5:  20px;
+  --space-6:  24px;
+  --space-8:  32px;
+  --space-10: 40px;
+  --space-12: 48px;
+  --space-16: 64px;
+  --space-20: 80px;
+  --space-24: 96px;
+
+  /* Section rhythm */
+  --section-y: clamp(56px, 8vw, 112px); /* @kind spacing */
+  --gutter:    clamp(20px, 4vw, 40px); /* @kind spacing */
+  --max-width: 1200px;
+  --content-width: 720px;
+
+  /* Radii — slightly softened, premium, consistent */
+  --radius-xs:   8px;
+  --radius-sm:   12px;
+  --radius-md:   16px;
+  --radius-lg:   22px;
+  --radius-xl:   28px;
+  --radius-2xl:  36px;
+  --radius-pill: 999px;
+  --radius-circle: 50%;
+
+  /* Shadows — soft, teal-tinted, never heavy */
+  --shadow-xs: 0 1px 2px rgba(5, 54, 64, 0.06);
+  --shadow-sm: 0 2px 10px rgba(5, 54, 64, 0.06);
+  --shadow-md: 0 12px 28px rgba(5, 54, 64, 0.08);
+  --shadow-lg: 0 24px 54px rgba(5, 54, 64, 0.12);
+  --shadow-brand: 0 16px 34px rgba(11, 100, 116, 0.24);
+  --shadow-accent: 0 14px 30px rgba(111, 166, 62, 0.26);
+
+  /* Motion */
+  --ease-out: cubic-bezier(0.22, 0.61, 0.36, 1); /* @kind other */
+  --ease-in-out: cubic-bezier(0.45, 0, 0.2, 1); /* @kind other */
+  --dur-fast: 140ms; /* @kind other */
+  --dur-base: 220ms; /* @kind other */
+  --dur-slow: 420ms; /* @kind other */
+}

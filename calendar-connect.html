@@ -1,0 +1,27 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="robots" content="noindex,nofollow"><meta name="referrer" content="no-referrer">
+  <meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'self'; style-src 'self'; connect-src 'self'; img-src 'self'; base-uri 'none'; form-action 'self'">
+  <title>Connect Google Calendar | IMAN CRM</title>
+  <link rel="stylesheet" href="/calendar-connect.css">
+  <script src="/calendar-connect.js?v=20260910-existing-bookings" defer></script>
+</head>
+<body><main>
+  <a href="/crm.html">← Back to CRM</a>
+  <h1>Connect Google Calendar</h1>
+  <p>Connect <strong>info@imancleaningservice.com</strong> to your booking calendar. Your existing email and photo-upload connections will stay unchanged.</p>
+  <p>Only your CRM administrator can start this connection. Google will ask you to approve access.</p>
+  <form id="calendar-connect-form">
+    <div id="admin-login" hidden><label for="admin-password">CRM admin password</label><input id="admin-password" type="password" autocomplete="current-password"><p>Use your CRM password here, not your Google password.</p></div>
+    <button id="connect-button" type="submit">Connect Google Calendar</button>
+  </form>
+  <p id="connection-status" role="status" aria-live="polite"></p>
+  <section id="existing-bookings" hidden>
+    <h2>Existing bookings</h2>
+    <p>Copy upcoming confirmed appointments booked before Calendar was connected. Existing calendar entries are kept. Customers will not receive another notification.</p>
+    <button id="sync-bookings" type="button">Sync existing bookings</button>
+    <p id="sync-status" role="status" aria-live="polite"></p>
+  </section>
+</main></body></html>

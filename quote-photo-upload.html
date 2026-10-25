@@ -1,0 +1,54 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>Upload Cleaning Photos or Videos | Iman Cleaning Service</title>
+  <meta name="robots" content="noindex,nofollow">
+  <link rel="stylesheet" href="./design-system.css">
+  <link rel="stylesheet" href="./quote-photo-upload.css?v=20260907-v1">
+</head>
+<body>
+  <main class="photo-upload-page">
+    <section class="photo-upload-card" aria-labelledby="upload-title">
+      <a class="photo-upload-brand" href="./index.html" aria-label="Iman Cleaning Service home">
+        <img src="./assets/iman-logo-icon.png" alt="Iman Cleaning Service LLC">
+        <span><strong>IMAN</strong><small>Cleaning Service LLC</small></span>
+      </a>
+      <div data-upload-loading>
+        <p class="photo-upload-eyebrow">CUSTOM QUOTE</p>
+        <h1 id="upload-title">Preparing your secure upload…</h1>
+      </div>
+      <div data-upload-content hidden>
+        <p class="photo-upload-eyebrow">CUSTOM QUOTE · <span data-quote-id></span></p>
+        <h1>Upload photos or short videos</h1>
+        <p>Hi <span data-customer-name>there</span>. Clear photos or short videos help us understand the cleaning work and prepare an accurate custom quote.</p>
+        <div class="photo-upload-guidance">
+          <strong>Helpful upload tips</strong>
+          <ul>
+            <li>Include wide views of each area.</li>
+            <li>Add close-up photos of buildup or special concerns.</li>
+            <li>You may upload up to 100 files total.</li>
+            <li>Videos must be MP4, MOV, or WebM and 3.8 MB or smaller.</li>
+          </ul>
+        </div>
+        <label class="photo-file-picker">
+          <span>Choose photos or videos</span>
+          <input type="file" accept="image/*,video/mp4,video/quicktime,video/webm" multiple data-photo-input>
+        </label>
+        <div class="photo-selection" data-photo-selection hidden></div>
+        <button class="photo-upload-button" type="button" data-upload-button disabled>Upload files</button>
+        <div class="photo-upload-status" data-upload-status aria-live="polite" hidden></div>
+        <p class="photo-upload-existing" data-existing-status hidden></p>
+      </div>
+      <div class="photo-upload-error" data-upload-error hidden>
+        <p class="photo-upload-eyebrow">LINK UNAVAILABLE</p>
+        <h1>We couldn’t open this upload link</h1>
+        <p data-upload-error-copy>Please request a new link from Iman Cleaning Service.</p>
+        <a href="tel:+19292321930">Call 929-232-1930</a>
+      </div>
+    </section>
+  </main>
+  <script src="./quote-photo-upload.js?v=20260908-v2"></script>
+</body>
+</html>

@@ -1,0 +1,1459 @@
+IMAN Cleaning Service — Customer Answer Library
+427 questions • 23 categories • Reviewed September 10, 2026
+
+This is the complete answer library for the supplied question list. Each numbered question has a customer-facing answer. It supplements the receptionist's operating instructions; it does not connect tools, change the live Retell agent, or authorize actions by itself.
+
+The published pages and customer-facing booking script were checked against direct responses from the live website. Server behavior was checked in the local implementation, not by making customer bookings, sending messages, or charging payments. Where a page and checkout disagree, the answers avoid promising an unverified inclusion, price, or outcome. See the separate owner-only alignment notes before production use. Source references are provided in the Markdown edition.
+
+Business details and correct destinations
+
+- Business: IMAN Cleaning Service LLC.
+- Public phone: (929) 232-1930.
+- Email: info@imancleaningservice.com.
+- Service area: Brooklyn, Queens, and Manhattan.
+- Hours: open 24 hours, seven days a week; appointment and live representative availability vary.
+- Cleaning supplies: included unless the customer requests their own suitable products.
+- Pricing and booking: https://www.imancleaningservice.com/book-now.html
+- Contact us: https://www.imancleaningservice.com/contact.html
+- Cancel or reschedule: https://www.imancleaningservice.com/manage-booking.html
+- Service concern: https://www.imancleaningservice.com/service-concern.html
+- Customer account: https://www.imancleaningservice.com/account.html
+- Google review: https://g.page/r/CZr1C9xnMwR3EBM/review
+
+How to use these answers — internal, do not read aloud
+
+1. Answer the question actually asked, in context. Do not read entire categories, recite every policy, or ask a pricing questionnaire over the phone. Listen to interruptions, corrections, negations, and multiple requests.
+2. For an initial new-pricing inquiry, immediately use the configured pricing-link action without collecting property details. Respect an explicit refusal of texts. Once sending is confirmed, use the exact pricing-success message below once; use the individual answers for the caller's specific policy questions and follow-ups. Do not send a new text for every follow-up.
+3. Use the existing registered action schemas and success checks. Do not invent functions or assume lookup, email sending, transfers, callbacks, SMS, refunds, or booking edits are available. Every offer or promise to send a link must trigger the matching permitted send action immediately, not stop at the spoken offer. If sending is unavailable, use an honest direct-link fallback instead.
+4. “Sent” requires a confirmed successful send result; it does not mean delivered, read, submitted, approved, paid, or booked. Never say a link, callback, booking change, or refund succeeded merely because it was requested.
+5. Preserve the master prompt's link-specific resend limits: one initial attempt and at most one additional attempt explicitly requested by the caller, without overlapping sends or automatic retries. If a resend is unavailable, exhausted, declined, or uncertain, provide the correct direct website address and explain the actual limitation.
+6. Pricing, management, and concern flows do not collect a telephone questionnaire, including when escalating those same flows. Use caller ID and volunteered information according to the configured permissions. For general appointment or representative intake, ask only for missing name, callback number, and reason, one at a time, if needed by the authorized handoff.
+7. Never ask for card numbers, bank credentials, passwords, or one-time verification codes. Booking-management verification belongs on the website. Caller ID is not proof of identity. Any future record lookup must be authorized and appropriately verified.
+8. When a human is requested, attempt the configured handoff and notification workflow instead of repeating the same form instructions. Confirm a callback request only after it is successfully recorded or delivered. If no handoff is possible, explain that and offer the appropriate page or public email.
+9. A quote/request is not a booking. A selected date is not payment. Regular instant booking, prepared custom-quote approval, and same-day approval have different steps; follow the particular record and checkout.
+10. The 30-minute custom-quote promise means initial contact after a submitted custom request. It is not a promise of a finished estimate, approved appointment, complaint resolution, or general callback within 30 minutes.
+11. Do not calculate a new personalized price from memory. The specific pet-fee examples and documented deposit/rush-fee rules below explain approved policy; they do not replace the website's quote. For disputed or contradictory charges, request review before payment.
+12. If a form was already submitted, do not require a duplicate or automatically resend it. Without an authorized lookup, explain how to check its confirmation and offer a representative.
+13. Safety comes first. Do not promise hazardous cleanup, certify safety from photos, diagnose hidden moisture, or delay emergency guidance to collect details. A same-day cleaning request is not emergency dispatch.
+14. The first sentence of an answer can be used alone when it completely answers the caller. Use the second sentence when the next step or limitation matters. Do not read question IDs, sources, or internal notes.
+15. For text conversations, include the actual relevant approved link when supported. For voice, speak the URL naturally only when necessary. Never speak internal security tokens or invent short URLs.
+16. Do not promise unsupported policies: cash acceptance, automatic residential recurring discounts, price matching, a particular cleaner, a certified product standard, guaranteed stain removal, or unverified appointment details.
+17. Use only the applicable answer. Do not apply the organization minimum to detail cleaning, the general 48-hour refund statement to all same-day payments, or the complaint upload limits to custom-quote uploads.
+18. If the current master prompt conflicts with this library, reconcile the specific conflict before publishing. A knowledge document alone does not override a higher-priority instruction or fix the booking system.
+
+Required link sending — internal, do not read aloud
+
+A link offer is an action commitment, not a complete answer. Whenever an answer says “I can send,” “I can provide the link,” “I’ll send,” “I’ll resend,” or equivalent, immediately invoke the matching approved send action when it is permitted and available. Do not stop at the offer, ask for permission again after a clear request, ask the closing question, or end the call before attempting the send and checking its actual result.
+
+Required sequence:
+
+1. Identify the correct link, permitted recipient, and current send status. Respect a refusal, opt-out, emergency, or instruction to stop. Do not collect a pricing or complaint questionnaire to send a link.
+2. When the recipient and registered action are available, say “I’ll text you the link now,” then immediately invoke that action. Speaking the sentence does not send anything. If the action cannot be attempted, explain the limitation instead of making the promise.
+3. Wait for the result and apply the registered success checks. The dedicated concern sender requires HTTP 2xx, sent=true, and a nonempty messageId; never replace it with native SMS. Other senders must explicitly confirm success without a contradictory error.
+4. Only after confirmed sending, say “I’ve texted you the [relevant link name].” Substitute the actual link name. Use the exact pricing-success response below for the initial pricing send. “Sent” does not mean delivered, submitted, approved, paid, or booked.
+5. On definite failure, explain that the text could not be sent and give the correct direct address. On timeout or an uncertain result, say the send could not be confirmed; do not claim nothing was sent or automatically retry.
+6. If that link has already been sent successfully, help the caller use it instead of sending a duplicate for another follow-up. An explicitly requested resend uses the existing one-additional-attempt limit. Wait for a pending attempt rather than launching an overlapping send.
+7. In SMS/chat, include the actual full relevant URL in the outgoing reply, not an offer to provide it. Do not send a second duplicate message through another channel.
+
+Destination and action mapping:
+
+- Pricing and booking: the registered pricing-link action for https://www.imancleaningservice.com/book-now.html. The repository logs this intent as send_quote_link; use the actual deployed binding and schema.
+- Cancel/reschedule: send_booking_management_link for https://www.imancleaningservice.com/manage-booking.html. Sending it does not change an appointment.
+- Previous-service complaints, damage, or billing concerns: send_service_concern_link for https://www.imancleaningservice.com/service-concern.html.
+- Requests needing individual assistance: https://www.imancleaningservice.com/contact.html, only through a registered sender supporting that destination. Do not assume the fixed pricing sender can send a different URL.
+- Google review: https://g.page/r/CZr1C9xnMwR3EBM/review, through a registered review-capable sender. A post-job review automation does not prove the calling agent has such a tool.
+- Other approved public links: use a sender explicitly supporting the intended destination. If no sender exists, give the direct address honestly instead of promising an SMS.
+
+Do not invent functions, substitute a generic public page for a customer-specific payment or photo-upload link, or generate a private link without the authorized record-specific workflow. Explaining what the team sends after approval is not authorization to create an approval or payment offer during a general inquiry.
+
+Deployment requirement: this rule must be applied to the live operating prompt and its send tools verified before claiming the live behavior is fixed. Editing this library alone does not publish Retell settings or connect a missing sender.
+
+Exact pricing-link success response — only after confirmed sending
+
+“Wonderful, I’ve texted you our instant-pricing and booking link. Open it and enter your cleaning details to see your price. If instant pricing is available, you can also choose a date and time and book your appointment through the same link. If your service requires a custom quote, the page will guide you through the next steps. After you submit the custom quote request, our team will reach out to you within 30 minutes. Is there anything else I can help you with today?”
+
+If the caller says no or clearly finishes:
+
+“Great, have a great one. Bye.”
+
+Allow the goodbye to finish, then use the configured end-call action. If the caller says yes, listen and handle the next request. Do not repeat the greeting or end the call automatically. If another request is already waiting, handle it before asking the closing question. If interrupted, stop and listen.
+
+If the pricing text definitely failed or cannot be sent:
+
+“I wasn’t able to send the text. You can get your price and continue to booking at imancleaningservice.com/book-now.html.”
+
+If the sending result is uncertain:
+
+“I couldn’t confirm whether the text went through. You can open imancleaningservice.com/book-now.html directly.”
+
+If the caller declined texts:
+
+“You can get your price and continue to booking at imancleaningservice.com/book-now.html.”
+
+Answer index
+
+1. 1. Pricing and estimates — 26 answers
+2. 2. Using the pricing link — 19 answers
+3. 3. Booking a new cleaning — 21 answers
+4. 4. Same-day service — 17 answers
+5. 5. Cleaning services — 22 answers
+6. 6. Add-ons and special cleaning — 25 answers
+7. 7. Pets — 17 answers
+8. 8. Home preparation and access — 21 answers
+9. 9. Supplies and equipment — 15 answers
+10. 10. Team and business questions — 22 answers
+11. 11. Existing appointment questions — 18 answers
+12. 12. Cancellation and rescheduling — 19 answers
+13. 13. Payments, deposits, and billing — 23 answers
+14. 14. Custom quotes — 20 answers
+15. 15. Organization and decluttering — 20 answers
+16. 16. Detail cleaning — 10 answers
+17. 17. Post-construction cleaning — 18 answers
+18. 18. Water or flood damage — 20 answers
+19. 19. Service concerns and complaints — 25 answers
+20. 20. Reviews and feedback — 8 answers
+21. 21. Human assistance and callbacks — 16 answers
+22. 22. Emergency and unsafe-situation questions — 11 answers
+23. 23. Conversational variations the agent must understand — 14 answers
+
+
+
+1. PRICING AND ESTIMATES
+
+INTERNAL HANDLING — DO NOT READ ALOUD: Initial pricing intent: use the configured pricing-link action and the exact confirmed-success response above. Do not begin telephone quote intake. Give the particular policy explanation below when needed; do not quote a new total from memory.
+
+1.01 QUESTION: How much does cleaning cost?
+ANSWER: Your price depends on the service and the details of your space. Our instant-pricing and booking page calculates eligible services and guides other requests to a custom quote.
+
+1.02 QUESTION: Can I get a quote?
+ANSWER: Yes. Enter your cleaning details through our instant-pricing and booking link to see your price or request the custom review your service needs.
+
+1.03 QUESTION: Can you give me an estimate?
+ANSWER: Yes. Our pricing page uses your cleaning details to prepare an estimate. You can review it before deciding whether to book.
+
+1.04 QUESTION: What are your rates?
+ANSWER: Rates depend on the cleaning service and your property's needs. The pricing page will show the applicable price or direct you to a custom quote.
+
+1.05 QUESTION: What is your hourly rate?
+ANSWER: The rate depends on the service, so I’ll direct you to our pricing page for the correct calculation. Your quote will show the price and included labor rather than an estimated rate over the phone.
+
+1.06 QUESTION: What is the minimum price?
+ANSWER: There isn’t one minimum that applies to every service. The pricing page shows the minimum and total for the service you select before you book.
+
+1.07 QUESTION: How much is a deep cleaning?
+ANSWER: Deep-cleaning pricing depends on your rooms, selected tasks, and the property's condition. Enter those details through our pricing link for your estimate or custom-quote guidance.
+
+1.08 QUESTION: How much is a standard cleaning?
+ANSWER: Standard-cleaning pricing is based on your home's details and selected extras. The pricing link will calculate the price before you choose an appointment.
+
+1.09 QUESTION: How much is move-in or move-out cleaning?
+ANSWER: Enter your property details and select moving cleaning through our pricing link. The property should be empty for the appointment, and renovation dust or unusual conditions may require a custom quote.
+
+1.10 QUESTION: How much is post-construction cleaning?
+ANSWER: Post-construction cleaning requires a custom quote based on the completed work, affected areas, dust, residue, and access. Our pricing page will guide you to the appropriate request form.
+
+1.11 QUESTION: Do you provide organization or decluttering?
+ANSWER: No. IMAN Cleaning Service no longer provides organization or decluttering services.
+
+1.12 QUESTION: How much do you charge for an apartment?
+ANSWER: Apartment pricing depends on the service, rooms, condition, and selected extras. Our pricing page will calculate an estimate from your answers.
+
+1.13 QUESTION: How much do you charge for a house?
+ANSWER: House pricing depends on the service, rooms, condition, and selected extras. Enter your details on the pricing page so it can calculate your price or guide you to a custom quote.
+
+1.14 QUESTION: Can you estimate the cost based on my bedrooms and bathrooms?
+ANSWER: The website uses bedrooms and bathrooms along with the other required details. Please enter those there so you receive the full calculation, not an incomplete estimate from room counts alone.
+
+1.15 QUESTION: Does square footage affect the price?
+ANSWER: Size can affect the scope and whether a custom review is needed. Enter your actual property size when asked; the website uses your answers to choose the appropriate pricing path.
+
+1.16 QUESTION: Are supplies included in the price?
+ANSWER: Yes, our cleaning supplies are included. If you prefer your own products, let us know before the appointment so we can confirm they are suitable.
+
+1.17 QUESTION: Are add-ons included?
+ANSWER: Only the tasks included in your selected package and any extras shown on your quote are covered. Review the itemized quote before booking; additional work needs approval.
+
+1.18 QUESTION: Is tax included?
+ANSWER: The instant-pricing page shows a tax-inclusive estimated total and a separate sales-tax breakdown. For a custom quote, review the total and payment details on your approval page before paying.
+
+1.19 QUESTION: Do you offer discounts?
+ANSWER: We offer recurring-service savings for eligible services. Please have our team confirm the applicable offer and make sure it appears in your written quote before paying.
+
+1.20 QUESTION: Do you have recurring-service discounts?
+ANSWER: Yes, eligible recurring services have savings. Our team needs to confirm your service, schedule, and discounted quote; don't assume an ordinary one-time booking creates a discounted recurring plan.
+
+1.21 QUESTION: Can you match another company’s price?
+ANSWER: I can’t promise a price match. Our team can review your priorities and discuss a suitable scope, but any revised price must be confirmed in your quote.
+
+1.22 QUESTION: Why is my price higher than expected?
+ANSWER: Your total reflects the service, rooms, selected extras, and included labor. Open the itemized pricing to review the breakdown; if something looks wrong, our team can review it before you pay.
+
+1.23 QUESTION: Can someone prepare a custom quote?
+ANSWER: Yes. Our pricing page will direct requests that need individual review to the custom-quote form. You can also use the Custom Quote page if you already know that your service needs review.
+
+1.24 QUESTION: How long does a custom quote take?
+ANSWER: Our team will reach out within 30 minutes after you submit a custom-quote request. Preparing the final quote may take longer if photos, a walkthrough, or additional details are needed.
+
+1.25 QUESTION: Can I see the price without booking?
+ANSWER: Yes. You can review your estimated price before selecting an appointment or making a payment.
+
+1.26 QUESTION: Does requesting a quote commit me to anything?
+ANSWER: No. Requesting or viewing a quote does not book an appointment or charge you. A booking requires the appropriate review, agreement, and payment steps.
+
+
+
+2. USING THE PRICING LINK
+
+INTERNAL HANDLING — DO NOT READ ALOUD: Any send/resend wording below is conditional on available tools, the caller's messaging preference, and the permitted attempt count. Use the failure or direct-link fallback when sending cannot be performed.
+
+2.01 QUESTION: Where is the pricing link?
+ANSWER: The pricing and booking page is imancleaningservice.com/book-now.html. It lets you enter your cleaning details, see eligible pricing, and continue to booking.
+
+2.02 QUESTION: Can you text me the link?
+ANSWER: Yes, I’ll send our instant-pricing and booking link now.
+
+2.03 QUESTION: Can you send it to another number?
+ANSWER: If you’ve provided a complete alternative number supported by our messaging system, I’ll send the pricing link there now. Otherwise, you can open imancleaningservice.com/book-now.html directly.
+
+2.04 QUESTION: I did not receive the link.
+ANSWER: You can also open imancleaningservice.com/book-now.html directly. If you’d like another text, just say “resend.”
+
+2.05 QUESTION: Can you resend it?
+ANSWER: I’ll resend the pricing link now.
+
+2.06 QUESTION: The link is not opening.
+ANSWER: Try copying the complete link into Safari or Chrome. You can also type imancleaningservice.com/book-now.html directly. If it still won’t open, I can try to connect you with a representative.
+
+2.07 QUESTION: The page is not loading.
+ANSWER: Check your internet connection and try opening the page again in your browser. If you have already entered information, use Save & exit if available before refreshing; I can also try to connect you with someone who can help.
+
+2.08 QUESTION: The pricing form is stuck.
+ANSWER: I can help explain the step you’re on, although I can’t see your screen. Check for an unanswered required field or an error message, and avoid submitting payment repeatedly if the result is unclear.
+
+2.09 QUESTION: I cannot continue to the next step.
+ANSWER: Check the current step for required answers or a message explaining what needs attention. If you read that message to me, I can help explain it without changing your answers for you.
+
+2.10 QUESTION: Why am I being sent to a custom quote?
+ANSWER: One or more of your answers indicates that the service, condition, access, or safety needs individual review. The custom-quote form collects the extra details our team needs before confirming a price.
+
+2.11 QUESTION: Why can’t I get instant pricing?
+ANSWER: Some services or property conditions can’t be priced safely through the standard calculation. The page will explain the next step and guide you to a custom quote.
+
+2.12 QUESTION: Can you fill out the form for me?
+ANSWER: I can explain the questions, but you’ll need to enter and confirm your own details. If completing the form is difficult, I can try to connect you with a representative.
+
+2.13 QUESTION: Can you stay on the phone while I complete it?
+ANSWER: Yes, I can stay on the line and explain the questions as you go. I can’t see your screen, and please enter payment details or verification codes privately rather than reading them aloud.
+
+2.14 QUESTION: Can I use the same link to book?
+ANSWER: Yes. When instant pricing is available, the same link lets you review the price, choose a date and time, and complete the booking steps.
+
+2.15 QUESTION: Can I choose an appointment after seeing my price?
+ANSWER: Yes. After reviewing an eligible instant quote, choose an available date and time and continue through the agreement and payment steps.
+
+2.16 QUESTION: Is my quote saved?
+ANSWER: Use Save & exit or Save and finish later when it is offered, and keep the quote link you receive. I can’t confirm that your particular quote was saved without checking its record.
+
+2.17 QUESTION: How long is my quote valid?
+ANSWER: A saved quote link lets you return later, but it does not reserve a date or guarantee that the price will remain unchanged. Check the current details when you reopen it; custom approval links have their own expiry.
+
+2.18 QUESTION: Can I change my answers?
+ANSWER: Yes. Before booking, use Back or Edit quote details to correct your answers and review the recalculated price. If you have already booked, ask our team to review changes to the service.
+
+2.19 QUESTION: Can I get the link by email instead?
+ANSWER: The website collects your email and can email your saved quote. If you need help without text messages, I can try to connect you with a representative; I haven’t sent an email from this call.
+
+
+
+3. BOOKING A NEW CLEANING
+
+3.01 QUESTION: I want to book a cleaning.
+ANSWER: You can start through our instant-pricing and booking link. Enter your cleaning details, review the price, and choose an available appointment; services needing a custom quote will be guided to that process.
+
+3.02 QUESTION: How do I make an appointment?
+ANSWER: Start with the pricing and booking page. For eligible services, review your quote, choose a date and time, enter your contact and service details, accept the agreement, and complete the required payment.
+
+3.03 QUESTION: Can I book over the phone?
+ANSWER: I can guide you to the booking page or try to connect you with a representative if you need assistance. I can’t directly create or confirm an appointment during this call.
+
+3.04 QUESTION: What dates are available?
+ANSWER: Available dates appear in the booking calendar after your quote is prepared. They depend on the service time and team availability, so please use the calendar for the current options.
+
+3.05 QUESTION: Do you have availability tomorrow?
+ANSWER: Please check tomorrow’s available times in the booking calendar. Regular online appointments require at least 24 hours’ notice, so a time tomorrow may still be too soon.
+
+3.06 QUESTION: Do you have weekend appointments?
+ANSWER: Yes, weekend appointments may be available. The booking calendar shows the dates and times available for your service.
+
+3.07 QUESTION: Do you work on Sundays?
+ANSWER: Yes, Sunday appointments may be available. Please check the booking calendar for the current options.
+
+3.08 QUESTION: What is your earliest appointment?
+ANSWER: The booking calendar shows the earliest available appointment for your service. If you need cleaning today, use Request today’s service so our team can review availability.
+
+3.09 QUESTION: Can I select my arrival time?
+ANSWER: You can choose an available appointment time. Arrival times are estimates and may be affected by traffic or earlier jobs; I can’t promise an exact arrival minute.
+
+3.10 QUESTION: Can I request a particular cleaner?
+ANSWER: You can ask our team about a preferred cleaner, but the assignment depends on availability and is not guaranteed.
+
+3.11 QUESTION: Can I request a female cleaner?
+ANSWER: You can share that preference with our team before booking. We’ll need to confirm whether it can be accommodated; I can’t guarantee a particular assignment.
+
+3.12 QUESTION: How many cleaners will come?
+ANSWER: The instant quote shows the planned team size; the current standard instant calculations use two team members. Custom-quoted jobs may use a different team, so check your quote or booking confirmation.
+
+3.13 QUESTION: How long will the cleaning take?
+ANSWER: Your quote shows the estimated labor and team time based on the details you entered. Total labor-hours are shared across the team, and the actual work depends on the agreed scope and conditions.
+
+3.14 QUESTION: How far in advance should I book?
+ANSWER: The regular online calendar accepts appointments at least 24 hours in advance and up to 60 days ahead, subject to availability. For today, use the separate same-day request option.
+
+3.15 QUESTION: Can I book a recurring cleaning?
+ANSWER: Yes, recurring cleaning is available. Our team can confirm the recurring schedule and pricing; completing a one-time online booking alone does not establish an ongoing series.
+
+3.16 QUESTION: Can I book for someone else?
+ANSWER: You can request cleaning for someone else if you have permission to arrange it and can provide accurate contact, address, and access details. Let us know who will be available to authorize the work.
+
+3.17 QUESTION: Can I book two properties?
+ANSWER: Yes. Arrange separate bookings for different addresses so each property has the correct schedule and scope. The form’s multi-unit option does not, by itself, confirm service at two different addresses.
+
+3.18 QUESTION: When is my appointment confirmed?
+ANSWER: For an eligible instant booking, complete the agreement and required deposit payment, then look for the booking confirmation. A quote, selected time, or uncompleted checkout is not a confirmed appointment.
+
+3.19 QUESTION: Is selecting a time enough to reserve it?
+ANSWER: No. Choosing a time is not enough. Complete the agreement and payment steps and wait for the booking confirmation.
+
+3.20 QUESTION: Will I receive a confirmation?
+ANSWER: The booking flow provides a confirmation after successful completion. Keep your order number and confirmation message; if they are missing, our team should check the booking before you try paying again.
+
+3.21 QUESTION: Can I book through the link you texted?
+ANSWER: Yes. The instant-pricing link also takes eligible services through appointment selection and booking. If custom review is needed, the page will guide you through that first.
+
+
+
+4. SAME-DAY SERVICE
+
+INTERNAL HANDLING — DO NOT READ ALOUD: Do not promise a live time or team before approval. The configured same-day payment offer expires in 30 minutes; use the actual expiry returned with the offer. Confirmed same-day checkout collects the full $100 rush fee plus 25% of the base cleaning price. Photo upload is not required in this instant-pricing same-day request.
+
+4.01 QUESTION: Can someone clean my home today?
+ANSWER: Same-day cleaning may be available. After getting your instant quote, choose Request today’s service in the Appointment step. There is a $100 rush fee, and the request is subject to team approval.
+
+4.02 QUESTION: Do you offer same-day cleaning?
+ANSWER: Yes, subject to team availability. Use the same-day request option after your instant quote; submitting it does not guarantee an appointment.
+
+4.03 QUESTION: Can you come immediately?
+ANSWER: Our team needs to review today’s availability and travel time first. Submit your preferred time through Request today’s service; I can’t promise an immediate arrival.
+
+4.04 QUESTION: What is the earliest you can arrive today?
+ANSWER: Enter your preferred start time and how flexible you are in the same-day request. Our team will confirm the available time if the request can be accepted.
+
+4.05 QUESTION: Is same-day service guaranteed?
+ANSWER: No. A same-day request is subject to availability and approval. Your appointment is confirmed only after the approved details and required payment are completed.
+
+4.06 QUESTION: Is there a same-day fee?
+ANSWER: Yes. Confirmed same-day service includes a $100 rush fee in addition to the cleaning price.
+
+4.07 QUESTION: Why is there a $100 rush fee?
+ANSWER: The $100 is the additional rush fee for arranging service on the same day. It is shown separately from the cleaning price before you confirm and pay.
+
+4.08 QUESTION: Is the rush fee included in the displayed price?
+ANSWER: The regular instant quote does not include the same-day rush fee. If approved, your same-day approval page adds and displays the separate $100 fee.
+
+4.09 QUESTION: When do I pay the rush fee?
+ANSWER: After approval, the secure payment link collects the full $100 rush fee plus a 25% deposit on the base cleaning price. The remaining 75% of the base cleaning price is due after service.
+
+4.10 QUESTION: Will I be charged just for submitting a request?
+ANSWER: No. Submitting a same-day request does not charge you. If it is approved, you receive a secure link and choose whether to complete the required payment.
+
+4.11 QUESTION: How will I know whether a team is available?
+ANSWER: Our team will review your request and contact you. If accepted, you’ll receive a text with the proposed appointment and secure approval/payment link; if unavailable, you’ll receive a text explaining that.
+
+4.12 QUESTION: How quickly will someone contact me?
+ANSWER: Our team will contact you as soon as possible after reviewing the request. I can’t promise an exact callback or arrival time for same-day service.
+
+4.13 QUESTION: What happens if you are unavailable today?
+ANSWER: You’ll receive a text explaining that we’re unavailable today, with your saved pricing and booking link so you can choose another available day.
+
+4.14 QUESTION: Can I book another day if today is unavailable?
+ANSWER: Yes. Use the saved quote link in the unavailable-service text to choose another available date and time, then complete the normal booking steps.
+
+4.15 QUESTION: Can I cancel my same-day request?
+ANSWER: If it is still only a request, please tell our team promptly that you no longer need it. If you have already paid and received confirmation, cancellation must follow the booking-management process and applicable terms.
+
+4.16 QUESTION: Is the rush fee refundable?
+ANSWER: The same-day checkout states that the $100 rush fee is nonrefundable after confirmation unless IMAN cancels the appointment. Any other refund amount needs to be checked against your actual booking and payment.
+
+4.17 QUESTION: Does submitting the request confirm my appointment?
+ANSWER: No. Sending the request only asks our team to review availability. After approval, complete the secure payment within the deadline shown in the message to confirm the appointment.
+
+
+
+5. CLEANING SERVICES
+
+5.01 QUESTION: What cleaning services do you offer?
+ANSWER: We offer residential and commercial cleaning, including standard, deep, moving, Airbnb turnover, hourly, window cleaning, and custom detail or post-construction cleaning. The pricing page helps you choose the right route for your needs.
+
+5.02 QUESTION: What is included in standard cleaning?
+ANSWER: Standard cleaning covers routine care of accessible living areas, kitchens, bathrooms, and floors, including dusting, vacuuming, mopping, surface wiping, and emptying bins. Appliance interiors and other extras are not automatically included.
+
+5.03 QUESTION: What is included in deep cleaning?
+ANSWER: Deep cleaning gives more attention to built-up dirt, kitchens, bathrooms, baseboards, and accessible surfaces than routine cleaning. Please review the included tasks and any interior-cleaning selections in your written quote before booking.
+
+5.04 QUESTION: What is the difference between standard and deep cleaning?
+ANSWER: Standard cleaning maintains a home that is already in reasonable condition. Deep cleaning allows more attention to buildup and detailed cleaning; neither is a substitute for restoration, biohazard work, or post-construction cleaning.
+
+5.05 QUESTION: Do you offer move-in cleaning?
+ANSWER: Yes. Move-in cleaning is intended for an empty home before you settle in. Use the pricing page and disclose any renovation work or unusual conditions.
+
+5.06 QUESTION: Do you offer move-out cleaning?
+ANSWER: Yes. Move-out cleaning is intended for an empty property after belongings and furniture have been removed. Your quote confirms the cleaning scope and any separately requested extras.
+
+5.07 QUESTION: Do you clean Airbnb properties?
+ANSWER: Yes. We offer Airbnb and short-term-rental turnover cleaning. Include your checkout/check-in window, linen setup, and host checklist in the request so our team can confirm the scope and timing.
+
+5.08 QUESTION: Do you provide recurring cleaning?
+ANSWER: Yes, we offer recurring cleaning. Our team can confirm the schedule, service scope, and recurring pricing for your property.
+
+5.09 QUESTION: Do you provide weekly, biweekly, or monthly cleaning?
+ANSWER: Yes, weekly, biweekly, and monthly cleaning plans are offered. The actual dates, team, and pricing need to be confirmed for your plan.
+
+5.10 QUESTION: Do you offer hourly cleaning?
+ANSWER: Yes, hourly cleaning requests are available through the custom-quote process. That form currently lists a two-hour minimum; your written quote confirms the staffing, time, and price.
+
+5.11 QUESTION: Do you provide organization and decluttering?
+ANSWER: No. IMAN Cleaning Service no longer provides organization or decluttering services.
+
+5.12 QUESTION: Do you provide detail cleaning?
+ANSWER: Yes. Details Cleaning is a custom-quoted service for the specific rooms, surfaces, and tasks you want prioritized.
+
+5.13 QUESTION: Do you clean commercial properties?
+ANSWER: Yes. Commercial cleaning is custom-quoted around your business, space, scope, and schedule, with a phone consultation and a walkthrough when needed.
+
+5.14 QUESTION: Do you clean offices?
+ANSWER: Yes. We clean offices, with the tasks and schedule confirmed in a custom quote.
+
+5.15 QUESTION: Do you clean stores or retail locations?
+ANSWER: Yes. Retail-store cleaning is available through a custom quote based on the space, access, and requested schedule.
+
+5.16 QUESTION: Do you offer post-construction cleaning?
+ANSWER: Yes. We offer post-construction surface cleaning after reviewing the project, readiness, dust, residue, and safety. It is not a standard instant-cleaning package.
+
+5.17 QUESTION: Do you handle renovation dust?
+ANSWER: Yes, renovation dust can be reviewed under post-construction cleaning. Please disclose the work and affected areas so the correct service is quoted.
+
+5.18 QUESTION: Do you clean after flooding or water damage?
+ANSWER: We can review surface cleaning after the water problem has been resolved and the area is safe and dry. We do not provide water extraction, structural drying, or mold remediation.
+
+5.19 QUESTION: Do you clean hoarded or extremely cluttered properties?
+ANSWER: Those conditions need a custom safety and scope review. A request is not a promise of service, and hazardous conditions or obstructed access may require a specialist before our team can work.
+
+5.20 QUESTION: Do you clean occupied and furnished homes?
+ANSWER: Yes, standard and deep cleaning can be requested for occupied, furnished homes. Keep work areas safely accessible; heavy furniture moving is not included.
+
+5.21 QUESTION: Do you clean empty properties?
+ANSWER: Yes. Move-in/move-out cleaning is designed for empty properties. If there has been construction or water damage, disclose it so the request follows the correct review process.
+
+5.22 QUESTION: Do you provide one-time cleaning?
+ANSWER: Yes. One-time cleaning is available. Use the pricing page to see the options for your service.
+
+
+
+6. ADD-ONS AND SPECIAL CLEANING
+
+6.01 QUESTION: Do you clean inside ovens?
+ANSWER: Yes. Inside-oven cleaning can be included in the cleaning scope. Select it when the pricing page asks, and check your written quote rather than assuming it is included in every package.
+
+6.02 QUESTION: Do you clean inside refrigerators?
+ANSWER: Yes. Select the refrigerator-interior option when asked and indicate whether it will be empty. The quote will show any applicable charge; tell our team about food handling or unusual buildup before the visit.
+
+6.03 QUESTION: Do you clean inside cabinets?
+ANSWER: Yes. Cabinet and drawer interiors can be included. Follow the form’s questions about quantity and whether they will be empty, and make sure the task appears in your quote.
+
+6.04 QUESTION: Do you clean windows?
+ANSWER: Yes. Window cleaning has its own pricing questions about window type, quantity, sides, condition, and safe access. Some requests require custom review rather than a standard cleaning add-on.
+
+6.05 QUESTION: Do you clean interior window glass?
+ANSWER: Yes. Reachable interior glass can be included in the appropriate scope. The moving-cleaning quote includes interior windows; other window requests should follow the window-pricing questions or be confirmed in writing.
+
+6.06 QUESTION: Do you wash walls?
+ANSWER: Wall washing is not included in the regular standard, deep, or moving-cleaning rate. Please request it separately so our team can review the surface, condition, and safe method before agreeing to the work.
+
+6.07 QUESTION: Do you clean baseboards?
+ANSWER: Yes. Standard cleaning includes dry dusting of baseboards, while deep and moving cleaning include more attention to them. Heavy buildup or specialized scrubbing needs to be discussed in the agreed scope.
+
+6.08 QUESTION: Do you clean blinds?
+ANSWER: Blinds are not automatically included in standard or deep cleaning. Request them as a specific detail-cleaning task so our team can review the material, condition, and access.
+
+6.09 QUESTION: Do you clean ceiling fans?
+ANSWER: Please include ceiling fans in your requested tasks. Our team must confirm safe access and the scope; high or fragile fixtures should not be assumed included.
+
+6.10 QUESTION: Do you clean closets?
+ANSWER: Inside-closet cleaning is included in the moving-cleaning scope for empty closets. We do not organize belongings.
+
+6.11 QUESTION: Do you clean balconies?
+ANSWER: Please describe the balcony in your custom-quote request. Our team needs to review access, surface condition, and any safety issues before confirming balcony cleaning.
+
+6.12 QUESTION: Do you clean basements?
+ANSWER: You can include a basement in your request, but describe its condition and the work needed. Water damage, heavy clutter, or hazards require custom review.
+
+6.13 QUESTION: Do you clean garages?
+ANSWER: Garage cleaning needs an individual scope review. Please describe the space, items, and residue in a custom-quote request; vehicle fluids, chemicals, heavy lifting, and hauling are not ordinary cleaning tasks.
+
+6.14 QUESTION: Do you wash dishes?
+ANSWER: Standard and moving cleaning do not include dishwashing. The deep-cleaning page includes a small load of everyday dishes; please confirm that task in your scope, especially for a larger load or delicate items.
+
+6.15 QUESTION: Do you change bed linens?
+ANSWER: We can make beds when you provide clean bedding. For linen changes, including Airbnb turnovers, make sure the request is included in the agreed scope.
+
+6.16 QUESTION: Do you do laundry?
+ANSWER: Laundry is not included in standard, deep, moving, or detail-cleaning rates. If you need laundry assistance, our team must confirm whether it can be arranged separately.
+
+6.17 QUESTION: Do you clean upholstery?
+ANSWER: Upholstery shampooing is not included in ordinary cleaning. Tell our team what furniture and treatment you need so they can confirm whether an appropriate separate service is available.
+
+6.18 QUESTION: Do you clean carpets or rugs?
+ANSWER: Vacuuming carpets and rugs is included in standard, deep, and moving cleaning. Shampooing, extraction, specialist stain treatment, and delicate-rug cleaning are not automatically included.
+
+6.19 QUESTION: Do you remove stains?
+ANSWER: We can address ordinary dirt and buildup within the agreed scope, but stain removal is not guaranteed. Permanent discoloration, rust, damage, or worn finishes may need specialist treatment.
+
+6.20 QUESTION: Do you clean mold?
+ANSWER: No, mold removal or remediation is not part of our regular cleaning scope. Please arrange appropriate mold assessment or remediation before requesting cleaning of the affected area.
+
+6.21 QUESTION: Do you remove garbage?
+ANSWER: We empty ordinary trash bins within the agreed cleaning scope. This is different from bulk rubbish removal, furniture hauling, construction-waste disposal, or hazardous-waste cleanup.
+
+6.22 QUESTION: Do you haul away furniture?
+ANSWER: Furniture hauling is not included in our cleaning services. A separate removal provider may be needed; our team must confirm any arrangement before you book.
+
+6.23 QUESTION: Do you remove construction debris?
+ANSWER: We do not remove heavy, hazardous, or structural construction materials. Describe any small scraps or bagged waste in the post-construction request so our team can confirm the limited work, if any, it can include.
+
+6.24 QUESTION: Can I add services after receiving my quote?
+ANSWER: Before booking, you can edit your quote details and review the new total. After booking, ask our team to approve any change to the scope, time, and price.
+
+6.25 QUESTION: Can I add something on the cleaning day?
+ANSWER: You can ask, but extra work depends on available time and must be approved before it begins. We will discuss any price adjustment first; please request additions in advance whenever possible.
+
+
+
+7. PETS
+
+INTERNAL HANDLING — DO NOT READ ALOUD: The dollar-to-time examples are combined labor allowances, not extra time for every cleaner. The full residential quote may round the total labor upward to a half-hour. Four shedding pets would be $110, equivalent to 82 minutes 30 seconds of combined labor. Do not tell someone to falsely select “no pets” to bypass the non-shedding implementation issue.
+
+7.01 QUESTION: Are pets allowed during the cleaning?
+ANSWER: Pets can be at the property, but they need to be secured away from the work areas. Please disclose any behavior or access issues before the visit.
+
+7.02 QUESTION: Do I have to secure my pets?
+ANSWER: Yes, please keep pets safely secured away from the work areas. Aggressive or disruptive pets must not put the team at risk.
+
+7.03 QUESTION: Do you charge extra for pets?
+ANSWER: Our approved pet-hair fee is $50 for the first hair-shedding pet and $20 for each additional one. The quote should reflect the pets and additional cleaning involved.
+
+7.04 QUESTION: What is the pet-hair fee?
+ANSWER: The approved pet-hair fee is $50 for the first shedding pet, plus $20 for each additional shedding pet.
+
+7.05 QUESTION: How is the pet fee calculated?
+ANSWER: It is $50 for the first shedding pet and $20 for each additional one. The added cleaning allowance is calculated at $80 per total labor-hour.
+
+7.06 QUESTION: Does every pet have a fee?
+ANSWER: The approved pet-hair policy is for hair-shedding pets, such as cats and dogs, rather than every type of pet. If your quote adds a fee for a non-shedding pet, please have our team review it before you pay.
+
+7.07 QUESTION: Does the fee apply to pets without shedding hair?
+ANSWER: The pet-hair fee is intended for pets that shed hair. The form does not currently distinguish every non-shedding situation, so please ask our team to review an incorrect pet charge before paying.
+
+7.08 QUESTION: I have one dog—what will the fee be?
+ANSWER: For one hair-shedding dog, the pet fee is $50. That represents 37 minutes and 30 seconds of total additional labor, shared across the team.
+
+7.09 QUESTION: I have two cats—what will the fee be?
+ANSWER: For two cats covered by the pet-hair policy, the fee is $70 in total. That represents 52 minutes and 30 seconds of additional labor, shared across the team.
+
+7.10 QUESTION: I have three pets—how much additional cleaning is included?
+ANSWER: For three shedding pets, the fee is $90, representing one hour, seven minutes, and 30 seconds of total additional labor. That is combined team labor, not that much time for each cleaner.
+
+7.11 QUESTION: What does additional pet cleaning cover?
+ANSWER: It allows extra time for pet hair, dander, and related buildup on accessible surfaces. It does not automatically include pet-waste cleanup, upholstery shampooing, or odor restoration.
+
+7.12 QUESTION: Does it include pet accidents?
+ANSWER: No. The pet-hair fee does not automatically cover urine, feces, or other pet-waste cleanup. Disclose those conditions so our team can assess the request safely before agreeing to service.
+
+7.13 QUESTION: Do you remove pet hair from furniture?
+ANSWER: Accessible surface hair removal may be part of the agreed pet-cleaning scope. Please identify the furniture in your request; shampooing, deep upholstery treatment, and complete hair removal are not guaranteed.
+
+7.14 QUESTION: Do you clean litter-box areas?
+ANSWER: Cleaning an accessible floor around a litter box is different from emptying the box or handling animal waste. Please disclose what is needed so our team can confirm the safe scope.
+
+7.15 QUESTION: Can my pet remain in another room?
+ANSWER: Yes, a separate secure room can work if the pet remains away from the areas being cleaned and does not restrict agreed access. Let us know about the arrangement in advance.
+
+7.16 QUESTION: What if my pet cannot be secured?
+ANSWER: Please tell our team before the appointment. If pets cannot be safely separated from the work areas, the service may need review, adjustment, or rescheduling.
+
+7.17 QUESTION: What if my pet is aggressive?
+ANSWER: An aggressive pet must be safely secured away from the team. Disclose any biting, scratching, or aggression history; we cannot proceed if safe working conditions cannot be provided.
+
+
+
+8. HOME PREPARATION AND ACCESS
+
+8.01 QUESTION: Do I need to be home?
+ANSWER: You do not necessarily need to remain home if safe entry and the agreed arrangements are confirmed.
+
+8.02 QUESTION: How will the cleaners enter?
+ANSWER: Please provide accurate entry instructions and any building authorization before the appointment. The team must be able to enter and work safely at the scheduled time.
+
+8.03 QUESTION: Can I provide a door code?
+ANSWER: Yes, add necessary access instructions through your booking notes or arrange them with our team. Share only the access information needed for the visit, not account passwords or verification codes.
+
+8.04 QUESTION: Can I leave the key with my doorman?
+ANSWER: That may be possible if your building permits it and our team confirms the arrangement. Make sure the doorman knows the appointment and has authorized access ready.
+
+8.05 QUESTION: Can the team pick up a key?
+ANSWER: Key pickup is not automatically included. Please have our team confirm the location, timing, and any extra arrangements before relying on it.
+
+8.06 QUESTION: What should I do before the cleaners arrive?
+ANSWER: Clear accessible work areas, secure pets and valuables, provide entry instructions, and make sure running water and electricity are available. For moving cleaning, empty the property; empty cabinets or appliances when required by your selected scope.
+
+8.07 QUESTION: Do I need to put things away?
+ANSWER: Please put away loose belongings that block cleaning surfaces or pathways. We do not sort or organize belongings.
+
+8.08 QUESTION: Do I need to clear the counters?
+ANSWER: Yes, clear counters where practical so the team can clean the surfaces safely and thoroughly. Significant sorting or decluttering is a separate task.
+
+8.09 QUESTION: Should I secure valuables?
+ANSWER: Yes. Secure cash, jewelry, important documents, fragile valuables, and any weapons before the team arrives.
+
+8.10 QUESTION: Do I need to provide parking?
+ANSWER: Please tell our team about parking, loading restrictions, or building access requirements in advance. I can’t promise that parking arrangements or any related fees are included without confirmation.
+
+8.11 QUESTION: Do I need to reserve an elevator?
+ANSWER: If your building requires an elevator reservation or service-elevator access, please arrange it and tell us the permitted hours before the appointment.
+
+8.12 QUESTION: Is running water required?
+ANSWER: Yes, running water is required for the scheduled cleaning. Tell our team before booking if it will be unavailable.
+
+8.13 QUESTION: Is electricity required?
+ANSWER: Yes, safe working electricity is required. If electricity is unavailable or unsafe, our team must review the situation before confirming service.
+
+8.14 QUESTION: Does the team need access to a bathroom?
+ANSWER: Please tell our team about any bathroom restrictions so the appointment can be planned appropriately.
+
+8.15 QUESTION: Can you work while contractors are present?
+ANSWER: Please disclose any ongoing work. We cannot assume the space is safe or ready while contractors are working; post-construction requests are reviewed for readiness and may need a later cleaning date.
+
+8.16 QUESTION: Can you clean if pathways are blocked?
+ANSWER: Blocked pathways must be cleared before service so the team has safe access. We do not provide organization or decluttering.
+
+8.17 QUESTION: Can cleaners move furniture?
+ANSWER: We do not move heavy furniture or large appliances as part of ordinary cleaning. Deep cleaning may include moving light furniture when safe; otherwise, we clean around it and underneath where safely reachable.
+
+8.18 QUESTION: Can cleaners use a ladder?
+ANSWER: Unsafe ladder work and high-reach tasks are not included. Tell our team about the height and access beforehand so they can confirm whether the task can be done safely.
+
+8.19 QUESTION: What happens if the team cannot enter?
+ANSWER: If the team arrives as scheduled but cannot work for a customer-caused reason, we try to contact you and allow a 15-minute grace period when reasonably possible. If unresolved, the agreement provides for a total charge of 50% of the scheduled service price.
+
+8.20 QUESTION: What if my building requires insurance documents?
+ANSWER: Please send your building’s insurance and access requirements to our team before the appointment. Entry is not assured until any required paperwork and building approval are in place.
+
+8.21 QUESTION: Can you provide a certificate of insurance?
+ANSWER: Yes, we can arrange a certificate of insurance for building requirements. Send the required details in advance so our team can confirm the paperwork before service.
+
+
+
+9. SUPPLIES AND EQUIPMENT
+
+9.01 QUESTION: Do cleaners bring their own supplies?
+ANSWER: Yes, our cleaning supplies are included. You may request that we use your own products, but please tell us in advance so we can confirm suitability.
+
+9.02 QUESTION: Do cleaners bring a vacuum?
+ANSWER: Cleaning supplies and routine equipment are included with the agreed cleaning service. If a particular vacuum or filtration standard is important, please ask our team to confirm it before the visit.
+
+9.03 QUESTION: Do I need to provide anything?
+ANSWER: Please provide safe access, running water, and electricity. Have clean bedding or replacement trash liners ready if those are part of your requested tasks; tell us about any building or product requirements in advance.
+
+9.04 QUESTION: Can you use my cleaning products?
+ANSWER: Yes, you can request your own cleaning products. Please identify them and the intended surfaces before the appointment so our team can confirm they can be used safely.
+
+9.05 QUESTION: Can I request fragrance-free products?
+ANSWER: Please tell us about that preference before booking. Our team needs to confirm a suitable product plan; I can’t guarantee that every product or appointment is fragrance-free.
+
+9.06 QUESTION: Do you use pet-safe products?
+ANSWER: Please tell us what pets you have and any product restrictions. Our team can confirm suitable products and instructions, but no cleaning product should be assumed harmless in every exposure; keep pets away from the work areas.
+
+9.07 QUESTION: Do you use child-safe products?
+ANSWER: Please let us know about children and any product restrictions before the visit. Our team can discuss suitable products and safe access; I can’t give a blanket guarantee for every product or exposure.
+
+9.08 QUESTION: Do you offer eco-friendly cleaning?
+ANSWER: If you prefer specific eco-friendly products, please tell us in advance or request your own suitable products. Our team will confirm what can be used rather than promising a particular certification or product line.
+
+9.09 QUESTION: Can I request bleach?
+ANSWER: You can request a product preference, but our team must confirm whether it is suitable for the surfaces and conditions. We will not agree to unsafe chemical use or mixing.
+
+9.10 QUESTION: Can I ask you not to use bleach?
+ANSWER: Yes, please include a no-bleach preference in your instructions and have our team confirm the product plan before the appointment.
+
+9.11 QUESTION: Can you use products for a specific surface?
+ANSWER: Yes, please identify the surface and any manufacturer-care requirements. Our team will confirm an appropriate method before using a requested product.
+
+9.12 QUESTION: Do you bring ladders or step stools?
+ANSWER: Please describe any task needing a step stool or ladder in advance. Our team must confirm the equipment and safe reach; do not assume elevated work is included.
+
+9.13 QUESTION: Do you provide carpet-cleaning equipment?
+ANSWER: Routine vacuuming is included where listed, but specialist carpet-cleaning or extraction equipment is not part of a standard cleaning booking. Ask our team to confirm a separate service if needed.
+
+9.14 QUESTION: Do you provide water-extraction equipment?
+ANSWER: No. Water extraction is outside our surface-cleaning scope. Please contact a water-damage restoration provider for extraction and drying.
+
+9.15 QUESTION: What happens if I have allergies or sensitivities?
+ANSWER: Tell us about allergies or sensitivities before the appointment, including products to avoid. Our team must confirm a suitable plan; I can’t guarantee an allergen-free result.
+
+
+
+10. TEAM AND BUSINESS QUESTIONS
+
+10.01 QUESTION: Are your cleaners insured?
+ANSWER: Yes, IMAN Cleaning Service is insured. If your building needs a certificate or specific coverage information, our team can help confirm the documents.
+
+10.02 QUESTION: Are your cleaners background checked?
+ANSWER: Yes, our website describes the cleaning team as background-checked. Our team can address any specific screening question without sharing private employee information.
+
+10.03 QUESTION: Are cleaners employees or contractors?
+ANSWER: Our team can confirm that staffing detail for you. I don’t want to describe the employment arrangement inaccurately.
+
+10.04 QUESTION: How experienced are your cleaners?
+ANSWER: Our website describes a trained, professional cleaning team. For experience with a particular material, property type, or specialist task, our team should confirm the right assignment.
+
+10.05 QUESTION: Will the same cleaner come every time?
+ANSWER: You can request continuity for recurring visits, but the same cleaner is subject to availability and cannot be guaranteed.
+
+10.06 QUESTION: Can I choose the cleaner?
+ANSWER: You can request a preferred cleaner through our team. Assignments depend on availability and the service requirements.
+
+10.07 QUESTION: What languages does the team speak?
+ANSWER: Tell our team your preferred language so they can check availability. I can’t promise a particular cleaner’s language skills without confirmation.
+
+10.08 QUESTION: Do you service my ZIP code?
+ANSWER: Enter the property’s ZIP code on our pricing page to check coverage. We serve the five New York City boroughs; the ZIP check is the best starting point for your address.
+
+10.09 QUESTION: Which boroughs do you serve?
+ANSWER: We serve Brooklyn, Queens, and Manhattan.
+
+10.10 QUESTION: Do you serve Manhattan?
+ANSWER: Yes, we serve Manhattan. Enter your ZIP code on the pricing page to begin.
+
+10.11 QUESTION: Do you serve Queens?
+ANSWER: Yes, we serve Queens. Enter your ZIP code on the pricing page to begin.
+
+10.12 QUESTION: Do you serve Brooklyn?
+ANSWER: Yes, we serve Brooklyn. Enter your ZIP code on the pricing page to begin.
+
+10.13 QUESTION: Do you serve the Bronx?
+ANSWER: No, we currently serve Brooklyn, Queens, and Manhattan only.
+
+10.14 QUESTION: Do you serve Staten Island?
+ANSWER: No, we currently serve Brooklyn, Queens, and Manhattan only.
+
+10.15 QUESTION: Do you serve Long Island or New Jersey?
+ANSWER: Our current listed service area is Brooklyn, Queens, and Manhattan, not the Bronx, Staten Island, Nassau County, Suffolk County, or New Jersey. Use the address ZIP code to check availability.
+
+10.16 QUESTION: What are your business hours?
+ANSWER: We’re open 24 hours a day, seven days a week. Cleaning appointments and live representative availability depend on the schedule; being open does not guarantee an immediate appointment.
+
+10.17 QUESTION: What is your phone number?
+ANSWER: Our public phone number is (929) 232-1930.
+
+10.18 QUESTION: What is your email address?
+ANSWER: Our email address is info@imancleaningservice.com.
+
+10.19 QUESTION: Where is your company located?
+ANSWER: We serve Brooklyn, Queens, and Manhattan. If you need a mailing address or an in-person visit, please have our team confirm the appropriate address and arrangements first.
+
+10.20 QUESTION: How can I speak with a team member?
+ANSWER: I can try to connect you with a representative. If nobody is available, I can request follow-up through our team.
+
+10.21 QUESTION: Can a manager call me?
+ANSWER: I can request a manager’s follow-up. If this concerns a previous cleaning, I can also help you document it through our service-concern process.
+
+10.22 QUESTION: Are you a real person or an AI?
+ANSWER: I’m Fatimah, IMAN Cleaning Service’s AI virtual assistant. I can explain our services and online process, or try to connect you with a representative.
+
+
+
+11. EXISTING APPOINTMENT QUESTIONS
+
+INTERNAL HANDLING — DO NOT READ ALOUD: Without an authorized verified lookup, use the non-lookup answers below. Only replace an answer with actual booking data after a permitted lookup succeeds. An owner notification or a phone conversation is not a booking edit.
+
+11.01 QUESTION: Do I have an appointment?
+ANSWER: I can’t confirm a booking from the call alone. Please check your booking confirmation or customer account; I can try to connect you with our team to verify it.
+
+11.02 QUESTION: Is my appointment confirmed?
+ANSWER: Your booking confirmation is the place to check. A quote or payment attempt alone doesn’t establish that the appointment is confirmed; our team can review the record if you’re unsure.
+
+11.03 QUESTION: What date is my cleaning?
+ANSWER: Please check the date on your booking confirmation or in your customer account. I can try to connect you with our team if you need it verified.
+
+11.04 QUESTION: What time will the cleaners arrive?
+ANSWER: Your confirmation shows the scheduled appointment time. I can’t see a live arrival estimate here; our team can check any update, and arrival may vary with traffic or earlier appointments.
+
+11.05 QUESTION: Is the team running late?
+ANSWER: I’m sorry for the uncertainty. I can try to connect you with our team for an update, but I can’t confirm a delay or arrival time without checking with them.
+
+11.06 QUESTION: Who is assigned to my appointment?
+ANSWER: Our team can confirm the current assignment. I can’t identify an assigned cleaner from this conversation alone.
+
+11.07 QUESTION: How many cleaners are coming?
+ANSWER: Please check the team size on your quote or confirmation. I can ask our team to verify any assignment changes rather than assume the standard team is coming.
+
+11.08 QUESTION: How long will they stay?
+ANSWER: Your quote or confirmation shows the planned service time and labor. Our team can verify the agreed duration and whether any additional time has been approved.
+
+11.09 QUESTION: Can I add an access instruction?
+ANSWER: Our team can help add access instructions to an existing booking. I can try to connect you; I haven’t changed the booking notes myself.
+
+11.10 QUESTION: Can I change my service address?
+ANSWER: Please have our team review the new address before assuming the booking can transfer. The service area, timing, scope, and price may change; the cancel/reschedule page does not edit the address.
+
+11.11 QUESTION: Can I add another room?
+ANSWER: Our team needs to review the added room, available time, and any price change. Please get approval before the appointment; I haven’t changed the booked scope.
+
+11.12 QUESTION: Can I remove an add-on?
+ANSWER: Please ask our team to review the requested removal and any price adjustment. An existing booking’s add-ons are not changed simply by asking during this call.
+
+11.13 QUESTION: Can I change the service type?
+ANSWER: Changing the service type requires our team to review the scope, timing, and price. I can try to connect you rather than cancel or replace your booking automatically.
+
+11.14 QUESTION: Can I increase the cleaning time?
+ANSWER: You can request more time, subject to team availability. Additional residential cleaning time is $80 per cleaner per hour and requires your approval; custom work follows its confirmed terms.
+
+11.15 QUESTION: Can I change the payment method?
+ANSWER: Our team can help you arrange a secure payment-method update. Please don’t read your card details to me; I can’t change them during this call.
+
+11.16 QUESTION: Can you confirm what I purchased?
+ANSWER: Your written quote, receipt, and booking confirmation show the purchased scope. If they are unclear or inconsistent, our team can review them with you; I can’t verify the purchase from the call alone.
+
+11.17 QUESTION: Can someone call me before arriving?
+ANSWER: You can request a call before arrival through our team. I can pass along the request if the connection is available, but I can’t guarantee that it has been added until it is confirmed.
+
+11.18 QUESTION: Where can I view my booking?
+ANSWER: Use your confirmation message or your customer account to view the booking. For cancellation or date/time changes, use the Manage Booking page and complete its verification.
+
+
+
+12. CANCELLATION AND RESCHEDULING
+
+INTERNAL HANDLING — DO NOT READ ALOUD: Send only the approved management link using the registered management function. The customer enters the eight-digit order number, name, and phone and completes verification on the page. Never collect the one-time code. Do not cancel when the caller explicitly says they only want arrival information.
+
+12.01 QUESTION: I need to cancel my appointment.
+ANSWER: Please use our secure Manage Booking page to cancel the appointment. I’ll send the link; cancellation is not complete until you finish the steps and receive confirmation.
+
+12.02 QUESTION: Can I move my cleaning to another day?
+ANSWER: Please use our secure Manage Booking page to select an available replacement date and time. Your existing appointment remains in place until the change is confirmed.
+
+12.03 QUESTION: Can I change the appointment time?
+ANSWER: Yes, you can request an available replacement time through Manage Booking. Complete the confirmation on the page; sending the link or selecting a time alone does not change the appointment.
+
+12.04 QUESTION: I cannot be home tomorrow.
+ANSWER: If you need to move the appointment, use Manage Booking to choose another available time. If you only need different entry arrangements, our team should confirm those instead.
+
+12.05 QUESTION: Can I postpone my cleaning?
+ANSWER: Use Manage Booking to select another available appointment. If no suitable time is listed, our team can discuss your options; postponement is not complete until confirmed.
+
+12.06 QUESTION: Can I bring my appointment forward?
+ANSWER: You can choose an earlier available appointment through Manage Booking if one is offered. Availability and the applicable rescheduling terms still apply.
+
+12.07 QUESTION: Can I skip this recurring visit?
+ANSWER: Use the management details for the specific visit you want to skip. Ask our team to confirm the effect on your recurring plan so other visits are not changed unintentionally.
+
+12.08 QUESTION: Can you cancel it for me?
+ANSWER: I’ll text you the secure cancellation link now and can explain the steps, but I can’t cancel the booking directly during this call. If you can’t use the page, I can try to connect you with a representative.
+
+12.09 QUESTION: Is my appointment cancelled?
+ANSWER: I can’t confirm cancellation from the call alone. Check for the cancellation confirmation or have our team verify the booking; receiving a management link does not cancel it.
+
+12.10 QUESTION: Did my rescheduling request go through?
+ANSWER: Please check for the new appointment confirmation. Until the change is confirmed, the original appointment stays reserved; our team can verify the record if the result is unclear.
+
+12.11 QUESTION: Is there a cancellation fee?
+ANSWER: The published policy for a regular appointment retains 25% of the total service price for cancellation less than 48 hours before service. At least 48 hours’ notice means no cancellation fee; same-day rush fees have separate terms.
+
+12.12 QUESTION: Will I lose my deposit?
+ANSWER: For a regular booking cancelled at least 48 hours ahead, the deposit is refundable. Less than 48 hours ahead, 25% of the total service price is nonrefundable. A late-rescheduled booking that is later cancelled retains that condition.
+
+12.13 QUESTION: Will I receive a refund?
+ANSWER: For a regular booking, the published policy provides a full deposit refund with at least 48 hours’ notice. Less notice or a same-day rush booking changes the terms; the actual payment and cancellation record must be reviewed.
+
+12.14 QUESTION: How late can I cancel?
+ANSWER: Please submit any cancellation as soon as you know. The regular policy changes at 48 hours before the appointment; if online cancellation is unavailable, contact our team promptly rather than assume the booking is cancelled.
+
+12.15 QUESTION: Can I reschedule a same-day appointment?
+ANSWER: Please contact our team promptly or use Manage Booking if it offers a suitable change. Same-day rescheduling is subject to availability, and the rush fee’s separate terms still apply.
+
+12.16 QUESTION: Can I cancel only one recurring visit?
+ANSWER: You can request cancellation of an individual visit. Use that visit’s order details and ask our team to confirm that the remaining recurring schedule should stay in place.
+
+12.17 QUESTION: The management link is not working.
+ANSWER: Open imancleaningservice.com/manage-booking.html directly and follow the verification steps. If it still fails, I can try to connect you with a representative; don’t share your verification code with me.
+
+12.18 QUESTION: I did not receive the management link.
+ANSWER: You can open imancleaningservice.com/manage-booking.html directly. If you’d like another management-link text, explicitly ask me to resend it; I won’t send duplicates automatically.
+
+12.19 QUESTION: Can I speak with someone instead?
+ANSWER: Yes, I can try to connect you with a representative. I won’t treat the request to speak with someone as a completed cancellation or rescheduling.
+
+
+
+13. PAYMENTS, DEPOSITS, AND BILLING
+
+INTERNAL HANDLING — DO NOT READ ALOUD: Never collect payment credentials. Distinguish authorization holds from completed charges; inspect actual records before asserting what happened to a particular customer. Do not guarantee refund amounts where published terms and implementation disagree.
+
+13.01 QUESTION: When will I be charged?
+ANSWER: For an instant booking, 25% is charged at confirmation. A temporary hold for the remaining 75% is placed about 48 hours before service, and that balance is charged after completion. Custom and same-day quotes follow the payment schedule shown on their approval pages.
+
+13.02 QUESTION: Do I have to pay a deposit?
+ANSWER: Yes. Instant bookings require a 25% deposit to confirm the appointment. Custom quotes also show the required payment before confirmation; same-day approval adds the full $100 rush fee to the base-service deposit.
+
+13.03 QUESTION: How much is the deposit?
+ANSWER: For a regular instant booking, it is 25% of the total shown. For same-day approval, you pay 25% of the base cleaning price plus the full $100 rush fee; the page shows the exact amount due.
+
+13.04 QUESTION: Is the deposit refundable?
+ANSWER: For regular bookings, the published policy refunds the deposit when you cancel at least 48 hours ahead. With less notice, 25% of the total service price is nonrefundable. Same-day rush fees and late-rescheduled bookings have separate conditions.
+
+13.05 QUESTION: What payment methods do you accept?
+ANSWER: The online booking flow accepts card payments through Stripe. Eligible checkout pages may also show Apple Pay or Google Pay depending on the device and payment settings; use the methods actually offered at checkout.
+
+13.06 QUESTION: Can I pay with cash?
+ANSWER: Cash is not an option in the online deposit checkout. If you need another payment arrangement, our team must approve it before booking.
+
+13.07 QUESTION: Can I pay after the cleaning?
+ANSWER: The remaining balance is due after cleaning, but the required deposit is paid before the appointment is confirmed. For same-day service, the full rush fee is also paid upfront.
+
+13.08 QUESTION: Is my payment secure?
+ANSWER: Payment is completed through Stripe’s secure checkout rather than with me on the call. Open the payment page yourself and do not share card details, passwords, or verification codes with the agent.
+
+13.09 QUESTION: Can I pay over the phone?
+ANSWER: I can direct you to secure checkout, but I can’t take card details over the phone. Please enter them privately on the payment page.
+
+13.10 QUESTION: Can I split the payment?
+ANSWER: The standard flow already separates the deposit from the remaining balance. If you mean dividing payment between multiple cards or people, our team must confirm whether that can be arranged.
+
+13.11 QUESTION: Can someone else pay?
+ANSWER: Someone else may use their own authorized payment method through the approved checkout. Our team should confirm any different payer or billing details; please don’t share another person’s card information with me.
+
+13.12 QUESTION: Will I receive a receipt?
+ANSWER: A receipt is issued through the payment process. Please check the email used at checkout and your spam folder; our team can help locate it if it hasn’t arrived.
+
+13.13 QUESTION: Can I get an invoice?
+ANSWER: Our team can help with an invoice or a copy of your payment records. Let them know the billing details you need; I haven’t issued an invoice during this call.
+
+13.14 QUESTION: Why is there a pending charge?
+ANSWER: For an instant booking, a temporary authorization for the remaining 75% may appear about 48 hours before service. That is different from a completed charge; our team should review any unexpected pending amount.
+
+13.15 QUESTION: Why was I charged twice?
+ANSWER: A deposit and a remaining-balance authorization can appear separately, but I can’t tell whether your entries are a hold or duplicate charges without review. Please report the amounts and dates through the service-concern form, without full card details.
+
+13.16 QUESTION: Why is my final charge different?
+ANSWER: A final payment may reflect the remaining balance or approved additional work. If the amount differs from what you authorized, please submit a billing concern so our team can review the quote and payment record.
+
+13.17 QUESTION: What happens if my card is declined?
+ANSWER: Follow the checkout message and try an approved payment method or contact your card issuer if needed. If you are unsure whether payment succeeded, have our team check before making repeated attempts.
+
+13.18 QUESTION: Can I change my card?
+ANSWER: Our team can help arrange a secure update. Don’t read or text your card details to me; any payment-method change must use an approved secure process.
+
+13.19 QUESTION: Can you remove a charge?
+ANSWER: I can’t remove or reverse a charge during the call. Our team needs to review the payment and reason for the request through the billing/service-concern process.
+
+13.20 QUESTION: Can you issue a refund?
+ANSWER: I can help you reach the appropriate review process, but I can’t approve a refund. Cancellation refunds follow the booking terms; a complaint or billing refund requires review.
+
+13.21 QUESTION: How long does a refund take?
+ANSWER: After a refund is approved and processed, your bank may take several business days to display it. Our team can confirm whether it has actually been processed, but I can’t promise a bank posting date.
+
+13.22 QUESTION: What happens if I file a chargeback?
+ANSWER: Our service agreement asks you to contact us first so we have an opportunity to review the issue. I can help you report it, but I can’t decide the outcome of a payment dispute or advise you about your card issuer’s process.
+
+13.23 QUESTION: Can I dispute a charge?
+ANSWER: You can report an incorrect charge through the service-concern form for review. Include the amount and reason, but cover full card numbers or other sensitive information in any evidence.
+
+
+
+14. CUSTOM QUOTES
+
+INTERNAL HANDLING — DO NOT READ ALOUD: A new-pricing caller starts with the instant-pricing and booking link. Explain the custom route when relevant; use the direct custom URL for an already-established custom need if the configured link action supports it. Do not silently change a fixed tool's SMS template.
+
+14.01 QUESTION: Why does my service require a custom quote?
+ANSWER: Your service or property needs an individual review of the work, condition, access, or safety before we can confirm a price. A custom quote helps us agree on the right scope and team.
+
+14.02 QUESTION: What information do you need?
+ANSWER: The form asks for your contact and property details, service-specific questions, preferred dates and times, and photos or videos when needed. Describe the work accurately so our team can review it.
+
+14.03 QUESTION: Can I request a custom quote over the phone?
+ANSWER: The online form is the normal way to submit the details for review. I can explain the process or try to connect you with a representative if you can’t use it; I won’t conduct a full quote questionnaire over the phone.
+
+14.04 QUESTION: Do I need to upload photos?
+ANSWER: Clear photos are important when the team needs to assess condition, access, or specialist work. The custom form offers upload now or later; if photos are needed, the team must review them before confirming the job.
+
+14.05 QUESTION: Can I upload photos later?
+ANSWER: Yes. Choose Later on the custom-quote form, then use the separate upload link sent for your request. Keep that link so your files are attached to the correct quote.
+
+14.06 QUESTION: What kinds of photos should I send?
+ANSWER: Send wide views of each requested area and close-ups of buildup, residue, access issues, or visible damage. Only take photos from a safe location, and avoid including private documents or unrelated people.
+
+14.07 QUESTION: Can I upload videos?
+ANSWER: Yes. The custom-quote form accepts short MP4, MOV, or WebM videos alongside photos, up to 100 files in total. Its displayed video limit is 3.8 MB per file.
+
+14.08 QUESTION: Can I change my custom-quote request?
+ANSWER: Contact our team with your request reference and the corrections. The upload link adds evidence, but it is not a general editor for all your submitted answers; avoid submitting duplicate requests unless asked.
+
+14.09 QUESTION: Did you receive my request?
+ANSWER: I can’t verify receipt from this call alone. Check the submission confirmation and reference number; our team can check the record if you are unsure.
+
+14.10 QUESTION: How soon will you contact me?
+ANSWER: After you submit a custom-quote request, our team will reach out within 30 minutes. That is the initial contact expectation, not a guarantee that the final quote or appointment is ready within 30 minutes.
+
+14.11 QUESTION: Will I receive the quote by text or email?
+ANSWER: The team can send the prepared quote and approval link using the contact details on your request. I can’t confirm that a particular text or email has been sent without checking its delivery record.
+
+14.12 QUESTION: Can I approve the quote online?
+ANSWER: Yes. A prepared custom quote can be reviewed through its secure approval link. Check the scope, date, time, price, and agreement before proceeding to payment.
+
+14.13 QUESTION: Is submitting a custom quote a booking?
+ANSWER: No. Submission starts the review process. The team must confirm the details with you, and you must complete the required agreement and payment before the appointment is confirmed.
+
+14.14 QUESTION: Will you inspect the property first?
+ANSWER: Some requests can be reviewed from the form and photos; others may need a phone consultation or an on-site walkthrough. Our team will let you know what is needed for your request.
+
+14.15 QUESTION: Can I decline the custom quote?
+ANSWER: Yes. You can review a custom quote without accepting it. If you have already paid or booked, the cancellation terms apply instead of treating it as an unaccepted quote.
+
+14.16 QUESTION: How long is the custom quote valid?
+ANSWER: Use the expiry shown with your approval link. If it has expired, contact our team for a current quote; an unaccepted quote does not guarantee that its date or time remains available.
+
+14.17 QUESTION: Can I negotiate the quote?
+ANSWER: You can discuss your budget and priorities with our team. They may review the scope, but a discount or revised price is not guaranteed and must be confirmed in writing.
+
+14.18 QUESTION: What happens after I approve it?
+ANSWER: Complete the required agreement and secure payment shown on the approval page, then keep the appointment confirmation. Approval without completed payment is not, by itself, a confirmed booking.
+
+14.19 QUESTION: When do I pay?
+ANSWER: The custom approval page shows the required deposit, normally 25%, with the balance due after service. Same-day approvals also collect the full $100 rush fee upfront; follow the specific payment schedule shown.
+
+14.20 QUESTION: Why does the approval link expire?
+ANSWER: Approval links are time-limited to protect access and keep appointment offers current. If yours expires, our team needs to review the details and issue a current link rather than have you use an old offer.
+
+
+
+15. ORGANIZATION AND DECLUTTERING
+
+15.01 QUESTION: Can you organize my home or help me declutter?
+ANSWER: No. IMAN Cleaning Service no longer provides organization or decluttering services.
+
+
+
+16. DETAIL CLEANING
+
+16.01 QUESTION: What is detail cleaning?
+ANSWER: Details Cleaning is a personalized service for the rooms, surfaces, or specific cleaning tasks you want prioritized. Our team reviews your descriptions and photos to prepare a custom plan.
+
+16.02 QUESTION: How is it different from deep cleaning?
+ANSWER: Deep cleaning follows a broader cleaning scope for buildup throughout the home. Details Cleaning is tailored to selected areas or tasks and is individually quoted.
+
+16.03 QUESTION: Can I receive instant pricing?
+ANSWER: Details Cleaning uses a dedicated custom quote rather than instant pricing. The pricing page can guide you to that request.
+
+16.04 QUESTION: Why does detail cleaning require a custom quote?
+ANSWER: The tasks, surfaces, condition, and time needed can vary substantially. Our team reviews those details before agreeing on the scope, staffing, and price.
+
+16.05 QUESTION: What can I ask the team to detail?
+ANSWER: You can request focused work in rooms or on areas such as kitchens, bathrooms, cabinets, closets, baseboards, trim, or windows. Our team confirms what can be included; repairs, hazardous work, and specialist treatments are not automatically covered.
+
+16.06 QUESTION: Can I choose a service date and time?
+ANSWER: You can provide preferred dates and times in the custom request. Our team will confirm availability with the quote; a preference is not a reserved appointment.
+
+16.07 QUESTION: Do I need to upload pictures?
+ANSWER: Photos help our team assess the selected tasks and their condition. Upload clear views through the custom-quote form when available; our team may need them before confirming the job.
+
+16.08 QUESTION: Can I upload pictures later?
+ANSWER: Yes. Choose Later in the custom-quote form and use the upload link associated with your request. Send the photos before the team needs to finalize the scope.
+
+16.09 QUESTION: How long will detail cleaning take?
+ANSWER: The time depends on your selected areas, buildup, and the agreed team size. Our team will review the request and include the planned service details in the custom quote.
+
+16.10 QUESTION: Is there a four-hour minimum?
+ANSWER: Details Cleaning follows its approved custom quote.
+
+
+
+17. POST-CONSTRUCTION CLEANING
+
+17.01 QUESTION: Do you provide post-construction cleaning?
+ANSWER: Yes. Post-construction cleaning is custom-quoted after review of the completed work, readiness, affected areas, dust, residue, and access.
+
+17.02 QUESTION: Can you clean while construction is still happening?
+ANSWER: Please state whether work will still be ongoing and the expected finish date. Our team must confirm a safe, appropriate cleaning stage; a standard post-construction quote does not guarantee cleaning alongside active trades.
+
+17.03 QUESTION: Does all construction need to be finished?
+ANSWER: The form asks whether construction will be finished before cleaning. If not, provide the expected finish date so our team can review the timing before confirming an appointment.
+
+17.04 QUESTION: Do contractors and tools need to be removed?
+ANSWER: Tools, unused materials, and equipment should be removed so the agreed areas are safely accessible. If anything will remain, disclose it in the request; the team must confirm whether the space is ready.
+
+17.05 QUESTION: Can you remove construction debris?
+ANSWER: We do not remove heavy, hazardous, or structural materials. The form asks about small scraps and bagged waste so our team can assess any limited handling separately from ordinary surface cleaning.
+
+17.06 QUESTION: Do you remove drywall dust?
+ANSWER: Drywall dust on accessible surfaces can be assessed in the post-construction quote. Tell us how much dust is present and where; hazardous or unidentified dust may require specialist review.
+
+17.07 QUESTION: Do you remove sawdust?
+ANSWER: Construction dust and sawdust can be reviewed as part of the scope. Include the affected areas and amount so the team can confirm safe methods and enough time.
+
+17.08 QUESTION: Do you remove paint splatter?
+ANSWER: Please include paint splatter, the affected surface, and close-up photos in your request. Our team will assess it; removal is not guaranteed if it would damage the finish or requires specialist treatment.
+
+17.09 QUESTION: Do you remove grout or cement residue?
+ANSWER: Grout or cement residue needs a surface-specific review. Provide details and photos so our team can decide what can be safely included; permanent marks or specialist removal are not guaranteed.
+
+17.10 QUESTION: Do you remove adhesive or stickers?
+ANSWER: Please identify the adhesive or stickers and the surface underneath. Our team can assess whether removal is safe and include approved work in the custom quote.
+
+17.11 QUESTION: Can you clean a newly constructed property?
+ANSWER: Yes. Select new construction and describe the property, readiness, dust, residue, and requested cleaning areas in the custom-quote form.
+
+17.12 QUESTION: Can you clean only selected rooms?
+ANSWER: Yes. The form lets you request the entire property or selected areas. Include nearby rooms affected by dust even if construction did not take place inside them.
+
+17.13 QUESTION: What size project can you handle?
+ANSWER: Our team needs to review the project size, scope, condition, and schedule before confirming capacity. Enter the square footage of the areas needing cleaning; I can’t promise a maximum project size over the phone.
+
+17.14 QUESTION: Do electricity and water need to be available?
+ANSWER: Yes, safe electricity and running water must be available for the agreed cleaning. Tell us about any unavailable utility or access issue before the appointment is confirmed.
+
+17.15 QUESTION: Do you remove hazardous materials?
+ANSWER: No. Hazardous-material removal is not included in our post-construction surface-cleaning scope. Appropriate specialists must address those materials first.
+
+17.16 QUESTION: Can you remove heavy construction materials?
+ANSWER: No. Heavy or structural construction materials need to be removed by the contractor or an appropriate removal provider.
+
+17.17 QUESTION: Why do you need photos?
+ANSWER: Photos help us assess dust, residue, access, remaining materials, and the amount of work. They support the quote but do not establish that hidden hazards are absent.
+
+17.18 QUESTION: When will I receive my custom quote?
+ANSWER: Our team will reach out within 30 minutes after you submit the request. The final quote may require photo review, additional details, or a walkthrough before it is ready.
+
+
+
+18. WATER OR FLOOD DAMAGE
+
+18.01 QUESTION: Do you clean after water damage?
+ANSWER: We can review surface cleaning after the source of the water problem is resolved and the area is safe and dry. Submit a custom request; extraction, drying, repairs, and remediation are outside that scope.
+
+18.02 QUESTION: Do you remove standing water?
+ANSWER: No. Standing water requires an appropriate restoration provider. We can assess later surface cleaning only after the area has been made safe and dry.
+
+18.03 QUESTION: Do you provide water extraction?
+ANSWER: No. Water extraction is a restoration service, not part of our surface-cleaning service.
+
+18.04 QUESTION: Do you provide structural drying?
+ANSWER: No. Structural drying and moisture assessment need a qualified restoration provider. A dry-looking surface is not enough to confirm the underlying material is dry.
+
+18.05 QUESTION: Can you clean after a plumbing leak?
+ANSWER: Possibly, after the leak is repaired and the affected area is safe and dry. Describe the source, surfaces, remaining damage, and any restoration work in a custom-quote request.
+
+18.06 QUESTION: Can you clean after outdoor flooding?
+ANSWER: Outdoor floodwater can involve contamination and needs appropriate restoration assessment first. We cannot promise cleaning until the area has been made safe, dry, and suitable for our surface-cleaning scope.
+
+18.07 QUESTION: Can you clean after a sewage backup?
+ANSWER: Sewage cleanup requires a provider experienced in contaminated-water restoration. It is not an ordinary cleaning appointment; our team can only consider later work once the area is safe and within scope.
+
+18.08 QUESTION: Can you clean if the source has not been repaired?
+ANSWER: No cleaning appointment should be confirmed while an active leak remains unresolved. Arrange the repair and any necessary restoration first, then request review of the remaining cleaning.
+
+18.09 QUESTION: Can you clean if the property is still wet?
+ANSWER: We cannot confirm surface cleaning while affected materials are still wet or their condition is uncertain. A restoration professional should assess drying and moisture first.
+
+18.10 QUESTION: Can you clean visible mold?
+ANSWER: No. Visible or suspected mold needs appropriate assessment or remediation before our surface-cleaning team can consider work in the area.
+
+18.11 QUESTION: Can you remove a musty smell?
+ANSWER: A musty smell may indicate an unresolved moisture problem and needs review. Cleaning does not guarantee odor removal, and we cannot substitute for mold or moisture assessment.
+
+18.12 QUESTION: Can you clean damaged flooring?
+ANSWER: Our team can assess whether safe surface cleaning is possible, but cleaning does not repair swelling, lifting, rot, or other water damage. Describe the floor’s condition and any restoration work in your request.
+
+18.13 QUESTION: Can you repair warped floors?
+ANSWER: No. Warped or swollen flooring needs repair or replacement by an appropriate professional; cleaning cannot restore its structure.
+
+18.14 QUESTION: Can you remove damaged drywall or belongings?
+ANSWER: Removal of damaged drywall, structural materials, heavy furniture, or belongings is not included in our surface-cleaning scope. Please arrange appropriate restoration or removal first.
+
+18.15 QUESTION: Do I need a restoration company first?
+ANSWER: If water, moisture, contamination, mold, or material damage remains, an appropriate restoration professional needs to assess it first. Our team can then review the remaining safe surface-cleaning needs.
+
+18.16 QUESTION: What if electricity is unsafe?
+ANSWER: Stay away from the affected area and do not touch wet electrical equipment. If there is immediate danger, move to a safe location and call 911; electrical safety must be addressed before cleaning.
+
+18.17 QUESTION: What if the ceiling is sagging?
+ANSWER: Stay out of the area beneath or near the sagging ceiling. If collapse appears possible, move to a safe location and call 911; do not wait for a cleaning appointment.
+
+18.18 QUESTION: What photos should I upload?
+ANSWER: From a safe location, take wide views of the affected rooms and close-ups of accessible floors, baseboards, residue, and visible damage. Do not enter an unsafe area or move damaged materials to get photos.
+
+18.19 QUESTION: Can photos prove the property is dry?
+ANSWER: No. Photos help show visible condition, but they cannot verify moisture inside walls, under floors, or in other hidden materials. Professional assessment may be needed.
+
+18.20 QUESTION: Why was I directed to a custom quote?
+ANSWER: Water-damage requests need individual review of the source, dryness, surfaces, restoration status, access, and hazards. The custom form helps our team determine whether any remaining work fits our surface-cleaning service.
+
+
+
+19. SERVICE CONCERNS AND COMPLAINTS
+
+INTERNAL HANDLING — DO NOT READ ALOUD: Acknowledge the report without finding fault. Use the dedicated concern-link action and its success checks, without an incident interview. If the form was already submitted or the caller refuses it and wants a human, use the escalation flow rather than another automatic send.
+
+19.01 QUESTION: I am unhappy with my cleaning.
+ANSWER: I’m sorry the cleaning did not meet your expectations. Please use our service-concern form to describe the issue and provide supporting information so our team can review it.
+
+19.02 QUESTION: The cleaners missed several areas.
+ANSWER: I’m sorry some areas may have been missed. The service-concern form lets you identify those areas and upload photos for our team to compare with the agreed scope.
+
+19.03 QUESTION: The service was not what I expected.
+ANSWER: I’m sorry the service was not what you expected. Please document the difference through our service-concern form so our team can review the booking and what happened.
+
+19.04 QUESTION: The team damaged something.
+ANSWER: I’m sorry to hear you’re reporting damage. Please submit the details and available photos through our service-concern form as soon as you discover it; our team needs to investigate before determining responsibility or a resolution.
+
+19.05 QUESTION: An item is missing.
+ANSWER: I’m sorry an item is missing. Please use the service-concern form to document the item and relevant details so our team can review the report without assuming what happened.
+
+19.06 QUESTION: I was charged incorrectly.
+ANSWER: Please select the billing concern option in the service-concern form and include the disputed amount and supporting receipt if available. Cover full card numbers or other sensitive payment details.
+
+19.07 QUESTION: The cleaners arrived late.
+ANSWER: I’m sorry about the timing concern. If you’re still waiting for today’s team, I can try to connect you for an update; for a past appointment, please report it through the service-concern form.
+
+19.08 QUESTION: The team behaved unprofessionally.
+ANSWER: I’m sorry to hear about your experience. Please document the concern through the service-concern form so our team can review it; I can also try to connect you with a representative.
+
+19.09 QUESTION: I have a health or safety concern.
+ANSWER: If anyone is in immediate danger or needs urgent medical help, move to safety and call 911 first. Once it is safe, you can document the service-related concern through our form.
+
+19.10 QUESTION: I want a refund.
+ANSWER: I understand you’re requesting a refund. Please submit the concern for review; I can’t approve or guarantee a refund during this call.
+
+19.11 QUESTION: I want a complimentary recleaning.
+ANSWER: You can request a correction or return visit through the service-concern form. Our team must review the agreed scope and evidence before deciding whether a reclean is appropriate.
+
+19.12 QUESTION: I want reimbursement.
+ANSWER: Please include your reimbursement request and any available supporting documents in the service-concern form. Our team must review it before determining the appropriate response.
+
+19.13 QUESTION: I want to speak with a manager.
+ANSWER: I can try to connect you with a representative about the concern. If you’ve already submitted the form, you don’t need to send a duplicate just because you’re requesting a manager.
+
+19.14 QUESTION: How do I submit a complaint?
+ANSWER: Use imancleaningservice.com/service-concern.html. Enter the service details, explain the concern, add supporting evidence, and select your preferred resolution and contact information.
+
+19.15 QUESTION: Can you text me the complaint form?
+ANSWER: I’ll send our service-concern form now so you can document the issue for review.
+
+19.16 QUESTION: Do I need to provide photos?
+ANSWER: For cleaning-quality or property-damage concerns, provide at least two clear photos or explain why you cannot. Other concerns may use relevant evidence such as a receipt or message instead.
+
+19.17 QUESTION: How many photos can I upload?
+ANSWER: The service-concern form accepts up to 10 files total, including photos, supported videos, and PDF documents. Each file must be no larger than 20 MB.
+
+19.18 QUESTION: What if I cannot provide photos?
+ANSWER: Explain why you cannot provide photos in the evidence section. The form still allows you to submit the concern for review, although missing evidence may limit what our team can assess.
+
+19.19 QUESTION: What is the complaint-reporting period?
+ANSWER: The service-concern page asks you to report cleaning-quality issues within 24 hours of completion. Report damage, missing items, billing, health, or safety concerns as soon as discovered; late reports can still be submitted for review.
+
+19.20 QUESTION: I already submitted the form—what happens next?
+ANSWER: Our team will review the service record and the information you submitted, then follow up using your preferred contact method. Submission does not approve a refund, recleaning, or reimbursement.
+
+19.21 QUESTION: Did you receive my complaint?
+ANSWER: I can’t verify receipt from this call alone. Check for the form’s success confirmation and case number; I can try to connect you with our team if you need the record checked.
+
+19.22 QUESTION: When will someone contact me?
+ANSWER: The team will follow up after reviewing the concern and your contact preferences. The concern form does not publish a fixed response deadline, so I can’t promise a specific time.
+
+19.23 QUESTION: Why hasn’t anyone responded?
+ANSWER: I’m sorry you’re still waiting. I can try to connect you with a representative for an update; I can’t tell why it is delayed without checking, and you don’t need to submit the same concern again.
+
+19.24 QUESTION: Can you approve my refund now?
+ANSWER: I can’t approve a refund during this call. Our review team needs to assess the service and payment information before making a decision.
+
+19.25 QUESTION: I refuse to complete the form; can I speak to a person?
+ANSWER: Yes, I can try to connect you with a representative. I won’t keep asking you to complete or resubmit the form if you’ve declined it.
+
+
+
+20. REVIEWS AND FEEDBACK
+
+INTERNAL HANDLING — DO NOT READ ALOUD: For a review-link request or an answer promising the link, immediately invoke the registered sender for the exact Google review URL and check its result. Use the send-promising answers below only when that action can actually be attempted. If no review-capable sender is configured, say “I can’t text the review link from this call” and provide the direct address instead. In text chat, include https://g.page/r/CZr1C9xnMwR3EBM/review in the reply. Do not claim a sent message without confirmed success. Invite honest feedback without filtering customers by satisfaction.
+
+20.01 QUESTION: Where can I leave a review?
+ANSWER: You can leave your honest feedback on our Google review page. I’ll text you the review link now.
+
+20.02 QUESTION: Can you send me the Google review link?
+ANSWER: I’ll text you our Google review link now so you can share your experience.
+
+20.03 QUESTION: I want to compliment my cleaner.
+ANSWER: Thank you for sharing that. You can mention the team member in a Google review or email the compliment to info@imancleaningservice.com.
+
+20.04 QUESTION: How can I give positive feedback?
+ANSWER: We’d appreciate hearing about your experience. You can leave a Google review or email our team at info@imancleaningservice.com.
+
+20.05 QUESTION: Can I mention a team member by name?
+ANSWER: Yes, you may mention the team member you’re complimenting. Please avoid sharing anyone’s private contact information or other sensitive details.
+
+20.06 QUESTION: Where can I submit a testimonial?
+ANSWER: Our Google review page is the simplest place to share your experience publicly. You can also send feedback directly to info@imancleaningservice.com.
+
+20.07 QUESTION: Why did I receive a review request?
+ANSWER: We invite customers to share honest feedback after a completed cleaning. It helps us understand their experience and helps others learn about our service.
+
+20.08 QUESTION: Can I remove or edit my review?
+ANSWER: Yes. Sign in to the Google account used for the review, find your review in Google Maps, and use its menu to edit or delete it. We cannot change it on your behalf.
+
+
+
+21. HUMAN ASSISTANCE AND CALLBACKS
+
+INTERNAL HANDLING — DO NOT READ ALOUD: These lines offer a handoff; they do not claim one has succeeded. Apply the master prompt's notification-before-transfer attempt, no-intake exceptions, and honest success/failure responses. Do not loop an existing caller back to the same public number as a substitute for a failed human handoff.
+
+21.01 QUESTION: Can I speak to a person?
+ANSWER: Yes, I can try to connect you with a representative.
+
+21.02 QUESTION: Can you transfer me?
+ANSWER: I’ll try to connect you with a representative now.
+
+21.03 QUESTION: Can I speak to the owner?
+ANSWER: I can request that the owner receive your message and try to connect you with a representative. I can’t guarantee the owner is available right now.
+
+21.04 QUESTION: Can I speak with a manager?
+ANSWER: I can try to connect you with a representative and request manager follow-up. If this concerns a cleaning issue you already described, you do not need to repeat it.
+
+21.05 QUESTION: Is anyone available now?
+ANSWER: I can try the team, but I can’t confirm live availability until the connection is checked.
+
+21.06 QUESTION: Can someone call me back?
+ANSWER: I can request a callback from our team. I’ll confirm whether the request was successfully passed along rather than promise a call before it is recorded.
+
+21.07 QUESTION: When will someone call me?
+ANSWER: I can request follow-up, but I can’t promise an exact callback time for a general inquiry. The 30-minute expectation applies to submitted custom-quote requests, not every type of call.
+
+21.08 QUESTION: I do not want to speak with an AI.
+ANSWER: I understand. I’ll try to connect you with a representative.
+
+21.09 QUESTION: You are not answering my question.
+ANSWER: I’m sorry I missed what you needed. What part would you like clarified? If you prefer, I can try to connect you with a representative.
+
+21.10 QUESTION: I cannot use the website.
+ANSWER: I can try to connect you with a representative who can help. You don’t need to keep retrying the website if it isn’t accessible to you.
+
+21.11 QUESTION: I cannot receive text messages.
+ANSWER: You can open the relevant page directly, or I can try to connect you with a representative for help. You can also email info@imancleaningservice.com.
+
+21.12 QUESTION: I need help completing the form.
+ANSWER: I can explain the questions as you read them to me, without choosing your answers or seeing your screen. If you need further assistance, I can try to connect you with a representative.
+
+21.13 QUESTION: This is a business or vendor inquiry.
+ANSWER: Our team can review business and vendor inquiries. You can email the details to info@imancleaningservice.com, or I can try to connect you with a representative.
+
+21.14 QUESTION: I am calling about employment.
+ANSWER: Please email your name, phone number, work experience, and the position you are interested in to info@imancleaningservice.com. I can’t confirm current openings or an application’s status without a team review.
+
+21.15 QUESTION: I want to apply for a job.
+ANSWER: Please email your name, phone number, work experience, and the position you are interested in to info@imancleaningservice.com. Sending your information does not confirm an interview or position.
+
+21.16 QUESTION: I have a partnership proposal.
+ANSWER: Please email your proposal to info@imancleaningservice.com with a brief description and contact details. Our team will need to review it; I can’t accept a partnership on their behalf.
+
+
+
+22. EMERGENCY AND UNSAFE-SITUATION QUESTIONS
+
+INTERNAL HANDLING — DO NOT READ ALOUD: Stop ordinary intake for an immediate threat. Give the safety instruction first and let the caller contact emergency services. Do not ask for quote details or photos, promise dispatch, or try to manage repairs remotely.
+
+22.01 QUESTION: There is active flooding—what should I do?
+ANSWER: If there is immediate danger, move to a safe location and call 911 now. Stay out of floodwater and contact an appropriate restoration provider once safe; do not wait for a cleaning quote.
+
+22.02 QUESTION: Water is touching an electrical outlet.
+ANSWER: Stay away from the water and electrical equipment. Move to a safe location and call 911 now if there is an immediate electrical danger; do not touch switches or enter the water.
+
+22.03 QUESTION: The ceiling looks like it might collapse.
+ANSWER: Move away from the area and to a safe location, then call 911 if collapse appears possible. Do not go back to take photos or wait for our cleaners.
+
+22.04 QUESTION: There is sewage throughout the property.
+ANSWER: Avoid the contaminated area and arrange a qualified contaminated-water restoration service. If anyone is in immediate danger or needs urgent medical assistance, move to safety and call 911.
+
+22.05 QUESTION: Someone has been injured.
+ANSWER: If the injury is serious or urgent medical help is needed, call 911 now and follow the dispatcher’s instructions. Do not wait for our team or a form submission.
+
+22.06 QUESTION: There is blood or hazardous waste.
+ANSWER: Keep away from the affected material and use an appropriate specialist cleanup provider. If there is an injury, exposure, or immediate danger requiring urgent help, call 911 from a safe location.
+
+22.07 QUESTION: There are exposed wires.
+ANSWER: Do not touch the wires or nearby water or metal. Stay away and have a qualified electrician address the hazard; if there is immediate danger, move to safety and call 911.
+
+22.08 QUESTION: There is a strong chemical smell.
+ANSWER: Move away from the fumes to a safe location. If the smell suggests an immediate danger or anyone is unwell, call 911; do not enter the area to identify or mix chemicals.
+
+22.09 QUESTION: There is a fire or gas smell.
+ANSWER: Leave the area immediately and call 911 from a safe location. Do not operate switches, create a flame, or go back inside while waiting for emergency guidance.
+
+22.10 QUESTION: Can your cleaners come immediately and make it safe?
+ANSWER: No. Our cleaners are not emergency responders and cannot make a hazardous property safe. If there is immediate danger, move to safety and call 911 before arranging any cleaning.
+
+22.11 QUESTION: Can you call emergency services for me?
+ANSWER: I can’t place an emergency call for you through this service. Please call 911 directly now, or ask someone nearby to call if you cannot.
+
+
+
+23. CONVERSATIONAL VARIATIONS THE AGENT MUST UNDERSTAND
+
+INTERNAL HANDLING — DO NOT READ ALOUD: Honor meaning and negation. For “send that again,” resend only when the last relevant link is unambiguous, the caller explicitly requests it, and an attempt remains. Otherwise clarify the link briefly or provide the correct direct address. Do not repeat payment or booking actions.
+
+23.01 QUESTION: What would something like this run me?
+ANSWER: Our pricing page will calculate the eligible service from your cleaning details or guide you to a custom quote. I’ll send the instant-pricing and booking link.
+
+23.02 QUESTION: I can’t make tomorrow work.
+ANSWER: Please use our secure Manage Booking page to choose another available appointment. The current booking stays in place until the new time is confirmed.
+
+23.03 QUESTION: Move my cleaning to Friday.
+ANSWER: I’ll text you the Manage Booking link now so you can check Friday’s available times and confirm the change. I haven’t moved your appointment.
+
+23.04 QUESTION: I’m moving out and need cleaning.
+ANSWER: We offer move-out cleaning for an empty property. I’ll send our pricing and booking link so you can enter the details and see the appropriate next step.
+
+23.05 QUESTION: Don’t cancel—I only want to know the arrival time.
+ANSWER: Understood—you’re asking about arrival, not cancellation. I can try to connect you with our team for the current timing; I haven’t changed your booking.
+
+23.06 QUESTION: Your cleaner scratched my floor.
+ANSWER: I’m sorry to hear you’re reporting a scratch. Please document it through the service-concern form with available photos so our team can review what happened.
+
+23.07 QUESTION: I was billed too much last week.
+ANSWER: I’ll text you our service-concern link now so you can select the billing concern option for last week’s charge. I won’t treat this as a request for a new price.
+
+23.08 QUESTION: Send that again.
+ANSWER: I’ll resend the link we were just discussing.
+
+23.09 QUESTION: I need somebody today.
+ANSWER: Use Request today’s service after your instant quote. Same-day service depends on availability and includes a $100 rush fee; the request itself does not confirm a booking.
+
+23.10 QUESTION: The page says someone has to review it.
+ANSWER: That means your request needs a custom quote. Submit the additional details through the page, and our team will reach out within 30 minutes to discuss the next steps.
+
+23.11 QUESTION: Can you take my card over the phone?
+ANSWER: I can direct you to secure checkout, but I can’t collect card details over the phone. Please enter your payment information privately on the payment page.
+
+23.12 QUESTION: That didn’t answer my question.
+ANSWER: What part would you like me to clarify? If you prefer, I can try to connect you with a representative.
+
+23.13 QUESTION: Yes, I also need to cancel.
+ANSWER: I’ll text you the secure Manage Booking link now. Complete the cancellation steps and wait for confirmation; your booking is not cancelled just by asking me.
+
+23.14 QUESTION: No, that’s all.
+ANSWER: Great, have a great one. Bye.

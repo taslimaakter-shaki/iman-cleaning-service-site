@@ -1,0 +1,519 @@
+<!-- @dsCard group="Website" viewport="1280x760" name="Homepage" subtitle="Redesigned Iman Cleaning homepage — premium, conversion-focused" -->
+<!-- @startingPoint section="Website" subtitle="Full redesigned cleaning-service homepage" viewport="1280x760" -->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="icon" href="./assets/iman-logo-icon-96.png" type="image/png">
+<meta name="google-site-verification" content="e-5Ee2HIMne3ZlWOJSJlNlsUvgpZ53sykKkmCI3vp5k">
+<script>
+  (() => {
+    const hash = new URLSearchParams(location.hash.replace(/^#/, ""));
+    const hasSession = hash.has("access_token") && hash.has("refresh_token");
+    const hasAuthResult = hasSession || hash.has("error") || hash.has("error_description");
+    if (!hasAuthResult) return;
+    const destination = hash.get("type") === "recovery" ? "/reset-password.html" : "/account-confirmed.html";
+    if (location.pathname.endsWith(destination)) return;
+    window.__IMAN_AUTH_REDIRECT__ = true;
+    location.replace(`${destination}${location.hash}`);
+  })();
+</script>
+<title>Residential &amp; Commercial Cleaning in NYC | Iman Cleaning</title>
+<meta name="description" content="Insured, background-checked cleaners for houses, apartments, offices, and commercial spaces in Queens, Brooklyn &amp; Manhattan. Get your price online.">
+<link rel="canonical" href="https://www.imancleaningservice.com/">
+<link rel="sitemap" type="application/xml" href="https://www.imancleaningservice.com/sitemap.xml">
+<meta name="robots" content="index, follow, max-image-preview:large, max-snippet:-1, max-video-preview:-1">
+<meta name="theme-color" content="#0b6474">
+<meta name="author" content="Iman Cleaning Service LLC">
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="Iman Cleaning Service LLC">
+<meta property="og:locale" content="en_US">
+<meta property="og:title" content="Residential &amp; Commercial Cleaning in NYC | Iman Cleaning">
+<meta property="og:description" content="Insured, background-checked cleaners for houses, apartments, offices, and commercial spaces in Queens, Brooklyn &amp; Manhattan. Get your price online.">
+<meta property="og:url" content="https://www.imancleaningservice.com/">
+<meta property="og:image" content="https://www.imancleaningservice.com/brand-card.png">
+<meta property="og:image:secure_url" content="https://www.imancleaningservice.com/brand-card.png">
+<meta property="og:image:width" content="1050">
+<meta property="og:image:height" content="600">
+<meta property="og:image:alt" content="Iman Cleaning Service LLC residential and commercial cleaning">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="Residential &amp; Commercial Cleaning in NYC | Iman Cleaning">
+<meta name="twitter:description" content="Insured, background-checked cleaners for houses, apartments, offices, and commercial spaces in Queens, Brooklyn &amp; Manhattan. Get your price online.">
+<meta name="twitter:image" content="https://www.imancleaningservice.com/brand-card.png">
+<meta name="twitter:image:alt" content="Iman Cleaning Service LLC residential and commercial cleaning">
+<link rel="preconnect" href="https://unpkg.com" crossorigin>
+<link rel="dns-prefetch" href="//unpkg.com">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="preload" as="image" href="./assets/home-hero-video-poster.avif" type="image/avif"
+  imagesrcset="./assets/home-hero-video-poster-768w.avif 768w, ./assets/home-hero-video-poster.avif 1280w"
+  imagesizes="100vw" fetchpriority="high">
+<link rel="stylesheet" href="./homepage.min.css?v=20261008-fall10-banner-local">
+<link rel="stylesheet" href="./homepage-booking-promo.css?v=20261013-fall-green-button">
+<style>
+  .home-hero-photo .page-hero-actions { flex-direction: column; align-items: flex-start; gap: 4px; }
+  .hero-price-time { color: rgba(255,255,255,.78); font-size: .72rem; font-weight: 500; line-height: 1.35; }
+  .work-preview-body { gap: 6px; padding: 16px 18px 18px; }
+  .work-preview-meta {
+    color: #5b706d;
+    font-family: var(--font-sans);
+    font-size: .7rem;
+    font-weight: 600;
+    line-height: 1.35;
+    letter-spacing: .035em;
+    text-transform: none;
+  }
+  .work-preview-body strong {
+    color: var(--ink);
+    font-family: var(--font-sans);
+    font-size: 1rem;
+    font-weight: 650;
+    line-height: 1.35;
+    letter-spacing: -.01em;
+  }
+  .work-preview-link {
+    margin-top: 7px;
+    color: #0b6474;
+    font-family: var(--font-sans);
+    font-size: .8rem;
+    font-weight: 650;
+    line-height: 1.35;
+  }
+</style>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,400;12..96,500;12..96,600;12..96,700;12..96,800&family=DM+Sans:ital,opsz,wght@0,9..40,400;0,9..40,500;0,9..40,600;0,9..40,700;1,9..40,400&display=swap" media="print" onload="this.media='all'">
+<noscript><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,400;12..96,500;12..96,600;12..96,700;12..96,800&family=DM+Sans:ital,opsz,wght@0,9..40,400;0,9..40,500;0,9..40,600;0,9..40,700;1,9..40,400&display=swap"></noscript>
+
+<!-- Homepage entity data. Keep it aligned with visible contact, hours, services, and areas. -->
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@graph": [
+    {
+      "@type": "WebSite",
+      "@id": "https://www.imancleaningservice.com/#website",
+      "url": "https://www.imancleaningservice.com/",
+      "name": "Iman Cleaning Service LLC",
+      "alternateName": "Iman Cleaning",
+      "inLanguage": "en-US",
+      "publisher": { "@id": "https://www.imancleaningservice.com/#business" }
+    },
+    {
+      "@type": ["Organization", "LocalBusiness", "CleaningService"],
+      "@id": "https://www.imancleaningservice.com/#business",
+      "name": "Iman Cleaning Service LLC",
+      "description": "Professional house, apartment, deep, move-in, move-out, post-construction, office, and commercial cleaning in Manhattan, Brooklyn, and Queens.",
+      "url": "https://www.imancleaningservice.com/",
+      "image": {
+        "@type": "ImageObject",
+        "url": "https://www.imancleaningservice.com/brand-card.png",
+        "width": 1050,
+        "height": 600
+      },
+      "logo": {
+        "@type": "ImageObject",
+        "url": "https://www.imancleaningservice.com/iman-logo-icon.png",
+        "width": 649,
+        "height": 562
+      },
+      "telephone": "+1-929-232-1930",
+      "email": "Info@imancleaningservice.com",
+      "priceRange": "$$",
+      "currenciesAccepted": "USD",
+      "contactPoint": {
+        "@type": "ContactPoint",
+        "telephone": "+1-929-232-1930",
+        "contactType": "customer service",
+        "areaServed": "US-NY",
+        "availableLanguage": "English",
+        "email": "Info@imancleaningservice.com"
+      },
+      "areaServed": [
+        { "@type": "City", "name": "New York City" },
+        { "@type": "AdministrativeArea", "name": "Manhattan" },
+        { "@type": "AdministrativeArea", "name": "Brooklyn" },
+        { "@type": "AdministrativeArea", "name": "Queens" }
+      ],
+      "openingHoursSpecification": [{
+        "@type": "OpeningHoursSpecification",
+        "dayOfWeek": ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday"],
+        "opens": "00:00",
+        "closes": "23:59"
+      }],
+      "sameAs": [
+        "https://www.instagram.com/imancleaningservicellc/",
+        "https://www.facebook.com/Imancleaningservicellc/",
+        "https://www.youtube.com/@ImanCleaningServiceLLC",
+        "https://www.tiktok.com/@imancleaningservicellc",
+        "https://share.google/EAX7wC22J4PyMKcNx"
+      ],
+      "hasOfferCatalog": {
+        "@type": "OfferCatalog",
+        "name": "Residential and Commercial Cleaning Services",
+        "itemListElement": [
+          { "@type": "Offer", "url": "https://www.imancleaningservice.com/standard-cleaning.html", "itemOffered": { "@type": "Service", "name": "Standard Cleaning" } },
+          { "@type": "Offer", "url": "https://www.imancleaningservice.com/deep-cleaning.html", "itemOffered": { "@type": "Service", "name": "Deep Cleaning" } },
+          { "@type": "Offer", "url": "https://www.imancleaningservice.com/move-in-move-out-cleaning.html", "itemOffered": { "@type": "Service", "name": "Move-In and Move-Out Cleaning" } },
+          { "@type": "Offer", "url": "https://www.imancleaningservice.com/post-construction-cleaning.html", "itemOffered": { "@type": "Service", "name": "Post-Construction Cleaning" } },
+          { "@type": "Offer", "url": "https://www.imancleaningservice.com/book-now.html?service=hourly", "itemOffered": { "@type": "Service", "name": "Hourly Cleaning Service" } },
+          { "@type": "Offer", "url": "https://www.imancleaningservice.com/book-now.html?service=recurring", "itemOffered": { "@type": "Service", "name": "Recurring Cleaning Service" } },
+          { "@type": "Offer", "url": "https://www.imancleaningservice.com/commercial-cleaning.html", "itemOffered": { "@type": "Service", "name": "Commercial Cleaning" } }
+        ]
+      }
+    },
+    {
+      "@type": "WebPage",
+      "@id": "https://www.imancleaningservice.com/#webpage",
+      "url": "https://www.imancleaningservice.com/",
+      "name": "House Cleaning Services in New York City",
+      "description": "Professional residential and commercial cleaning in Manhattan, Brooklyn, and Queens.",
+      "inLanguage": "en-US",
+      "isPartOf": { "@id": "https://www.imancleaningservice.com/#website" },
+      "about": { "@id": "https://www.imancleaningservice.com/#business" },
+      "primaryImageOfPage": {
+        "@type": "ImageObject",
+        "url": "https://www.imancleaningservice.com/assets/home-hero-video-poster.avif",
+        "width": 1280,
+        "height": 720
+      }
+    }
+  ]
+}
+</script>
+<script>
+  if (!window.__IMAN_AUTH_REDIRECT__) {
+    window.dataLayer = window.dataLayer || [];
+    window.gtag = function(){ window.dataLayer.push(arguments); };
+    window.gtag("js", new Date());
+    window.gtag("config", "G-6MEJH73E0H");
+    var loadAnalytics = function () {
+      var analyticsScript = document.createElement("script");
+      analyticsScript.async = true;
+      analyticsScript.src = "https://www.googletagmanager.com/gtag/js?id=G-6MEJH73E0H";
+      document.head.appendChild(analyticsScript);
+    };
+    window.addEventListener("load", function () {
+      if ("requestIdleCallback" in window) window.requestIdleCallback(loadAnalytics, { timeout: 2500 });
+      else window.setTimeout(loadAnalytics, 1200);
+    }, { once: true });
+  }
+</script>
+</head>
+<body class="home-page">
+<div id="root">
+  <!--
+    Crawlable, fully functional first render. React replaces this with the
+    interactive version after the production scripts load.
+  -->
+  <div class="site-scroll" data-static-home>
+    <header class="site-header on-dark is-homepage">
+      <div class="hdr-inner ds-shell">
+        <a href="./index.html" class="hdr-brand">
+          <img class="hdr-mark" src="./assets/iman-logo-icon.png?v=20260727-clean-header-logo" alt="Iman Cleaning Service LLC" width="46" height="46" decoding="async">
+          <span class="hdr-words" aria-hidden="true"><strong>IMAN</strong><small>Cleaning Service LLC</small></span>
+        </a>
+        <nav class="hdr-nav" aria-label="Primary navigation">
+          <a href="./services-hub.html">Our Services</a>
+          <a href="./our-work.html">Our Work</a>
+          <a href="./areas.html">Service Areas</a>
+          <a href="./faq.html">FAQs</a>
+          <a href="./contact.html">Contact Us</a>
+          <div class="hdr-mobile-actions">
+            <a class="seo-static-button is-secondary is-small" href="./login.html" aria-label="Log in to your customer account">Log In</a>
+          </div>
+        </nav>
+        <div class="hdr-actions">
+          <a class="seo-static-button is-secondary is-small" href="./login.html" aria-label="Log in to your customer account">Log In</a>
+          <button class="hdr-burger" type="button" aria-label="Open navigation menu" aria-expanded="false">
+            <span>Menu</span>
+            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" aria-hidden="true"><path d="M4 7h16M4 12h16M4 17h16"/></svg>
+          </button>
+        </div>
+      </div>
+    </header>
+
+    <main>
+      <section class="page-hero on-photo home-hero-photo" id="top">
+        <picture class="home-hero-poster" aria-hidden="true">
+          <source type="image/avif"
+            srcset="./assets/home-hero-video-poster-768w.avif 768w, ./assets/home-hero-video-poster.avif 1280w"
+            sizes="100vw">
+          <img src="./assets/home-hero-video-poster.jpg" alt="" width="1280" height="720"
+            fetchpriority="high" decoding="sync">
+        </picture>
+        <div class="ds-shell page-hero-inner">
+          <span class="seo-static-badge">✓ Fully Insured • Background-Checked Cleaners</span>
+          <h1>NYC's Reliable Residential &amp; Commercial Cleaning Service</h1>
+          <p class="ds-lead">House, apartment, and commercial cleaning in Brooklyn, Queens, and Manhattan.</p>
+          <div class="page-hero-actions">
+            <a class="seo-static-button is-accent" href="./book-now.html"
+              data-conv="book">Check My Price →</a>
+            <small class="hero-price-time">It only takes about two minutes.</small>
+          </div>
+          <div class="hero-trust-line" aria-label="Customer reviews">
+            <a href="https://share.google/EAX7wC22J4PyMKcNx" target="_blank" rel="noopener noreferrer"
+              data-conv="google_reviews">
+              <svg class="hero-google-icon" viewBox="0 0 24 24" aria-hidden="true">
+                <path fill="#4285F4" d="M23.5 12.3c0-.8-.1-1.5-.2-2.2H12v4.2h6.5c-.3 1.4-1.1 2.7-2.4 3.6v3h3.8c2.2-2.1 3.6-5.1 3.6-8.6Z"/>
+                <path fill="#34A853" d="M12 24c3.2 0 5.9-1.1 7.8-3.1l-3.8-3c-1 .7-2.3 1.2-4 1.2-3.1 0-5.7-2.1-6.6-4.9H1.5v3.1A12 12 0 0 0 12 24Z"/>
+                <path fill="#FBBC04" d="M5.4 14.2c-.2-.7-.4-1.4-.4-2.2s.1-1.5.4-2.2V6.7H1.5A12 12 0 0 0 0 12c0 1.9.5 3.7 1.5 5.3l3.9-3.1Z"/>
+                <path fill="#EA4335" d="M12 4.8c1.7 0 3.2.6 4.4 1.7l3.3-3.3C17.9 1.1 15.2 0 12 0A12 12 0 0 0 1.5 6.7l3.9 3.1c.9-2.8 3.5-5 6.6-5Z"/>
+              </svg>
+              4.9 ★ Read Our Reviews
+            </a>
+          </div>
+        </div>
+      </section>
+
+      <section class="section service-category-section" id="services">
+        <div class="ds-shell">
+          <div class="sec-head">
+            <span class="ds-kicker">Start with the right service</span>
+            <h2>Cleaning services for homes and businesses</h2>
+          </div>
+          <div class="two-cards">
+            <details class="service-category-accordion seo-service-category">
+              <summary class="service-category-toggle">
+                <img src="./assets/home-residential-cleaning-card.webp"
+                  alt="Professionally cleaned residential living room" width="900" height="600"
+                  loading="lazy" decoding="async">
+                <span class="service-category-shade" aria-hidden="true"></span>
+                <span class="service-category-toggle-copy">
+                  <span class="service-category-kicker">Homes &amp; apartments</span>
+                  <strong>Residential Cleaning</strong>
+                  <span class="service-category-action">View services &amp; pricing</span>
+                </span>
+                <span class="service-category-symbol" aria-hidden="true">+</span>
+              </summary>
+              <div class="service-category-panel">
+                <p class="service-category-description">Professional house and apartment cleaning for routine upkeep, deeper resets, moving, and post-construction needs.</p>
+                <ul>
+                  <li><a href="./standard-cleaning.html"><span><strong>Standard Cleaning</strong><small>Request a personalized quote</small></span><span aria-hidden="true">→</span></a></li>
+                  <li><a href="./deep-cleaning.html"><span><strong>Deep Cleaning</strong><small>Request a personalized quote</small></span><span aria-hidden="true">→</span></a></li>
+                  <li><a href="./move-in-move-out-cleaning.html"><span><strong>Move-In / Move-Out Cleaning</strong><small>Request a personalized quote</small></span><span aria-hidden="true">→</span></a></li>
+                  <li><a href="./post-construction-cleaning.html"><span><strong>Residential Post-Construction Cleaning</strong><small>Request a personalized quote</small></span><span aria-hidden="true">→</span></a></li>
+                  <li><a href="./book-now.html?service=hourly"><span><strong>Hourly Cleaning Service</strong><small>Request a personalized quote</small></span><span aria-hidden="true">→</span></a></li>
+                  <li><a href="./book-now.html?service=recurring"><span><strong>Recurring Cleaning Service</strong><small>Request a personalized quote</small></span><span aria-hidden="true">→</span></a></li>
+                </ul>
+              </div>
+            </details>
+
+            <details class="service-category-accordion seo-service-category">
+              <summary class="service-category-toggle">
+                <img src="./assets/home-commercial-cleaning-card-2026.webp"
+                  alt="Clean modern retail store interior" width="900" height="1350"
+                  loading="lazy" decoding="async">
+                <span class="service-category-shade" aria-hidden="true"></span>
+                <span class="service-category-toggle-copy">
+                  <span class="service-category-kicker">Offices &amp; businesses</span>
+                  <strong>Commercial Cleaning</strong>
+                  <span class="service-category-action">View services &amp; pricing</span>
+                </span>
+                <span class="service-category-symbol" aria-hidden="true">+</span>
+              </summary>
+              <div class="service-category-panel">
+                <p class="service-category-description">Customized cleaning for offices, stores, restaurants, clinics, and businesses that need one-time or recurring service.</p>
+                <ul>
+                  <li><a href="./office-cleaning.html"><span><strong>Office Cleaning</strong><small>Custom quote</small></span><span aria-hidden="true">→</span></a></li>
+                  <li><a href="./retail-store-cleaning.html"><span><strong>Retail Store Cleaning</strong><small>Custom quote</small></span><span aria-hidden="true">→</span></a></li>
+                  <li><a href="./restaurant-cleaning.html"><span><strong>Restaurant Cleaning</strong><small>Custom quote</small></span><span aria-hidden="true">→</span></a></li>
+                  <li><a href="./medical-clinic-cleaning.html"><span><strong>Medical &amp; Clinic Cleaning</strong><small>Custom quote</small></span><span aria-hidden="true">→</span></a></li>
+                  <li><a href="./janitorial-recurring-cleaning.html"><span><strong>Janitorial / Recurring Cleaning</strong><small>Custom quote</small></span><span aria-hidden="true">→</span></a></li>
+                  <li><a href="./contact.html"><span><strong>Commercial Post-Construction Cleaning</strong><small>Contact us</small></span><span aria-hidden="true">→</span></a></li>
+                </ul>
+              </div>
+            </details>
+
+          </div>
+          <div class="service-category-more">
+            <a class="seo-static-button is-secondary" href="./services-hub.html">Explore All Services →</a>
+          </div>
+        </div>
+      </section>
+
+      <section class="home-seo-intro" aria-label="NYC cleaning services">
+        <div class="ds-shell home-seo-intro-inner">
+          <p>Iman Cleaning Service LLC provides residential and commercial cleaning in Brooklyn, Queens, and Manhattan, including standard, deep, move-in, move-out, and post-construction cleaning.</p>
+        </div>
+      </section>
+
+      <section class="work-preview" id="our-work" aria-labelledby="work-preview-title">
+        <div class="ds-shell">
+          <header class="work-preview-head">
+            <div>
+              <span class="ds-kicker">Real projects · Real results</span>
+              <h2 id="work-preview-title">See Our Cleaning Work</h2>
+            </div>
+            <a class="work-preview-all" href="./our-work.html">View All Projects <span aria-hidden="true">→</span></a>
+          </header>
+          <div class="work-preview-grid">
+            <a class="work-preview-card" href="./our-work.html#jamaica-queens-flyer-cleaning-story-2026-08">
+              <span class="work-preview-media"><img src="./assets/our-work/jamaica-client-bedroom-primary-home.webp" alt="Freshly cleaned bedroom in a Jamaica, Queens home" width="540" height="720" loading="lazy" decoding="async"></span>
+              <span class="work-preview-body"><span class="work-preview-meta">Residential Cleaning · Jamaica, Queens</span><strong>From a flyer to a happy client</strong><span class="work-preview-link">View project <span aria-hidden="true">→</span></span></span>
+            </a>
+            <a class="work-preview-card" href="./our-work.html#astoria-monthly-apartment-transformation-2026-08">
+              <span class="work-preview-media"><img src="./assets/our-work/astoria-monthly-kitchen-after-home.webp" alt="Clean kitchen after a monthly apartment cleaning in Astoria, Queens" width="720" height="540" loading="lazy" decoding="async"></span>
+              <span class="work-preview-body"><span class="work-preview-meta">Monthly Cleaning · Astoria, Queens</span><strong>A monthly reset for a busy cat parent</strong><span class="work-preview-link">View project <span aria-hidden="true">→</span></span></span>
+            </a>
+            <a class="work-preview-card" href="./our-work.html#one-bedroom-move-in-cleaning-2026-08">
+              <span class="work-preview-media"><img src="./assets/our-work/move-in-cleaning-kitchen-home.webp" alt="Clean kitchen after a move-in cleaning in Astoria, Queens" width="540" height="720" loading="lazy" decoding="async"></span>
+              <span class="work-preview-body"><span class="work-preview-meta">Move-In Cleaning · Astoria, Queens</span><strong>A fresh start for a mom and her newborn</strong><span class="work-preview-link">View project <span aria-hidden="true">→</span></span></span>
+            </a>
+          </div>
+        </div>
+      </section>
+
+      <section class="areas-band" id="areas">
+        <div class="ds-shell areas-band-inner">
+          <h2>NYC service areas</h2>
+          <ul class="areas-links" aria-label="Cleaning service areas">
+            <li><a href="./areas.html">Brooklyn</a></li><li><a href="./areas.html">Queens</a></li><li><a href="./areas.html">Manhattan</a></li>
+          </ul>
+          <a class="areas-learn-more" href="./areas.html">Explore All NYC Service Areas <span aria-hidden="true">→</span></a>
+        </div>
+      </section>
+
+      <section class="review-band" aria-labelledby="customer-reviews-title">
+        <div class="ds-shell review-inner">
+          <header class="review-section-head">
+            <div>
+              <h2 id="customer-reviews-title">Trusted by New Yorkers</h2>
+            </div>
+            <div class="review-summary">
+              <strong><span class="review-stars" aria-label="4.9 out of 5 stars"><span aria-hidden="true">★★★★★</span></span> 4.9 on Google</strong>
+              <a href="https://share.google/EAX7wC22J4PyMKcNx" target="_blank" rel="noopener noreferrer"
+                aria-label="Read all Iman Cleaning Service reviews on Google" data-conv="google_reviews">Read All Reviews →</a>
+            </div>
+          </header>
+          <div class="review-card-track" aria-label="Customer reviews">
+            <article class="review-card" id="customer-review-1">
+              <div class="review-card-stars" aria-label="5 out of 5 stars"><span aria-hidden="true">★★★★★</span></div>
+              <blockquote>“They did a great job cleaning my house. They showed up on time, were friendly, and paid attention to the little things.”</blockquote>
+              <footer><strong>Mahin Muhtasimul</strong><span><svg class="review-google-icon" viewBox="0 0 24 24" aria-hidden="true"><path fill="#4285F4" d="M23.5 12.3c0-.8-.1-1.5-.2-2.2H12v4.2h6.5c-.3 1.4-1.1 2.7-2.4 3.6v3h3.8c2.2-2.1 3.6-5.1 3.6-8.6Z"/><path fill="#34A853" d="M12 24c3.2 0 5.9-1.1 7.8-3.1l-3.8-3c-1 .7-2.3 1.2-4 1.2-3.1 0-5.7-2.1-6.6-4.9H1.5v3.1A12 12 0 0 0 12 24Z"/><path fill="#FBBC04" d="M5.4 14.2c-.2-.7-.4-1.4-.4-2.2s.1-1.5.4-2.2V6.7H1.5A12 12 0 0 0 0 12c0 1.9.5 3.7 1.5 5.3l3.9-3.1Z"/><path fill="#EA4335" d="M12 4.8c1.7 0 3.2.6 4.4 1.7l3.3-3.3C17.9 1.1 15.2 0 12 0A12 12 0 0 0 1.5 6.7l3.9 3.1c.9-2.8 3.5-5 6.6-5Z"/></svg>Google Review</span></footer>
+            </article>
+            <article class="review-card" id="customer-review-2">
+              <div class="review-card-stars" aria-label="5 out of 5 stars"><span aria-hidden="true">★★★★★</span></div>
+              <blockquote>“Got them for move out cleaning. They were very efficient with the whole arrangement. Very reasonable with scheduling and payment.”</blockquote>
+              <footer><strong>Mohammod Rahman</strong><span><svg class="review-google-icon" viewBox="0 0 24 24" aria-hidden="true"><path fill="#4285F4" d="M23.5 12.3c0-.8-.1-1.5-.2-2.2H12v4.2h6.5c-.3 1.4-1.1 2.7-2.4 3.6v3h3.8c2.2-2.1 3.6-5.1 3.6-8.6Z"/><path fill="#34A853" d="M12 24c3.2 0 5.9-1.1 7.8-3.1l-3.8-3c-1 .7-2.3 1.2-4 1.2-3.1 0-5.7-2.1-6.6-4.9H1.5v3.1A12 12 0 0 0 12 24Z"/><path fill="#FBBC04" d="M5.4 14.2c-.2-.7-.4-1.4-.4-2.2s.1-1.5.4-2.2V6.7H1.5A12 12 0 0 0 0 12c0 1.9.5 3.7 1.5 5.3l3.9-3.1Z"/><path fill="#EA4335" d="M12 4.8c1.7 0 3.2.6 4.4 1.7l3.3-3.3C17.9 1.1 15.2 0 12 0A12 12 0 0 0 1.5 6.7l3.9 3.1c.9-2.8 3.5-5 6.6-5Z"/></svg>Google Review</span></footer>
+            </article>
+            <article class="review-card" id="customer-review-3">
+              <div class="review-card-stars" aria-label="5 out of 5 stars"><span aria-hidden="true">★★★★★</span></div>
+              <blockquote>“Truly amazing service, my house hasn’t looked so clean before. They are very very respectful and understand everything that needs to be done in a space to make it feel like home.”</blockquote>
+              <footer><strong>Amena Badat</strong><span><svg class="review-google-icon" viewBox="0 0 24 24" aria-hidden="true"><path fill="#4285F4" d="M23.5 12.3c0-.8-.1-1.5-.2-2.2H12v4.2h6.5c-.3 1.4-1.1 2.7-2.4 3.6v3h3.8c2.2-2.1 3.6-5.1 3.6-8.6Z"/><path fill="#34A853" d="M12 24c3.2 0 5.9-1.1 7.8-3.1l-3.8-3c-1 .7-2.3 1.2-4 1.2-3.1 0-5.7-2.1-6.6-4.9H1.5v3.1A12 12 0 0 0 12 24Z"/><path fill="#FBBC04" d="M5.4 14.2c-.2-.7-.4-1.4-.4-2.2s.1-1.5.4-2.2V6.7H1.5A12 12 0 0 0 0 12c0 1.9.5 3.7 1.5 5.3l3.9-3.1Z"/><path fill="#EA4335" d="M12 4.8c1.7 0 3.2.6 4.4 1.7l3.3-3.3C17.9 1.1 15.2 0 12 0A12 12 0 0 0 1.5 6.7l3.9 3.1c.9-2.8 3.5-5 6.6-5Z"/></svg>Google Review</span></footer>
+            </article>
+          </div>
+          <nav class="review-dots" aria-label="Choose a customer review">
+            <a class="is-active" href="#customer-review-1" aria-label="Show review 1"></a>
+            <a href="#customer-review-2" aria-label="Show review 2"></a>
+            <a href="#customer-review-3" aria-label="Show review 3"></a>
+          </nav>
+        </div>
+      </section>
+
+      <section class="home-help-band" aria-labelledby="home-help-title">
+        <div class="ds-shell">
+          <div class="home-help-grid">
+            <article class="home-faq-highlight">
+              <span class="home-help-label">Frequently asked questions</span>
+              <h2 id="home-help-title">Questions before you book?</h2>
+              <div class="home-faq-preview">
+                <details>
+                  <summary>What is included in a cleaning?</summary>
+                  <p>Your cleaning scope depends on the service and options you select. You can review the included work before booking.</p>
+                </details>
+                <details>
+                  <summary>Do you bring cleaning supplies and equipment?</summary>
+                  <p>Yes. We bring professional cleaning products and equipment unless you ask us to use specific products.</p>
+                </details>
+                <details>
+                  <summary>How do quotes and payments work?</summary>
+                  <p>You’ll see or receive your price before booking. A 25% deposit reserves the appointment, and the remaining balance is due after cleaning.</p>
+                </details>
+                <details>
+                  <summary>Where do you provide cleaning service?</summary>
+                  <p>We serve Brooklyn, Queens, and Manhattan. Enter your ZIP code to confirm availability for your address.</p>
+                </details>
+                <details>
+                  <summary>What is the difference between standard and deep cleaning?</summary>
+                  <p>Standard cleaning supports routine upkeep. Deep cleaning is designed for heavier buildup and areas that require more detailed attention.</p>
+                </details>
+              </div>
+              <a class="home-help-link" href="./faq.html">View All FAQs <span aria-hidden="true">→</span></a>
+            </article>
+
+            <article class="home-contact-highlight">
+              <span class="home-help-label">Contact us</span>
+              <h2>Need help choosing a service?</h2>
+              <p>Questions about cleaning, pricing, availability, or an existing appointment? Our team is here to help.</p>
+              <div class="home-help-actions">
+                <a class="seo-static-button is-accent" href="./contact.html">Contact Us →</a>
+              </div>
+            </article>
+          </div>
+        </div>
+      </section>
+
+    </main>
+
+    <footer class="site-footer" aria-label="Website footer">
+      <div class="ds-shell">
+        <div class="footer-brand">
+          <span class="footer-mark" aria-hidden="true"></span>
+          <div><strong>Iman Cleaning Service LLC</strong><span>Residential &amp; commercial cleaning</span></div>
+        </div>
+        <div class="footer-grid">
+          <div class="footer-cell"><span class="footer-ico" aria-hidden="true">✉</span><h3>Email us</h3><p><a href="mailto:Info@imancleaningservice.com">Info@imancleaningservice.com</a></p></div>
+          <div class="footer-cell"><span class="footer-ico" aria-hidden="true">⌖</span><h3>Service area</h3><p><a href="./areas.html">Brooklyn, Queens, and Manhattan</a></p></div>
+          <div class="footer-cell"><span class="footer-ico" aria-hidden="true">☎</span><h3>Call us</h3><p><a href="tel:+19292321930">929-232-1930</a></p></div>
+          <div class="footer-cell"><span class="footer-ico" aria-hidden="true">◷</span><h3>Business hours</h3><p>Open 24 hours · 7 days a week</p></div>
+        </div>
+
+    <div class="footer-follow">
+          <h3>Follow us for more</h3>
+          <nav class="seo-static-socials" aria-label="Social media">
+            <a href="https://www.instagram.com/imancleaningservicellc/" target="_blank" rel="noopener noreferrer">Instagram</a>
+            <a href="https://www.facebook.com/Imancleaningservicellc/" target="_blank" rel="noopener noreferrer">Facebook</a>
+            <a href="https://www.youtube.com/@ImanCleaningServiceLLC" target="_blank" rel="noopener noreferrer">YouTube</a>
+            <a href="https://www.tiktok.com/@imancleaningservicellc" target="_blank" rel="noopener noreferrer">TikTok</a>
+            <a href="https://share.google/EAX7wC22J4PyMKcNx" target="_blank" rel="noopener noreferrer">Google</a>
+          </nav>
+        </div>
+        <div class="footer-bottom">
+          <span>© 2026 Iman Cleaning Service LLC. All rights reserved.</span>
+          <nav class="footer-legal" aria-label="Legal">
+            <a href="./privacy-policy.html">Privacy Policy</a>
+            <a href="./sms-terms.html">SMS Terms</a>
+          </nav>
+        </div>
+      </div>
+    </footer>
+  </div>
+</div>
+<aside class="home-booking-promo" data-home-booking-promo role="dialog" aria-labelledby="home-booking-promo-title" hidden>
+  <button class="home-booking-promo-close" type="button" data-home-booking-promo-close aria-label="Close booking offer">×</button>
+  <div class="home-booking-promo-icon" aria-hidden="true" data-home-booking-promo-icon>🍂</div>
+  <div class="home-booking-promo-copy">
+    <span data-home-booking-promo-kicker>Limited-time fall offer</span>
+    <h2 id="home-booking-promo-title" data-home-booking-promo-title>A cleaner home feels even better this fall.</h2>
+    <p data-home-booking-promo-description>First-time customers enjoy 10% off when booking by December 20.</p>
+    <a href="./book-now.html?source=homepage-promo" data-home-booking-promo-cta>See My Discounted Price →</a>
+  </div>
+</aside>
+<script defer src="./assets/homepage-desktop-loader-local.js?v=20261013-remove-offer-bar"></script>
+<script defer src="./assets/homepage-mount.min.js?v=20261007-mobile-lcp"></script>
+<script defer src="./homepage-booking-promo.js?v=20261013-fall-5s-six-hours"></script>
+<script>
+  document.addEventListener("click", function (event) {
+    var link = event.target.closest("[data-conv]");
+    if (!link || typeof window.gtag !== "function") return;
+    window.gtag("event", "conversion_click", {
+      conv_type: link.getAttribute("data-conv"),
+      page_path: window.location.pathname
+    });
+  });
+</script>
+
+<script defer src="./site-footer.js?v=20260827-unified-footer"></script>
+<script defer src="./site-reviews.js?v=20260911-trusted-title"></script>
+</body>
+</html>

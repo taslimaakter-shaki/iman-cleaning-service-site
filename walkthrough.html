@@ -1,0 +1,193 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Request a Walkthrough | IMAN Cleaning Service</title>
+  <meta name="description" content="Request a commercial cleaning walkthrough in New York City. Share your contact details, business address and preferred date and time. Our team will confirm your visit.">
+  <link rel="canonical" href="https://www.imancleaningservice.com/walkthrough.html">
+  <meta name="theme-color" content="#0b6474">
+  <link rel="icon" href="./assets/iman-logo-icon.png">
+  <link rel="stylesheet" href="./styles.css">
+  <link rel="stylesheet" href="./design-refresh.css">
+  <link rel="stylesheet" href="./unified-navbar.css?v=20260929-restored-menu-size">
+  <link rel="stylesheet" href="./homepage-footer.css?v=20260929-compact-footer-v2">
+  <link rel="stylesheet" href="./walkthrough.css?v=20260911-compact-type">
+  <script defer src="./booking-service-area.js?v=20260824-nyc-only"></script>
+  <script defer src="./walkthrough-fields.js?v=20260911-optional-start"></script>
+  <script defer src="./walkthrough.js?v=20261007-zip-prefill"></script>
+</head>
+<body class="walkthrough-page">
+<header class="site-header is-homepage iman-unified-navbar">
+  <div class="hdr-inner">
+    <a href="./index.html" class="hdr-brand" aria-label="Iman Cleaning Service LLC home">
+      <img class="hdr-mark" src="./assets/iman-logo-icon.png?v=20260727-clean-header-logo" alt="Iman Cleaning Service LLC" width="46" height="46" decoding="async">
+      <span class="hdr-words" aria-hidden="true"><strong>IMAN</strong><small>Cleaning Service LLC</small></span>
+    </a>
+    <nav class="hdr-nav" data-open="false" aria-label="Primary navigation">
+      <a href="./services-hub.html">Our Services</a>
+      <a href="./areas.html">Service Areas</a>
+      <a href="./faq.html">FAQs</a>
+      <a href="./contact.html">Contact Us</a>
+      <div class="hdr-mobile-actions">
+        <a class="navbar-action navbar-action-secondary" href="./login.html" aria-label="Log in to your customer account">Log In</a>
+      </div>
+    </nav>
+    <div class="hdr-actions">
+      <a class="navbar-action navbar-action-secondary" href="./login.html" aria-label="Log in to your customer account">Log In</a>
+      <button class="hdr-burger" type="button" aria-label="Open navigation menu" aria-expanded="false">
+        <span>Menu</span>
+        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" aria-hidden="true"><path d="M4 7h16M4 12h16M4 17h16"/></svg>
+      </button>
+    </div>
+  </div>
+</header>
+<main class="walkthrough-shell">
+  <a class="walkthrough-back" href="./contact.html" data-walkthrough-back>← Contact us</a>
+  <section class="walkthrough-card" aria-label="Commercial cleaning walkthrough request">
+    <div data-walkthrough-intro>
+      <p class="walkthrough-kicker">Commercial cleaning</p>
+      <h1>Request a walkthrough</h1>
+      <p class="walkthrough-space" data-walkthrough-space hidden></p>
+    </div>
+    <form class="walkthrough-form" data-walkthrough-form method="post" action="/api/quote/finish">
+      <div class="walkthrough-honey" aria-hidden="true"><label>Leave this empty<input name="_honey" type="text" tabindex="-1" autocomplete="off"></label></div>
+      <fieldset>
+        <legend>Business and contact</legend>
+        <div class="walkthrough-grid">
+          <label class="walkthrough-wide">What is your business or organization’s name?<input name="Business Name" type="text" autocomplete="organization" maxlength="160" required></label>
+          <label>Contact person’s full name<input name="Full Name" type="text" autocomplete="name" maxlength="120" required></label>
+          <label>Role <small>Optional</small><input name="Contact Role" type="text" autocomplete="organization-title" maxlength="100"></label>
+          <label>Phone number<input name="Phone" type="tel" autocomplete="tel" maxlength="30" required></label>
+          <label>Email address<input name="Email" type="email" autocomplete="email" maxlength="254" required></label>
+        </div>
+      </fieldset>
+      <fieldset>
+        <legend>Property</legend>
+        <div class="walkthrough-grid">
+          <label class="walkthrough-wide">Street address<input name="Street Address" type="text" autocomplete="address-line1" maxlength="250" required></label>
+          <label>Floor or suite <small>Optional</small><input name="Floor or Suite" type="text" autocomplete="address-line2" maxlength="100"></label>
+          <label>City or borough<input name="City" type="text" autocomplete="address-level2" placeholder="e.g. Brooklyn" maxlength="100" required></label>
+          <label>ZIP code<input name="ZIP Code" type="text" inputmode="numeric" autocomplete="postal-code" pattern="[0-9]{5}" maxlength="5" required></label>
+          <label>What type of commercial property needs cleaning?
+            <select name="Commercial Space Type" required>
+              <option value="">Select property type</option><option>Office</option><option>Retail store</option><option>Restaurant / café</option><option>Salon / spa</option><option>School / daycare</option><option>Medical office</option><option>Warehouse</option><option>Building common areas</option><option>Other</option>
+            </select>
+          </label>
+          <label data-other-property hidden>Other property type<input name="Other Commercial Space" type="text" maxlength="120"></label>
+          <div class="walkthrough-wide walkthrough-inline-field">
+            <label>Approximately how large is the area that needs cleaning?<input name="Approximate Square Footage" type="number" inputmode="numeric" min="1" max="10000000" step="1" placeholder="Square feet"></label>
+            <label class="walkthrough-choice"><input name="Square Footage Unknown" type="checkbox" value="Yes"> I’m not sure</label>
+          </div>
+        </div>
+      </fieldset>
+      <fieldset>
+        <legend>Are you looking for one time cleaning or recurring cleaning?</legend>
+        <div class="walkthrough-options">
+          <label class="walkthrough-choice"><input type="radio" name="Cleaning Plan" value="One-time cleaning" required> One-time cleaning</label>
+          <label class="walkthrough-choice"><input type="radio" name="Cleaning Plan" value="Recurring cleaning" required> Recurring cleaning</label>
+        </div>
+      </fieldset>
+      <fieldset data-restaurant-followup hidden>
+        <legend>Restaurant-specific work</legend>
+        <label>Does your request include commercial cooking equipment, exhaust hoods, or grease traps?<select name="Restaurant Specialty Work"><option value="">Select answer</option><option>Yes</option><option>No</option><option>Unsure</option></select></label>
+        <label data-restaurant-details hidden>What specialty work should we review?<textarea name="Restaurant Specialty Details" rows="3" maxlength="1000"></textarea></label>
+      </fieldset>
+      <fieldset data-medical-followup hidden>
+        <legend>Medical facility details</legend>
+        <label>Does the requested work involve clinical areas, medical waste, sharps, or specialized disinfection?<select name="Medical Specialty Work"><option value="">Select answer</option><option>Yes</option><option>No</option><option>Unsure</option></select></label>
+        <label data-medical-details hidden>Please describe what should be reviewed<textarea name="Medical Specialty Details" rows="3" maxlength="1000"></textarea></label>
+      </fieldset>
+      <fieldset>
+        <legend>Scheduling</legend>
+        <div class="walkthrough-question walkthrough-inline-field">
+          <label><span>When would you like cleaning services to begin? <small>(It does not have to be accurate)</small></span><input name="Preferred Service Start Date" type="date"></label>
+          <label class="walkthrough-choice"><input name="Service Start Unknown" type="checkbox" value="Yes"> I’m not sure</label>
+        </div>
+        <div class="walkthrough-grid">
+          <label>Preferred walkthrough date<input name="Preferred Walkthrough Date" type="date" required></label>
+          <label>Preferred walkthrough time <small>Optional</small><input name="Preferred Walkthrough Time" type="time" step="60"></label>
+          <label>Alternative date <small>Optional</small><input name="Alternative Walkthrough Date" type="date"></label>
+          <label>Alternative time <small>Optional</small><input name="Alternative Walkthrough Time" type="time" step="60"></label>
+        </div>
+      </fieldset>
+      <fieldset>
+        <legend>Files and additional notes</legend>
+        <label>Upload photos or a floor plan <small>Optional</small><input name="Walkthrough Files" type="file" accept="application/pdf,image/jpeg,image/png,image/heic,image/heif,.heic,.heif" multiple><small>JPG, PNG, HEIC, HEIF or PDF</small></label>
+        <label>Is there anything else you would like us to know? <small>Optional</small><textarea name="Walkthrough Notes" rows="4" maxlength="2000"></textarea></label>
+      </fieldset>
+      <p class="walkthrough-status" data-walkthrough-status role="status" aria-live="polite" hidden></p>
+      <button class="walkthrough-submit" type="submit">Request a Walkthrough</button>
+      <p class="walkthrough-consent">By submitting, you agree to be contacted about this request by phone, text or email. Message and data rates may apply. Reply STOP to opt out of texts. <a href="./privacy-policy.html">Privacy Policy</a> · <a href="./sms-terms.html">SMS Terms</a></p>
+      <noscript>Please enable JavaScript to submit this form, or call <a href="tel:+19292321930">(929) 232-1930</a> to request a walkthrough.</noscript>
+    </form>
+    <div class="walkthrough-success" data-walkthrough-success hidden>
+      <div class="walkthrough-success-head">
+        <span class="walkthrough-success-icon" aria-hidden="true"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m5 12 4 4L19 6"/></svg></span>
+        <div>
+          <p class="walkthrough-kicker">Request received</p>
+          <h1 tabindex="-1">Thank you for your walkthrough request.</h1>
+        </div>
+      </div>
+      <div class="walkthrough-success-body">
+        <p>A member of our team will reach out shortly to discuss your space and confirm a date and time before we visit.</p>
+        <div class="walkthrough-success-note">
+          <p><strong>Your walkthrough is not confirmed yet.</strong></p>
+          <p>No cleaning appointment has been booked and no payment is required for this request.</p>
+        </div>
+        <p data-walkthrough-reference></p>
+        <div class="walkthrough-success-actions">
+          <a class="walkthrough-submit" href="./index.html">Back to home</a>
+          <p class="walkthrough-success-contact">Questions? Call <a href="tel:+19292321930">(929) 232-1930</a><br>or email <a href="mailto:info@imancleaningservice.com">info@imancleaningservice.com</a>.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+</main>
+<footer class="site-footer" aria-label="Website footer">
+  <div class="ds-shell">
+    <div class="footer-brand">
+      <span class="footer-mark" aria-hidden="true"></span>
+      <div><strong>Iman Cleaning Service LLC</strong><span>Residential &amp; commercial cleaning</span></div>
+    </div>
+    <div class="footer-grid">
+      <div class="footer-cell">
+        <span class="footer-ico" aria-hidden="true"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="5" width="18" height="14" rx="2"/><path d="M4 7l8 6 8-6"/></svg></span>
+        <h4>Email us</h4>
+        <p><a href="mailto:Info@imancleaningservice.com">Info@imancleaningservice.com</a></p>
+      </div>
+      <div class="footer-cell">
+        <span class="footer-ico" aria-hidden="true"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 21s7-5.6 7-11a7 7 0 1 0-14 0c0 5.4 7 11 7 11z"/><circle cx="12" cy="10" r="2.6"/></svg></span>
+        <h4>Service area</h4>
+        <p><a href="./areas.html">Brooklyn, Queens, and Manhattan</a></p>
+      </div>
+      <div class="footer-cell">
+        <span class="footer-ico" aria-hidden="true"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M5 4h3l1.5 4.5L7.5 10a12 12 0 0 0 6 6l1.5-2 4.5 1.5V19a2 2 0 0 1-2 2A16 16 0 0 1 4 6a2 2 0 0 1 1-2z"/></svg></span>
+        <h4>Call us</h4>
+        <p><a href="tel:+19292321930">929-232-1930</a></p>
+      </div>
+      <div class="footer-cell">
+        <span class="footer-ico" aria-hidden="true"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3.5 2"/></svg></span>
+        <h4>Business hours</h4>
+        <p>Open 24 hours · 7 days a week</p>
+      </div>
+    </div>
+
+    <div class="footer-follow">
+      <h4>Follow us for more</h4>
+      <div class="social-row">
+        <a class="social-ico" href="https://www.instagram.com/imancleaningservicellc/" target="_blank" rel="noopener noreferrer" aria-label="Instagram" style="background: radial-gradient(circle at 30% 110%, #ffd35c 0%, #ff9a4d 22%, #fd3f6c 46%, #d534b8 70%, #3f5cff 100%); color: #fff;"><svg width="22" height="22" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M7.8 3h8.4A4.8 4.8 0 0 1 21 7.8v8.4A4.8 4.8 0 0 1 16.2 21H7.8A4.8 4.8 0 0 1 3 16.2V7.8A4.8 4.8 0 0 1 7.8 3Zm0 1.8A3 3 0 0 0 4.8 7.8v8.4a3 3 0 0 0 3 3h8.4a3 3 0 0 0 3-3V7.8a3 3 0 0 0-3-3H7.8Zm8.9 1.3a1.1 1.1 0 1 1 0 2.2 1.1 1.1 0 0 1 0-2.2ZM12 7a5 5 0 1 1 0 10 5 5 0 0 1 0-10Zm0 1.8a3.2 3.2 0 1 0 0 6.4 3.2 3.2 0 0 0 0-6.4Z"/></svg></a>
+        <a class="social-ico" href="https://www.facebook.com/Imancleaningservicellc/" target="_blank" rel="noopener noreferrer" aria-label="Facebook" style="background: #1877f2; color: #fff;"><svg width="22" height="22" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M13.5 21v-7h2.4l.4-3h-2.8V9.1c0-.9.3-1.6 1.6-1.6H16V4.8c-.2 0-.9-.1-1.8-.1-2.7 0-4.3 1.6-4.3 4.5V11H7.5v3h2.4v7h3.6Z"/></svg></a>
+        <a class="social-ico" href="https://www.youtube.com/@ImanCleaningServiceLLC" target="_blank" rel="noopener noreferrer" aria-label="YouTube" style="background: #ff0000; color: #fff;"><svg width="22" height="22" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M21.6 7.2a2.9 2.9 0 0 0-2-2A34.6 34.6 0 0 0 12 4.8a34.6 34.6 0 0 0-7.6.4 2.9 2.9 0 0 0-2 2A31 31 0 0 0 2 12a31 31 0 0 0 .4 4.8 2.9 2.9 0 0 0 2 2 34.6 34.6 0 0 0 7.6.4 34.6 34.6 0 0 0 7.6-.4 2.9 2.9 0 0 0 2-2A31 31 0 0 0 22 12a31 31 0 0 0-.4-4.8ZM10 15.5v-7l6 3.5-6 3.5Z"/></svg></a>
+        <a class="social-ico" href="https://www.tiktok.com/@imancleaningservicellc" target="_blank" rel="noopener noreferrer" aria-label="TikTok" style="background: #111; color: #fff;"><svg width="22" height="22" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M14.6 3c.3 2 1.5 3.5 3.4 4.1v2.7a6.7 6.7 0 0 1-3.4-1.1v6.3a5 5 0 1 1-4.1-4.9v2.8a2.2 2.2 0 1 0 1.4 2V3h2.7Z"/></svg></a>
+        <a class="social-ico is-google" href="https://share.google/EAX7wC22J4PyMKcNx" target="_blank" rel="noopener noreferrer" aria-label="Google Business Profile" style="background: #fff; color: #fff;"><svg width="22" height="22" viewBox="0 0 24 24" aria-hidden="true"><path fill="#4285F4" d="M23.5 12.3c0-.8-.1-1.5-.2-2.2H12v4.2h6.5c-.3 1.4-1.1 2.7-2.4 3.6v3h3.8c2.2-2.1 3.6-5.1 3.6-8.6Z"/><path fill="#34A853" d="M12 24c3.2 0 5.9-1.1 7.8-3.1l-3.8-3c-1 .7-2.3 1.2-4 1.2-3.1 0-5.7-2.1-6.6-4.9H1.5v3.1A12 12 0 0 0 12 24Z"/><path fill="#FBBC04" d="M5.4 14.2c-.2-.7-.4-1.4-.4-2.2s.1-1.5.4-2.2V6.7H1.5A12 12 0 0 0 0 12c0 1.9.5 3.7 1.5 5.3l3.9-3.1Z"/><path fill="#EA4335" d="M12 4.8c1.7 0 3.2.6 4.4 1.7l3.3-3.3C17.9 1.1 15.2 0 12 0A12 12 0 0 0 1.5 6.7l3.9 3.1c.9-2.8 3.5-5 6.6-5Z"/></svg></a>
+      </div>
+    </div>
+    <div class="footer-bottom"><span>© 2026 Iman Cleaning Service LLC. All rights reserved.</span><nav class="footer-legal" aria-label="Legal"><a href="./privacy-policy.html">Privacy Policy</a><a href="./sms-terms.html">SMS Terms</a></nav></div>
+  </div>
+</footer>
+<script defer src="./unified-navbar.js?v=20260825-homepage-design"></script>
+<script defer src="./site-footer.js?v=20260827-unified-footer"></script>
+<script defer src="./site-reviews.js?v=20260911-trusted-title"></script>
+</body>
+</html>

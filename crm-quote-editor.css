@@ -1,0 +1,50 @@
+.crm-quote-editor { padding: 20px; margin-bottom: 24px; border: 1px solid #d4e3e5; border-radius: 14px; background: #f6fafb; }
+.crm-quote-editor [hidden] { display: none !important; }
+.crm-quote-editor form { margin-top: 24px; }
+.crm-quote-editor p { color: #425d63; font-size: .9375rem; line-height: 1.6; }
+.crm-edit-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 16px; }
+.crm-quote-editor label { display: grid; gap: 7px; margin: 14px 0; color: #183b43; font-weight: 600; font-size: .9375rem; }
+.crm-quote-editor input, .crm-quote-editor select, .crm-quote-editor textarea { width: 100%; min-width: 0; box-sizing: border-box; padding: 12px; border: 1px solid #b8ccd0; border-radius: 8px; background: #fff; color: #183b43; font: inherit; font-weight: 400; font-size: 1rem; }
+.crm-quote-editor input:focus-visible, .crm-quote-editor textarea:focus-visible, .crm-quote-editor select:focus-visible { outline: 2px solid #08798a; outline-offset: 2px; }
+.crm-quote-editor :disabled { background: #edf1f2; color: #627378; cursor: not-allowed; }
+.crm-quote-editor textarea { resize: vertical; }
+.crm-quote-editor .crm-inline-actions { display: flex; gap: 10px; flex-wrap: wrap; }
+.crm-quote-editor .crm-danger-button { color: #a32327; border-color: #d8a6a8; }
+.crm-revised-link { display: flex; gap: 14px; align-items: center; flex-wrap: wrap; margin-top: 16px; }
+.crm-revised-link a { color: #086779; overflow-wrap: anywhere; }
+.crm-quote-editor summary { padding: 14px 0; cursor: pointer; font-weight: 600; }
+.crm-custom-payment { border-top: 4px solid #0b6979; }
+.crm-custom-payment h3 { margin: 8px 0 12px; color: #123b43; font-size: 1.125rem; }
+.crm-custom-payment form h3:not(:first-child) { margin-top: 28px; }
+.crm-payment-preview { padding: 16px; border: 1px solid #c9dfb3; border-radius: 10px; background: #f2f8e9; color: #234d32; font-size: .9375rem; line-height: 1.7; }
+.crm-payment-totals { padding: 18px; border: 1px solid #b8ccd0; border-radius: 10px; margin: 18px 0; background: #fff; }
+.crm-payment-totals > div { display: flex; justify-content: space-between; gap: 18px; margin: 10px 0; color: #23444d; }
+.crm-payment-totals > div:last-child { padding-top: 14px; border-top: 1px solid #b8ccd0; font-weight: 700; }
+.crm-quote-unit { margin: 18px 0; padding: 18px; border: 1px solid #b8ccd0; border-radius: 12px; background: #fff; }
+.crm-unit-heading, .crm-unit-footer { display: flex; justify-content: space-between; gap: 16px; align-items: center; flex-wrap: wrap; }
+.crm-unit-heading label { flex: 1; min-width: 160px; }
+.crm-unit-item { display: grid; grid-template-columns: minmax(140px, 2fr) minmax(75px, .7fr) minmax(100px, 1fr) minmax(90px, 1fr); gap: 12px; padding: 8px 0; border-bottom: 1px solid #e3ebec; align-items: start; }
+.crm-unit-item label { margin: 6px 0; font-size: .8125rem; }
+.crm-unit-line-total { display: grid; gap: 7px; margin-top: 6px; font-size: .8125rem; }
+.crm-unit-line-total strong { margin: 8px 0; font-size: .9375rem; }
+.crm-unit-line-total button { justify-self: start; }
+.crm-unit-footer { margin-top: 18px; color: #123b43; font-size: .9375rem; }
+.crm-quote-editor input[readonly] { background: #edf4f5; }
+@media (max-width: 720px) { .crm-unit-item { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px; padding: 16px 0; } .crm-quote-unit { padding: 12px; } }
+@media (max-width: 600px) { .crm-edit-grid { grid-template-columns: 1fr; gap: 0; } .crm-quote-editor { padding: 16px; } }
+.crm-delete-confirm { box-sizing: border-box; width: min(440px, calc(100% - 32px)); max-height: calc(100dvh - 32px); overflow-y: auto; padding: 24px; margin: auto; border: 1px solid #d4e3e5; border-radius: 16px; background: #fff; color: #183b43; box-shadow: 0 20px 60px #082f4940; }
+.crm-delete-confirm::backdrop { background: #062b3b99; }
+.crm-delete-confirm h2 { margin: 0 0 12px; font-size: 1.25rem; line-height: 1.4; }
+.crm-delete-confirm p { margin: 0 0 24px; color: #425d63; font-size: 1rem; line-height: 1.6; }
+.crm-delete-confirm-actions { display: flex; justify-content: flex-end; gap: 12px; flex-wrap: wrap; }
+.crm-delete-confirm button { min-width: 88px; min-height: 44px; padding: 10px 20px; border: 1px solid #b8ccd0; border-radius: 8px; background: #fff; color: #183b43; font: inherit; font-size: 1rem; font-weight: 600; cursor: pointer; }
+.crm-delete-confirm .crm-delete-yes { border-color: #a32327; background: #a32327; color: #fff; }
+.crm-delete-confirm button:focus-visible { outline: 3px solid #08798a; outline-offset: 3px; }
+.crm-trash-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 320px), 1fr)); gap: 20px; }
+.crm-trash-item { min-width: 0; padding: 24px; background: #fff; border: 1px solid #d4e3e5; border-radius: 14px; overflow-wrap: anywhere; }
+.crm-trash-item h3 { margin: 0 0 10px; color: #183b43; font-size: 1.125rem; }
+.crm-trash-item p { margin: 8px 0; color: #425d63; font-size: 1rem; line-height: 1.6; }
+.crm-trash-item .crm-trash-meta { font-size: .875rem; }
+.crm-trash-actions { display: flex; gap: 10px; flex-wrap: wrap; margin-top: 20px; }
+.crm-trash-actions button { min-height: 44px; }
+.crm-trash-item [data-quote-edit-status]:empty { display: none; }

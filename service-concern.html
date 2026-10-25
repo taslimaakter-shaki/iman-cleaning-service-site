@@ -1,0 +1,391 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Report a Service Concern | Iman Cleaning Service LLC</title>
+  <meta name="description" content="Report a concern about a recent Iman Cleaning Service appointment and securely share supporting details or evidence.">
+  <link rel="canonical" href="https://www.imancleaningservice.com/service-concern.html">
+  <meta name="robots" content="index,follow">
+  <meta name="theme-color" content="#073f49">
+  <link rel="stylesheet" href="./design-system.css">
+  <style>
+    :root{--ink:#092f36;--muted:#5b7074;--teal:#0b7180;--teal-dark:#07525e;--leaf:#80b847;--line:#d8e5e2;--soft:#f2f8f6;--cream:#faf8f2;--danger:#9a2828}
+    *{box-sizing:border-box}
+    body{margin:0;background:#f5f8f7;color:var(--ink);font-family:var(--font-sans);font-size:.9375rem;line-height:1.5}
+    h1,h2{font-family:var(--font-sans);font-weight:600;text-wrap:initial}
+    strong{font-weight:600}
+    a{color:var(--teal);font-weight:600}
+    .topbar{background:#fff;border-bottom:1px solid var(--line)}
+    .topbar-inner{width:min(1040px,calc(100% - 32px));min-height:76px;margin:auto;display:flex;align-items:center;justify-content:space-between;gap:20px}
+    .brand{display:flex;align-items:center;gap:12px;color:var(--ink);text-decoration:none}
+    .brand img{width:42px;height:42px;object-fit:contain}
+    .brand strong{display:block;letter-spacing:.08em}
+    .brand small{display:block;color:var(--muted);font-size:.75rem;font-weight:400}
+    .manage-link{display:inline-flex;align-items:center;min-height:44px;padding:8px 14px;border:1px solid #aac7c4;border-radius:8px;font-size:.875rem;text-decoration:none;white-space:nowrap}
+    main{width:min(900px,calc(100% - 28px));margin:32px auto 48px}
+    .hero{padding:28px 32px;border-radius:16px 16px 0 0;background:#073f49;color:#fff}
+    .hero h1{margin:0;color:#fff;font-size:2rem;line-height:1.25;letter-spacing:-.025em}
+    .hero p{max-width:720px;margin:12px 0 0;color:#d7e8e7;font-size:.9375rem;line-height:1.6}
+    .hero .eyebrow{margin:0 0 8px;color:#b9dd8c;font-size:.6875rem;font-weight:600;letter-spacing:.1em;text-transform:uppercase}
+    .form-shell{background:#fff;border:1px solid var(--line);border-top:0;border-radius:0 0 16px 16px;box-shadow:0 4px 16px rgba(4,55,63,.04)}
+    .reporting-deadline{padding:20px 32px;border-bottom:1px solid var(--line);background:var(--soft)}
+    .reporting-deadline h2{margin:0 0 6px;font-size:.9375rem;line-height:1.4;letter-spacing:0}
+    .reporting-deadline p{margin:0;color:#405c60;font-size:.875rem;line-height:1.6}
+    .form-status{display:none;margin:0;padding:16px 32px;background:#fff4e2;color:#75541d;font-size:.875rem;font-weight:600}
+    .form-status.show{display:block}.form-status.error{background:#fff0f0;color:var(--danger)}
+    .form-section{padding:28px 32px;border-top:1px solid var(--line)}
+    .form-section:first-of-type{border-top:0}
+    .section-head{display:grid;grid-template-columns:30px 1fr;gap:12px;margin-bottom:20px;align-items:start}
+    .section-number{display:grid;place-items:center;width:30px;height:30px;border-radius:8px;background:#e8f4ef;color:var(--teal);font-size:.8125rem;font-weight:600}
+    .section-head h2{margin:0 0 4px;font-size:1.125rem;line-height:1.4;letter-spacing:-.01em}
+    .section-head p{margin:0;color:var(--muted);font-size:.875rem;line-height:1.5}
+    .grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:18px 20px}
+    .wide{grid-column:1/-1}
+    label,.field-label,legend{display:block;margin:0 0 6px;font-size:.875rem;font-weight:600;line-height:1.5}
+    .required::after{content:" *";color:#b33}
+    input,select,textarea{width:100%;min-width:0;border:1px solid #adc6c3;border-radius:8px;background:#fff;color:var(--ink);font:inherit;font-size:1rem}
+    input,select{min-height:46px;padding:0 12px}textarea{min-height:120px;padding:12px;resize:vertical;line-height:1.5}
+    input:focus,select:focus,textarea:focus{outline:3px solid rgba(11,113,128,.16);border-color:var(--teal)}
+    .helper{display:block;margin-top:6px;color:var(--muted);font-size:.8125rem;line-height:1.5}
+    fieldset{min-width:0;margin:0;padding:0;border:0}
+    .choice-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px}
+    .choice{display:flex;align-items:flex-start;gap:10px;min-height:44px;margin:0;padding:10px 12px;border:1px solid var(--line);border-radius:8px;background:#fbfdfc;font-size:.875rem;font-weight:400;line-height:1.5}
+    .choice input{width:18px;height:18px;min-height:0;margin:2px 0 0;padding:0;accent-color:var(--teal);flex:none}
+    .choice:has(input:checked){border-color:#8cbdb5;background:#edf7f4}
+    .notice{margin:16px 0 0;padding:12px 14px;border-left:3px solid var(--leaf);border-radius:6px;background:var(--soft);color:#405c60;font-size:.875rem;line-height:1.6}
+    .upload{padding:18px;border:1px dashed #a8c6c1;border-radius:8px;background:var(--soft);text-align:center}
+    .upload input{padding:10px;background:#fff}
+    .file-count{display:block;margin-top:8px;color:var(--teal);font-size:.8125rem;font-weight:500}
+    .conditional{margin-top:18px}.hidden{display:none!important}
+    .field-block{margin-top:24px}
+    .concern-details{padding:18px;border:1px solid var(--line);border-radius:8px;background:#fbfdfc}
+    .concern-details legend{padding:0 6px;font-size:.9375rem}
+    .safety-notice{border-left-color:var(--danger);background:#fff5f3;color:#7b2929}
+    .response-time{margin:0 0 16px;color:var(--muted);font-size:.875rem;line-height:1.6}
+    .char-row{display:flex;justify-content:flex-end;margin-top:6px;color:var(--muted);font-size:.8125rem}
+    .confirmations{display:grid;gap:4px}
+    .confirmations .choice{padding:6px 0;border:0;border-radius:0;background:#fff}
+    .submit-wrap{padding:24px 32px;border-top:1px solid var(--line);background:#f8fbfa;border-radius:0 0 16px 16px}
+    .submit-button{width:100%;min-height:48px;padding:12px 18px;border:0;border-radius:8px;background:var(--teal);color:#fff;font:inherit;font-size:.9375rem;font-weight:600;cursor:pointer}
+    .submit-button:hover:not(:disabled){background:var(--teal-dark)}
+    .submit-button:disabled{cursor:wait;opacity:.58}
+    .privacy{margin:10px 0 0;text-align:center;color:var(--muted);font-size:.8125rem;line-height:1.5}
+    .success{display:none;padding:32px;text-align:center}
+    .success.show{display:block}
+    .success-mark{display:grid;place-items:center;width:44px;height:44px;margin:0 auto 16px;border-radius:50%;background:#eaf6e2;color:#4d8326;font-size:1.25rem;font-weight:600}
+    .success h2{margin:0 0 12px;font-size:1.5rem;line-height:1.3}
+    .success p{max-width:650px;margin:12px auto;color:var(--muted);font-size:.9375rem;line-height:1.6}
+    .case-number{display:inline-block;max-width:100%;overflow-wrap:anywhere;margin:16px 0;padding:12px 16px;border-radius:8px;background:#073f49;color:#fff;font-size:1rem;font-weight:600;letter-spacing:.02em}
+    @media(max-width:680px){.grid,.choice-grid{grid-template-columns:1fr}.wide{grid-column:auto}.topbar-inner{min-height:68px;gap:12px}.brand{gap:8px}.brand small{display:none}.manage-link{padding:8px 10px;font-size:.8125rem}main{margin:20px auto 32px}.hero,.form-section,.success{padding:24px 20px}.hero h1{font-size:1.625rem}.reporting-deadline,.form-status,.submit-wrap{padding:20px}.section-head{gap:10px}.upload{padding:14px}}
+  </style>
+</head>
+<body>
+  <header class="topbar">
+    <div class="topbar-inner">
+      <a class="brand" href="./index.html"><img src="./assets/iman-logo-icon.png" alt=""><span><strong>IMAN</strong><small>Cleaning Service LLC</small></span></a>
+      <a class="manage-link" href="./manage-booking.html">Manage a booking</a>
+    </div>
+  </header>
+  <main>
+    <section class="hero">
+      <p class="eyebrow">Customer care</p>
+      <h1>Report a Service Concern</h1>
+      <p>We’re sorry to hear that something may not have met your expectations. Please provide the information below so we can review your service record and respond appropriately. Clear descriptions and supporting photos will help us investigate your concern.</p>
+    </section>
+    <div class="form-shell">
+      <aside class="reporting-deadline" aria-labelledby="reporting-deadline-title">
+        <h2 id="reporting-deadline-title">Please submit concerns promptly</h2>
+        <p>Service-quality concerns should be reported within <strong>24 hours after the cleaning is completed</strong>. Concerns involving damage, missing items, billing, health, or safety should be reported as soon as they are discovered. Reports submitted after the applicable reporting period will be reviewed based on the available information and our service policies.</p>
+      </aside>
+      <div class="form-status" role="status" aria-live="polite" data-status></div>
+      <form data-form novalidate>
+        <input type="text" name="website" tabindex="-1" autocomplete="off" hidden>
+        <section class="form-section">
+          <div class="section-head"><span class="section-number">1</span><div><h2>Your information</h2></div></div>
+          <div class="grid">
+            <div><label class="required" for="full-name">Full name</label><input id="full-name" name="Full name" autocomplete="name" required></div>
+            <div><label class="required" for="email">Email address</label><input id="email" name="Email address" type="email" autocomplete="email" required></div>
+            <div><label class="required" for="phone">Phone number</label><input id="phone" name="Phone number" type="tel" autocomplete="tel" required></div>
+            <div><label class="required" for="contact-method">Preferred contact method</label><select id="contact-method" name="Preferred contact method" required><option value="">Choose one</option><option>Phone call</option><option>Text message</option><option>Email</option></select></div>
+          </div>
+        </section>
+
+        <section class="form-section">
+          <div class="section-head"><span class="section-number">2</span><div><h2>Service details</h2></div></div>
+          <div class="grid">
+            <div><label for="booking-number">Booking or confirmation number</label><input id="booking-number" name="Booking or confirmation number" autocomplete="off"></div>
+            <div><label class="required" for="service-date">Date of cleaning service</label><input id="service-date" name="Date of cleaning service" type="date" required></div>
+            <div class="wide"><label class="required" for="service-address">Service address</label><input id="service-address" name="Service address" autocomplete="street-address" required></div>
+            <div><label class="required" for="service-type">Type of service</label><select id="service-type" name="Type of service" required><option value="">Choose one</option><option>Standard Cleaning</option><option>Deep Cleaning</option><option>Move-In Cleaning</option><option>Move-Out Cleaning</option><option>Post-Construction Cleaning</option><option>Commercial Cleaning</option><option>Other</option></select></div>
+            <div><label for="team-left">Approximate time the team left (if known)</label><input id="team-left" name="Approximate time team left" type="time"><span class="helper">Leave blank if the team did not attend or you are unsure.</span></div>
+          </div>
+        </section>
+
+        <section class="form-section">
+          <div class="section-head"><span class="section-number">3</span><div><h2>Tell us what happened</h2></div></div>
+          <fieldset data-required-group="Type of concern"><legend class="required">Concern type</legend><div class="choice-grid">
+            <label class="choice"><input type="checkbox" name="Type of concern" value="Area was not cleaned"><span>Area was not cleaned</span></label>
+            <label class="choice"><input type="checkbox" name="Type of concern" value="Cleaning quality did not meet expectations"><span>Cleaning quality did not meet expectations</span></label>
+            <label class="choice"><input type="checkbox" name="Type of concern" value="Cleaner arrived late"><span>Cleaner arrived late</span></label>
+            <label class="choice"><input type="checkbox" name="Type of concern" value="Cleaner did not arrive"><span>Cleaner did not arrive</span></label>
+            <label class="choice"><input type="checkbox" name="Type of concern" value="Service was not completed"><span>Service was not completed</span></label>
+            <label class="choice"><input type="checkbox" name="Type of concern" value="Property was damaged"><span>Property was damaged</span></label>
+            <label class="choice"><input type="checkbox" name="Type of concern" value="Item is missing"><span>Item is missing</span></label>
+            <label class="choice"><input type="checkbox" name="Type of concern" value="Incorrect charge or billing concern"><span>Incorrect charge or billing concern</span></label>
+            <label class="choice"><input type="checkbox" name="Type of concern" value="Cleaner behavior or professionalism"><span>Cleaner’s behavior or professionalism</span></label>
+            <label class="choice"><input type="checkbox" name="Type of concern" value="Communication problem"><span>Communication problem</span></label>
+            <label class="choice"><input type="checkbox" name="Type of concern" value="Health or safety concern"><span>Health or safety concern</span></label>
+            <label class="choice"><input type="checkbox" name="Type of concern" value="Other"><span>Other</span></label>
+          </div></fieldset>
+          <p class="notice safety-notice hidden" data-safety-notice role="status">If anyone is in immediate danger or requires urgent medical assistance, call <a href="tel:911">911</a> before submitting this form.</p>
+          <fieldset class="field-block" data-required-group="Areas affected"><legend class="required">Affected areas — select all that apply</legend><div class="choice-grid">
+            <label class="choice"><input type="checkbox" name="Areas affected" value="Kitchen"><span>Kitchen</span></label><label class="choice"><input type="checkbox" name="Areas affected" value="Bathroom"><span>Bathroom</span></label>
+            <label class="choice"><input type="checkbox" name="Areas affected" value="Bedroom"><span>Bedroom</span></label><label class="choice"><input type="checkbox" name="Areas affected" value="Living room"><span>Living room</span></label>
+            <label class="choice"><input type="checkbox" name="Areas affected" value="Dining room"><span>Dining room</span></label><label class="choice"><input type="checkbox" name="Areas affected" value="Hallway or stairs"><span>Hallway or stairs</span></label>
+            <label class="choice"><input type="checkbox" name="Areas affected" value="Basement"><span>Basement</span></label><label class="choice"><input type="checkbox" name="Areas affected" value="Windows"><span>Windows</span></label>
+            <label class="choice"><input type="checkbox" name="Areas affected" value="Appliances"><span>Appliances</span></label><label class="choice"><input type="checkbox" name="Areas affected" value="Furniture"><span>Furniture</span></label>
+            <label class="choice"><input type="checkbox" name="Areas affected" value="Floors"><span>Floors</span></label><label class="choice"><input type="checkbox" name="Areas affected" value="Entire property"><span>Entire property</span></label>
+            <label class="choice"><input type="checkbox" name="Areas affected" value="Other"><span>Other</span></label>
+            <label class="choice"><input type="checkbox" name="Areas affected" value="Not applicable"><span>Not applicable</span></label>
+          </div></fieldset>
+          <div class="field-block">
+          <label class="required" for="explanation">Please describe what happened</label>
+          <textarea id="explanation" name="Detailed explanation" maxlength="2000" required aria-describedby="explanation-help character-count"></textarea>
+          <span class="helper" id="explanation-help">Tell us what you expected, what was not completed correctly, when you noticed the issue, and any other information that may help us investigate.</span>
+          <span class="char-row" id="character-count"><span data-char-count>0</span>/2,000</span>
+          </div>
+          <div class="field-block"><label class="required" for="first-noticed">When did you first notice the concern?</label><input id="first-noticed" name="When concern first noticed" maxlength="300" placeholder="Approximate date and time, or describe when you noticed it" required></div>
+
+          <fieldset class="concern-details conditional hidden" data-concern-fields="Property was damaged" disabled>
+            <legend>Property damage details</legend>
+            <div class="grid">
+              <div class="wide"><label class="required" for="damaged-item">What item or surface was damaged?</label><input id="damaged-item" name="Damaged item or surface" maxlength="500" required></div>
+              <div class="wide"><label class="required" for="damage-discovered">When did you discover the damage?</label><input id="damage-discovered" name="Damage discovered" maxlength="300" required></div>
+              <div class="wide"><label class="required" for="prior-condition">What was its condition before the service?</label><textarea id="prior-condition" name="Condition before service" maxlength="1500" required></textarea></div>
+              <div><label for="repair-cost">Estimated repair or replacement cost ($, optional)</label><input id="repair-cost" name="Estimated repair or replacement cost" type="number" min="0" step="0.01" inputmode="decimal"></div>
+              <div><label class="required" for="item-changes">Has the item been repaired, replaced, moved, or discarded?</label><select id="item-changes" name="Item changes after damage" required><option value="">Choose one</option><option>No changes</option><option>Repaired</option><option>Replaced</option><option>Moved</option><option>Discarded</option><option>More than one of these</option><option>Not sure</option></select></div>
+            </div>
+            <p class="helper">In the evidence section below, include before-and-after photos, a receipt, or proof of ownership if available.</p>
+          </fieldset>
+          <fieldset class="concern-details conditional hidden" data-concern-fields="Item is missing" disabled>
+            <legend>Missing item details</legend>
+            <div class="grid">
+              <div class="wide"><label class="required" for="missing-item">Description of the item</label><textarea id="missing-item" name="Missing item description" maxlength="1500" required></textarea></div>
+              <div><label class="required" for="last-location">Last known location</label><input id="last-location" name="Last known location" maxlength="500" required></div>
+              <div><label class="required" for="last-seen">When was it last seen?</label><input id="last-seen" name="Item last seen" maxlength="300" required></div>
+              <div><label for="item-value">Approximate value ($, optional)</label><input id="item-value" name="Approximate item value" type="number" min="0" step="0.01" inputmode="decimal"></div>
+              <div><label class="required" for="other-access">Were other people present or given access to the property?</label><select id="other-access" name="Other people with access" required><option value="">Choose one</option><option>Yes</option><option>No</option><option>Not sure</option></select></div>
+              <div><label class="required" for="police-report">Has a police report been filed?</label><select id="police-report" name="Police report filed" required><option value="">Choose one</option><option>Yes</option><option>No</option><option>Prefer not to say</option></select></div>
+              <div class="hidden" data-police-number><label for="police-number">Report number (if available)</label><input id="police-number" name="Police report number" maxlength="160" disabled></div>
+            </div>
+          </fieldset>
+          <fieldset class="concern-details conditional hidden" data-concern-fields="Incorrect charge or billing concern" disabled>
+            <legend>Billing details</legend>
+            <div class="grid">
+              <div><label class="required" for="disputed-amount">Amount disputed ($)</label><input id="disputed-amount" name="Amount disputed" type="number" min="0" step="0.01" inputmode="decimal" required></div>
+              <div><label class="required" for="expected-amount">Expected amount ($)</label><input id="expected-amount" name="Expected amount" type="number" min="0" step="0.01" inputmode="decimal" required></div>
+              <div class="wide"><label class="required" for="billing-reason">Reason for the dispute</label><textarea id="billing-reason" name="Billing dispute reason" maxlength="1500" required></textarea></div>
+            </div>
+            <p class="helper">You may upload an invoice, receipt, or relevant message in the evidence section below. Please cover full card numbers and other sensitive information.</p>
+          </fieldset>
+        </section>
+
+        <section class="form-section">
+          <div class="section-head"><span class="section-number">4</span><div><h2>Was the concern discussed onsite?</h2></div></div>
+          <label class="required" for="reported">Was the concern discussed onsite?</label>
+          <select id="reported" name="Reported before team left" required data-reported><option value="">Choose one</option><option>Yes, and the team attempted to correct it</option><option>Yes, but it was not corrected</option><option>No, I noticed it after the team left</option><option>No, for another reason</option></select>
+          <div class="conditional hidden" data-reported-details><label for="team-response">What did you discuss, and how did the team respond? (optional)</label><textarea id="team-response" name="Team response details" maxlength="1200" disabled></textarea></div>
+        </section>
+
+        <section class="form-section">
+          <div class="section-head"><span class="section-number">5</span><div><h2>Preferred resolution</h2></div></div>
+          <label for="resolution">How would you like us to address your concern?</label>
+          <select id="resolution" name="Requested resolution"><option value="">Choose one</option><option>Explanation or follow-up</option><option>Return visit to review the concern</option><option>Correction of the affected area</option><option>Billing review</option><option>Reimbursement review</option><option>Other</option></select>
+          <p class="notice">Your preferred resolution helps us understand what outcome you are seeking, but it does not guarantee approval. We will review the service record, submitted evidence, communications, applicable policies, and other relevant information before determining the appropriate response.</p>
+        </section>
+
+        <section class="form-section">
+          <div class="section-head"><span class="section-number">6</span><div><h2>Photos and supporting evidence</h2></div></div>
+          <div class="upload">
+            <label for="evidence" data-evidence-label>Upload photos, videos, or documents</label>
+            <input id="evidence" name="Evidence" type="file" accept=".jpg,.jpeg,.png,.heic,.heif,.webp,.mp4,.mov,.webm,.pdf,image/jpeg,image/png,image/heic,image/heif,image/webp,video/mp4,video/quicktime,video/webm,application/pdf" multiple>
+            <span class="file-count" data-file-count>No files selected</span>
+          </div>
+          <div class="hidden" data-evidence-exception>
+            <p class="notice">Cleaning-quality or damage concerns cannot be fully reviewed without clear supporting photos or videos. If you are unable to provide evidence, please explain why below.</p>
+            <div class="field-block"><label for="evidence-explanation">If you cannot upload photos or videos, please explain why.</label><textarea id="evidence-explanation" name="Evidence unavailable explanation" maxlength="1500" disabled aria-describedby="evidence-explanation-help"></textarea><span class="helper" id="evidence-explanation-help">If you cannot provide at least 2 photos, explain why here. You can still submit your concern for review.</span></div>
+          </div>
+          <fieldset class="field-block hidden" data-photo-timing disabled>
+            <legend class="required">When were these photos or videos taken? Select all that apply.</legend>
+            <div class="choice-grid">
+              <label class="choice"><input type="checkbox" name="Evidence timing" value="Before the cleaning"><span>Before the cleaning</span></label>
+              <label class="choice"><input type="checkbox" name="Evidence timing" value="Immediately after the cleaning"><span>Immediately after the cleaning</span></label>
+              <label class="choice"><input type="checkbox" name="Evidence timing" value="Within 24 hours after the cleaning"><span>Within 24 hours after the cleaning</span></label>
+              <label class="choice"><input type="checkbox" name="Evidence timing" value="More than 24 hours after the cleaning"><span>More than 24 hours after the cleaning</span></label>
+            </div>
+          </fieldset>
+          <div class="field-block hidden" data-photos-before><label class="required" for="photos-before">Were any photos taken before the cleaning?</label><select id="photos-before" name="Photos taken before cleaning" disabled required><option value="">Choose one</option><option>Yes</option><option>No</option><option>Not sure</option></select></div>
+        </section>
+
+        <section class="form-section">
+          <div class="section-head"><span class="section-number">7</span><div><h2>Confirmation and submission</h2><p>Let us know when to follow up, then confirm before submitting.</p></div></div>
+          <div class="grid"><div><label for="contact-date">Best date to contact you</label><input id="contact-date" name="Best contact date" type="date"></div><div><label for="contact-time">Best time to contact you</label><select id="contact-time" name="Best contact time"><option>Anytime</option><option>Morning</option><option>Afternoon</option><option>Evening</option></select></div><div class="wide"><label for="instructions">Additional contact instructions</label><textarea id="instructions" name="Additional contact instructions" maxlength="1000" style="min-height:110px"></textarea></div></div>
+          <div class="confirmations field-block">
+            <label class="choice"><input type="checkbox" name="Customer confirmation" value="Confirmed" required><span>I confirm my information is accurate to the best of my knowledge and agree to be contacted about this concern. I understand this form does not guarantee a refund or other resolution and does not cancel or reschedule my booking.</span></label>
+          </div>
+        </section>
+        <div class="submit-wrap"><button class="submit-button" type="submit" data-submit>Submit Concern for Review</button></div>
+      </form>
+      <section class="success" data-success aria-live="polite"><span class="success-mark">✓</span><h2>Your concern has been submitted.</h2><p>Thank you for providing the details. Our team will review your submission and contact you using your preferred contact method. Please save your case number for future reference.</p><strong class="case-number" data-case-number></strong><p data-confirmation-status></p><p>This confirmation does not approve a refund, complimentary service, reimbursement, or another specific resolution.</p><p><a href="./index.html">Return to the website</a></p></section>
+    </div>
+  </main>
+  <script src="./service-concern-policy.js?v=20260908-review"></script>
+  <script>
+    (() => {
+      const form = document.querySelector("[data-form]");
+      const status = document.querySelector("[data-status]");
+      const submit = document.querySelector("[data-submit]");
+      const filesInput = document.querySelector("#evidence");
+      const fileCount = document.querySelector("[data-file-count]");
+      const explanation = document.querySelector("#explanation");
+      const reported = document.querySelector("[data-reported]");
+      const reportedDetails = document.querySelector("[data-reported-details]");
+      const teamResponse = document.querySelector("#team-response");
+      const policy = window.ServiceConcernPolicy;
+      const evidenceExplanation = document.querySelector("#evidence-explanation");
+
+      function showStatus(message, isError = false) {
+        status.textContent = message;
+        status.className = `form-status show${isError ? " error" : ""}`;
+        status.scrollIntoView({ behavior: "smooth", block: "center" });
+      }
+      function postJson(url, body) {
+        return fetch(url, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(body) }).then(async (response) => {
+          const data = await response.json().catch(() => ({}));
+          if (!response.ok) throw new Error(data.error || "The request could not be completed.");
+          return data;
+        });
+      }
+      function fieldsFromForm() {
+        const fields = {};
+        new FormData(form).forEach((item, key) => {
+          if (item instanceof File || key === "website") return;
+          if (Object.prototype.hasOwnProperty.call(fields, key)) {
+            fields[key] = Array.isArray(fields[key]) ? fields[key] : [fields[key]];
+            fields[key].push(item);
+          } else fields[key] = item;
+        });
+        return policy.relevantFields(fields, Array.from(filesInput.files || []));
+      }
+      function updateConditionalFields() {
+        const fields = fieldsFromForm();
+        const types = policy.list(fields["Type of concern"]);
+        document.querySelectorAll("[data-concern-fields]").forEach(group => {
+          const visible = types.includes(group.dataset.concernFields);
+          group.classList.toggle("hidden", !visible);
+          group.disabled = !visible;
+        });
+        document.querySelector("[data-safety-notice]").classList.toggle("hidden", !types.includes("Health or safety concern"));
+        const policeNumberVisible = types.includes("Item is missing") && document.querySelector("#police-report").value === "Yes";
+        document.querySelector("[data-police-number]").classList.toggle("hidden", !policeNumberVisible);
+        document.querySelector("#police-number").disabled = !policeNumberVisible;
+        const files = Array.from(filesInput.files || []);
+        const state = policy.evidenceState(fields, files);
+        document.querySelector("[data-evidence-label]").classList.toggle("required", state.photosRequired);
+        document.querySelector("[data-evidence-exception]").classList.toggle("hidden", !state.photosRequired);
+        evidenceExplanation.disabled = !state.photosRequired;
+        evidenceExplanation.required = state.photosRequired && state.photoCount < 2;
+        document.querySelector('label[for="evidence-explanation"]').classList.toggle("required", evidenceExplanation.required);
+        const timing = document.querySelector("[data-photo-timing]");
+        timing.disabled = !state.mediaCount;
+        timing.classList.toggle("hidden", !state.mediaCount);
+        if (state.mediaCount) timing.dataset.requiredGroup = "Evidence timing";
+        else delete timing.dataset.requiredGroup;
+        document.querySelector("[data-photos-before]").classList.toggle("hidden", !state.photoCount);
+        document.querySelector("#photos-before").disabled = !state.photoCount;
+        const onsite = reported.value.startsWith("Yes");
+        reportedDetails.classList.toggle("hidden", !onsite);
+        teamResponse.disabled = !onsite;
+        filesInput.setCustomValidity(policy.validateFiles(files));
+      }
+      function validateGroups() {
+        for (const group of document.querySelectorAll("[data-required-group]")) {
+          if (!group.querySelector("input:checked")) {
+            showStatus(`Please select at least one option for ${group.dataset.requiredGroup.toLowerCase()}.`, true);
+            group.scrollIntoView({ behavior: "smooth", block: "center" });
+            return false;
+          }
+        }
+        return true;
+      }
+      async function uploadFile(file, index, started) {
+        const mimeType = policy.fileType(file);
+        const prepared = await postJson("/api/service-concern/upload-url", { uploadToken: started.uploadToken, fileName: file.name, mimeType, size: file.size, index: index + 1 });
+        const response = await fetch(prepared.uploadUrl, { method: "PUT", headers: { "Content-Type": prepared.mimeType }, body: file });
+        const data = await response.json().catch(() => ({}));
+        if (!response.ok) throw new Error(`${file.name} could not be uploaded.`);
+        return { id: data.id || "", name: data.name || prepared.name, originalName: file.name, mimeType, size: file.size, webViewLink: data.webViewLink || (data.id ? `https://drive.google.com/file/d/${encodeURIComponent(data.id)}/view` : "") };
+      }
+
+      filesInput.addEventListener("change", () => {
+        const count = filesInput.files.length;
+        fileCount.textContent = count ? `${count} file${count === 1 ? "" : "s"} selected` : "No files selected";
+        updateConditionalFields();
+      });
+      explanation.addEventListener("input", () => { document.querySelector("[data-char-count]").textContent = explanation.value.length; });
+      form.addEventListener("change", updateConditionalFields);
+      updateConditionalFields();
+
+      form.addEventListener("submit", async (event) => {
+        event.preventDefault();
+        if (form.elements.website.value) return;
+        updateConditionalFields();
+        if (!form.reportValidity() || !validateGroups()) return;
+        const files = Array.from(filesInput.files || []);
+        const fields = fieldsFromForm();
+        const validationError = policy.validate(fields, files);
+        if (validationError) return showStatus(validationError, true);
+        submit.disabled = true;
+        const originalText = submit.textContent;
+        try {
+          showStatus("Creating your secure case record…");
+          const started = await postJson("/api/service-concern/start", { customerName: fields["Full name"] });
+          const uploads = new Array(files.length);
+          let next = 0;
+          let complete = 0;
+          async function worker() {
+            while (next < files.length) {
+              const index = next++;
+              uploads[index] = await uploadFile(files[index], index, started);
+              complete += 1;
+              showStatus(`Securely uploaded ${complete} of ${files.length} file${files.length === 1 ? "" : "s"}…`);
+            }
+          }
+          await Promise.all(Array.from({ length: Math.min(3, files.length) }, () => worker()));
+          showStatus("Submitting your concern and sending confirmation…");
+          const result = await postJson("/api/service-concern/finish", { ...started, fields, uploads });
+          form.hidden = true;
+          status.className = "form-status";
+          document.querySelector("[data-case-number]").textContent = result.caseNumber;
+          const emailSent = result.customerEmailStatus === "sent";
+          const smsSent = result.customerSmsStatus === "sent";
+          document.querySelector("[data-confirmation-status]").textContent = emailSent && smsSent
+            ? "A confirmation has been sent by email and text."
+            : emailSent
+              ? "A confirmation has been sent by email."
+              : smsSent
+                ? "A confirmation has been sent by text."
+                : "Your case is saved. Our team will contact you after reviewing it.";
+          document.querySelector("[data-success]").classList.add("show");
+          document.querySelector("[data-success]").scrollIntoView({ behavior: "smooth", block: "start" });
+        } catch (error) {
+          showStatus(error.message || "Your concern could not be submitted. Please try again or call us.", true);
+          submit.disabled = false;
+          submit.textContent = originalText;
+        }
+      });
+    })();
+  </script>
+</body>
+</html>

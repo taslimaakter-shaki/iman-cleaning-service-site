@@ -1,0 +1,17 @@
+{
+  "name": "iman-crm-ios",
+  "private": true,
+  "version": "1.0.0",
+  "type": "module",
+  "scripts": {
+    "sync": "cap sync ios",
+    "open": "cap open ios"
+  },
+  "dependencies": {
+    "@capacitor/core": "8.5.1",
+    "@capacitor/ios": "8.5.1"
+  },
+  "devDependencies": {
+    "@capacitor/cli": "8.5.1"
+  }
+}

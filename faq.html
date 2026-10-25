@@ -1,0 +1,262 @@
+<!-- @dsCard group="Website" viewport="1280x720" name="FAQ Page" subtitle="Standalone cleaning service questions and answers" -->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Cleaning Service FAQs | Iman Cleaning Service LLC</title>
+<meta name="description" content="Answers to common questions about Iman Cleaning Service LLC, including quotes, pricing, cleaning supplies, service areas, scheduling, and commercial cleaning in NYC.">
+<link rel="canonical" href="https://www.imancleaningservice.com/faq.html">
+<meta name="robots" content="index, follow, max-image-preview:large">
+<meta name="theme-color" content="#0b6474">
+<meta name="author" content="Iman Cleaning Service LLC">
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="Iman Cleaning Service LLC">
+<meta property="og:locale" content="en_US">
+<meta property="og:title" content="Cleaning Service FAQs | Iman Cleaning Service LLC">
+<meta property="og:description" content="Answers to common questions about quotes, pricing, cleaning supplies, service areas, scheduling, and commercial cleaning.">
+<meta property="og:url" content="https://www.imancleaningservice.com/faq.html">
+<meta property="og:image" content="https://www.imancleaningservice.com/brand-card.png">
+<meta property="og:image:alt" content="Iman Cleaning Service LLC - NYC residential and commercial cleaning">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="Cleaning Service FAQs | Iman Cleaning Service LLC">
+<meta name="twitter:description" content="Answers to common questions about quotes, pricing, cleaning supplies, service areas, scheduling, and commercial cleaning.">
+<meta name="twitter:image" content="https://www.imancleaningservice.com/brand-card.png">
+<link rel="stylesheet" href="./design-system.css">
+<link rel="stylesheet" href="./site.css?v=20261007-professional-faq-type">
+<link rel="stylesheet" href="./homepage-footer.css?v=20260929-compact-footer-v2">
+
+<!-- The browser expands this from the complete visible FAQ data below. -->
+<script type="application/ld+json" id="faq-schema">
+{
+  "@context": "https://schema.org",
+  "@type": "FAQPage",
+  "mainEntity": [
+    {
+      "@type": "Question",
+      "name": "Where do you provide cleaning service?",
+      "acceptedAnswer": { "@type": "Answer", "text": "We serve Brooklyn, Queens, and Manhattan. Enter your ZIP code when requesting a quote to confirm availability for your address." }
+    },
+    {
+      "@type": "Question",
+      "name": "Are you insured?",
+      "acceptedAnswer": { "@type": "Answer", "text": "Yes. Iman Cleaning Service LLC is fully insured. Certificates of Insurance are available upon request." }
+    },
+    {
+      "@type": "Question",
+      "name": "How do I book a cleaning?",
+      "acceptedAnswer": { "@type": "Answer", "text": "Start with the online instant-pricing form or request a custom quote. Your booking is confirmed after checkout is completed." }
+    }
+  ]
+}
+</script>
+</head>
+<body>
+<div id="root"></div>
+<script src="https://unpkg.com/react@18.3.1/umd/react.development.js" integrity="sha384-hD6/rw4ppMLGNu3tX5cjIb+uRZ7UkRJ6BPkLpg4hAu/6onKUg4lLsHAs9EBPT82L" crossorigin="anonymous"></script>
+<script src="https://unpkg.com/react-dom@18.3.1/umd/react-dom.development.js" integrity="sha384-u6aeetuaXnQ38mYT8rp6sbXaQe3NL9t+IBXmnYxwkUI2Hw4bsp2Wvmx4yRQF1uAm" crossorigin="anonymous"></script>
+<script src="https://unpkg.com/@babel/standalone@7.29.0/babel.min.js" integrity="sha384-m08KidiNqLdpJqLq95G/LEi8Qvjl/xUYll3QILypMoQ65QorJ9Lvtp2RXYGBFj1y" crossorigin="anonymous"></script>
+<script src="./_ds_bundle.js?v=20261001-nav-syntax-fix"></script>
+<script src="./data.js?v=20261001-remove-queens-page"></script>
+<script type="text/babel" src="./chrome.jsx?v=20260929-instant-quote-cta"></script>
+<script type="text/babel">
+const mount = () => {
+  if (!window.ImanChrome) return setTimeout(mount, 30);
+  const { Button, Badge, FaqItem } = window.ImanCleaningDesignSystem_5652ad;
+  const { Icon, Header, Footer } = window.ImanChrome;
+  const D = window.IMAN_DATA;
+
+  const faqGroups = [
+    {
+      title: "General questions",
+      kicker: "About Iman Cleaning",
+      questions: [
+        { q: "Where do you provide cleaning service?", a: "We serve Brooklyn, Queens, and Manhattan. Enter your ZIP code when requesting a quote to confirm availability for your address.", open: true },
+        { q: "Are you insured?", a: "Yes. Iman Cleaning Service LLC is fully insured. Certificates of Insurance are available upon request for residences, commercial clients, apartment buildings, and property management companies." },
+        { q: "What types of properties do you clean?", a: "We clean houses, apartments, condominiums, townhomes, offices, retail stores, restaurants, medical offices, commercial buildings, Airbnb properties, and move-in or move-out properties." },
+        { q: "Do you bring your own cleaning supplies?", a: "Yes. We bring professional cleaning products and equipment unless you ask us to use specific products." },
+        { q: "Do I need to be home?", a: "No. You do not need to be present if our team has safe, timely access, accurate entry instructions, and any required building authorization. Please remain reachable in case we need to confirm access or the scope." },
+        { q: "Are your cleaners trained?", a: "Yes. Our team is professionally trained to follow company procedures and high-quality cleaning standards." },
+        { q: "How can I contact Iman Cleaning Service?", a: "Call 929-232-1930, email info@imancleaningservice.com, or send a quote request through this website. Calls are preferred when you need a quick answer." },
+      ],
+    },
+    {
+      title: "Booking and scheduling",
+      kicker: "Plan your appointment",
+      questions: [
+        { q: "How do I book a cleaning?", a: "Start with the online instant-pricing form or request a custom quote. After reviewing your estimate, choose an available appointment, accept the service agreement, and pay the required deposit. Your booking is confirmed only after checkout is completed." },
+        { q: "How far in advance should I book?", a: "We recommend booking as early as possible. Last-minute appointments may be available depending on the schedule." },
+        { q: "Can I book same-day cleaning?", a: "Same-day service may be available after we confirm staffing. A $100 rush fee plus the normal 25% deposit must be paid within 30 minutes of approval. The rush fee becomes nonrefundable after confirmation unless Iman Cleaning Service cancels." },
+        { q: "Do you offer free estimates?", a: "Yes. Eligible residential customers can receive a personalized estimate through our instant-pricing system. Commercial work, post-construction cleaning, unusual conditions, and other non-standard projects may require a custom quote or walkthrough." },
+        { q: "What should I include in my quote request?", a: "To provide the most accurate estimate, include as much information as possible: the property address or ZIP code, type of cleaning service, number of bedrooms and bathrooms or square footage, current condition, requested add-ons, preferred date and time, and photos if available. Providing detailed information helps us prepare an accurate quote and avoid delays." },
+        { q: "Can I send photos for a quote?", a: "When photos are needed, use the secure upload option provided during your quote or follow our team's instructions." },
+        { q: "What hours are available?", a: "Quote requests and customer support are available 24 hours a day. Cleaning appointment times depend on crew availability, location, service length, and building access. The booking system shows the times currently available for your job." },
+        { q: "Will I receive reminders about an unfinished quote?", a: "For new instant quotes, customers who agreed to quote-related email and text communication may receive one reminder approximately 12 hours after submission and one final reminder approximately 24 hours after submission. These reminders stop once the appointment is booked and paid. They are not sent to older quote records created before the reminder system was activated." },
+        { q: "Will I receive appointment reminders?", a: "Yes. Confirmed customers may receive appointment-related email and text updates, including reminders approximately 24 hours and six hours before the appointment. Timing can vary slightly because reminders are processed in scheduled intervals." },
+      ],
+    },
+    {
+      title: "Pricing and payments",
+      kicker: "Know the cost",
+      questions: [
+        { q: "Do I get a price before the appointment is confirmed?", a: "Yes. You receive an estimate before booking. It is based on the information you submit and shows the included scope, maximum labor-hours, deposit, remaining balance, tax, and selected extras before payment." },
+        { q: "How much does cleaning cost in NYC?", a: "Cleaning prices are personalized from the property, condition, requested service, and scope. Specialty and commercial services are quoted after we review the scope." },
+        { q: "What affects the price?", a: "Pricing depends on the service type, property size, rooms selected, number of units, current condition, affected areas, access, pets, and add-ons. Buildup, clutter, or surface-level mold adjustments apply only to the rooms or areas identified in the quote." },
+        { q: "Do you charge by the hour?", a: "Most residential cleanings are quoted as a project with a maximum number of labor-hours. Hourly Cleaning Service has a four-work-hour minimum, and the total price is shown before booking. Commercial and special projects receive pricing based on their approved scope." },
+        { q: "What does maximum labor-hours mean?", a: "It is the maximum cleaning time included in your estimate across the assigned cleaners. It is not a guaranteed duration, and the service may finish sooner. Reasonable meal or rest breaks on longer jobs do not count against your labor-hours and are not added to your bill." },
+        { q: "Are there hidden fees?", a: "No extra cleaning time is added without your approval. Your quote shows the deposit, remaining balance, tax, and selected extras. Separate charges can apply only under a disclosed policy, such as an approved same-day rush request, approved extra time, or a customer-caused same-day access failure." },
+        { q: "When can the price change?", a: "The estimate may need to change if the property or scope differs materially from the information submitted, if you request more work, or if the team discovers conditions that could not reasonably be confirmed beforehand. We explain any recommended extra time and obtain your approval before continuing." },
+        { q: "How much is approved extra time?", a: "We show the total price for approved additional time before you authorize it. Additional time is never added without your permission." },
+        { q: "What forms of payment do you accept?", a: "Online bookings use secure card checkout. If a different written payment arrangement is available for a custom or commercial account, our team will confirm it before service." },
+        { q: "When is payment due?", a: "Instant-pricing appointments require a 25% deposit at booking. The remaining 75% is placed on a temporary authorization hold approximately 48 hours before the appointment and is captured only after the cleaning is completed." },
+        { q: "Do you charge sales tax?", a: "Yes. The checkout applies the New York sales tax required for the service and displays it in the price summary before payment." },
+        { q: "What happens to my quote link after I book and pay?", a: "The secure link changes to your booking status and can no longer be used to pay for the same appointment again. It should show that the appointment has been booked and the deposit paid." },
+      ],
+    },
+    {
+      title: "Residential cleaning services",
+      kicker: "Choose the right clean",
+      questions: [
+        { q: "What is included in Standard Cleaning?", a: "Standard Cleaning covers routine dusting, vacuuming, mopping, kitchen and bathroom cleaning, making beds, emptying trash, and cleaning commonly used surfaces." },
+        { q: "Is Standard Cleaning right for me?", a: "Standard Cleaning is ideal for homes that receive regular maintenance and do not require heavy scrubbing or buildup removal." },
+        { q: "What is Deep Cleaning?", a: "Deep Cleaning includes routine cleaning plus added attention to baseboards, bathroom scrubbing, kitchen degreasing, light fixtures, doors, extra dust removal, and detailed surfaces." },
+        { q: "When should I choose Deep Cleaning?", a: "Choose Deep Cleaning when the home has not been professionally cleaned recently, has noticeable dust or buildup, needs preparation for guests, or is starting recurring service." },
+        { q: "What is included in Move-In or Move-Out Cleaning?", a: "This service prepares an empty home for its next occupant and may include cabinets, drawers, kitchens, bathrooms, floors, baseboards, interior windows, dust removal, and appliance exteriors." },
+        { q: "Do I need to remove my belongings before a move cleaning?", a: "Yes. For the best results, the property should be empty before a move-in or move-out cleaning appointment." },
+      ],
+    },
+    {
+      title: "Commercial and Airbnb cleaning",
+      kicker: "Businesses and hosts",
+      questions: [
+        { q: "Can I request commercial cleaning?", a: "Absolutely. We provide professional commercial cleaning services for offices, retail stores, restaurants, medical facilities, apartment buildings, and other businesses. We offer one-time, recurring, and customized cleaning plans based on your property's needs. Contact us for a custom quote." },
+        { q: "Do you provide recurring commercial cleaning?", a: "Yes. Daily, weekly, biweekly, monthly, and custom commercial schedules are available." },
+        { q: "Can you clean after business hours?", a: "Yes. Evening, night, or weekend cleaning can be scheduled whenever availability allows." },
+        { q: "Do you clean Airbnb properties?", a: "Yes. We provide turnover cleaning between guest stays." },
+        { q: "Can you restock Airbnb supplies?", a: "Restocking can be included in a custom turnover plan when the host provides the supplies and the approved scope lists the task." },
+        { q: "Can you provide invoices?", a: "Yes. Professional invoices are available for residential and commercial services." },
+        { q: "Can you provide Certificates of Insurance?", a: "Yes. COIs are available upon request for buildings, offices, management companies, and commercial properties." },
+        { q: "Do you work with property managers?", a: "Yes. We work with property managers, realtors, building managers, landlords, investors, and Airbnb hosts." },
+      ],
+    },
+    {
+      title: "Add-ons, pets, and preparation",
+      kicker: "Before the crew arrives",
+      questions: [
+        { q: "What additional services can I request?", a: "Available extras may include interior refrigerator or oven cleaning, interior cabinets, interior windows, wall cleaning, appliance cleaning, and laundry. The options shown depend on the service and rooms selected; your quote lists every chosen extra." },
+        { q: "Can you clean homes with pets?", a: "Yes. Disclose pets and pet-related conditions during the quote. A pet-related cleaning fee may apply once per property when visible pet hair or other pet-related buildup requires additional work." },
+        { q: "Should pets be secured?", a: "Yes. Keep pets safely secured away from the work area. The team may refuse or stop service if an unsecured pet creates a safety risk." },
+        { q: "Should I tidy up before cleaners arrive?", a: "Light tidying helps us spend more time cleaning instead of organizing." },
+        { q: "Do I need to provide water or electricity?", a: "Yes. Running water and electricity must be available during the appointment." },
+        { q: "What if utilities are unavailable?", a: "An instant cleaning quote is not available unless both running water and electricity will be available. If missing utilities prevent service at the appointment, the customer-caused access and same-day cancellation terms may apply." },
+        { q: "Can I request extra work while the cleaners are there?", a: "You may ask, but the team can add work only when time, staffing, safety, and the approved scope allow it. We will explain and obtain approval for any added price or time before continuing." },
+        { q: "Can you move furniture?", a: "We can move light furniture when it is safe. We do not move extremely heavy, fragile, or unsafe furniture." },
+      ],
+    },
+    {
+      title: "Cancellations and satisfaction",
+      kicker: "Policies and follow-up",
+      questions: [
+        { q: "What is your cancellation policy?", a: "Cancel at least 48 hours before the appointment for a full deposit refund. If you cancel less than 48 hours before the appointment, the 25% deposit is nonrefundable. A confirmed same-day rush fee is also nonrefundable unless Iman Cleaning Service cancels." },
+        { q: "Can I reschedule?", a: "Yes. Rescheduling at least 48 hours ahead has no additional charge, subject to availability, and your deposit stays with the booking. Changes requested less than 48 hours ahead are not guaranteed." },
+        { q: "What happens if the cleaners cannot enter or begin work?", a: "You must provide safe, timely access, correct entry instructions, building authorization, and working utilities. When possible, we will try to reach you and allow a 15-minute grace period. If the issue is not resolved, it is treated as a customer-caused same-day cancellation: the deposit is nonrefundable and an additional charge equal to 25% of the scheduled service may apply, for a total of 50%." },
+        { q: "What if I notice something that was missed?", a: "Please inspect the property before the team leaves. We are happy to address reasonable concerns while still on-site." },
+        { q: "Can I request corrections after the cleaners leave?", a: "Please raise requests before the team leaves whenever possible. A later visit may require new scheduling and additional charges depending on the situation." },
+        { q: "Do you guarantee your work?", a: "We stand behind professional service, but cleaning results depend on the material, condition, access, and approved scope. Report concerns while the team is on-site whenever possible. After service, contact 929-232-1930 promptly so we can review the concern under the service agreement." },
+      ],
+    },
+    {
+      title: "Safety and special conditions",
+      kicker: "What to expect",
+      questions: [
+        { q: "Do you guarantee stain removal?", a: "No. Some stains, discoloration, hard-water marks, rust, paint, grout discoloration, or permanent damage cannot be removed with standard cleaning methods." },
+        { q: "Do you clean mold?", a: "We may clean accessible, surface-level mold or mildew that is disclosed and priced during booking. We do not inspect, test, remediate, remove materials, clean concealed growth, or handle hazardous mold. If the condition appears unsafe or beyond surface cleaning, we may stop, modify, or decline the work and recommend a specialist." },
+        { q: "Do you clean hoarding situations or perform decluttering?", a: "No. We do not provide decluttering or organization services. If excessive clutter or hoarding conditions prevent safe access, the property is not eligible for cleaning until safe access has been restored." },
+        { q: "Do you remove hazardous materials?", a: "No. We do not clean biohazards, human or animal waste, drug-related materials, medical waste, or hazardous chemicals." },
+        { q: "What conditions are not eligible for an instant cleaning quote?", a: "No instant quote is available for flooding, sewage backup, significant water damage, active pest infestation, human or significant animal waste, unsafe access, missing water or electricity, or excessive clutter that prevents safe cleaning. Contact us only after the condition is safely resolved or to ask whether a specialist is required." },
+        { q: "What if my home is in worse condition than described?", a: "The team will compare the actual condition with the submitted details. We may recommend approved extra time, limit the work to the included labor-hours, adjust the scope, reschedule, or stop service if the condition is unsafe. No extra time is charged without your permission." },
+      ],
+    },
+    {
+      title: "Recurring service and why Iman",
+      kicker: "Ongoing care",
+      questions: [
+        { q: "Do you offer recurring home cleaning?", a: "Yes. Weekly, biweekly, monthly, and custom recurring schedules may be available after the initial service and account review." },
+        { q: "Why choose recurring cleaning?", a: "Recurring service keeps the home consistently clean and reduces the amount of work needed during each visit." },
+        { q: "Why may Iman's price be higher than a basic cleaning offer?", a: "Our estimates account for the actual scope, labor, trained team, professional supplies, insurance, secure booking, customer communication, and approval-based pricing. The goal is dependable service and a clear scope—not an unrealistically low price that changes without explanation." },
+        { q: "My budget is low — is Iman right for me?", a: "We understand that every customer has a different budget. If you're looking for the lowest possible price, we may not be the best fit. Our focus is on providing dependable, professional cleaning with fair pricing that reflects the quality of our work. If your budget is limited, let us know. We may be able to recommend a smaller scope of work or prioritize the areas that matter most, allowing you to stay within your budget while still receiving professional service." },
+        { q: "Why choose Iman Cleaning Service?", a: "Customers choose us for professional and reliable service, fully insured cleaning, residential and commercial experience, flexible scheduling, personalized quotes, customized plans, easy online booking, and thorough attention to detail in Brooklyn, Queens, and Manhattan." },
+      ],
+    },
+  ];
+
+  const faqTopicId = (title) => `faq-${title.toLowerCase().replace(/&/g, "and").replace(/[^a-z0-9]+/g, "-").replace(/(^-|-$)/g, "")}`;
+
+  document.getElementById("faq-schema").textContent = JSON.stringify({
+    "@context": "https://schema.org",
+    "@type": "FAQPage",
+    mainEntity: faqGroups.flatMap((group) => group.questions).map((item) => ({
+      "@type": "Question",
+      name: item.q,
+      acceptedAnswer: { "@type": "Answer", text: item.a },
+    })),
+  });
+
+  function Page() {
+    return (<>
+      <Header active="faq" onDark />
+      <section className="page-hero faq-page-hero on-photo center" style={{ "--hero-img": "url('./assets/contact-kitchen-hero.jpg')" }}>
+        <div className="ds-shell page-hero-inner">
+          <h1>NYC Cleaning Service FAQs</h1>
+          <p className="ds-lead">Answers about pricing, booking, services, and current cleaning availability in Brooklyn, Queens, and Manhattan.</p>
+          <div className="page-hero-actions">
+            <Button href="./book-now.html" variant="accent" size="lg" iconRight={<Icon name="arrow" size={18} />}>Check My Price</Button>
+          </div>
+        </div>
+      </section>
+
+      <main className="faq-topics-list">
+        <div className="ds-shell faq-topics-list-inner">
+          {faqGroups.map((group) => (
+            <details className="faq-topic-group" id={faqTopicId(group.title)} name="faq-topics" key={group.title}>
+              <summary className="faq-topic-group-summary">
+                <span>
+                <span className="ds-kicker">{group.kicker}</span>
+                <h2>{group.title}</h2>
+                </span>
+              </summary>
+              <div className="faq-topic-group-content">
+                <div className="faq-list">
+                  {group.questions.map((f) => (
+                    <FaqItem key={f.q} question={f.q} defaultOpen={true}>{f.a}</FaqItem>
+                  ))}
+                </div>
+              </div>
+            </details>
+          ))}
+        </div>
+      </main>
+
+      <section className="final-cta">
+        <div className="ds-shell final-inner">
+          <span className="ds-kicker" style={{ color: "var(--leaf-300)" }}>Need a specific answer?</span>
+          <h2>Send the details and we will help you choose the right cleaning.</h2>
+          <p>Tell us the service type, address, timing, and condition of the space. Photos help us quote accurately.</p>
+          <div className="final-actions">
+            <Button href="./contact.html" variant="accent" size="lg">Contact Us</Button>
+            <Button href={D.phoneHref} variant="secondary" size="lg" iconLeft={<Icon name="phone" size={18} stroke="var(--brand)" />}>Call us {D.phone}</Button>
+          </div>
+        </div>
+      </section>
+      <Footer />
+    </>);
+  }
+
+  ReactDOM.createRoot(document.getElementById("root")).render(<Page />);
+};
+mount();
+</script>
+
+<script defer src="./site-reviews.js?v=20260911-trusted-title"></script>
+</body>
+</html>

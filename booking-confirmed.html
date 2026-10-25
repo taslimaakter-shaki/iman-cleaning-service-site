@@ -1,0 +1,84 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Booking Confirmed | Iman Cleaning Service LLC</title>
+  <meta name="robots" content="noindex">
+  <script async src="https://www.googletagmanager.com/gtag/js?id=G-6MEJH73E0H"></script>
+  <script>
+    window.dataLayer = window.dataLayer || [];
+    function gtag(){dataLayer.push(arguments);}
+    gtag("js", new Date());
+    gtag("config", "G-6MEJH73E0H");
+  </script>
+  <link rel="stylesheet" href="./design-system.css">
+  <link rel="stylesheet" href="./homepage-footer.css?v=20260929-compact-footer-v2">
+  <style>
+    body{min-height:100vh;margin:0;display:flex;flex-direction:column;background:#f5f7f6;color:#24363a;font-family:Inter,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;-webkit-font-smoothing:antialiased}
+    main{box-sizing:border-box;width:min(620px,calc(100% - 32px));margin:clamp(40px,9vh,88px) auto;padding:clamp(28px,5vw,44px);background:#fff;border:1px solid #dce6e4;border-radius:18px;box-shadow:0 16px 44px rgba(5,54,64,.08)}
+    .check{display:grid;width:48px;height:48px;place-items:center;border-radius:50%;background:#0b6474;color:#fff;font-size:1.35rem;font-weight:600}
+    h1{max-width:520px;margin:20px 0 10px;color:#123f47;font-size:clamp(1.75rem,4vw,2.2rem);font-weight:700;line-height:1.18;letter-spacing:-.025em}
+    p{margin:0;color:#5f7175;font-size:1rem;line-height:1.65}
+    .id{margin-top:20px;padding:13px 15px;background:#f0f7f6;border:1px solid #dce9e7;border-radius:10px;color:#17606a;font-size:.925rem;font-weight:600;line-height:1.45}
+    a{display:inline-block;margin-top:20px;color:#17606a;font-size:.925rem;font-weight:600;text-underline-offset:3px}
+    .account-offer{margin-top:22px;padding:17px;border:1px solid #dce6e4;border-radius:12px;background:#f8faf9}
+    .account-offer strong{display:block;color:#123f47;font-size:1rem;font-weight:650}
+    .account-offer p{margin:5px 0 0;font-size:.875rem}
+    .account-offer a{margin-top:10px}
+    @media(max-width:520px){main{margin:24px auto;padding:26px 22px;border-radius:14px}.check{width:44px;height:44px}h1{font-size:1.7rem}}
+  </style>
+</head>
+<body>
+  <main>
+    <div class="check" aria-hidden="true">✓</div>
+    <h1>Your cleaning is confirmed.</h1>
+    <p data-confirmation-status>Your 25% deposit was received. We are finalizing your appointment and sending your confirmation and receipt.</p>
+    <div class="id" data-booking-id></div>
+    <a href="./index.html">Return to the homepage</a>
+  </main>
+  <div data-site-footer></div>
+	  <script>
+	    try {
+	      window.localStorage.removeItem("imanBookingDraftV2");
+	      window.sessionStorage.removeItem("imanBookingZip");
+	      window.sessionStorage.removeItem("imanBookingQualificationDraft");
+	    } catch {}
+    const orderNumber = new URLSearchParams(location.search).get("order_number") || "";
+    const sessionId = new URLSearchParams(location.search).get("session_id") || "";
+    const idBox = document.querySelector("[data-booking-id]");
+    const statusBox = document.querySelector("[data-confirmation-status]");
+    idBox.textContent = orderNumber ? `Order number: ${orderNumber}` : "Your order number is included in your confirmation.";
+    if (sessionId) {
+      fetch("/api/quote/payment-record", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ sessionId })
+      })
+        .then(async (response) => {
+          const data = await response.json();
+          if (!response.ok) throw new Error(data.error || "Confirmation could not be finalized.");
+          const purchase = data.analyticsPurchase || {};
+          const transactionId = String(purchase.transactionId || sessionId);
+          const storageKey = `imanGooglePurchase:${transactionId}`;
+          let alreadyTracked = false;
+          try { alreadyTracked = window.localStorage.getItem(storageKey) === "1"; } catch {}
+          if (!alreadyTracked && typeof window.gtag === "function") {
+            window.gtag("event", "deposit_paid", {
+              transaction_id: transactionId,
+              value: Number(purchase.value || 0),
+              currency: String(purchase.currency || "USD")
+            });
+            try { window.localStorage.setItem(storageKey, "1"); } catch {}
+          }
+          statusBox.textContent = "Your 25% deposit was received and your appointment is reserved. A temporary authorization hold for the remaining 75% will be placed about 48 hours before service. It is not a completed charge; the balance will be charged after the work is completed. Your confirmation and private management link have been sent.";
+        })
+        .catch(() => {
+          statusBox.textContent = "Your deposit was received. Keep your booking reference below; if your confirmation is delayed, please call us.";
+        });
+    }
+  </script>
+  <script src="./site-footer.js?v=20260827-unified-footer"></script>
+<script defer src="./site-reviews.js?v=20260911-trusted-title"></script>
+</body>
+</html>

@@ -1,0 +1,10 @@
+/* ===========================================================================
+   Iman Cleaning Service — Fonts
+   Display: Bricolage Grotesque (characterful, modern, premium — not overused)
+   Text/UI: DM Sans (clean humanist sans, carried over from the original site)
+   Loaded from Google Fonts. SUBSTITUTION NOTE: the original site shipped no
+   self-hosted font files; DM Sans matches the site's intended body face and
+   Bricolage Grotesque is a new premium display choice for the redesign.
+   =========================================================================== */
+
+@import url("https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,400;12..96,500;12..96,600;12..96,700;12..96,800&family=DM+Sans:ital,opsz,wght@0,9..40,400;0,9..40,500;0,9..40,600;0,9..40,700;1,9..40,400&display=swap");
