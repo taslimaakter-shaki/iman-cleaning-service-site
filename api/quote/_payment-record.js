@@ -363,7 +363,7 @@ function selectedServiceDetailsUrl(record, booking) {
     record.service
   ].filter(Boolean).join(" ").toLowerCase();
   const site = "https://www.imancleaningservice.com";
-  if (/move[\s-]*(in|out)|moving/.test(service)) return `${site}/deep-cleaning.html`;
+  if (/move[\s-]*(in|out)|moving/.test(service)) return `${site}/move-in-move-out-cleaning.html`;
   if (/deep|detail/.test(service)) return `${site}/deep-cleaning.html`;
   if (/post[\s-]*construction/.test(service)) return `${site}/post-construction-cleaning.html`;
   if (/airbnb|vacation rental/.test(service)) return `${site}/airbnb-cleaning.html`;

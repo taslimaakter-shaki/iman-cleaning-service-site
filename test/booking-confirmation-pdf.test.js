@@ -143,7 +143,7 @@ const record = {
   assert.match(decoded, /Hi Amina,/);
   assert.match(decoded, /Appointment Details/);
   assert.match(decoded, /2 cleaning professionals, up to 2 hours 30 minutes/);
-  assert.match(decoded, /https:\/\/www\.imancleaningservice\.com\/deep-cleaning\.html/);
+  assert.match(decoded, /https:\/\/www\.imancleaningservice\.com\/move-in-move-out-cleaning\.html/);
   assert.match(decoded, /View What Is Included in Your Service/);
   assert.match(decoded, /Your Payment Summary/);
   assert.ok(decoded.indexOf("Service subtotal") < decoded.indexOf("FALL10 discount"));
