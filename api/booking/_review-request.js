@@ -1,7 +1,9 @@
-const { cleanText, updateBookingEstimate } = require("./_shared");
+const { cleanText, listAllBookings, updateBookingEstimate } = require("./_shared");
 const { sendCustomerSms } = require("./_notifications");
 
 const GOOGLE_REVIEW_URL = "https://g.page/r/CZr1C9xnMwR3EBM/review";
+const REVIEW_DELAY_MS = 24 * 60 * 60 * 1000;
+const MAX_REVIEW_REQUESTS_PER_RUN = 20;
 const REVIEW_REQUEST_MESSAGE = `Thank you for choosing IMAN Cleaning Service. We hope you’re enjoying your freshly cleaned space!
 
 We’d appreciate your Google review:
@@ -71,6 +73,27 @@ async function saveReviewRequest(booking, reviewRequest) {
   booking.estimate = nextEstimate;
 }
 
+async function scheduleReviewRequest({ booking, now = new Date(), save = saveReviewRequest }) {
+  if (!booking?.id) throw Object.assign(new Error("Booking could not be found."), { statusCode: 404 });
+  if (booking.status !== "Completed") throw Object.assign(new Error("A review request can be scheduled only after the booking is completed."), { statusCode: 409 });
+  const previous = booking.estimate?.reviewRequest || {};
+  if (previous.sentAt || previous.status === "sent") return { ...previous, status: "already_sent", sent: true };
+  if (previous.dueAt && ["scheduled", "sending", "failed"].includes(previous.status)) {
+    return { ...previous, status: "already_scheduled", sent: false };
+  }
+  const completedAt = now.toISOString();
+  const reviewRequest = {
+    ...previous,
+    status: "scheduled",
+    completedAt,
+    dueAt: new Date(now.getTime() + REVIEW_DELAY_MS).toISOString(),
+    scheduledAt: completedAt,
+    reviewUrl: GOOGLE_REVIEW_URL
+  };
+  await save(booking, reviewRequest);
+  return { ...reviewRequest, sent: false };
+}
+
 async function sendReviewRequest({
   booking,
   now = new Date(),
@@ -82,28 +105,78 @@ async function sendReviewRequest({
   if (booking.status !== "Completed") throw Object.assign(new Error("A review request can be sent only after the booking is completed."), { statusCode: 409 });
 
   const previous = booking.estimate?.reviewRequest || {};
-  if (previous.claimedAt || previous.sentAt || previous.status === "sent") return { ...previous, status: "already_sent", sent: true };
+  if (previous.sentAt || previous.status === "sent") return { ...previous, status: "already_sent", sent: true };
+  const dueAt = new Date(previous.dueAt || 0).getTime();
+  if (Number.isFinite(dueAt) && dueAt > now.getTime()) return { ...previous, status: "scheduled", sent: false };
+  const claimedAt = new Date(previous.claimedAt || 0).getTime();
+  if (previous.status === "sending" && Number.isFinite(claimedAt) && now.getTime() - claimedAt < 10 * 60 * 1000) {
+    return { ...previous, status: "already_processing", sent: false };
+  }
 
   const attemptedAt = now.toISOString();
   await save(booking, { ...previous, status: "sending", claimedAt: attemptedAt, lastAttemptAt: attemptedAt, reviewUrl: GOOGLE_REVIEW_URL });
-  const [email, sms] = await Promise.all([sendEmail(booking), sendSms(booking)]);
-  const delivered = [email, sms].filter((item) => item.status === "sent");
+  const [email, sms] = await Promise.all([
+    previous.emailStatus === "sent" ? Promise.resolve({ status: "already_sent", messageId: previous.emailMessageId || "" }) : sendEmail(booking),
+    previous.smsStatus === "sent" ? Promise.resolve({ status: "already_sent", messageId: previous.smsMessageId || "" }) : sendSms(booking)
+  ]);
   const failed = [email, sms].filter((item) => ["failed", "error"].includes(item.status));
+  const emailStatus = email.status === "already_sent" ? "sent" : email.status;
+  const smsStatus = sms.status === "already_sent" ? "sent" : sms.status;
+  const complete = !failed.length;
   const reviewRequest = {
     ...previous,
-    claimedAt: attemptedAt,
-    status: delivered.length ? "sent" : (failed.length ? "failed" : "skipped"),
-    sentAt: delivered.length ? attemptedAt : "",
+    claimedAt: complete ? attemptedAt : "",
+    status: complete ? "sent" : "failed",
+    sentAt: complete ? attemptedAt : "",
     lastAttemptAt: attemptedAt,
-    emailStatus: email.status,
-    emailMessageId: cleanText(email.messageId, 160),
-    smsStatus: sms.status,
-    smsMessageId: cleanText(sms.messageId, 160),
+    emailStatus,
+    emailMessageId: cleanText(email.messageId || previous.emailMessageId, 160),
+    smsStatus,
+    smsMessageId: cleanText(sms.messageId || previous.smsMessageId, 160),
     error: failed.map((item) => cleanText(item.error, 300)).filter(Boolean).join(" "),
     reviewUrl: GOOGLE_REVIEW_URL
   };
   await save(booking, reviewRequest);
-  return { ...reviewRequest, sent: delivered.length > 0 };
+  return { ...reviewRequest, sent: complete };
 }
 
-module.exports = { GOOGLE_REVIEW_URL, REVIEW_REQUEST_MESSAGE, buildReviewRequestEmail, buildReviewRequestSms, sendReviewRequest, sendReviewRequestEmail };
+async function processDueReviewRequests({ now = new Date(), listBookings = listAllBookings, send = sendReviewRequest } = {}) {
+  const bookings = await listBookings();
+  const due = bookings.filter((booking) => {
+    const reviewRequest = booking.estimate?.reviewRequest || {};
+    const dueAt = new Date(reviewRequest.dueAt || 0).getTime();
+    return booking.status === "Completed"
+      && !reviewRequest.sentAt
+      && ["scheduled", "failed"].includes(reviewRequest.status)
+      && Number.isFinite(dueAt)
+      && dueAt <= now.getTime();
+  }).slice(0, MAX_REVIEW_REQUESTS_PER_RUN);
+  const results = [];
+  for (const booking of due) {
+    try {
+      const result = await send({ booking, now });
+      results.push({ bookingId: booking.id, status: result.status, emailStatus: result.emailStatus, smsStatus: result.smsStatus });
+    } catch (error) {
+      results.push({ bookingId: booking.id, status: "failed", error: cleanText(error.message, 300) });
+    }
+  }
+  return {
+    checked: bookings.length,
+    due: due.length,
+    sent: results.filter((result) => result.status === "sent").length,
+    failed: results.filter((result) => result.status === "failed").length,
+    results
+  };
+}
+
+module.exports = {
+  GOOGLE_REVIEW_URL,
+  REVIEW_DELAY_MS,
+  REVIEW_REQUEST_MESSAGE,
+  buildReviewRequestEmail,
+  buildReviewRequestSms,
+  processDueReviewRequests,
+  scheduleReviewRequest,
+  sendReviewRequest,
+  sendReviewRequestEmail
+};

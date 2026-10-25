@@ -19,7 +19,7 @@ const {
 } = require("../booking/_payments");
 const { sendAdditionalWorkOffer } = require("../booking/_additional-work");
 const { sendCompletionReceipt } = require("../booking/_completion-receipt");
-const { sendReviewRequest } = require("../booking/_review-request");
+const { scheduleReviewRequest } = require("../booking/_review-request");
 const { createStandaloneCustomQuote, listCrmQuotes } = require("./_quotes");
 const { prepareQualityPhoto, recordQualityPhoto } = require("./_quality-photos");
 const { confirmManualSmsConsent, createManualContact, deleteManualContact, listManualContacts, updateManualContact } = require("./_contacts");
@@ -454,9 +454,9 @@ async function updateStatus(body, request, response) {
     }
     try {
       const bookingForReview = shouldSendOffer ? (await getBooking(id) || bookingAfterReceipt) : bookingAfterReceipt;
-      reviewRequest = await sendReviewRequest({ booking: bookingForReview });
+      reviewRequest = await scheduleReviewRequest({ booking: bookingForReview });
     } catch (error) {
-      reviewRequest = { status: "failed", sent: false, error: error.message || "The Google review request could not be sent." };
+      reviewRequest = { status: "failed", sent: false, error: error.message || "The Google review request could not be scheduled." };
     }
   } else if (status === "Cancelled") {
     try {

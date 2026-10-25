@@ -9,6 +9,7 @@ const {
   sendBookingReminderEmail,
   sendBookingReminderSms
 } = require("./_notifications");
+const { processDueReviewRequests } = require("./_review-request");
 
 function authorized(request) {
   const secret = process.env.CRON_SECRET || "";
@@ -107,8 +108,11 @@ module.exports = async function handler(request, response) {
     if (!authorized(request)) {
       return json(response, 401, { error: "Unauthorized." });
     }
-    const result = await processDueReminders();
-    return json(response, 200, { ok: true, ...result });
+    const [result, reviewRequests] = await Promise.all([
+      processDueReminders(),
+      processDueReviewRequests()
+    ]);
+    return json(response, 200, { ok: true, ...result, reviewRequests });
   } catch (error) {
     return json(response, error.statusCode || 500, {
       error: error.message || "Booking reminders could not be processed.",

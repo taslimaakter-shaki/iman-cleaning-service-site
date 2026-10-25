@@ -2037,15 +2037,15 @@
               ? "Booking completed and balance collected, but the additional-work message needs attention. Use Resend link."
               : "Booking completed and the remaining balance was captured. No additional-work link was sent.";
           actionStatus.textContent += receiptStatusMessage;
-          actionStatus.textContent += reviewResult.status === "sent"
-            ? " Google review request sent."
+          actionStatus.textContent += ["scheduled", "already_scheduled"].includes(reviewResult.status)
+            ? " Review email and text scheduled for 24 hours after completion."
             : reviewResult.status === "already_sent"
               ? " Google review request was already sent."
-              : " Google review request needs attention; save Completed again to retry.";
+              : " Review request scheduling needs attention; save Completed again to retry.";
           toast(offerResult.status === "sent" ? "Booking completed and additional-work link sent." : "Booking completed and remaining balance collected.");
         } else if (paymentResult.status === "not_applicable") {
           actionStatus.className = "crm-action-status is-success";
-          actionStatus.textContent = `Booking marked completed. Automatic balance collection does not apply to this booking.${receiptStatusMessage}${reviewResult.status === "sent" ? " Google review request sent." : reviewResult.status === "already_sent" ? " Google review request was already sent." : " Google review request needs attention; save Completed again to retry."}`;
+          actionStatus.textContent = `Booking marked completed. Automatic balance collection does not apply to this booking.${receiptStatusMessage}${["scheduled", "already_scheduled"].includes(reviewResult.status) ? " Review email and text scheduled for 24 hours after completion." : reviewResult.status === "already_sent" ? " Google review request was already sent." : " Review request scheduling needs attention; save Completed again to retry."}`;
           toast("Booking marked completed.");
         } else {
           actionStatus.className = "crm-action-status is-error";
