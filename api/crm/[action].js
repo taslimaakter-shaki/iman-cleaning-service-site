@@ -20,6 +20,7 @@ const {
 const { sendAdditionalWorkOffer } = require("../booking/_additional-work");
 const { sendCompletionReceipt } = require("../booking/_completion-receipt");
 const { scheduleReviewRequest } = require("../booking/_review-request");
+const { arrivalWindowEnd } = require("../booking/_arrival-preference");
 const { createStandaloneCustomQuote, listCrmQuotes } = require("./_quotes");
 const { prepareQualityPhoto, recordQualityPhoto } = require("./_quality-photos");
 const { confirmManualSmsConsent, createManualContact, deleteManualContact, listManualContacts, updateManualContact } = require("./_contacts");
@@ -159,6 +160,51 @@ function bookingScheduleLabel(schedule) {
     hour: "numeric",
     minute: "2-digit"
   }).format(new Date(schedule));
+}
+
+function localScheduleParts(schedule) {
+  const date = new Date(schedule);
+  if (!Number.isFinite(date.getTime())) throw Object.assign(new Error("The booking appointment is invalid."), { statusCode: 400 });
+  const parts = Object.fromEntries(new Intl.DateTimeFormat("en-US", {
+    timeZone: "America/New_York",
+    year: "numeric",
+    month: "2-digit",
+    day: "2-digit",
+    hour: "2-digit",
+    minute: "2-digit",
+    hourCycle: "h23"
+  }).formatToParts(date).filter((part) => part.type !== "literal").map((part) => [part.type, part.value]));
+  return { date: `${parts.year}-${parts.month}-${parts.day}`, time: `${parts.hour}:${parts.minute}` };
+}
+
+function arrivalConfirmationSchedule(booking, arrivalTime) {
+  const preference = booking?.estimate?.arrivalPreference;
+  if (!preference?.flexible) {
+    throw Object.assign(new Error("This booking does not have a flexible arrival window."), { statusCode: 409 });
+  }
+  const normalizedTime = text(arrivalTime, 10);
+  if (!/^\d{2}:\d{2}$/.test(normalizedTime)) {
+    throw Object.assign(new Error("Choose a valid appointment time."), { statusCode: 400 });
+  }
+  const toMinutes = (value) => {
+    const [hour, minute] = String(value || "").split(":").map(Number);
+    return Number.isFinite(hour) && Number.isFinite(minute) ? hour * 60 + minute : NaN;
+  };
+  const selectedMinutes = toMinutes(normalizedTime);
+  const startMinutes = toMinutes(preference.windowStart);
+  const estimate = booking.estimate || {};
+  const reservationHours = Number(estimate.calendarReservationHours || bookingDurationHours(booking));
+  const serviceTeamHours = Number(estimate.teamHours ?? estimate.hours ?? Math.max(0.25, reservationHours - 1));
+  const effectiveEnd = arrivalWindowEnd({
+    ...preference,
+    start: preference.windowStart,
+    end: preference.windowEnd
+  }, serviceTeamHours);
+  const endMinutes = toMinutes(effectiveEnd);
+  if (![selectedMinutes, startMinutes, endMinutes].every(Number.isFinite) || selectedMinutes < startMinutes || selectedMinutes > endMinutes) {
+    throw Object.assign(new Error(`Choose a time within the customer's ${preference.windowLabel || "selected arrival window"}.`), { statusCode: 400 });
+  }
+  return toZonedIso(localScheduleParts(booking.schedule).date, normalizedTime);
 }
 
 const RESCHEDULE_AUTHORIZATION_RESET_HOURS = 24;
@@ -350,6 +396,63 @@ async function updateBookingDetails(body, response) {
     }
   }
   return json(response, 200, { ok: true, calendar, scheduleNotification, paymentAuthorization, booking: toClientBooking(await getBooking(id)) });
+}
+
+async function confirmFlexibleArrival(body, response) {
+  const id = text(body.id, 200);
+  if (!id) return json(response, 400, { error: "Booking ID is required." });
+  const booking = await getBooking(id);
+  if (!booking) return json(response, 404, { error: "Booking not found." });
+  if (["Completed", "Cancelled"].includes(booking.status)) {
+    return json(response, 409, { error: "The arrival time cannot be changed for this booking status." });
+  }
+
+  const schedule = arrivalConfirmationSchedule(booking, body.arrivalTime);
+  const estimate = booking.estimate && typeof booking.estimate === "object" ? booking.estimate : {};
+  const calendarReservationHours = Number(estimate.calendarReservationHours || bookingDurationHours(booking));
+  await assertScheduleAvailable(schedule, calendarReservationHours, id);
+  const confirmedAt = new Date().toISOString();
+  const updatedEstimate = {
+    ...estimate,
+    arrivalPreference: {
+      ...estimate.arrivalPreference,
+      confirmationStatus: "confirmed",
+      confirmedAt,
+      confirmedSchedule: schedule,
+      confirmedBy: "crm"
+    }
+  };
+  await updateBooking(id, {
+    schedule,
+    schedule_label: bookingScheduleLabel(schedule),
+    estimate: updatedEstimate
+  });
+
+  let scheduleNotification = { status: "not_sent" };
+  const message = [
+    `IMAN Cleaning Service: Your cleaning appointment arrival time is confirmed for ${bookingScheduleLabel(schedule)} (New York time).`,
+    `Service: ${booking.service_label || booking.service || "Cleaning service"}.`,
+    booking.address ? `Address: ${booking.address}.` : "",
+    "Questions or changes? Call (929) 232-1930. Reply STOP to opt out."
+  ].filter(Boolean).join(" ");
+  try {
+    const sent = await sendCustomerMessage({
+      phone: booking.phone,
+      customerName: booking.client_name,
+      message
+    });
+    scheduleNotification = { status: "sent", messageId: sent.messageId || "" };
+  } catch (error) {
+    scheduleNotification = { status: "failed", error: "The arrival time was saved, but the confirmation text could not be sent." };
+  }
+
+  let calendar = { status: "unchanged" };
+  try {
+    calendar = await updateBookingGoogleCalendar(await getBooking(id), "reschedule", { notifyCustomer: false });
+  } catch (error) {
+    calendar = { status: "error", error: "Arrival time saved, but Google Calendar could not be updated." };
+  }
+  return json(response, 200, { ok: true, calendar, scheduleNotification, booking: toClientBooking(await getBooking(id)) });
 }
 
 function buildTimeTracking(existing = {}, clockAction, now = new Date()) {
@@ -811,6 +914,7 @@ async function handler(request, response) {
       if (body.clockAction) return updateClock(body, response);
       if (body.assignmentAction === "save") return updateCleanerAssignment(body, response);
       if (body.additionalWorkAction === "resend") return resendAdditionalWork(body, request, response);
+      if (body.bookingAction === "confirm_arrival") return confirmFlexibleArrival(body, response);
       if (body.bookingAction === "save_details") return updateBookingDetails(body, response);
       return updateStatus(body, request, response);
     }
@@ -828,5 +932,6 @@ module.exports._test = {
   cancellationAmountsForSource,
   hasPaidDeposit,
   parseCleanerNames,
+  arrivalConfirmationSchedule,
   shouldResetAuthorizationForReschedule
 };

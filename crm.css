@@ -231,6 +231,16 @@ a { color: inherit; }
 .crm-section-heading { display: flex; align-items: flex-start; justify-content: space-between; gap: 14px; }
 .crm-section-heading h3 { margin-bottom: 3px; }
 .crm-section-heading p { margin: 0; color: var(--muted); font-size: .7rem; }
+.crm-arrival-confirmation-section { padding: 18px; border: 1px solid #c7ded8; border-radius: 16px; background: linear-gradient(145deg,#f5fbf9,#edf7f4); }
+.crm-arrival-state { flex: 0 0 auto; padding: 6px 9px; border-radius: 999px; color: #7b5712; background: #fff1c9; font-size: .66rem; font-weight: 800; }
+.crm-arrival-state.is-confirmed { color: #376f1d; background: #e6f4d9; }
+.crm-arrival-confirmation-form { display: flex; align-items: flex-end; gap: 10px; margin-top: 14px; }
+.crm-arrival-confirmation-form label { flex: 1; display: grid; gap: 6px; color: var(--ink); font-size: .74rem; font-weight: 800; }
+.crm-arrival-confirmation-form input { width: 100%; border: 1px solid var(--line); border-radius: 10px; padding: 11px 12px; color: var(--ink); background: #fff; font: inherit; }
+.crm-arrival-confirmation-form small { color: var(--muted); font-size: .66rem; font-weight: 600; line-height: 1.4; }
+.crm-arrival-confirmation-form button { min-height: 42px; }
+.crm-arrival-confirmation-form button:disabled { opacity: .55; cursor: wait; }
+.crm-arrival-warning { margin: 12px 0 0; color: #65521f; font-size: .7rem; line-height: 1.45; }
 .crm-assignment-count { flex: 0 0 auto; padding: 6px 9px; border-radius: 999px; color: #376f1d; background: #e6f4d9; font-size: .66rem; font-weight: 800; }
 .crm-cleaner-chips { display: flex; flex-wrap: wrap; gap: 7px; margin: 12px 0; }
 .crm-cleaner-chips span { padding: 7px 10px; border: 1px solid #c9ded8; border-radius: 999px; color: var(--teal); background: #f1f8f5; font-size: .72rem; font-weight: 800; }
@@ -415,7 +425,7 @@ a { color: inherit; }
   .crm-detail-wide { grid-column: auto; }
   .crm-conversation-message { max-width: 94%; }
   .crm-conversation-message header { align-items: flex-start; flex-direction: column; gap: 2px; }
-  .crm-status-form, .crm-assignment-form { align-items: stretch; flex-direction: column; }
+  .crm-status-form, .crm-assignment-form, .crm-arrival-confirmation-form { align-items: stretch; flex-direction: column; }
   .crm-cancellation-options { grid-template-columns: 1fr; }
   .crm-booking-edit-grid { grid-template-columns: 1fr; }
   .crm-booking-edit-wide { grid-column: auto; }

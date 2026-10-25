@@ -123,6 +123,23 @@
     return { cleaners, laborHours, teamHours };
   }
 
+  function flexibleArrivalBounds(booking) {
+    const preference = booking.estimate?.arrivalPreference || {};
+    const toMinutes = (value) => {
+      const match = String(value || "").match(/^(\d{2}):(\d{2})$/);
+      return match ? Number(match[1]) * 60 + Number(match[2]) : NaN;
+    };
+    const toTime = (value) => `${String(Math.floor(value / 60)).padStart(2, "0")}:${String(value % 60).padStart(2, "0")}`;
+    const startMinutes = toMinutes(preference.windowStart);
+    const storedEndMinutes = toMinutes(preference.windowEnd);
+    const latestOperationalStart = toMinutes("20:30") - (bookingHours(booking).teamHours + 1) * 60;
+    const endMinutes = Math.min(storedEndMinutes, latestOperationalStart);
+    return {
+      start: Number.isFinite(startMinutes) ? toTime(startMinutes) : "08:00",
+      end: Number.isFinite(endMinutes) ? toTime(endMinutes) : "16:00"
+    };
+  }
+
   function timeTrackingFor(booking) {
     const tracking = booking.estimate?.timeTracking || {};
     const entries = Array.isArray(tracking.entries) ? tracking.entries : [];
@@ -1841,6 +1858,18 @@
     const qualityPhotos = qualityPhotosFor(booking);
     const qualityTotal = qualityPhotos.before.length + qualityPhotos.after.length;
     const orderMarkup = additionalOrders.length ? `<div class="crm-additional-orders">${additionalOrders.map((order) => `<div><span>${escapeHtml(order.orderId || "Additional work")}</span><strong>${escapeHtml(String(order.laborHours || 0))} labor-hours · ${money(order.amountCents || 0)} · ${escapeHtml(String(order.status || "pending").replace(/_/g, " "))}</strong></div>`).join("")}</div>` : "";
+    const arrivalPreference = booking.estimate?.arrivalPreference || {};
+    const arrivalBounds = arrivalPreference.flexible ? flexibleArrivalBounds(booking) : null;
+    const currentArrivalTime = appointmentInputValue(booking).split("T")[1] || "";
+    const arrivalConfirmationMarkup = arrivalPreference.flexible ? `<section class="crm-detail-section crm-arrival-confirmation-section">
+      <div class="crm-section-heading"><div><h3>${arrivalPreference.confirmationStatus === "confirmed" ? "Confirmed arrival time" : "Confirm exact arrival time"}</h3><p>The customer selected ${escapeHtml(arrivalPreference.windowLabel || "a flexible arrival window")}. Choose the final arrival time within that window.</p></div><span class="crm-arrival-state${arrivalPreference.confirmationStatus === "confirmed" ? " is-confirmed" : ""}">${arrivalPreference.confirmationStatus === "confirmed" ? "Customer notified" : "Needs confirmation"}</span></div>
+      <form class="crm-arrival-confirmation-form" data-arrival-confirmation-form>
+        <label>Appointment arrival time<input name="arrivalTime" type="time" required step="900" min="${escapeHtml(arrivalBounds.start)}" max="${escapeHtml(arrivalBounds.end)}" value="${escapeHtml(currentArrivalTime)}"><small>Allowed window: ${escapeHtml(arrivalPreference.windowLabel || `${arrivalBounds.start}–${arrivalBounds.end}`)}. The extra reserved hour remains unchanged.</small></label>
+        <button class="crm-primary" type="submit">${arrivalPreference.confirmationStatus === "confirmed" ? "Update time & text customer" : "Confirm time & text customer"}</button>
+      </form>
+      <p class="crm-arrival-warning">Saving updates the booking calendar and sends the customer a text message with the confirmed appointment time.</p>
+      <p class="crm-action-status" data-arrival-confirmation-status role="status"></p>
+    </section>` : "";
     return `<div class="crm-dialog-head">
       <div><p class="crm-eyebrow">Order ${escapeHtml(booking.orderNumber || booking.id)}</p><h2>${escapeHtml(booking.clientName || "Booking details")}</h2></div>
       <button class="crm-dialog-close" type="button" data-close-dialog aria-label="Close">×</button>
@@ -1856,6 +1885,7 @@
         ${booking.notes ? `<div class="crm-detail crm-detail-wide"><span>Notes</span><strong>${escapeHtml(booking.notes)}</strong></div>` : ""}
       </div>
       <section class="crm-detail-section"><h3>Contact customer</h3>${communicationButtons({ phone: booking.phone, customerName: booking.clientName, sourceId: booking.id, sourceType: "Booking" })}</section>
+      ${arrivalConfirmationMarkup}
       ${customerHistoryMarkup(booking.phone)}
       <section class="crm-detail-section crm-booking-editor-section">
         <div class="crm-section-heading"><div><h3>Edit all booking details</h3><p>Change the customer, appointment, service, price, scope or internal notes.</p></div><button class="crm-row-button" type="button" data-toggle-booking-editor aria-expanded="false">Edit booking</button></div>
@@ -2084,6 +2114,50 @@
       actionStatus.textContent = error.message;
       toast(error.message, "error");
     } finally {
+      button.disabled = false;
+    }
+  }
+
+  async function confirmFlexibleArrivalTime(booking, form) {
+    if (!form.reportValidity()) return;
+    const arrivalTime = form.elements.arrivalTime.value;
+    const displayTime = new Date(`2000-01-01T${arrivalTime}:00`).toLocaleTimeString("en-US", { hour: "numeric", minute: "2-digit" });
+    if (!window.confirm(`Confirm ${displayTime} as this customer's arrival time? The booking calendar will be updated and the customer will receive the confirmed time by text.`)) return;
+    const button = $("button[type='submit']", form);
+    const status = $("[data-arrival-confirmation-status]", form.closest(".crm-arrival-confirmation-section"));
+    button.disabled = true;
+    status.className = "crm-action-status";
+    status.textContent = "Confirming arrival time…";
+    try {
+      const data = await api("/api/crm/bookings", {
+        method: "PATCH",
+        body: JSON.stringify({
+          id: booking.id,
+          bookingAction: "confirm_arrival",
+          arrivalTime
+        })
+      });
+      await loadBookings({ quiet: true });
+      const refreshed = state.bookings.find((item) => item.id === booking.id);
+      if (refreshed) {
+        $("[data-booking-detail]").innerHTML = detailMarkup(refreshed);
+        loadAdditionalApprovals(refreshed);
+      }
+      const refreshedStatus = $("[data-arrival-confirmation-status]", dialog);
+      const messageFailed = data.scheduleNotification?.status === "failed";
+      const calendarFailed = data.calendar?.status === "error";
+      refreshedStatus.className = messageFailed || calendarFailed ? "crm-action-status is-error" : "crm-action-status is-success";
+      refreshedStatus.textContent = [
+        "Arrival time saved.",
+        data.scheduleNotification?.status === "sent" ? "Customer confirmation text sent." : "",
+        messageFailed ? data.scheduleNotification.error : "",
+        calendarFailed ? data.calendar.error : "Google Calendar is up to date."
+      ].filter(Boolean).join(" ");
+      toast(messageFailed || calendarFailed ? "Arrival time saved, but follow-up needs attention." : "Arrival time confirmed and customer texted.", messageFailed || calendarFailed ? "error" : undefined);
+    } catch (error) {
+      status.className = "crm-action-status is-error";
+      status.textContent = error.message;
+      toast(error.message, "error");
       button.disabled = false;
     }
   }
@@ -2784,6 +2858,13 @@
       event.preventDefault();
       const booking = state.bookings.find((item) => item.id === state.selectedId);
       if (booking) saveCleanerAssignment(booking, assignmentForm);
+      return;
+    }
+    const arrivalConfirmationForm = event.target.closest("[data-arrival-confirmation-form]");
+    if (arrivalConfirmationForm) {
+      event.preventDefault();
+      const booking = state.bookings.find((item) => item.id === state.selectedId);
+      if (booking) confirmFlexibleArrivalTime(booking, arrivalConfirmationForm);
       return;
     }
     const bookingEditForm = event.target.closest("[data-booking-edit-form]");

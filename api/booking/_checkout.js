@@ -486,7 +486,7 @@ module.exports = async function handler(request, response) {
           label: arrivalPreference.label,
           flexible: arrivalPreference.flexible,
           windowStart: arrivalPreference.start,
-          windowEnd: arrivalPreference.end,
+          windowEnd: pkg.arrivalDiscount?.windowEnd || arrivalPreference.end,
           windowLabel: arrivalWindowLabel(arrivalPreference, pkg.teamHours),
           provisionalStart: slot.value,
           confirmationStatus: arrivalPreference.flexible ? "pending" : "confirmed"

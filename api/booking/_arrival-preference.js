@@ -48,6 +48,21 @@ function slotMatchesArrivalPreference(slot, preferenceValue) {
     && slotMinutes <= minutes(preference.end);
 }
 
+function arrivalWindowEnd(preferenceValue, serviceTeamHours) {
+  const preference = typeof preferenceValue === "object"
+    ? preferenceValue
+    : arrivalPreferenceForKey(preferenceValue);
+  if (!preference.flexible) return "";
+  const closeMinutes = minutes("20:30");
+  const reservedMinutes = (Number(serviceTeamHours) + 1) * 60;
+  const calculatedLatest = Number.isFinite(reservedMinutes) ? closeMinutes - reservedMinutes : minutes(preference.end);
+  const effectiveEndMinutes = Math.min(minutes(preference.end), calculatedLatest);
+  if (!Number.isFinite(effectiveEndMinutes) || effectiveEndMinutes < minutes(preference.start)) {
+    throw arrivalError("This arrival window is not available for the selected service duration.", 409);
+  }
+  return `${String(Math.floor(effectiveEndMinutes / 60)).padStart(2, "0")}:${String(effectiveEndMinutes % 60).padStart(2, "0")}`;
+}
+
 function arrivalWindowLabel(preferenceValue, serviceTeamHours) {
   const preference = typeof preferenceValue === "object"
     ? preferenceValue
@@ -58,12 +73,7 @@ function arrivalWindowLabel(preferenceValue, serviceTeamHours) {
     const hour = Number(hourValue);
     return `${hour % 12 || 12}:${minute} ${hour >= 12 ? "PM" : "AM"}`;
   };
-  const closeMinutes = minutes("20:30");
-  const reservedMinutes = (Number(serviceTeamHours) + 1) * 60;
-  const calculatedLatest = Number.isFinite(reservedMinutes) ? closeMinutes - reservedMinutes : minutes(preference.end);
-  const effectiveEndMinutes = Math.min(minutes(preference.end), calculatedLatest);
-  const effectiveEnd = `${String(Math.floor(effectiveEndMinutes / 60)).padStart(2, "0")}:${String(effectiveEndMinutes % 60).padStart(2, "0")}`;
-  return `${display(preference.start)}–${display(effectiveEnd)}`;
+  return `${display(preference.start)}–${display(arrivalWindowEnd(preference, serviceTeamHours))}`;
 }
 
 function applyArrivalDiscount(pkg, preferenceValue) {
@@ -92,7 +102,7 @@ function applyArrivalDiscount(pkg, preferenceValue) {
     amountCents,
     application: "before_tax",
     windowStart: preference.start,
-    windowEnd: preference.end,
+    windowEnd: arrivalWindowEnd(preference, pkg.teamHours),
     windowLabel: arrivalWindowLabel(preference, pkg.teamHours)
   };
 
@@ -119,6 +129,7 @@ module.exports = {
   applyArrivalDiscount,
   assertArrivalPreferenceEligible,
   arrivalPreferenceForKey,
+  arrivalWindowEnd,
   arrivalWindowLabel,
   slotMatchesArrivalPreference
 };

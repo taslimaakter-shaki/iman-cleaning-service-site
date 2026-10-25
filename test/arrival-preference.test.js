@@ -3,6 +3,7 @@ const {
   applyArrivalDiscount,
   assertArrivalPreferenceEligible,
   arrivalPreferenceForKey,
+  arrivalWindowEnd,
   arrivalWindowLabel,
   slotMatchesArrivalPreference
 } = require("../api/booking/_arrival-preference");
@@ -39,6 +40,8 @@ assert.equal(exact.priceCents, packageWithFall5.priceCents);
 
 assert.equal(arrivalWindowLabel("afternoon"), "12:00 PM–4:00 PM");
 assert.equal(arrivalWindowLabel("any_day", 5), "8:00 AM–2:30 PM");
+assert.equal(arrivalWindowEnd("any_day", 5), "14:30");
+assert.equal(arrivalWindowEnd("morning", 4), "12:00");
 assert.equal(arrivalPreferenceForKey("morning").percent, 2);
 assert.equal(assertArrivalPreferenceEligible({ manHours: 8 }, "morning").key, "morning");
 assert.throws(
