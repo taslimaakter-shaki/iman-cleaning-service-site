@@ -356,13 +356,31 @@ function selectedServiceDetailsUrl(record, booking) {
     }
   }
 
+  const site = "https://www.imancleaningservice.com";
+  const serviceKey = cleanText(
+    booking?.service || booking?.estimate?.serviceKey || booking?.estimate?.eligibility?.requestedService,
+    80
+  ).toLowerCase();
+  const pagesByServiceKey = {
+    standard: "/standard-cleaning.html",
+    recurring: "/standard-cleaning.html",
+    deep: "/deep-cleaning.html",
+    details: "/deep-cleaning.html",
+    move: "/move-in-move-out-cleaning.html",
+    post: "/post-construction-cleaning.html",
+    post_construction: "/post-construction-cleaning.html",
+    hourly: "/services-hub.html",
+    organization: "/services-hub.html",
+    window: "/services-hub.html"
+  };
+  if (pagesByServiceKey[serviceKey]) return `${site}${pagesByServiceKey[serviceKey]}`;
+
   const service = [
     booking?.service,
     booking?.service_label,
     booking?.estimate?.eligibility?.requestedService,
     record.service
   ].filter(Boolean).join(" ").toLowerCase();
-  const site = "https://www.imancleaningservice.com";
   if (/move[\s-]*(in|out)|moving/.test(service)) return `${site}/move-in-move-out-cleaning.html`;
   if (/deep|detail/.test(service)) return `${site}/deep-cleaning.html`;
   if (/post[\s-]*construction/.test(service)) return `${site}/post-construction-cleaning.html`;
@@ -881,3 +899,4 @@ module.exports.sendPaymentRecordForSession = sendPaymentRecordForSession;
 module.exports.sendPaymentRecordForSessionId = sendPaymentRecordForSessionId;
 module.exports.buildCustomerEmail = buildCustomerEmail;
 module.exports.buildCustomerConfirmationSms = buildCustomerConfirmationSms;
+module.exports.selectedServiceDetailsUrl = selectedServiceDetailsUrl;

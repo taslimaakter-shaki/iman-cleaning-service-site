@@ -10,7 +10,7 @@ Module._load = function patchedLoad(request, parent, isMain) {
 };
 
 const { buildBookingConfirmationPdf, buildSections } = require("../api/booking/_confirmation-pdf");
-const { buildCustomerEmail } = require("../api/quote/_payment-record");
+const { buildCustomerEmail, selectedServiceDetailsUrl } = require("../api/quote/_payment-record");
 
 const booking = {
   id: "BK-PDF-TEST",
@@ -88,6 +88,40 @@ const record = {
 };
 
 (async () => {
+  const serviceLinkCases = [
+    ["standard", "Standard Cleaning", "standard-cleaning.html"],
+    ["recurring", "Recurring Cleaning Service", "standard-cleaning.html"],
+    ["deep", "Deep Cleaning", "deep-cleaning.html"],
+    ["details", "Detailed Cleaning", "deep-cleaning.html"],
+    ["move", "Move-In Cleaning", "move-in-move-out-cleaning.html"],
+    ["post", "Post-Construction Cleaning", "post-construction-cleaning.html"],
+    ["hourly", "Hourly Cleaning Service", "services-hub.html"],
+    ["organization", "Organization", "services-hub.html"],
+    ["window", "Window Cleaning", "services-hub.html"],
+    ["", "Airbnb Cleaning", "airbnb-cleaning.html"],
+    ["", "Office Cleaning", "office-cleaning.html"],
+    ["", "Retail Store Cleaning", "retail-store-cleaning.html"],
+    ["", "Restaurant Cleaning", "restaurant-cleaning.html"],
+    ["", "Medical Clinic Cleaning", "medical-clinic-cleaning.html"],
+    ["", "Janitorial Cleaning", "janitorial-recurring-cleaning.html"],
+    ["", "Commercial Cleaning", "commercial-cleaning.html"]
+  ];
+  serviceLinkCases.forEach(([service, serviceLabel, expectedPage]) => {
+    assert.equal(
+      selectedServiceDetailsUrl({ service: serviceLabel }, { service, service_label: serviceLabel, estimate: {} }),
+      `https://www.imancleaningservice.com/${expectedPage}`,
+      `${serviceLabel} uses its expected service-details page`
+    );
+  });
+  assert.equal(
+    selectedServiceDetailsUrl(
+      { service: "Custom Service", serviceDescriptionUrl: "https://www.imancleaningservice.com/custom-details.html" },
+      { service: "custom", estimate: {} }
+    ),
+    "https://www.imancleaningservice.com/custom-details.html",
+    "A validated custom-quote service-details URL takes priority"
+  );
+
   const sections = buildSections({ booking, record });
   assert.ok(sections.some((section) => section.title === "Eligibility and service answers"));
   const pricingSection = sections.find((section) => section.title === "Itemized Pricing Summary");
