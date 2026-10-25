@@ -309,79 +309,171 @@ function buildEmail({ record, text, html, recordFileLink }) {
   };
 }
 
-function buildCustomerEmail({ record, invoicePdf, confirmationPdf, managementUrl }) {
+function customerFirstName(value) {
+  return cleanText(value).split(/\s+/).filter(Boolean)[0] || "there";
+}
+
+function formatAppointmentParts(booking, record) {
+  const scheduled = booking?.schedule ? new Date(booking.schedule) : null;
+  if (scheduled && Number.isFinite(scheduled.getTime())) {
+    return {
+      date: new Intl.DateTimeFormat("en-US", {
+        timeZone: "America/New_York",
+        weekday: "long",
+        year: "numeric",
+        month: "long",
+        day: "numeric"
+      }).format(scheduled),
+      time: new Intl.DateTimeFormat("en-US", {
+        timeZone: "America/New_York",
+        hour: "numeric",
+        minute: "2-digit"
+      }).format(scheduled)
+    };
+  }
+  return { date: record.serviceDate, time: record.serviceTime };
+}
+
+function formatMaximumTime(hours) {
+  const totalMinutes = Math.round(Number(hours || 0) * 60);
+  if (!Number.isFinite(totalMinutes) || totalMinutes <= 0) return "";
+  const wholeHours = Math.floor(totalMinutes / 60);
+  const minutes = totalMinutes % 60;
+  return [
+    wholeHours ? `${wholeHours} ${wholeHours === 1 ? "hour" : "hours"}` : "",
+    minutes ? `${minutes} ${minutes === 1 ? "minute" : "minutes"}` : ""
+  ].filter(Boolean).join(" ");
+}
+
+function buildCustomerEmail({ record, booking = null, invoicePdf, confirmationPdf, managementUrl }) {
   if (!record.customerEmail) return null;
 
   const from = process.env.QUOTE_EMAIL_FROM || "Info@imancleaningservice.com";
-  const subject = `Booking confirmed - complete PDF record - ${record.quoteId}`;
+  const subject = `Booking confirmed - IMAN Cleaning Service - ${record.orderNumber || record.quoteId}`;
   const automaticBalance = record.paymentType === "deposit_25"
     && record.balanceCollection === "automatic_48h_authorization";
-  const awaitingSchedule = !record.serviceDate || !record.serviceTime;
-  const paymentMessage = awaitingSchedule
-    ? "Your booking deposit was received. Your appointment date and time are not selected yet; Iman Cleaning Service will contact you to schedule the service."
-    : automaticBalance
-    ? "Your 25% booking deposit was received and your cleaning appointment is confirmed. A temporary authorization hold for the remaining 75% will be placed on your saved payment method about 48 hours before the appointment. The hold is not a completed charge and may temporarily reduce your available credit or funds. The balance will be charged after the service is completed."
-    : Number(String(record.remainingAmount).replace(/[^0-9.-]/g, "")) > 0
-      ? "Your booking deposit was received and your cleaning appointment is confirmed. The remaining balance is due under your accepted service agreement."
-      : "Your full payment was received and your cleaning appointment is confirmed.";
-  const details = [
-    ["Order number", record.orderNumber || record.quoteId],
-    ["Customer", record.customerName],
-    ["Location", record.serviceLocation],
+  const awaitingSchedule = !(booking?.schedule || (record.serviceDate && record.serviceTime));
+  const appointment = formatAppointmentParts(booking, record);
+  const cleanerCount = Number(booking?.estimate?.cleanerCount || 0);
+  const maximumTime = formatMaximumTime(booking?.estimate?.teamHours);
+  const staffing = cleanerCount
+    ? `${cleanerCount} cleaning ${cleanerCount === 1 ? "professional" : "professionals"}${maximumTime ? `, up to ${maximumTime}` : ""}`
+    : maximumTime
+      ? `Up to ${maximumTime}`
+      : "";
+  const remainingValue = Number(String(record.remainingAmount).replace(/[^0-9.-]/g, ""));
+  const hasRemainingBalance = Number.isFinite(remainingValue) && remainingValue > 0;
+  const discountLabel = /^FALL10\b/i.test(record.discountLabel || "")
+    ? "FALL10 discount"
+    : record.discountLabel || "Discount";
+  const appointmentDetails = [
+    ["Date", appointment.date],
+    ["Time", appointment.time],
     ["Service", record.service],
-    ["Service date", record.serviceDate],
-    ["Start time", record.serviceTime],
-    ["Service subtotal before tax", record.subtotalBeforeTax],
-    [record.discountLabel ? `${record.discountLabel}${record.discountApplication === "before_tax" ? " (before tax)" : ""}` : "Discount", record.discountAmount],
-    ["Discounted subtotal before tax", record.discountedSubtotalBeforeTax],
+    ["Address", record.serviceLocation],
+    ["Cleaning team", staffing]
+  ].filter(([, value]) => value);
+  const paymentDetails = [
+    ["Service subtotal", record.subtotalBeforeTax],
+    [discountLabel, record.discountAmount],
+    ["Discounted subtotal", record.discountedSubtotalBeforeTax],
     ["NY sales tax (8.875%)", record.salesTax],
     ["Final service price", record.totalAmount],
-    ["Amount paid", record.paidAmount],
-    ["Payment method", record.paymentMethod],
-    ["Remaining balance", record.remainingAmount],
-    ["Invoice", record.stripeInvoiceUrl],
-    ["Invoice PDF", record.stripeInvoicePdf],
-    ["Receipt", record.stripeReceiptUrl]
+    [record.paymentType === "deposit_25" ? "Deposit paid" : "Amount paid", record.paidAmount ? `-${record.paidAmount}` : ""],
+    ["Remaining balance", record.remainingAmount]
   ].filter(([, value]) => value);
+  const balanceMessage = automaticBalance
+    ? "The remaining balance will be temporarily authorized approximately 48 hours before your appointment and charged after service completion, according to your booking agreement."
+    : hasRemainingBalance
+      ? "The remaining balance is due according to your accepted booking agreement."
+      : "Your service has been paid in full.";
+  const attachmentMessage = confirmationPdf && invoicePdf
+    ? "Your booking record and payment receipt are attached for your reference."
+    : confirmationPdf
+      ? "Your booking record is attached for your reference."
+      : invoicePdf
+        ? "Your payment receipt is attached for your reference."
+        : "Your booking and payment details are included in this email for your reference.";
+  const paymentReferenceUrl = invoicePdf
+    ? ""
+    : record.stripeInvoiceUrl || record.stripeReceiptUrl || "";
 
   const text = [
-    `Hi ${record.customerName || "there"},`,
+    `Hi ${customerFirstName(record.customerName)},`,
     "",
-    `Thank you for booking with Iman Cleaning Service LLC. ${paymentMessage}`,
+    awaitingSchedule
+      ? "Thank you for choosing IMAN Cleaning Service! Your payment has been successfully received. We will contact you to schedule your cleaning appointment."
+      : `Thank you for choosing IMAN Cleaning Service! Your ${record.paymentType === "deposit_25" ? "deposit" : "payment"} has been successfully received, and your cleaning appointment is confirmed.`,
     "",
-    ...details.map(([label, value]) => `${label}: ${value}`),
+    ...(awaitingSchedule ? [] : ["Appointment Details", "", ...appointmentDetails.map(([label, value]) => `${label}: ${value}`), ""]),
+    "Your Payment Summary",
     "",
-    confirmationPdf ? "Your complete booking record PDF is attached as proof of your submission and payment." : "Your booking and payment details are listed in this email.",
-    invoicePdf ? "Your Stripe PDF invoice is also attached." : "Your Stripe invoice is available from the invoice link above.",
-    managementUrl && !awaitingSchedule ? `Reschedule or cancel: ${managementUrl}` : "",
-    awaitingSchedule ? "Cancellation timing will be measured from the appointment after it is scheduled." : "Cancellation policy: cancel at least 48 hours before the appointment for a full refund of amounts charged. If less than 48 hours remain, the 25% booking deposit is non-refundable and any uncaptured authorization is released.",
-    awaitingSchedule ? "Appointment reminders will begin after the service is scheduled." : "We will send email and text reminders about 24 hours and 6 hours before your appointment.",
-    "Iman Cleaning Service LLC will follow up if any additional appointment details are needed.",
+    ...paymentDetails.map(([label, value]) => `${label}: ${value}`),
     "",
-    "Thank you,",
-    "Iman Cleaning Service LLC"
+    balanceMessage,
+    "",
+    "Before Our Team Arrives",
+    "",
+    "- Ensure electricity and running water are available.",
+    "- Provide access instructions, including any entry codes.",
+    "- Make sure the areas being cleaned are accessible.",
+    "- Contact us before the appointment if your property condition or requested cleaning tasks have changed.",
+    "",
+    "Important: Your booking includes the services and maximum labor time shown in your attached booking record. Additional work, including extensive wall scrubbing, requires confirmation of the scope and any applicable charges before proceeding.",
+    "",
+    ...(managementUrl && !awaitingSchedule ? ["Need to Make Changes?", "", "You can reschedule or cancel your appointment using the secure link below.", managementUrl, ""] : []),
+    awaitingSchedule
+      ? "Cancellation timing will be measured from the appointment after it is scheduled."
+      : "Cancellations made at least 48 hours before your appointment qualify for a full refund under your booking agreement. If less than 48 hours remain, the 25% booking deposit is non-refundable and any uncaptured authorization will be released.",
+    "",
+    attachmentMessage,
+    paymentReferenceUrl ? `Payment receipt: ${paymentReferenceUrl}` : "",
+    "",
+    "We look forward to making your space fresh and ready!",
+    "",
+    "IMAN Cleaning Service LLC",
+    "929-232-1930",
+    "www.imancleaningservice.com"
   ].join("\n");
 
-  const rows = details.map(([label, value]) => {
-    const escapedValue = escapeHtml(value);
-    const link = /^https?:\/\//.test(String(value || ""));
-    const content = link ? `<a href="${escapedValue}">${escapedValue}</a>` : escapedValue;
-    return `<tr><th align="left" style="padding:6px 12px 6px 0;">${escapeHtml(label)}</th><td style="padding:6px 0;">${content}</td></tr>`;
+  const tableRows = (rows, emphasis = new Set()) => rows.map(([label, value]) => {
+    const strong = emphasis.has(label);
+    return `<tr><th align="left" style="padding:8px 12px 8px 0;border-bottom:1px solid #e5ecea;${strong ? "font-weight:700;color:#073f49;" : ""}">${escapeHtml(label)}</th><td align="right" style="padding:8px 0;border-bottom:1px solid #e5ecea;${strong ? "font-weight:700;color:#073f49;" : ""}">${escapeHtml(value)}</td></tr>`;
   }).join("");
+  const appointmentRows = tableRows(appointmentDetails);
+  const paymentRows = tableRows(paymentDetails, new Set(["Final service price", "Remaining balance"]));
 
   const html = `<!doctype html>
 <html>
-  <body style="font-family:Arial,sans-serif;color:#1f2933;line-height:1.5;">
-    <p>Hi ${escapeHtml(record.customerName || "there")},</p>
-    <p>Thank you for booking with Iman Cleaning Service LLC. ${escapeHtml(paymentMessage)}</p>
-    <table>${rows}</table>
-    <p><strong>${confirmationPdf ? "Your complete booking record PDF is attached as proof of your submission and payment." : "Your booking and payment details are listed in this email."}</strong></p>
-    <p>${invoicePdf ? "Your Stripe PDF invoice is also attached." : "Your Stripe invoice is available from the invoice link above."}</p>
-    ${managementUrl && !awaitingSchedule ? `<p><a href="${escapeHtml(managementUrl)}" style="display:inline-block;padding:13px 20px;background:#0b6474;color:#fff;text-decoration:none;border-radius:10px;font-weight:bold;">Reschedule or cancel my appointment</a></p>` : ""}
-    <p>${awaitingSchedule ? "Cancellation timing will be measured from the appointment after it is scheduled." : "Cancellation policy: cancel at least 48 hours before the appointment for a full refund of amounts charged. If less than 48 hours remain, the 25% booking deposit is non-refundable and any uncaptured authorization is released."}</p>
-    <p>${awaitingSchedule ? "Appointment reminders will begin after the service is scheduled." : "We will send email and text reminders about 24 hours and 6 hours before your appointment."}</p>
-    <p>Iman Cleaning Service LLC will follow up if any additional appointment details are needed.</p>
-    <p>Thank you,<br>Iman Cleaning Service LLC</p>
+  <body style="margin:0;background:#f4f7f6;font-family:Arial,sans-serif;color:#243c40;line-height:1.6;">
+    <div style="max-width:640px;margin:0 auto;padding:24px;">
+      <div style="background:#ffffff;border:1px solid #dbe7e2;border-radius:16px;padding:30px;">
+        <p>Hi ${escapeHtml(customerFirstName(record.customerName))},</p>
+        <p>${escapeHtml(awaitingSchedule
+          ? "Thank you for choosing IMAN Cleaning Service! Your payment has been successfully received. We will contact you to schedule your cleaning appointment."
+          : `Thank you for choosing IMAN Cleaning Service! Your ${record.paymentType === "deposit_25" ? "deposit" : "payment"} has been successfully received, and your cleaning appointment is confirmed.`)}</p>
+        ${awaitingSchedule ? "" : `<h2 style="color:#073f49;font-size:20px;margin:28px 0 8px;">Appointment Details</h2><table style="width:100%;border-collapse:collapse;">${appointmentRows}</table>`}
+        <h2 style="color:#073f49;font-size:20px;margin:28px 0 8px;">Your Payment Summary</h2>
+        <table style="width:100%;border-collapse:collapse;">${paymentRows}</table>
+        <p style="margin-top:18px;">${escapeHtml(balanceMessage)}</p>
+        <h2 style="color:#073f49;font-size:20px;margin:28px 0 8px;">Before Our Team Arrives</h2>
+        <ul style="padding-left:20px;">
+          <li>Ensure electricity and running water are available.</li>
+          <li>Provide access instructions, including any entry codes.</li>
+          <li>Make sure the areas being cleaned are accessible.</li>
+          <li>Contact us before the appointment if your property condition or requested cleaning tasks have changed.</li>
+        </ul>
+        <p><strong>Important:</strong> Your booking includes the services and maximum labor time shown in your attached booking record. Additional work, including extensive wall scrubbing, requires confirmation of the scope and any applicable charges before proceeding.</p>
+        ${managementUrl && !awaitingSchedule ? `<h2 style="color:#073f49;font-size:20px;margin:28px 0 8px;">Need to Make Changes?</h2><p>You can reschedule or cancel your appointment using the secure link below.</p><p><a href="${escapeHtml(managementUrl)}" style="display:inline-block;padding:13px 20px;background:#0b6474;color:#fff;text-decoration:none;border-radius:999px;font-weight:bold;">Manage Your Appointment</a></p>` : ""}
+        <p>${escapeHtml(awaitingSchedule
+          ? "Cancellation timing will be measured from the appointment after it is scheduled."
+          : "Cancellations made at least 48 hours before your appointment qualify for a full refund under your booking agreement. If less than 48 hours remain, the 25% booking deposit is non-refundable and any uncaptured authorization will be released.")}</p>
+        <p>${escapeHtml(attachmentMessage)}</p>
+        ${paymentReferenceUrl ? `<p><a href="${escapeHtml(paymentReferenceUrl)}" style="color:#0b6474;font-weight:bold;">View Payment Receipt</a></p>` : ""}
+        <p>We look forward to making your space fresh and ready!</p>
+        <p style="margin-bottom:0;"><strong>IMAN Cleaning Service LLC</strong><br><a href="tel:+19292321930" style="color:#0b6474;">929-232-1930</a><br><a href="https://www.imancleaningservice.com" style="color:#0b6474;">www.imancleaningservice.com</a></p>
+      </div>
+    </div>
   </body>
 </html>`;
 
@@ -603,7 +695,7 @@ async function sendPaymentRecordForSession({ session, siteUrl, source = "success
       raw: email.raw
     }
   });
-  const customerEmail = buildCustomerEmail({ record, invoicePdf, confirmationPdf, managementUrl });
+  const customerEmail = buildCustomerEmail({ record, booking, invoicePdf, confirmationPdf, managementUrl });
   const customerSent = customerEmail
     ? await gmail.users.messages.send({
       userId: "me",

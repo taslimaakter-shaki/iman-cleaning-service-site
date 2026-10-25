@@ -27,6 +27,7 @@ const booking = {
   estimate: {
     manHours: 5,
     teamHours: 2.5,
+    cleanerCount: 2,
     subtotal: 355.91,
     tax: 31.59,
     total: 387.50,
@@ -110,17 +111,45 @@ const record = {
     fs.writeFileSync(outputPath, pdf);
   }
 
+  const emailRecord = {
+    ...record,
+    subtotalBeforeTax: "$514.58",
+    discountLabel: "FALL10 discount",
+    discountAmount: "-$51.46",
+    discountApplication: "before_tax",
+    discountedSubtotalBeforeTax: "$463.12",
+    salesTax: "$41.10",
+    totalAmount: "$504.22",
+    paidAmount: "$126.06",
+    remainingAmount: "$378.16"
+  };
   const email = buildCustomerEmail({
-    record,
+    record: emailRecord,
+    booking,
     invoicePdf: Buffer.from("stripe-invoice"),
     confirmationPdf: pdf,
     managementUrl: "https://www.imancleaningservice.com/manage-booking.html?token=test"
   });
   const decoded = Buffer.from(email.raw.replace(/-/g, "+").replace(/_/g, "/"), "base64").toString("utf8");
-  assert.match(email.subject, /Booking confirmed - complete PDF record/);
+  assert.match(email.subject, /Booking confirmed - IMAN Cleaning Service/);
   assert.match(decoded, /Iman-Cleaning-Booking-Record-BK-PDF-TEST\.pdf/);
   assert.match(decoded, /Iman-Cleaning-Invoice\.pdf/);
-  assert.match(decoded, /Your complete booking record PDF is attached/);
+  assert.match(decoded, /Hi Amina,/);
+  assert.match(decoded, /Appointment Details/);
+  assert.match(decoded, /2 cleaning professionals, up to 2 hours 30 minutes/);
+  assert.match(decoded, /Your Payment Summary/);
+  assert.ok(decoded.indexOf("Service subtotal") < decoded.indexOf("FALL10 discount"));
+  assert.ok(decoded.indexOf("FALL10 discount") < decoded.indexOf("NY sales tax \(8\.875%\)"));
+  assert.match(decoded, /Service subtotal: \$514\.58/);
+  assert.match(decoded, /FALL10 discount: -\$51\.46/);
+  assert.match(decoded, /Discounted subtotal: \$463\.12/);
+  assert.match(decoded, /NY sales tax \(8\.875%\): \$41\.10/);
+  assert.match(decoded, /Final service price: \$504\.22/);
+  assert.match(decoded, /Deposit paid: -\$126\.06/);
+  assert.match(decoded, /Remaining balance: \$378\.16/);
+  assert.match(decoded, /Before Our Team Arrives/);
+  assert.match(decoded, /Manage Your Appointment/);
+  assert.match(decoded, /Your booking record and payment receipt are attached/);
   console.log("booking confirmation PDF tests passed");
 })().catch((error) => {
   console.error(error);
