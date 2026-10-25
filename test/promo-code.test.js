@@ -11,7 +11,7 @@ const { applySavedQuotePromotion } = require("../api/booking/_saved-quote");
 const activeDate = new Date("2026-10-08T16:00:00.000Z");
 const promotion = promotionForCode(" fall10 ", activeDate);
 assert.equal(promotion.code, "FALL10");
-assert.equal(promotion.percent, 10);
+assert.equal(promotion.percent, 5);
 assert.equal(promotion.label, "First-time customer fall discount");
 assert.throws(
   () => promotionForCode("FALL10", new Date("2026-12-21T05:00:00.000Z")),
@@ -40,16 +40,16 @@ const pkg = {
   teamHours: 6
 };
 const discounted = applyPromotion(pkg, promotion);
-assert.equal(discounted.promoDiscount.amountCents, 10000, "10% applies to the pretax service subtotal, with no maximum cap");
+assert.equal(discounted.promoDiscount.amountCents, 5000, "5% applies to the pretax service subtotal, with no maximum cap");
 assert.equal(discounted.promoDiscount.application, "before_tax");
 assert.equal(discounted.subtotalCents, 100000);
-assert.equal(discounted.discountedSubtotalCents, 90000);
-assert.equal(discounted.taxCents, 7988);
-assert.equal(discounted.priceCents, 97988);
+assert.equal(discounted.discountedSubtotalCents, 95000);
+assert.equal(discounted.taxCents, 8431);
+assert.equal(discounted.priceCents, 103431);
 assert.equal(discounted.manHours, 12, "Promotion does not reduce the purchased cleaning work");
 const savedQuoteDiscount = applySavedQuotePromotion(pkg, {}, { email: "new@example.com" }, []);
 assert.equal(savedQuoteDiscount.promoCode, "FALL10", "Saved quotes automatically receive FALL10 for a first-time customer");
-assert.equal(savedQuoteDiscount.priceCents, 97988, "Saved quote total includes the automatic pretax fall discount and recalculated tax");
+assert.equal(savedQuoteDiscount.priceCents, 103431, "Saved quote total includes the automatic pretax fall discount and recalculated tax");
 assert.equal(
   applySavedQuotePromotion(pkg, {}, { email: "customer@example.com" }, [{
     status: "Completed",
@@ -77,11 +77,11 @@ const hourlyPackage = {
   teamHours: 2
 };
 const discountedHourly = applyPromotion(hourlyPackage, promotion);
-assert.equal(discountedHourly.promoDiscount.amountCents, 2939);
+assert.equal(discountedHourly.promoDiscount.amountCents, 1470);
 assert.equal(discountedHourly.subtotalCents, 29392, "Promo does not rewrite the before-tax subtotal");
-assert.equal(discountedHourly.discountedSubtotalCents, 26453);
-assert.equal(discountedHourly.taxCents, 2348, "Sales tax is recalculated from the discounted subtotal");
-assert.equal(discountedHourly.priceCents, 28801, "Four hourly-cleaning work-hours use the pretax FALL10 workflow");
+assert.equal(discountedHourly.discountedSubtotalCents, 27922);
+assert.equal(discountedHourly.taxCents, 2478, "Sales tax is recalculated from the discounted subtotal");
+assert.equal(discountedHourly.priceCents, 30400, "Four hourly-cleaning work-hours use the pretax FALL10 workflow");
 
 const customerExample = applyPromotion({
   ...pkg,
@@ -94,10 +94,10 @@ const customerExample = applyPromotion({
   priceCents: 56025,
   price: 560.25
 }, promotion);
-assert.equal(customerExample.promoDiscount.amountCents, 5146);
-assert.equal(customerExample.discountedSubtotalCents, 46312);
-assert.equal(customerExample.taxCents, 4110);
-assert.equal(customerExample.priceCents, 50422);
+assert.equal(customerExample.promoDiscount.amountCents, 2573);
+assert.equal(customerExample.discountedSubtotalCents, 48885);
+assert.equal(customerExample.taxCents, 4339);
+assert.equal(customerExample.priceCents, 53224);
 
 const redeemed = {
   status: "Confirmed",
@@ -153,4 +153,4 @@ assert.doesNotThrow(() => assertNotRedeemed([
 ], { email: "customer@example.com" }, promotion), "Unpaid bookings and repeated quotes do not make someone a returning customer");
 assert.equal(PROMOTIONS.FALL10.expiresLabel, "December 20, 2026");
 
-console.log("Promo code tests passed: active/expired states, uncapped 10%, service eligibility, and first-time-customer enforcement.");
+console.log("Promo code tests passed: active/expired states, uncapped 5%, service eligibility, and first-time-customer enforcement.");

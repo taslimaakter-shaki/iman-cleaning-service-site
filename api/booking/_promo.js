@@ -4,7 +4,7 @@ const PROMOTIONS = Object.freeze({
   FALL10: Object.freeze({
     code: "FALL10",
     label: "First-time customer fall discount",
-    percent: 10,
+    percent: 5,
     startsAt: "2026-09-22T04:00:00.000Z",
     expiresAt: "2026-12-21T04:59:59.999Z",
     expiresLabel: "December 20, 2026",
