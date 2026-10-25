@@ -420,7 +420,7 @@ function buildCustomerEmail({ record, booking = null, invoicePdf, confirmationPd
     : record.discountLabel || "Discount";
   const appointmentDetails = [
     ["Date", appointment.date],
-    ["Time", appointment.time],
+    ["Estimated arrival time", appointment.time],
     ["Service", record.service],
     ["Address", record.serviceLocation],
     ["Cleaning team", staffing]
