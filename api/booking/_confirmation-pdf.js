@@ -5,6 +5,8 @@ const COLORS = {
   muted: "#607579",
   teal: "#0b7285",
   green: "#639b38",
+  caution: "#a84f08",
+  cautionPale: "#fff6e8",
   line: "#d7e5e3",
   pale: "#f2f8f7"
 };
@@ -135,87 +137,139 @@ function answerRows(source, omitted = new Set()) {
     .filter(([, value]) => value);
 }
 
+function compactValue(value) {
+  if (Array.isArray(value)) {
+    return value.map((item) => compactValue(item)).filter(Boolean).join("; ");
+  }
+  if (value && typeof value === "object") {
+    return Object.entries(value)
+      .filter(([, nested]) => {
+        if (nested === "" || nested === null || nested === undefined || nested === false) return false;
+        if (typeof nested === "number" && nested <= 0) return false;
+        return !["no", "none", "not included"].includes(String(nested).trim().toLowerCase());
+      })
+      .map(([key, nested]) => `${friendlyLabel(key)}: ${friendlyValue(nested)}`)
+      .join("; ");
+  }
+  return friendlyValue(value);
+}
+
+function meaningfulUnitRows(source, omitted = new Set()) {
+  return Object.entries(source || {})
+    .filter(([key, value]) => {
+      if (omitted.has(key) || value === "" || value === null || value === undefined || value === false) return false;
+      if (typeof value === "number" && value <= 0) return false;
+      const normalized = String(value).trim().toLowerCase();
+      if (/^exclude/i.test(key) && ["no", "false", "0"].includes(normalized)) return false;
+      if (/^(mold|hasPets|additionalCleaning|exteriorWindows)/i.test(key)
+        && ["no", "none", "false", "0"].includes(normalized)) return false;
+      return Boolean(compactValue(value));
+    })
+    .map(([key, value]) => [key, friendlyLabel(key), compactValue(value)]);
+}
+
+function formatTeamTime(estimate = {}) {
+  const cleaners = Number(estimate.cleanerCount || 0);
+  const totalMinutes = Math.round(Number(estimate.teamHours || 0) * 60);
+  const duration = totalMinutes > 0
+    ? [
+        Math.floor(totalMinutes / 60) ? `${Math.floor(totalMinutes / 60)} ${Math.floor(totalMinutes / 60) === 1 ? "hour" : "hours"}` : "",
+        totalMinutes % 60 ? `${totalMinutes % 60} minutes` : ""
+      ].filter(Boolean).join(" ")
+    : "";
+  const team = cleaners ? `${cleaners} cleaning ${cleaners === 1 ? "professional" : "professionals"}` : "";
+  return [team, duration ? `up to ${duration}; service may be completed sooner` : ""].filter(Boolean).join(" - ");
+}
+
+function formatAppointmentParts(booking, record) {
+  const schedule = booking?.schedule ? new Date(booking.schedule) : null;
+  if (schedule && Number.isFinite(schedule.getTime())) {
+    return {
+      date: new Intl.DateTimeFormat("en-US", {
+        timeZone: "America/New_York", weekday: "long", year: "numeric", month: "long", day: "numeric"
+      }).format(schedule),
+      time: new Intl.DateTimeFormat("en-US", {
+        timeZone: "America/New_York", hour: "numeric", minute: "2-digit"
+      }).format(schedule)
+    };
+  }
+  return { date: record?.serviceDate || "", time: record?.serviceTime || "" };
+}
+
 function buildSections({ booking, record }) {
   const estimate = booking?.estimate || {};
-  const payment = estimate.payment || {};
-  const visibleDiscount = estimate.promoDiscount?.amountCents
-    ? estimate.promoDiscount
-    : estimate.customQuotePricing?.discountCents
-    ? estimate.customQuotePricing
-    : record.discountAmount
-    ? {
-        code: "",
-        label: record.discountLabel,
-        amountText: record.discountAmount
-      }
-    : null;
+  const selectedService = safeText(
+    estimate.eligibility?.requestedService || booking?.service || booking?.service_label || record?.service
+  ).toLowerCase();
+  const isMovingCleaning = selectedService === "move" || /move[ -]?(in|out)|moving cleaning/.test(selectedService);
   const agreementAcceptance = estimate.agreementAcceptance || {};
+  const appointment = formatAppointmentParts(booking, record);
   const customerRows = [
-    ["Order number", booking?.estimate?.orderNumber || record.orderNumber || booking?.id || record.quoteId],
+    ["Order number", booking?.estimate?.orderNumber || record.orderNumber],
+    ["Booking reference", booking?.id || record.quoteId],
+    ["Booking status", "Confirmed"],
     ["Customer", booking?.client_name || record.customerName],
     ["Email", booking?.email || record.customerEmail],
     ["Phone", booking?.phone || record.customerPhone],
     ["Service address", booking?.address || record.serviceLocation],
-    ["Service ZIP code", estimate.eligibility?.serviceZip || String(booking?.address || "").match(/\b\d{5}(?:-\d{4})?\b/)?.[0]],
     ["Service", booking?.service_label || record.service],
-    ["Appointment", formatAppointment(booking, record)],
-    ["Booking status", "Confirmed"]
+    ["Service date", appointment.date],
+    ["Estimated arrival time", appointment.time],
+    ["Team and maximum time", formatTeamTime(estimate)]
   ].filter(([, value]) => value);
 
   const sections = [{ title: "Booking and customer information", rows: customerRows }];
   const eligibilityRows = answerRows(estimate.eligibility);
-  if (eligibilityRows.length) sections.push({ title: "Eligibility and service answers", rows: eligibilityRows });
+  if (eligibilityRows.length) sections.push({ title: "Eligibility and prescreening answers", rows: eligibilityRows });
+
+  const homeKeys = new Set([
+    "bedrooms", "fullBathrooms", "halfBathrooms", "kitchens", "kitchen", "hasLivingRoom", "hasDiningRoom",
+    "livingDining", "additionalRooms", "additionalRoomTypes", "squareFootage"
+  ]);
+  const selectionKeys = new Set([
+    "refrigeratorCleaning", "ovenCleaning", "cabinetsDrawers", "refrigerator", "oven", "cabinets",
+    "windowCleaning", "interiorWindowCleaning", "screens", "tracks", "scope", "frequency", "windows"
+  ]);
 
   (Array.isArray(estimate.units) ? estimate.units : []).forEach((unit, index) => {
-    const rows = answerRows(unit, OMIT_UNIT_KEYS);
-    if (rows.length) {
-      sections.push({
-        title: estimate.units.length > 1 ? `Service details - unit ${index + 1}` : "Service details",
-        rows
-      });
+    const omittedUnitKeys = new Set(OMIT_UNIT_KEYS);
+    if (isMovingCleaning) {
+      // Moving Cleaning requires an empty property. These questions are not
+      // asked and must not appear as zero/negative answers in the record.
+      omittedUnitKeys.add("cabinetCount");
+      omittedUnitKeys.add("drawerCount");
+      omittedUnitKeys.add("cabinetsEmpty");
     }
+    const entries = meaningfulUnitRows(unit, omittedUnitKeys);
+    const suffix = estimate.units.length > 1 ? ` - unit ${index + 1}` : "";
+    const homeRows = entries.filter(([key]) => homeKeys.has(key)).map(([, label, value]) => [label, value]);
+    const selectionRows = entries.filter(([key]) => selectionKeys.has(key)).map(([, label, value]) => [label, value]);
+    const conditionRows = entries.filter(([key]) => /(buildup|clutter|mold|construction|condition)/i.test(key))
+      .map(([, label, value]) => [label, value]);
+    const usedKeys = new Set(entries
+      .filter(([key]) => homeKeys.has(key) || selectionKeys.has(key) || /(buildup|clutter|mold|construction|condition)/i.test(key))
+      .map(([key]) => key));
+    const otherRows = entries.filter(([key]) => !usedKeys.has(key)).map(([, label, value]) => [label, value]);
+    if (homeRows.length) sections.push({ title: `Home details and selected rooms${suffix}`, rows: homeRows });
+    if (selectionRows.length) sections.push({ title: `Included service selections and extras${suffix}`, rows: selectionRows });
+    if (conditionRows.length) sections.push({ title: `Reported condition by area${suffix}`, rows: conditionRows });
+    if (otherRows.length) sections.push({ title: `Additional service details${suffix}`, rows: otherRows });
   });
 
-  const pricingItemRows = (Array.isArray(estimate.units) ? estimate.units : []).flatMap((unit, unitIndex) => (
-    [...(unit.baseItems || []), ...(unit.addOns || [])]
-      .filter((item) => item?.label)
-      .map((item) => [
-        `${estimate.units.length > 1 ? `Unit ${unitIndex + 1} — ` : ""}${safeText(item.label)}`,
-        Number.isFinite(Number(item.amount)) ? `$${Number(item.amount).toFixed(2)}` : "Included"
-      ])
-  ));
-  const serviceRows = [
-    ["Service package", booking?.service_label || record.service],
-    ...pricingItemRows,
-    ["Selected priorities / extras", (booking?.addons || []).join(", ")],
-    ["Service notes", booking?.notes],
-    ["Maximum labor-hours", estimate.manHours],
-    ["Base labor-hours", estimate.buildupAdjustment?.percentage || estimate.clutterAdjustment?.percentage ? estimate.baseLaborHours : ""],
-    ["Buildup adjustment", estimate.buildupAdjustment?.percentage
-      ? `+${estimate.buildupAdjustment.percentage}% / ${estimate.buildupAdjustment.addedLaborHours} added labor-hours / $${Number(estimate.buildupAdjustment.amount || 0).toFixed(2)}`
-      : ""],
-    ["Clutter access adjustment", estimate.clutterAdjustment?.percentage
-      ? `+${estimate.clutterAdjustment.percentage}% / ${estimate.clutterAdjustment.addedLaborHours} added labor-hours / $${Number(estimate.clutterAdjustment.amount || 0).toFixed(2)}`
-      : ""],
-    ["Possible mold/mildew adjustment", estimate.moldAdjustment?.amountCents
-      ? `${estimate.moldAdjustment.percentage}% of affected-area prices / $${Number(estimate.moldAdjustment.amount || 0).toFixed(2)} before tax`
-      : ""],
-    ["Number of workers", estimate.cleanerCount],
-    ["Maximum team time", estimate.teamHours ? `Up to ${estimate.teamHours} hours; service may be completed sooner` : ""],
-    ["Service subtotal before tax", Number.isFinite(Number(estimate.subtotal)) ? `$${Number(estimate.subtotal).toFixed(2)}` : ""],
-    [visibleDiscount ? `${visibleDiscount.code ? `${visibleDiscount.code} — ` : ""}${visibleDiscount.label || visibleDiscount.discountLabel || "Discount"}${visibleDiscount.application === "before_tax" ? " (before tax)" : " (after tax)"}` : "Discount",
-      visibleDiscount ? visibleDiscount.amountText || `-$${(Number(visibleDiscount.amountCents || visibleDiscount.discountCents) / 100).toFixed(2)}` : ""],
-    ["Discounted subtotal before tax", visibleDiscount?.application === "before_tax" && Number.isFinite(Number(estimate.discountedSubtotal)) ? `$${Number(estimate.discountedSubtotal).toFixed(2)}` : ""],
-    ["Sales tax", Number.isFinite(Number(estimate.tax)) ? `$${Number(estimate.tax).toFixed(2)}` : ""],
-    ["Original total", estimate.originalTotalCents ? moneyFromCents(estimate.originalTotalCents) : record.originalAmount || ""],
-    ["Total estimated price", record.totalAmount || (payment.totalCents ? moneyFromCents(payment.totalCents) : "")],
-    ["Deposit paid", record.paidAmount || (payment.paidCents ? moneyFromCents(payment.paidCents) : "")],
-    ["Remaining balance", record.remainingAmount || (payment.remainingCents ? moneyFromCents(payment.remainingCents) : "")]
-  ].filter(([, value]) => value !== "" && value !== null && value !== undefined);
-  if (serviceRows.length) sections.push({ title: "Itemized Pricing Summary", rows: serviceRows });
+  if ((booking?.addons || []).length) {
+    sections.push({ title: "Selected priorities", rows: [["Priorities and extras", booking.addons.join(", ")]] });
+  }
+
+  if (booking?.notes) {
+    sections.push({
+      title: "Customer notes - review before service",
+      rows: [["Customer instructions", booking.notes]],
+      tone: "caution"
+    });
+  }
 
   sections.push({
-    title: "Agreement and payment confirmation",
+    title: "Agreement confirmation",
     rows: [
       ["Agreement accepted", "Yes"],
       ["Agreement version", estimate.agreementVersion || "Current Service Agreement"],
@@ -230,15 +284,7 @@ function buildSections({ booking, record }) {
       ["Agreement copy", agreementAcceptance.agreementUrl],
       ...(Array.isArray(agreementAcceptance.keyTerms)
         ? agreementAcceptance.keyTerms.map((term) => ["Key term accepted", term])
-        : []),
-      ["Payment status", record.paymentStatus || "Paid"],
-      ["Payment method", record.paymentMethod],
-      ["Payment type", record.paymentType === "deposit_25" ? "25% booking deposit" : friendlyValue(record.paymentType)],
-      ["Deposit / amount paid", record.paidAmount],
-      ["Remaining balance", record.remainingAmount],
-      ["Estimated total", record.totalAmount],
-      ["Paid at", record.paidAt],
-      ["Payment reference", record.paymentIntentId]
+        : [])
     ].filter(([, value]) => value)
   });
   return sections;
@@ -258,23 +304,47 @@ function buildBookingConfirmationPdf({ booking = null, record }) {
 
     const pageWidth = doc.page.width - doc.page.margins.left - doc.page.margins.right;
     doc.rect(0, 0, doc.page.width, 12).fill(COLORS.teal);
-    doc.fillColor(COLORS.green).font("Helvetica-Bold").fontSize(11).text("IMAN CLEANING SERVICE LLC");
+    doc.fillColor(COLORS.green).font("Helvetica-Bold").fontSize(8).text("BOOKING CONFIRMED");
     doc.moveDown(0.35);
-    doc.fillColor(COLORS.ink).font("Helvetica-Bold").fontSize(23).text("Booking Confirmation & Customer Submission");
-    doc.moveDown(0.35);
-    doc.fillColor(COLORS.muted).font("Helvetica").fontSize(10)
-      .text("A complete record of the information submitted for this booking and the confirmed deposit payment.");
-    doc.moveDown(1);
+    doc.fillColor(COLORS.ink).font("Helvetica-Bold").fontSize(19).text("Complete Booking Record");
+    doc.moveDown(0.75);
 
     const ensureSpace = (height = 90) => {
       if (doc.y + height > doc.page.height - 66) doc.addPage();
     };
-    const section = (title, rows) => {
+    const section = (title, rows, tone = "default") => {
       if (!rows.length) return;
+      if (tone === "caution") {
+        ensureSpace(94);
+        const boxX = doc.page.margins.left;
+        const boxY = doc.y;
+        const boxPadding = 12;
+        const label = safeText(rows[0]?.[0] || "Customer instructions");
+        const value = safeText(rows[0]?.[1] || "");
+        doc.font("Helvetica-Bold").fontSize(8.5);
+        const labelHeight = doc.heightOfString(label, { width: pageWidth - (boxPadding * 2) });
+        doc.font("Helvetica").fontSize(8.5);
+        const valueHeight = doc.heightOfString(value, { width: pageWidth - (boxPadding * 2) });
+        const boxHeight = 38 + labelHeight + valueHeight + (boxPadding * 2);
+        doc.lineWidth(1.2).roundedRect(boxX, boxY, pageWidth, boxHeight, 7)
+          .fillAndStroke(COLORS.cautionPale, COLORS.caution);
+        doc.fillColor(COLORS.caution).font("Helvetica-Bold").fontSize(9.5)
+          .text(safeText(title).toUpperCase(), boxX + boxPadding, boxY + boxPadding, {
+            width: pageWidth - (boxPadding * 2),
+            lineBreak: false
+          });
+        const labelY = boxY + boxPadding + 24;
+        doc.fillColor(COLORS.ink).font("Helvetica-Bold").fontSize(8.5)
+          .text(label, boxX + boxPadding, labelY, { width: pageWidth - (boxPadding * 2) });
+        doc.fillColor(COLORS.ink).font("Helvetica").fontSize(8.5)
+          .text(value, boxX + boxPadding, labelY + labelHeight + 4, { width: pageWidth - (boxPadding * 2) });
+        doc.y = boxY + boxHeight + 13;
+        return;
+      }
       ensureSpace(75);
       const headerY = doc.y;
       doc.roundedRect(doc.page.margins.left, headerY, pageWidth, 25, 6).fill(COLORS.pale);
-      doc.fillColor(COLORS.ink).font("Helvetica-Bold").fontSize(12)
+      doc.fillColor(COLORS.ink).font("Helvetica-Bold").fontSize(9.5)
         .text(safeText(title), doc.page.margins.left + 10, headerY + 6, {
           width: pageWidth - 20,
           lineBreak: false
@@ -283,32 +353,25 @@ function buildBookingConfirmationPdf({ booking = null, record }) {
       rows.forEach(([label, value]) => {
         ensureSpace(38);
         const y = doc.y;
-        const labelWidth = 155;
+        const labelWidth = 145;
         const cleanLabel = safeText(label);
         const cleanValue = safeText(value);
-        doc.font("Helvetica-Bold").fontSize(9.3);
+        doc.font("Helvetica-Bold").fontSize(8.5);
         const labelHeight = doc.heightOfString(cleanLabel, { width: labelWidth });
-        doc.font("Helvetica").fontSize(9.3);
+        doc.font("Helvetica").fontSize(8.5);
         const valueHeight = doc.heightOfString(cleanValue, { width: pageWidth - labelWidth - 14 });
-        doc.fillColor(COLORS.ink).font("Helvetica-Bold").fontSize(9.3)
+        doc.fillColor(COLORS.ink).font("Helvetica-Bold").fontSize(8.5)
           .text(cleanLabel, doc.page.margins.left, y, { width: labelWidth });
-        doc.fillColor(COLORS.muted).font("Helvetica").fontSize(9.3)
+        doc.fillColor(COLORS.muted).font("Helvetica").fontSize(8.5)
           .text(cleanValue, doc.page.margins.left + labelWidth + 14, y, { width: pageWidth - labelWidth - 14 });
-        doc.y = Math.max(doc.y, y + labelHeight, y + valueHeight) + 7;
+        doc.y = Math.max(doc.y, y + labelHeight, y + valueHeight) + 5;
         doc.moveTo(doc.page.margins.left, doc.y - 2).lineTo(doc.page.width - doc.page.margins.right, doc.y - 2)
           .strokeColor(COLORS.line).lineWidth(0.5).stroke();
       });
-      doc.moveDown(0.65);
+      doc.moveDown(0.4);
     };
 
-    buildSections({ booking, record }).forEach(({ title, rows }) => section(title, rows));
-    if (doc.y + 65 <= doc.page.height - 66) {
-      doc.moveDown(0.4);
-      doc.fillColor(COLORS.ink).font("Helvetica-Bold").fontSize(10)
-        .text("This document confirms the information on file at the time the booking deposit was paid.");
-      doc.fillColor(COLORS.muted).font("Helvetica").fontSize(8.5)
-        .text("It does not display or store full card numbers. Payment processing is handled securely by Stripe.");
-    }
+    buildSections({ booking, record }).forEach(({ title, rows, tone }) => section(title, rows, tone));
 
     const range = doc.bufferedPageRange();
     for (let index = range.start; index < range.start + range.count; index += 1) {

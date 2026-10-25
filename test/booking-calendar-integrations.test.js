@@ -88,7 +88,7 @@ async function paidConfirmationTests() {
   const handler=load('api/quote/_payment-record.js',{
     './_shared':shared,
     '../booking/_shared':{confirmBooking:async()=>{calls.push('confirm');booking.status='Confirmed';return {booking:clone(booking)};},updateBooking:async(id,patch)=>{calls.push('payment-record');booking={...booking,...clone(patch)};return booking;}},
-    '../booking/_confirmation-pdf':{},'../booking/_notifications':{}
+    '../booking/_confirmation-pdf':{},'../booking/_payment-receipt-pdf':{},'../booking/_notifications':{}
   },{fetch:async()=>({ok:true,text:async()=>JSON.stringify({id:'cs_test',payment_status:paid?'paid':'unpaid',amount_total:10000,metadata:{booking_id:'BK-PAID',total_amount_cents:'40000',payment_type:'deposit_25',balance_collection:'automatic_48h_authorization'},payment_intent:{id:'pi_test',payment_method:'pm_test'}})})});
   await assert.rejects(handler.sendPaymentRecordForSessionId({sessionId:'cs_test',siteUrl:'https://example.test'}),/notification outage/);
   assert.deepEqual(calls,['confirm','payment-record','notify']);assert.equal(booking.status,'Confirmed');

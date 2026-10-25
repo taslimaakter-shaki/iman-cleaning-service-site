@@ -10,6 +10,7 @@ Module._load = function patchedLoad(request, parent, isMain) {
 };
 
 const { buildBookingConfirmationPdf, buildSections } = require("../api/booking/_confirmation-pdf");
+const { buildPaymentReceiptPdf, pricingRows } = require("../api/booking/_payment-receipt-pdf");
 const { buildCustomerEmail, selectedServiceDetailsUrl } = require("../api/quote/_payment-record");
 
 const booking = {
@@ -123,17 +124,52 @@ const record = {
   );
 
   const sections = buildSections({ booking, record });
-  assert.ok(sections.some((section) => section.title === "Eligibility and service answers"));
-  const pricingSection = sections.find((section) => section.title === "Itemized Pricing Summary");
-  assert.ok(pricingSection, "The existing complete booking PDF includes an Itemized Pricing Summary section");
-  assert.ok(pricingSection.rows.some(([label, value]) => label === "2 bedrooms" && value === "$91.85"));
-  assert.ok(pricingSection.rows.some(([label, value]) => label === "Deposit paid" && value === "$96.88"));
-  assert.ok(pricingSection.rows.some(([label, value]) => label === "Remaining balance" && value === "$290.62"));
-  assert.ok(pricingSection.rows.some(([label, value]) => label === "Original total" && value === "$430.56"));
-  assert.ok(pricingSection.rows.some(([label, value]) => /FALL10/.test(label) && value === "-$43.06"));
+  assert.ok(sections.some((section) => section.title === "Eligibility and prescreening answers"));
+  assert.equal(sections.some((section) => /pricing|payment/i.test(section.title)), false,
+    "The booking record does not duplicate itemized pricing or payment receipt details");
   assert.ok(sections.flatMap((section) => section.rows).some(([label, value]) => label === "Service ZIP code" && value === "11432"));
-  assert.ok(sections.flatMap((section) => section.rows).some(([label, value]) => label === "Deposit / amount paid" && value === "$96.88"));
-  assert.ok(sections.flatMap((section) => section.rows).some(([label, value]) => label === "Payment method" && value === "VISA ending in 4242"));
+  assert.ok(sections.flatMap((section) => section.rows).some(([label, value]) => label === "Booking reference" && value === booking.id));
+  const customerNotesSection = sections.find((section) => section.title === "Customer notes - review before service");
+  assert.equal(customerNotesSection?.tone, "caution");
+  assert.deepEqual(customerNotesSection?.rows, [["Customer instructions", booking.notes]]);
+
+  const movingSections = buildSections({
+    booking: {
+      ...booking,
+      service: "move",
+      service_label: "Move-In Cleaning",
+      estimate: {
+        ...booking.estimate,
+        eligibility: { ...booking.estimate.eligibility, requestedService: "move" },
+        units: [{
+          bedrooms: 1,
+          kitchens: 1,
+          cabinets: "included",
+          cabinetCount: 0,
+          drawerCount: 0,
+          cabinetsEmpty: "no"
+        }]
+      }
+    },
+    record: { ...record, service: "Move-In Cleaning" }
+  });
+  const movingDetailRows = movingSections.flatMap((section) => section.rows || []);
+  assert.equal(movingDetailRows.some(([label]) => ["Cabinet Count", "Drawer Count", "Cabinets Empty"].includes(label)), false,
+    "Moving Cleaning records do not show cabinet-readiness questions that were not asked");
+
+  const residentialCabinetSections = buildSections({
+    booking: {
+      ...booking,
+      estimate: {
+        ...booking.estimate,
+        units: [{ cabinets: "yes", cabinetCount: 12, drawerCount: 6, cabinetsEmpty: "yes" }]
+      }
+    },
+    record
+  });
+  const residentialCabinetRows = residentialCabinetSections.flatMap((section) => section.rows || []);
+  assert.ok(residentialCabinetRows.some(([label, value]) => label === "Cabinets Empty" && value === "Yes"),
+    "Other residential records retain the cabinet-readiness answer when cabinet cleaning is selected");
 
   const pdf = await buildBookingConfirmationPdf({ booking, record });
   assert.equal(pdf.subarray(0, 4).toString("ascii"), "%PDF");
@@ -161,19 +197,52 @@ const record = {
   const emailBooking = {
     ...booking,
     service: "move",
-    service_label: "Move-In Cleaning"
+    service_label: "Move-In Cleaning",
+    estimate: {
+      ...booking.estimate,
+      buildupAdjustment: { amount: 138, amountCents: 13800, percentage: 60 },
+      units: [{
+        bedrooms: 1,
+        fullBathrooms: 1,
+        kitchens: 1,
+        livingDining: "combined",
+        baseItems: [
+          { label: "Bedroom - move-in cleaning", amount: 73.48 },
+          { label: "Full bathroom - move-in cleaning", amount: 73.48 },
+          { label: "Kitchen package - move-in cleaning", amount: 137.77 },
+          { label: "Combined living and dining area", amount: 91.85 }
+        ],
+        addOns: [{ label: "Interior window cleaning", amount: 0 }]
+      }]
+    }
   };
+  assert.deepEqual(pricingRows(emailBooking, emailRecord), [
+    ["Bedroom - move-in cleaning", "$73.48"],
+    ["Full bathroom - move-in cleaning", "$73.48"],
+    ["Kitchen package - move-in cleaning", "$137.77"],
+    ["Combined living and dining area", "$91.85"],
+    ["Interior window cleaning", "Included"],
+    ["Heavy-buildup adjustment", "$138.00"]
+  ]);
+  const receiptPdf = await buildPaymentReceiptPdf({ booking: emailBooking, record: emailRecord });
+  assert.equal(receiptPdf.subarray(0, 4).toString("ascii"), "%PDF");
+  assert.ok(receiptPdf.length > 3000);
+  const receiptOutputPath = process.env.PAYMENT_RECEIPT_PDF_TEST_OUTPUT;
+  if (receiptOutputPath) {
+    fs.mkdirSync(path.dirname(receiptOutputPath), { recursive: true });
+    fs.writeFileSync(receiptOutputPath, receiptPdf);
+  }
   const email = buildCustomerEmail({
     record: emailRecord,
     booking: emailBooking,
-    invoicePdf: Buffer.from("stripe-invoice"),
+    invoicePdf: receiptPdf,
     confirmationPdf: pdf,
     managementUrl: "https://www.imancleaningservice.com/manage-booking.html?token=test"
   });
   const decoded = Buffer.from(email.raw.replace(/-/g, "+").replace(/_/g, "/"), "base64").toString("utf8");
   assert.match(email.subject, /Booking confirmed - IMAN Cleaning Service/);
   assert.match(decoded, /Iman-Cleaning-Booking-Record-BK-PDF-TEST\.pdf/);
-  assert.match(decoded, /Iman-Cleaning-Invoice\.pdf/);
+  assert.match(decoded, /Iman-Cleaning-Payment-Receipt\.pdf/);
   assert.match(decoded, /Hi Amina,/);
   assert.match(decoded, /Appointment Details/);
   assert.match(decoded, /Estimated arrival time/);

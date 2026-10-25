@@ -114,7 +114,7 @@ const sections = buildSections({
   booking: { estimate: { agreementVersion: AGREEMENT_VERSION, agreementAcceptance: evidence } },
   record: {}
 });
-const agreementRows = sections.find((section) => section.title === "Agreement and payment confirmation").rows;
+const agreementRows = sections.find((section) => section.title === "Agreement confirmation").rows;
 assert(agreementRows.some(([label, value]) => label === "Agreement record hash" && value === evidence.recordHash));
 assert(agreementRows.some(([label]) => label === "Agreement scrolled to end at"));
 assert(agreementRows.some(([label, value]) => label === "Electronically signed by" && value === "Jane Example"));

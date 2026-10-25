@@ -8,6 +8,7 @@ const {
 } = require("./_shared");
 const { confirmBooking, getBooking, updateBooking } = require("../booking/_shared");
 const { buildBookingConfirmationPdf } = require("../booking/_confirmation-pdf");
+const { buildPaymentReceiptPdf } = require("../booking/_payment-receipt-pdf");
 const { sendCustomerSms } = require("../booking/_notifications");
 
 function base64Url(value) {
@@ -567,8 +568,8 @@ function buildCustomerEmail({ record, booking = null, invoicePdf, confirmationPd
     ] : []),
     ...(invoicePdf ? [
       "--customer_payment_mixed",
-      "Content-Type: application/pdf; name=\"Iman-Cleaning-Invoice.pdf\"",
-      "Content-Disposition: attachment; filename=\"Iman-Cleaning-Invoice.pdf\"",
+      "Content-Type: application/pdf; name=\"Iman-Cleaning-Payment-Receipt.pdf\"",
+      "Content-Disposition: attachment; filename=\"Iman-Cleaning-Payment-Receipt.pdf\"",
       "Content-Transfer-Encoding: base64",
       "",
       (Buffer.from(invoicePdf).toString("base64").match(/.{1,76}/g) || [""]).join("\r\n"),
@@ -741,7 +742,7 @@ async function sendPaymentRecordForSession({ session, siteUrl, source = "success
   const managementUrl = bookingId && record.customerEmail
     ? `${siteUrl}/manage-booking.html`
     : "";
-  const invoicePdf = await fetchInvoicePdf(record);
+  const invoicePdf = await buildPaymentReceiptPdf({ booking, record });
   const confirmationPdf = await buildBookingConfirmationPdf({ booking, record });
   const email = buildEmail({ record, text, html, recordFileLink });
   const sent = await gmail.users.messages.send({

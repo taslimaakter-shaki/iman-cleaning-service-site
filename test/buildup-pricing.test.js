@@ -96,6 +96,15 @@ const kitchenOnly = calculateResidentialQuoteBundle([{
 assert.equal(kitchenOnly.buildupAdjustment.affectedAreaBasePrice, 154.5);
 assert.equal(kitchenOnly.buildupAdjustment.amount, 77.25);
 assert.equal(kitchenOnly.buildupAdjustment.addedLaborHours, 77.25 / 80);
+assert.equal(kitchenOnly.units[0].cabinetsEmpty, "yes", "Other residential services retain cabinet readiness when selected");
+
+const movingKitchen = calculateResidentialQuoteBundle([{
+  ...unit(),
+  kitchens: 1,
+  excludeKitchenItems: "no"
+}], "move", { movingDirection: "move-in", buildup: "none", clutter: "low", hazards: "none" });
+assert.equal(movingKitchen.units[0].cabinets, "included");
+assert.equal(movingKitchen.units[0].cabinetsEmpty, "", "Moving Cleaning does not create an unused cabinet-readiness answer");
 assert.throws(
   () => calculateResidentialQuoteBundle([unit()], "standard", { buildup: "heavy" }),
   /Select at least one buildup-affected area/

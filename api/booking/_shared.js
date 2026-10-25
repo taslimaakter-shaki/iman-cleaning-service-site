@@ -441,7 +441,10 @@ function calculateResidentialUnitPrice(unit = {}, unitIndex = 0, serviceKey = "s
 
   let cabinetCount = 0;
   let drawerCount = 0;
-  let cabinetsEmpty = "no";
+  // Cabinet readiness is only applicable when a non-moving residential
+  // customer selects inside-cabinet cleaning. Moving Cleaning requires an
+  // empty property, so it must not manufacture a "not empty" answer.
+  let cabinetsEmpty = "";
   if (cabinets === "yes") {
     cabinetCount = wholeNumber(unit.cabinetCount, `the approximate number of kitchen cabinets in Unit ${unitNumber}`, 100);
     if (cabinetCount < 1) {
