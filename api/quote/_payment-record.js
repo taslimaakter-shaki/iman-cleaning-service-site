@@ -407,6 +407,7 @@ function buildCustomerEmail({ record, booking = null, invoicePdf, confirmationPd
   const cleanerCount = Number(booking?.estimate?.cleanerCount || 0);
   const maximumTime = formatMaximumTime(booking?.estimate?.teamHours);
   const serviceDetailsUrl = selectedServiceDetailsUrl(record, booking);
+  const serviceDetailsLabel = `View ${record.service || "Service"} Details & Inclusions`;
   const staffing = cleanerCount
     ? `${cleanerCount} cleaning ${cleanerCount === 1 ? "professional" : "professionals"}${maximumTime ? `, up to ${maximumTime}` : ""}`
     : maximumTime
@@ -457,7 +458,7 @@ function buildCustomerEmail({ record, booking = null, invoicePdf, confirmationPd
       : `Thank you for choosing IMAN Cleaning Service! Your ${record.paymentType === "deposit_25" ? "deposit" : "payment"} has been successfully received, and your cleaning appointment is confirmed.`,
     "",
     ...(awaitingSchedule ? [] : ["Appointment Details", "", ...appointmentDetails.map(([label, value]) => `${label}: ${value}`), ""]),
-    `View what is included in your service: ${serviceDetailsUrl}`,
+    `${record.service || "Service"} details and inclusions: ${serviceDetailsUrl}`,
     "",
     "Your Payment Summary",
     "",
@@ -472,7 +473,7 @@ function buildCustomerEmail({ record, booking = null, invoicePdf, confirmationPd
     "- Make sure the areas being cleaned are accessible.",
     "- Contact us before the appointment if your property condition or requested cleaning tasks have changed.",
     "",
-    "Important: Your booking includes the services and maximum labor time shown in your attached booking record. Additional work (not included in the service details) requires confirmation of the scope and any applicable charges before proceeding.",
+    "Important: Your booking covers only the services listed in your service details and attached booking record, for up to the maximum labor time shown. Any work outside that scope requires approval before it begins and may result in an additional charge.",
     "",
     ...(managementUrl && !awaitingSchedule ? ["Need to Make Changes?", "", "You can reschedule or cancel your appointment using the secure link below.", managementUrl, ""] : []),
     awaitingSchedule
@@ -506,7 +507,7 @@ function buildCustomerEmail({ record, booking = null, invoicePdf, confirmationPd
           ? "Thank you for choosing IMAN Cleaning Service! Your payment has been successfully received. We will contact you to schedule your cleaning appointment."
           : `Thank you for choosing IMAN Cleaning Service! Your ${record.paymentType === "deposit_25" ? "deposit" : "payment"} has been successfully received, and your cleaning appointment is confirmed.`)}</p>
         ${awaitingSchedule ? "" : `<h2 style="color:#073f49;font-size:20px;margin:28px 0 8px;">Appointment Details</h2><table style="width:100%;border-collapse:collapse;">${appointmentRows}</table>`}
-        <p><a href="${escapeHtml(serviceDetailsUrl)}" style="color:#0b6474;font-weight:bold;">View What Is Included in Your Service</a></p>
+        <p><a href="${escapeHtml(serviceDetailsUrl)}" style="display:inline-block;padding:11px 18px;border:1px solid #0b6474;color:#0b6474;text-decoration:none;border-radius:999px;font-weight:bold;">${escapeHtml(serviceDetailsLabel)}</a></p>
         <h2 style="color:#073f49;font-size:20px;margin:28px 0 8px;">Your Payment Summary</h2>
         <table style="width:100%;border-collapse:collapse;">${paymentRows}</table>
         <p style="margin-top:18px;">${escapeHtml(balanceMessage)}</p>
@@ -517,7 +518,7 @@ function buildCustomerEmail({ record, booking = null, invoicePdf, confirmationPd
           <li>Make sure the areas being cleaned are accessible.</li>
           <li>Contact us before the appointment if your property condition or requested cleaning tasks have changed.</li>
         </ul>
-        <p><strong>Important:</strong> Your booking includes the services and maximum labor time shown in your attached booking record. Additional work (not included in the service details) requires confirmation of the scope and any applicable charges before proceeding.</p>
+        <p><strong>Important:</strong> Your booking covers only the services listed in your service details and attached booking record, for up to the maximum labor time shown. Any work outside that scope requires approval before it begins and may result in an additional charge.</p>
         ${managementUrl && !awaitingSchedule ? `<h2 style="color:#073f49;font-size:20px;margin:28px 0 8px;">Need to Make Changes?</h2><p>You can reschedule or cancel your appointment using the secure link below.</p><p><a href="${escapeHtml(managementUrl)}" style="display:inline-block;padding:13px 20px;background:#0b6474;color:#fff;text-decoration:none;border-radius:999px;font-weight:bold;">Manage Your Appointment</a></p>` : ""}
         <p>${escapeHtml(awaitingSchedule
           ? "Cancellation timing will be measured from the appointment after it is scheduled."

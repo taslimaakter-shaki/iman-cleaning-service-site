@@ -178,7 +178,7 @@ const record = {
   assert.match(decoded, /Appointment Details/);
   assert.match(decoded, /2 cleaning professionals, up to 2 hours 30 minutes/);
   assert.match(decoded, /https:\/\/www\.imancleaningservice\.com\/move-in-move-out-cleaning\.html/);
-  assert.match(decoded, /View What Is Included in Your Service/);
+  assert.match(decoded, /View Move-In Cleaning Details &amp; Inclusions/);
   assert.match(decoded, /Your Payment Summary/);
   assert.ok(decoded.indexOf("Service subtotal") < decoded.indexOf("FALL10 discount"));
   assert.ok(decoded.indexOf("FALL10 discount") < decoded.indexOf("NY sales tax \(8\.875%\)"));
@@ -190,7 +190,8 @@ const record = {
   assert.match(decoded, /Deposit paid: -\$126\.06/);
   assert.match(decoded, /Remaining balance: \$378\.16/);
   assert.match(decoded, /Before Our Team Arrives/);
-  assert.match(decoded, /Additional work \(not included in the service details\) requires confirmation/);
+  assert.match(decoded, /Your booking covers only the services listed in your service details and attached booking record/);
+  assert.match(decoded, /Any work outside that scope requires approval before it begins and may result in an additional charge/);
   assert.match(decoded, /Manage Your Appointment/);
   assert.match(decoded, /Your booking record and payment receipt are attached/);
   console.log("booking confirmation PDF tests passed");
