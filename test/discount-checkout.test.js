@@ -64,6 +64,33 @@ function load(file, dependencies, extras = {}) {
   assert.equal(booking.estimate.total, 270); assert.equal(booking.estimate.payment.depositCents, 6750);
   assert.equal(booking.estimate.agreementAcceptance.context.totalCents, 27000);
   assert.equal(booking.estimate.customQuotePricing.discountLabel, 'Welcome');
+
+  const flexiblePkg = require('../api/booking/_arrival-preference').applyArrivalDiscount(pkg, 'any_day');
+  body.arrivalPreference = 'any_day';
+  body.agreementReview.contextFingerprint = JSON.stringify({
+    packageId: flexiblePkg.id,
+    total: flexiblePkg.price,
+    laborHours: flexiblePkg.manHours,
+    schedule: slot.value
+  });
+  await handler(request, {});
+  assert.equal(result.status, 201, result.error);
+  assert.equal(stripe.get('line_items[0][price_data][unit_amount]'), String(Math.round(flexiblePkg.priceCents * 0.25)));
+  assert.equal(stripe.get('metadata[total_amount_cents]'), String(flexiblePkg.priceCents));
+  assert.equal(stripe.get('metadata[remaining_amount_cents]'), String(flexiblePkg.priceCents - Math.round(flexiblePkg.priceCents * 0.25)));
+  assert.equal(stripe.get('metadata[arrival_preference]'), 'any_day');
+  assert.equal(stripe.get('metadata[arrival_discount_cents]'), String(flexiblePkg.arrivalDiscount.amountCents));
+  assert.equal(booking.estimate.arrivalPreference.flexible, true);
+  assert.equal(booking.estimate.arrivalPreference.confirmationStatus, 'pending');
+  assert.equal(booking.estimate.arrivalPreference.windowLabel, '8:00 AM–4:00 PM');
+  assert.equal(booking.estimate.arrivalPreference.windowEnd, '16:00');
+  assert.equal(booking.estimate.calendarReservationHours, flexiblePkg.teamHours + 1);
+  assert.equal(booking.estimate.payment.totalCents, flexiblePkg.priceCents);
+  assert.equal(booking.estimate.payment.depositCents, Math.round(flexiblePkg.priceCents * 0.25));
+  assert.match(booking.schedule_label, /Estimated arrival 8:00 AM–4:00 PM/);
+
+  body.arrivalPreference = 'exact';
+  body.agreementReview.contextFingerprint = JSON.stringify({ packageId: pkg.id, total: 270, laborHours: 4, schedule: slot.value });
   body.discountCents = 23000;
   await handler(request, {});
   assert.equal(result.status, 201); assert.equal(stripe.get('metadata[total_amount_cents]'), '27000', 'Ignore client discount');
