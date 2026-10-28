@@ -5,6 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <title>Quote Approved | Iman Cleaning Service LLC</title>
     <meta name="robots" content="noindex">
+    <script src="./meta-pixel.js?v=20261027-meta-consent-v1"></script>
     <script async src="https://www.googletagmanager.com/gtag/js?id=G-6MEJH73E0H"></script>
     <script>window.dataLayer=window.dataLayer||[];function gtag(){dataLayer.push(arguments)}gtag('js',new Date());gtag('config','G-6MEJH73E0H');</script>
     <link rel="stylesheet" href="./homepage-footer.css?v=20260929-compact-footer-v2" />
@@ -94,6 +95,9 @@
             if (window.localStorage.getItem(analyticsKey) !== "1" && typeof window.gtag === "function") {
               window.gtag("event", "deposit_paid", { transaction_id: transactionId, value: Number(purchase.value || 0), currency: String(purchase.currency || "USD") });
               window.localStorage.setItem(analyticsKey, "1");
+            }
+            if (typeof window.imanMetaTrackPurchase === "function") {
+              window.imanMetaTrackPurchase({ transactionId, value: Number(purchase.value || 0), currency: String(purchase.currency || "USD") });
             }
           })
           .catch(() => {});
