@@ -4113,6 +4113,14 @@
         value: Number(state.package?.price || 0),
         items: [{ item_id: String(state.package?.id || "cleaning-service"), item_name: String(state.package?.serviceLabel || "Cleaning service") }]
       });
+      if (typeof window.imanMetaTrackInitiateCheckout === "function") {
+        window.imanMetaTrackInitiateCheckout({
+          checkoutId: String(data.bookingId || data.orderNumber || ""),
+          value: Number(state.package?.price || 0),
+          currency: "USD",
+          contentName: String(state.package?.serviceLabel || "Cleaning service")
+        });
+      }
       window.location.href = data.checkoutUrl;
     } catch (error) {
       setStatus(status, error.message || "Secure checkout could not be started.");

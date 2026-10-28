@@ -4,6 +4,7 @@
   const PIXEL_ID = "1600479927833362";
   const CONSENT_KEY = "imanAdvertisingCookiesV1";
   const pendingPurchases = new Map();
+  const pendingCheckouts = new Map();
   let initialized = false;
 
   function readConsent() {
@@ -23,26 +24,61 @@
     if (initialized || readConsent() !== "allowed") return;
     initialized = true;
 
-    const fbq = window.fbq = window.fbq || function () {
-      fbq.callMethod ? fbq.callMethod.apply(fbq, arguments) : fbq.queue.push(arguments);
-    };
-    if (!fbq.queue) {
+    let fbq = window.fbq;
+    if (!fbq) {
+      fbq = window.fbq = function () {
+        fbq.callMethod ? fbq.callMethod.apply(fbq, arguments) : fbq.queue.push(arguments);
+      };
       fbq.push = fbq;
       fbq.loaded = true;
       fbq.version = "2.0";
       fbq.queue = [];
     }
+    if (!window._fbq) window._fbq = fbq;
 
-    const script = document.createElement("script");
-    script.async = true;
-    script.src = "https://connect.facebook.net/en_US/fbevents.js";
-    const firstScript = document.getElementsByTagName("script")[0];
-    firstScript.parentNode.insertBefore(script, firstScript);
+    if (!document.querySelector('script[src*="connect.facebook.net/en_US/fbevents.js"]')) {
+      const script = document.createElement("script");
+      script.async = true;
+      script.src = "https://connect.facebook.net/en_US/fbevents.js";
+      const firstScript = document.getElementsByTagName("script")[0];
+      firstScript.parentNode.insertBefore(script, firstScript);
+    }
 
     fbq("init", PIXEL_ID);
     fbq("track", "PageView");
+    pendingCheckouts.forEach((checkout) => trackInitiateCheckout(checkout));
+    pendingCheckouts.clear();
     pendingPurchases.forEach((purchase) => trackPurchase(purchase));
     pendingPurchases.clear();
+  }
+
+  function trackInitiateCheckout(checkout) {
+    if (!checkout || typeof checkout !== "object") return false;
+    const checkoutId = String(checkout.checkoutId || "").trim();
+    const value = Number(checkout.value);
+    const currency = String(checkout.currency || "USD").trim().toUpperCase();
+    const contentName = String(checkout.contentName || "Cleaning service").trim().slice(0, 100);
+    if (!checkoutId || !Number.isFinite(value) || value < 0 || !/^[A-Z]{3}$/.test(currency)) return false;
+
+    if (readConsent() !== "allowed") {
+      if (readConsent() === "unset") pendingCheckouts.set(checkoutId, { checkoutId, value, currency, contentName });
+      return false;
+    }
+
+    initializePixel();
+    const storageKey = `imanMetaCheckout:${checkoutId}`;
+    try {
+      if (window.localStorage.getItem(storageKey) === "1") return false;
+    } catch {}
+
+    window.fbq("track", "InitiateCheckout", {
+      value,
+      currency,
+      content_name: contentName,
+      content_type: "product"
+    }, { eventID: `checkout-${checkoutId}` });
+    try { window.localStorage.setItem(storageKey, "1"); } catch {}
+    return true;
   }
 
   function trackPurchase(purchase) {
@@ -103,11 +139,13 @@
     });
     banner.querySelector("[data-iman-cookie-deny]").addEventListener("click", () => {
       writeConsent("denied");
+      pendingCheckouts.clear();
       pendingPurchases.clear();
       removeBanner();
     });
   }
 
+  window.imanMetaTrackInitiateCheckout = trackInitiateCheckout;
   window.imanMetaTrackPurchase = trackPurchase;
   window.imanShowAdvertisingCookieChoices = showBanner;
 
