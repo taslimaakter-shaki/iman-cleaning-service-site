@@ -7,7 +7,7 @@ const root = path.join(__dirname, '..');
 function load(file, dependencies, extra={}) {
   const module = {exports:{}};
   vm.runInNewContext(fs.readFileSync(path.join(root,file),'utf8'), {
-    module,exports:module.exports,require:name=>dependencies[name] || (['../booking/_staffing-options','./_staffing-options'].includes(name) ? require('../api/booking/_staffing-options') : require(name)),Buffer,Date,Intl,URLSearchParams,AbortSignal,
+    module,exports:module.exports,require:name=>name.endsWith("/_minimum-total")?require("../api/booking/_minimum-total"):dependencies[name] || (['../booking/_staffing-options','./_staffing-options'].includes(name) ? require('../api/booking/_staffing-options') : require(name)),Buffer,Date,Intl,URLSearchParams,AbortSignal,
     console,process:{env:{SUPABASE_URL:'https://db.test',SUPABASE_SERVICE_ROLE_KEY:'test-only',STRIPE_SECRET_KEY:'sk_test_mock',BOOKING_MANAGEMENT_SECRET:'test-only'}},
     fetch:async()=>{throw new Error('Unexpected network call');},...extra
   },{filename:file}); return module.exports;

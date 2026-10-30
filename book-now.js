@@ -3748,9 +3748,29 @@
     }
   });
 
+  const minimumDialog = document.querySelector("[data-minimum-dialog]");
+  const belowBookingMinimum = () => !Number.isFinite(Number(state.package?.price)) || Math.round(Number(state.package.price) * 100) < 15000;
+  const showBookingMinimum = () => {
+    minimumDialog.querySelector("[data-minimum-current-total]").textContent = new Intl.NumberFormat("en-US", { style: "currency", currency: "USD" }).format(Number(state.package?.price) || 0);
+    minimumDialog.querySelector("[data-minimum-shortfall]").textContent = new Intl.NumberFormat("en-US", { style: "currency", currency: "USD" }).format(Math.max(0, 15000 - Math.round(Number(state.package?.price || 0) * 100)) / 100);
+    if (!minimumDialog.open) minimumDialog.showModal();
+  };
+  const closeBookingMinimum = () => {
+    minimumDialog.close();
+    goToStep(2);
+    document.querySelector("[data-load-availability]")?.focus();
+  };
+  minimumDialog.querySelector("[data-minimum-cancel]").addEventListener("click", closeBookingMinimum);
+  minimumDialog.addEventListener("cancel", event => { event.preventDefault(); closeBookingMinimum(); });
+  minimumDialog.querySelector("[data-minimum-edit]").addEventListener("click", () => {
+    minimumDialog.close();
+    document.querySelector('[data-back="1"]')?.click();
+  });
+
   const availabilityButtons = Array.from(document.querySelectorAll("[data-load-availability]"));
   availabilityButtons.forEach((button) => {
     button.addEventListener("click", async () => {
+      if (belowBookingMinimum()) { showBookingMinimum(); return; }
       availabilityButtons.forEach((control) => {
         control.disabled = true;
         control.textContent = "Loading availability…";
@@ -3992,6 +4012,7 @@
       }
       continueButton.disabled = false;
     }
+    if (belowBookingMinimum()) { showBookingMinimum(); return; }
     syncCheckoutReview();
     goToStep(4);
   });
@@ -4026,6 +4047,7 @@
   form.addEventListener("submit", async (event) => {
     event.preventDefault();
     const status = document.querySelector("[data-checkout-status]");
+    if (belowBookingMinimum()) { showBookingMinimum(); return; }
     if (!state.agreementReview.accepted || state.agreementReview.contextFingerprint !== agreementContextFingerprint()) {
       resetAgreementReview();
       setStatus(status, "Please review and accept the Service Agreement before payment.");

@@ -386,6 +386,7 @@ module.exports = async function handler(request, response) {
       pkg = promo.applyPromotion(pkg, promotion);
     }
     pkg = applyArrivalDiscount(pkg, arrivalPreference);
+    require("./_minimum-total").assertMinimumTotal(pkg.priceCents);
 
     const agreements = body.agreements || {};
     if (!agreements.laborHours || !agreements.completion || !agreements.condition || !agreements.terms) {

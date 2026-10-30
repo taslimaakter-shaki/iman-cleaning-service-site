@@ -18,7 +18,7 @@ const shared = {cleanText:(value,fallback="")=>String(value||fallback).trim(),ce
 const moduleStub = {exports:{}};
 vm.runInNewContext(fs.readFileSync(path.join(__dirname,"../api/quote/_approve-checkout.js"),"utf8"),{
   module:moduleStub, exports:moduleStub.exports,
-  require:name=>name==="./_shared"?shared:name==="./_short-approval"?{resolveShortApproval:async()=>({...quote})}:name==="../crm/_quote-admin"?admin:name==="../booking/_calendar"?calendar:require(name),
+  require:name=>name.endsWith("/_minimum-total")?require("../api/booking/_minimum-total"):name==="./_shared"?shared:name==="./_short-approval"?{resolveShortApproval:async()=>({...quote})}:name==="../crm/_quote-admin"?admin:name==="../booking/_calendar"?calendar:require(name),
   process:{env:{STRIPE_SECRET_KEY:"sk_test_mock",PUBLIC_SITE_URL:"https://www.imancleaningservice.com"}},URLSearchParams,Date,console,
   fetch:async(url,options)=>{assert.equal(url,"https://api.stripe.com/v1/checkout/sessions");posts.push(options);return {ok:true,text:async()=>JSON.stringify({id:"cs_test",url:"https://checkout.stripe.test/mock"})};}
 });

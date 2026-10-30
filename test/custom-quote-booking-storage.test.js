@@ -65,7 +65,7 @@ function fixture(units) {
   const load = (file, dependencies) => {
     const module = { exports: {} };
     vm.runInNewContext(fs.readFileSync(path.join(root, file), "utf8"), {
-      module, exports: module.exports, require: name => dependencies[name] || require(name),
+      module, exports: module.exports, require: name => name.endsWith("/_minimum-total") ? require("../api/booking/_minimum-total") : dependencies[name] || require(name),
       process: { env }, fetch, Buffer, URLSearchParams, Date, Intl, AbortSignal, console
     }, { filename: file });return module.exports;
   };

@@ -192,6 +192,7 @@ module.exports = async function handler(request, response) {
     let quote = shortCode
       ? await resolveShortApproval(shortCode)
       : await adminQuotes.resolveManaged(verifyQuoteToken(fields.token));
+    require("../booking/_minimum-total").assertMinimumTotal(Number(quote.amountCents));
     if (quote.managedSource && fields.revision !== quote.revision) return json(response, 409, { error: "Your quote has been updated. Reopen the payment link and review the latest price before paying." });
     if (!quote.serviceDate || !quote.serviceTime) {
       if (!fields.selectedSchedule) return json(response, 400, { error: "Please choose an available appointment date and time before payment." });

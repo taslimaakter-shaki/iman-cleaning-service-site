@@ -6289,3 +6289,16 @@ body.booking-agreement-open {
     grid-column: auto;
   }
 }
+
+.booking-minimum-dialog {
+  box-sizing: border-box; width: min(540px, calc(100vw - 32px)); max-height: calc(100dvh - 48px);
+  padding: 32px; overflow: auto; border: 1px solid #dce8e9; border-radius: 22px;
+  background: white; color: #143c44; box-shadow: 0 24px 80px #062f4340;
+}
+.booking-minimum-dialog::backdrop { background: #092f3c99; }
+.booking-minimum-dialog h2 { margin: 0 0 18px; font-size: 1.5rem; line-height: 1.3; }
+.booking-minimum-dialog p { margin: 12px 0; font-size: 1rem; line-height: 1.65; color: #52686c; }
+.booking-minimum-dialog strong { color: #143c44; }
+.booking-minimum-actions { display: flex; flex-wrap: wrap; gap: 12px; margin-top: 26px; }
+.booking-minimum-actions button { flex: 1 1 auto; }
+@media (max-width: 480px) { .booking-minimum-dialog { padding: 24px; } .booking-minimum-actions { flex-direction: column; } }
