@@ -231,7 +231,7 @@ const record = {
     ["Kitchen package - move-in cleaning", "$137.77"],
     ["Combined living and dining area", "$91.85"],
     ["Interior window cleaning", "Included"],
-    ["Heavy-buildup adjustment", "$138.00"]
+    ["Buildup adjustment", "$138.00"]
   ]);
   const receiptPdf = await buildPaymentReceiptPdf({ booking: emailBooking, record: emailRecord });
   assert.equal(receiptPdf.subarray(0, 4).toString("ascii"), "%PDF");

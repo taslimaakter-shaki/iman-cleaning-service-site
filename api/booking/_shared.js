@@ -815,8 +815,8 @@ function calculateResidentialQuoteBundle(unitDetails = [], serviceKey = "standar
   if (buildupAdjustment.addedLaborHours && units[0]) {
     units[0].addOns.push({
       key: "buildup_adjustment",
-      label: `Buildup adjustment (${buildupAdjustment.percentage}% of selected affected rooms)`,
-      description: "Calculated from the selected affected-area prices, including selected kitchen add-ons when a kitchen is affected.",
+      label: "Buildup adjustment",
+      description: "Additional cleaning required for the selected areas.",
       amount: buildupAdjustment.amount,
       preTaxAmount: buildupAdjustment.amount,
       taxAmount: buildupAdjustment.tax
@@ -829,8 +829,8 @@ function calculateResidentialQuoteBundle(unitDetails = [], serviceKey = "standar
   if (clutterAdjustment.addedLaborHours && units[0]) {
     units[0].addOns.push({
       key: "clutter_adjustment",
-      label: `Clutter access adjustment (${clutterAdjustment.percentage}% of selected affected rooms)`,
-      description: "Calculated from the selected affected-area prices, including selected kitchen add-ons when a kitchen is affected.",
+      label: "Clutter access adjustment",
+      description: "Additional cleaning required for the selected areas.",
       amount: clutterAdjustment.amount,
       preTaxAmount: clutterAdjustment.amount,
       taxAmount: clutterAdjustment.tax
@@ -846,8 +846,8 @@ function calculateResidentialQuoteBundle(unitDetails = [], serviceKey = "standar
     const areaTaxCents = Math.round(area.amountCents * NY_SALES_TAX_RATE);
     unit.addOns.push({
       key: `mold_adjustment_${area.key}`,
-      label: `${area.label} — possible mold/mildew adjustment (${moldAdjustment.percentage}%)`,
-      description: `${moldAdjustment.percentage}% of the affected-area price ($${area.baseAreaPrice.toFixed(2)})`,
+      label: `${area.label} — possible mold/mildew adjustment`,
+      description: "Additional cleaning required for the affected area.",
       amount: area.amount,
       preTaxAmount: area.amount,
       taxAmount: areaTaxCents / 100

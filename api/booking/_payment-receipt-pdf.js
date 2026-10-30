@@ -70,24 +70,38 @@ function paymentTypeLabel(value) {
 function pricingRows(booking, record) {
   const estimate = booking?.estimate || {};
   const units = Array.isArray(estimate.units) ? estimate.units : [];
+  const itemizedAdjustments = new Set();
+  const adjustmentKind = item => {
+    const text = `${item?.key || ""} ${item?.label || ""}`.toLowerCase();
+    if (/buildup/.test(text) && /adjustment/.test(text)) return "buildup";
+    if (/clutter/.test(text) && /adjustment/.test(text)) return "clutter";
+    if (/mold|mildew/.test(text) && /adjustment/.test(text)) return "mold";
+    return "";
+  };
   const rows = units.flatMap((unit, unitIndex) => (
     [...(unit.baseItems || []), ...(unit.addOns || [])]
       .filter((item) => item?.label)
       .map((item) => {
-        const label = `${units.length > 1 ? `Unit ${unitIndex + 1} - ` : ""}${safeText(item.label)}`;
+        const kind = adjustmentKind(item);
+        if (kind) itemizedAdjustments.add(kind);
+        // Normalize saved labels too, so older bookings do not expose formulas.
+        const publicLabel = kind === "buildup" ? "Buildup adjustment"
+          : kind === "clutter" ? "Clutter access adjustment"
+          : kind === "mold" ? String(item.label).replace(/\s*\([^)]*%[^)]*\)/g, "")
+          : item.label;
+        const label = `${units.length > 1 ? `Unit ${unitIndex + 1} - ` : ""}${safeText(publicLabel)}`;
         const numericAmount = Number(item.amount);
         return [label, Number.isFinite(numericAmount) && numericAmount > 0 ? moneyFromAmount(numericAmount) : "Included"];
       })
   ));
-  const existingLabels = rows.map(([label]) => label.toLowerCase());
   const adjustments = [
-    ["Heavy-buildup adjustment", estimate.buildupAdjustment],
-    ["Clutter access adjustment", estimate.clutterAdjustment],
-    ["Possible mold/mildew adjustment", estimate.moldAdjustment]
+    ["buildup", "Buildup adjustment", estimate.buildupAdjustment],
+    ["clutter", "Clutter access adjustment", estimate.clutterAdjustment],
+    ["mold", "Possible mold/mildew adjustment", estimate.moldAdjustment]
   ];
-  adjustments.forEach(([label, adjustment]) => {
+  adjustments.forEach(([kind, label, adjustment]) => {
     const amount = Number(adjustment?.amount || (Number(adjustment?.amountCents || 0) / 100));
-    if (amount > 0 && !existingLabels.some((existing) => existing.includes(label.split(" ")[0].toLowerCase()))) {
+    if (amount > 0 && !itemizedAdjustments.has(kind)) {
       rows.push([label, moneyFromAmount(amount)]);
     }
   });
