@@ -28,7 +28,7 @@ const {
   slotMatchesArrivalPreference
 } = require('./_arrival-preference');
 
-const AGREEMENT_VERSION = "2026-10-30-rescheduling-v1";
+const AGREEMENT_VERSION = "2026-10-30-arrival-rescheduling-v2";
 const AGREEMENT_ACCEPTANCE_TEXT = "I have reviewed and agree to the Service Agreement and payment terms. I authorize the 25% deposit, the remaining-balance authorization described above, any customer-caused access charge, and disclosed booking fees to the same payment method used for my deposit, as described in the agreement.";
 const AGREEMENT_KEY_TERMS = [
   "A 25% deposit is charged today.",

@@ -48,6 +48,58 @@
     .text-button{margin-left:10px;background:transparent;color:var(--teal);padding-inline:8px}
     .text-button:hover{background:var(--soft)}
     .privacy{margin-bottom:0;font-size:.86rem}
+    .appointment-picker{display:grid;grid-template-columns:minmax(0,1.15fr) minmax(0,1fr);gap:16px;margin:18px 0}
+    .picker-card{padding:18px;border:1px solid var(--line);border-radius:22px;box-shadow:0 8px 24px rgba(5,61,69,.05)}
+    .picker-card h4{display:flex;align-items:center;gap:10px;margin:0;font-size:1rem}
+    .step{display:grid;place-items:center;width:30px;height:30px;flex:none;border-radius:50%;background:var(--teal);color:white;box-shadow:0 0 0 4px #edf7f8}
+    .picker-hint{font-size:.8rem;margin:10px 0 18px}
+    .month-navigation{display:flex;align-items:center;justify-content:space-between;margin-bottom:16px;gap:6px;font-size:.88rem}
+    .month-navigation button{margin:0;padding:0;width:36px;min-height:36px;background:#edf7f8;color:var(--teal);border:1px solid #d3ecef}
+    .weekdays,.calendar-days{display:grid;grid-template-columns:repeat(7,minmax(0,1fr));gap:4px;text-align:center}
+    .weekdays{font-size:.65rem;text-transform:uppercase;color:#657c80;margin-bottom:8px}
+    .calendar-days button{padding:0;margin:0;min-height:36px;border-radius:10px;background:#edf7f8;color:var(--ink);font-size:.8rem;border:1px solid #cce8ec}
+    .calendar-days button:disabled{background:#f7f9f9;color:#9aa9aa;border-color:transparent;opacity:.5}
+    .calendar-days button:not(:disabled):hover,.time-option:hover{background:#d8eef0}
+    .calendar-days button[aria-pressed="true"],.time-option[aria-pressed="true"]{background:var(--teal);color:#fff;border-color:var(--teal)}
+    .time-option{display:block;width:100%;margin:8px 0 0;padding:12px;min-height:46px;border-radius:12px;background:#edf7f8;color:var(--ink);border:1px solid #cce8ec;text-align:left;font-size:.9rem}
+    .time-option.preference-card{display:flex;align-items:center;justify-content:space-between;gap:10px;background:#fff;padding:16px;border-radius:15px}
+    .preference-card .option-copy{display:flex;flex-direction:column;gap:6px}
+    .preference-card small{font-weight:450;line-height:1.4;color:#607579}
+    .preference-card .discount-badge{flex:none;background:#eff7e8;color:#51832e;border-radius:99px;padding:5px 8px;font-size:.7rem;white-space:nowrap}
+    .time-option.preference-card[aria-pressed="true"]{background:#eff9f8;color:var(--ink);border-color:var(--teal);box-shadow:0 0 0 2px #dceef0}
+    .exact-time-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px;margin-top:16px}
+    .exact-time-grid .time-option{margin:0;background:#fff;min-height:65px}
+    .exact-time-grid .time-option small{display:block;margin-top:6px;font-size:.7rem;font-weight:500;color:#607579}
+    .exact-time-grid .time-option[aria-pressed="true"]{background:var(--teal);color:#fff}
+    .exact-time-grid .time-option[aria-pressed="true"] small{color:#fff}
+    .invoice-preview{margin-top:20px;border:1px solid var(--line);border-radius:20px;overflow:hidden;background:#fff;box-shadow:0 10px 30px rgba(5,61,69,.06)}
+    .invoice-heading{display:flex;justify-content:space-between;align-items:flex-start;gap:16px;padding:24px;background:#f0f7f6;border-top:4px solid var(--teal)}
+    .invoice-heading h3{margin:4px 0 0;font-size:1.35rem}
+    .invoice-eyebrow{font-size:.68rem;letter-spacing:.1em;text-transform:uppercase;font-weight:800;color:#61797c}
+    .invoice-badge{font-size:.7rem;padding:6px 10px;background:#fff3d8;color:#73551d;border-radius:30px;white-space:nowrap;font-weight:750}
+    .invoice-body{padding:24px}
+    .invoice-appointments{display:grid;grid-template-columns:1fr 1fr;gap:18px;margin:0 0 16px}
+    .invoice-appointments dt{font-size:.72rem;color:#61797c;margin-bottom:7px;font-weight:750}
+    .invoice-appointments dd{margin:0;font-size:.88rem;line-height:1.6}
+    .invoice-appointments dd strong{display:block}
+    .invoice-duration{margin:0 0 22px;padding-bottom:18px;border-bottom:1px solid var(--line);font-size:.82rem;line-height:1.6}
+    .invoice-table{width:100%;border-collapse:collapse;font-size:.9rem}
+    .invoice-table caption{text-align:left;font-weight:800;font-size:1rem;margin-bottom:10px}
+    .invoice-table th{font-weight:500;text-align:left;padding:12px 0;color:#536a6e}
+    .invoice-table td{text-align:right;white-space:nowrap;font-variant-numeric:tabular-nums;font-weight:700;padding:12px 0 12px 14px}
+    .invoice-table tr+tr{border-top:1px solid #edf2f1}
+    .invoice-table .invoice-total th,.invoice-table .invoice-total td{font-weight:800;color:var(--ink);border-top:1px solid #b9d0ce}
+    .invoice-table .invoice-balance th,.invoice-table .invoice-balance td{background:#edf7f6;color:#075865;font-weight:850;padding:15px 12px}
+    .invoice-table .invoice-balance td{font-size:1.3rem}
+    .invoice-discount-note{font-size:.78rem;margin:12px 0 20px;line-height:1.6;color:#607579}
+    .invoice-fee{display:flex;justify-content:space-between;gap:14px;padding:16px;background:#fff9ed;border:1px solid #efddb7;border-radius:12px;font-size:.86rem}
+    .invoice-fee strong{white-space:nowrap;font-variant-numeric:tabular-nums}
+    .invoice-fee small{display:block;color:#74613c;line-height:1.5;margin-top:5px}
+    .invoice-footnote{font-size:.78rem;line-height:1.6;margin:16px 0 0}
+    @media(max-width:480px){.invoice-heading,.invoice-body{padding:18px}.invoice-heading{flex-wrap:wrap}.invoice-appointments{grid-template-columns:1fr}.invoice-table{font-size:.82rem}}
+    .picker-empty{border:1px dashed #cce8ec;background:#f7faf9;border-radius:14px;padding:20px 14px;font-size:.86rem;line-height:1.6;color:#657c80}
+    button:focus-visible{outline:3px solid #86bdcb;outline-offset:3px}
+    @media(max-width:600px){.appointment-picker{grid-template-columns:1fr}}
     @media(max-width:600px){.details,.form-grid{grid-template-columns:1fr}.form-grid .wide{grid-column:auto}.header,.section{padding:22px}}
   </style>
 </head>
@@ -103,6 +155,7 @@
             <div class="detail"><dt>Status</dt><dd data-booking-status></dd></div>
             <div class="detail"><dt>Service</dt><dd data-service></dd></div>
             <div class="detail"><dt>Appointment</dt><dd data-schedule></dd></div>
+            <div class="detail"><dt>Work duration</dt><dd data-duration></dd></div>
             <div class="detail"><dt>Address</dt><dd data-address></dd></div>
             <div class="detail"><dt>Total service price</dt><dd data-total></dd></div>
           </dl>
@@ -110,10 +163,29 @@
         <section class="section" data-active-tools>
           <h2>Request a different appointment</h2>
           <p>Only currently available dates and times are listed. Your existing appointment stays reserved until the new time is confirmed.</p>
-          <label for="schedule">Available appointment</label>
-          <select id="schedule" data-slot-select>
-            <option value="">Choose an available date and time</option>
-          </select>
+          <h3>Choose an appointment</h3>
+          <input type="hidden" data-slot-select>
+          <div class="appointment-picker">
+            <div class="picker-card">
+              <h4><span class="step">1</span> Choose a date</h4>
+              <p class="picker-hint">Available dates are highlighted.</p>
+              <div class="month-navigation">
+                <button type="button" data-prev-month aria-label="Previous month">←</button>
+                <strong data-month-label aria-live="polite"></strong>
+                <button type="button" data-next-month aria-label="Next month">→</button>
+              </div>
+              <div class="weekdays" aria-hidden="true"><span>Sun</span><span>Mon</span><span>Tue</span><span>Wed</span><span>Thu</span><span>Fri</span><span>Sat</span></div>
+              <div class="calendar-days" data-calendar aria-label="Appointment dates"></div>
+            </div>
+            <div class="picker-card">
+              <h4><span class="step">2</span> <span data-time-heading>Choose a time</span></h4>
+              <p class="picker-hint">All times are Eastern Time.</p>
+              <div data-time-options aria-live="polite"></div>
+            </div>
+          </div>
+          <p class="muted" data-selected-appointment aria-live="polite"></p>
+          <section class="invoice-preview hidden" data-price-review aria-label="Revised invoice preview"></section>
+          <label class="check hidden" data-price-consent-label><input type="checkbox" data-price-consent><span>I accept the requested arrival preference and revised cleaning total shown above.</span></label>
           <div class="policy" data-reschedule-policy></div>
           <label class="check"><input type="checkbox" data-reschedule-consent><span>I accept these terms and authorize any approved fee to be charged to the payment method used for my deposit.</span></label>
           <label class="check hidden" data-second-request><input type="checkbox" data-direct-contact><span>I have contacted IMAN about this additional rescheduling request.</span></label>
@@ -158,11 +230,180 @@
         rescheduleButton.disabled = busy || ["pending", "processing", "declining"].includes(booking?.rescheduling?.requestStatus);
         cancelButton.disabled = busy || !cancelConfirm.checked;
       };
+      let availableSlots = [], appointmentChoices = [], selectedChoice = null, timeMode = "", exactExpanded = false, selectedDate = "", visibleMonth = "";
+      const calendar = document.querySelector("[data-calendar]");
+      const previousMonth = document.querySelector("[data-prev-month]");
+      const nextMonth = document.querySelector("[data-next-month]");
+      const monthDate = (month) => new Date(`${month}-01T12:00:00Z`);
+      const dateLabel = (date) => new Intl.DateTimeFormat("en-US", { timeZone: "UTC", weekday: "long", month: "long", day: "numeric", year: "numeric" }).format(new Date(`${date}T12:00:00Z`));
+      const clearPrice = () => {
+        selectedChoice = null;
+        slotSelect.value = "";
+        document.querySelector("[data-price-consent]").checked = false;
+        document.querySelector("[data-price-consent-label]").classList.add("hidden");
+        document.querySelector("[data-price-review]").classList.add("hidden");
+        document.querySelector("[data-selected-appointment]").textContent = "";
+      };
+      const selectChoice = (choice) => {
+        clearPrice();
+        selectedChoice = choice;
+        slotSelect.value = choice.value;
+        const q = choice.pricing;
+        document.querySelector("[data-selected-appointment]").textContent = "";
+        const review = document.querySelector("[data-price-review]");
+        review.replaceChildren();
+        const el=(tag,cls,text)=>{const node=document.createElement(tag);if(cls)node.className=cls;if(text!=null)node.textContent=text;return node;};
+        const heading=el('div','invoice-heading');
+        const title=el('div');title.append(el('div','invoice-eyebrow',`IMAN Cleaning Service · Order ${booking.id}`),el('h3','', 'Revised invoice preview'));
+        heading.append(title,el('span','invoice-badge','Subject to approval'));
+        const body=el('div','invoice-body');
+        const appointments=el('dl','invoice-appointments');
+        const appointment=(title,value,preference)=>{
+          const group=el('div'),date=new Date(value);
+          group.append(el('dt','',title));
+          const detail=el('dd');detail.append(el('strong','',new Intl.DateTimeFormat('en-US',{timeZone:'America/New_York',month:'short',day:'numeric',year:'numeric'}).format(date)));
+          detail.append(el('span','',preference?.flexible ? `${preference.windowLabel} · Flexible arrival` : `${new Intl.DateTimeFormat('en-US',{timeZone:'America/New_York',hour:'numeric',minute:'2-digit'}).format(date)} · Exact arrival`));
+          group.append(detail);appointments.append(group);
+        };
+        appointment('CURRENT APPOINTMENT',booking.schedule,booking.arrivalPreference);
+        appointment('REQUESTED APPOINTMENT',choice.value,q.preference);
+        body.append(appointments,el('p','invoice-duration',`Work duration: ${q.duration || booking.duration || 'Contact us to confirm'}. All arrival times are Eastern Time.`));
+        const table=el('table','invoice-table');table.append(el('caption','','Cleaning charges'));
+        const rows=el('tbody');
+        const row=(label,value,cls='')=>{const tr=el('tr',cls),th=el('th','',label);th.scope='row';tr.append(th,el('td','',value));rows.append(tr);};
+        const delta=q.totalCents-q.previousTotalCents;
+        row('Previous cleaning total',money(q.previousTotalCents/100));
+        row('Arrival preference price change',delta ? `${delta>0?'+':'−'}${money(Math.abs(delta)/100)}` : 'No change');
+        row('Revised cleaning total (incl. tax)',money(q.totalCents/100),'invoice-total');
+        const credit=Math.min(q.paidCents,q.totalCents);
+        row(q.paidCents===q.depositCents ? 'Deposit applied — already paid' : 'Payments applied — already paid',credit ? `−${money(credit/100)}` : money(0));
+        row('Remaining cleaning balance',money(q.remainingCents/100),'invoice-balance');
+        if(q.refundCents>0)row('Refund after approval',money(q.refundCents/100));
+        table.append(rows);body.append(table);
+        const oldDiscount=q.previousDiscount?.amountCents || 0,newDiscount=q.arrivalDiscount?.amountCents || 0;
+        body.append(el('p','invoice-discount-note',`Flexibility discount: ${money(oldDiscount/100)} previously → ${money(newDiscount/100)} with this request. ${!newDiscount ? 'Exact arrival does not include a flexibility discount.' : 'The new discount replaces the previous discount.'}`));
+        const fee=el('div','invoice-fee'),feeText=el('div');
+        feeText.append(el('b','','Late-rescheduling fee'),el('small','',booking.rescheduling.feeCents ? 'Separate from the cleaning balance. Charged to your deposit payment method only if approved.' : 'No rescheduling fee applies to this request.'));
+        fee.append(feeText,el('strong','',money(booking.rescheduling.feeCents/100)));body.append(fee);
+        body.append(el('p','invoice-footnote','This is a preview, not a payment request. Your current appointment stays confirmed until we approve the change. We will send your revised invoice after approval.'));
+        review.append(heading,body);
+        review.classList.remove("hidden");
+        document.querySelector("[data-price-consent-label]").classList.remove("hidden");
+        renderTimes();
+        const selected = document.querySelector('[data-time-options] button[data-choice-selected="true"]');
+        selected?.focus({preventScroll:true});
+      };
+      const renderTimes = () => {
+        const options = document.querySelector("[data-time-options]");
+        options.replaceChildren();
+        const addButton = (label, selected, disabled, onClick) => {
+          const button=document.createElement("button");button.type="button";button.className="time-option";
+          button.textContent=label;button.disabled=disabled;button.setAttribute("aria-pressed",String(selected));
+          button.addEventListener("click",onClick);options.append(button);return button;
+        };
+        if (!selectedDate) {
+          const empty = document.createElement("div");empty.className="picker-empty";
+          empty.textContent = availableSlots.length ? "Choose a highlighted date from the calendar." : "No online appointments are currently available. Please contact IMAN for help.";
+          options.append(empty);return;
+        }
+        const dayLabel=document.createElement("p");dayLabel.className="muted";dayLabel.textContent=dateLabel(selectedDate);options.append(dayLabel);
+        const choices=appointmentChoices.filter(c=>c.date===selectedDate);
+        const previous=choices.find(c=>c.mode==='keep');
+        const previousLabel=booking.arrivalPreference?.flexible ? booking.arrivalPreference.windowLabel : new Intl.DateTimeFormat('en-US',{timeZone:'America/New_York',hour:'numeric',minute:'2-digit'}).format(new Date(booking.schedule));
+        addButton(`Keep my previous time preference: ${previousLabel || booking.arrivalPreference?.label || 'Exact arrival'}${previous ? '' : ' — unavailable on this date'}`,timeMode==='keep',!previous,()=>{timeMode='keep';exactExpanded=false;selectChoice(previous);});
+        addButton('Choose a new time',timeMode==='new',false,()=>{timeMode='new';clearPrice();renderTimes();document.querySelector('[data-time-options] button[aria-pressed="true"]')?.focus({preventScroll:true});});
+        if(timeMode==='new') {
+          const newChoices=choices.filter(c=>c.mode==='new');
+          const card=(title,subtitle,badge,selected,onClick)=>{
+            const button=addButton('',selected,false,onClick);button.classList.add('preference-card');
+            const copy=document.createElement('span');copy.className='option-copy';
+            const name=document.createElement('span');name.textContent=title;
+            const hint=document.createElement('small');hint.textContent=subtitle;copy.append(name,hint);
+            const tag=document.createElement('span');tag.className='discount-badge';tag.textContent=badge;
+            button.append(copy,tag);return button;
+          };
+          const seen=new Set();
+          newChoices.filter(c=>c.pricing.preference.flexible).forEach(choice=>{
+            const q=choice.pricing,pref=q.preference;if(seen.has(pref.key))return;seen.add(pref.key);
+            const button=card(pref.key==='any_day'?'Anytime that day':pref.key==='morning'?'Morning':'Afternoon',`Estimated arrival ${pref.windowLabel}`,`Save ${q.arrivalDiscount?.percent || 0}%`,selectedChoice?.choiceId===choice.choiceId,()=>{exactExpanded=false;selectChoice(choice);});
+            button.dataset.choiceSelected=String(selectedChoice?.choiceId===choice.choiceId);
+          });
+          const exactChoices=newChoices.filter(c=>!c.pricing.preference.flexible);
+          if(exactChoices.length){
+            const toggle=card('Choose an exact arrival time','Select a specific available time','No added discount',exactExpanded,()=>{
+              exactExpanded=!exactExpanded;clearPrice();renderTimes();document.querySelector('[data-exact-toggle]')?.focus({preventScroll:true});
+            });
+            toggle.dataset.exactToggle='';toggle.setAttribute('aria-expanded',String(exactExpanded));toggle.setAttribute('aria-controls','exact-times');
+            if(exactExpanded){
+              const grid=document.createElement('div');grid.className='exact-time-grid';grid.id='exact-times';
+              exactChoices.forEach(choice=>{
+                const button=document.createElement('button');button.type='button';button.className='time-option';
+                button.textContent=new Intl.DateTimeFormat('en-US',{timeZone:'America/New_York',hour:'numeric',minute:'2-digit'}).format(new Date(choice.value));
+                const hint=document.createElement('small');hint.textContent='Available';button.append(hint);
+                button.setAttribute('aria-pressed',String(selectedChoice?.choiceId===choice.choiceId));button.dataset.choiceSelected=String(selectedChoice?.choiceId===choice.choiceId);
+                button.addEventListener('click',()=>selectChoice(choice));grid.append(button);
+              });options.append(grid);
+            }
+          }
+        }
+      };
+      const renderCalendar = () => {
+        const date = monthDate(visibleMonth);
+        document.querySelector("[data-month-label]").textContent = new Intl.DateTimeFormat("en-US", { timeZone: "UTC", month: "long", year: "numeric" }).format(date);
+        const months = availableSlots.map(slot => slot.date.slice(0,7)).sort();
+        previousMonth.disabled = !months.length || visibleMonth <= months[0];
+        nextMonth.disabled = !months.length || visibleMonth >= months[months.length - 1];
+        calendar.replaceChildren();
+        for (let i = 0; i < date.getUTCDay(); i++) calendar.append(document.createElement("span"));
+        const count = new Date(Date.UTC(date.getUTCFullYear(), date.getUTCMonth()+1, 0)).getUTCDate();
+        for (let day = 1; day <= count; day++) {
+          const key = `${visibleMonth}-${String(day).padStart(2,"0")}`;
+          const button = document.createElement("button");
+          button.type = "button";
+          button.textContent = day;
+          button.disabled = !availableSlots.some(slot => slot.date === key);
+          button.setAttribute("aria-label", dateLabel(key));
+          button.setAttribute("aria-pressed", String(key === selectedDate));
+          button.addEventListener("click", () => {
+            selectedDate = key;
+            timeMode = "";
+            exactExpanded = false;
+            clearPrice();
+            document.querySelector("[data-selected-appointment]").textContent = "";
+            renderCalendar();
+            renderTimes();
+            calendar.querySelector('[aria-pressed="true"]')?.focus();
+          });
+          calendar.append(button);
+        }
+      };
+      [[previousMonth,-1],[nextMonth,1]].forEach(([button,delta]) => button.addEventListener("click", () => {
+        const date = monthDate(visibleMonth);
+        date.setUTCMonth(date.getUTCMonth()+delta);
+        visibleMonth = date.toISOString().slice(0,7);
+        renderCalendar();
+      }));
+      const renderAppointmentPicker = (slots, choices = []) => {
+        appointmentChoices = choices;
+        availableSlots = choices.length ? choices : slots;
+        timeMode = "";
+        exactExpanded = false;
+        clearPrice();
+        selectedDate = "";
+        slotSelect.value = "";
+        visibleMonth = availableSlots.map(slot => slot.date.slice(0,7)).sort()[0] || new Intl.DateTimeFormat("en-CA", { timeZone: "America/New_York", year: "numeric", month: "2-digit" }).format(new Date()).slice(0,7);
+        if (!/^\d{4}-\d{2}$/.test(visibleMonth)) visibleMonth = new Date().toISOString().slice(0,7);
+        document.querySelector("[data-time-heading]").textContent = "Choose a time";
+        document.querySelector("[data-selected-appointment]").textContent = "";
+        renderCalendar();
+        renderTimes();
+      };
       const render = (data) => {
         booking = data.booking;
         document.querySelector("[data-booking-id]").textContent = booking.id;
         document.querySelector("[data-booking-status]").textContent = booking.status;
         document.querySelector("[data-service]").textContent = booking.service;
+        document.querySelector("[data-duration]").textContent = booking.duration || "Contact us to confirm";
         document.querySelector("[data-schedule]").textContent = booking.scheduleLabel;
         document.querySelector("[data-address]").textContent = booking.address;
         document.querySelector("[data-total]").textContent = money(booking.total);
@@ -175,29 +416,7 @@
         document.querySelector("[data-policy]").textContent = cancellation.lessThan48Hours
           ? `The cancellation fee applies, including after an approved late reschedule. If you cancel now, ${money(cancellation.retainedCents / 100)} will be retained from your booking payment after crediting paid late-rescheduling fees and any uncaptured authorization will be released.`
           : `At least 48 hours remain. If you cancel now, the full ${money(cancellation.refundCents / 100)} amount charged will be refunded and any uncaptured authorization will be released.`;
-        slotSelect.innerHTML = booking.arrivalPreference?.flexible
-          ? '<option value="">Choose an available date for the same arrival window</option>'
-          : '<option value="">Choose an available date and time</option>';
-        let lastDate = "";
-        let group = null;
-        (data.slots || []).forEach((slot) => {
-          if (slot.date !== lastDate) {
-            group = document.createElement("optgroup");
-            group.label = new Intl.DateTimeFormat("en-US", { weekday: "long", month: "long", day: "numeric" }).format(new Date(`${slot.date}T12:00:00`));
-            slotSelect.append(group);
-            lastDate = slot.date;
-          }
-          const option = document.createElement("option");
-          option.value = slot.value;
-          option.textContent = slot.label;
-          group.append(option);
-        });
-        if (!data.slots?.length) {
-          const option = document.createElement("option");
-          option.textContent = "No online appointments are currently available";
-          option.disabled = true;
-          slotSelect.append(option);
-        }
+        renderAppointmentPicker(data.slots || [], data.appointmentChoices || []);
         const active = ["Confirmed", "Cleaner assigned"].includes(booking.status);
         document.querySelectorAll("[data-active-tools]").forEach((section) => section.classList.toggle("hidden", !active));
         loading.classList.add("hidden");
@@ -277,12 +496,13 @@
         lookup.classList.remove("hidden");
       });
       rescheduleButton.addEventListener("click", async () => {
+        if (!selectedChoice || !document.querySelector("[data-price-consent]").checked) return showStatus("Choose a time preference and accept the revised cleaning total first.", true);
         if (!slotSelect.value) return showStatus("Choose an available appointment first.", true);
         if (!document.querySelector("[data-reschedule-consent]").checked) return showStatus("Accept the rescheduling and payment terms first.", true);
         if (booking.rescheduling.count >= 1 && !document.querySelector("[data-direct-contact]").checked) return showStatus("Please call or text 929-232-1930 before requesting another change.", true);
         setBusy(true);
         try {
-          const data = await request("POST", { action: "reschedule", schedule: slotSelect.value, acceptPolicy: true, policyVersion: booking.rescheduling.policyVersion, feeCents: booking.rescheduling.feeCents, directContact: document.querySelector("[data-direct-contact]").checked });
+          const data = await request("POST", { action: "reschedule", schedule: slotSelect.value, choiceId: selectedChoice.choiceId, quoteId: selectedChoice.pricing.id, acceptPrice: true, acceptPolicy: true, policyVersion: booking.rescheduling.policyVersion, feeCents: booking.rescheduling.feeCents, directContact: document.querySelector("[data-direct-contact]").checked });
           await load(data.message);
         } catch (error) {
           showStatus(error.message, true);

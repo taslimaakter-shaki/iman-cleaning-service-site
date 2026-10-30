@@ -234,6 +234,7 @@ function safeBooking(booking) {
     schedule: booking.schedule,
     scheduleLabel: booking.schedule_label || formatAppointment(booking.schedule),
     arrivalPreference: booking.estimate?.arrivalPreference || null,
+    duration: require("./_staffing-options").staffingOptions(booking.estimate),
     address: booking.address,
     total: Number(booking.estimate?.total || booking.estimate?.high || booking.estimate?.low || 0),
     rescheduling: { policyVersion: rescheduling.VERSION, policy: rescheduling.POLICY, feeCents: rescheduleTerms.feeCents, count: rescheduleTerms.count, requestStatus: rescheduleTerms.state.request?.status || "", cancellationLocked: rescheduling.cancellationProtection(booking).locked },
@@ -375,12 +376,21 @@ async function handler(request, response) {
     const token = cleanText(body.token || request.query?.token, 3000);
     let { booking } = await bookingForToken(token);
 
+    if (request.method === "GET" && request.query?.document === "invoice") {
+      const invoice = booking.estimate?.rescheduling?.invoiceHistory?.at(-1);
+      if (!invoice) return json(response, 404, { error: "No revised invoice is available." });
+      const pdf = await require("./_reschedule-invoice").buildInvoice({ ...booking, schedule:invoice.schedule, schedule_label:invoice.schedule_label, estimate:{...booking.estimate,rescheduling:{...booking.estimate.rescheduling,request:invoice.request}} });
+      response.setHeader("Content-Type", "application/pdf");
+      response.setHeader("Cache-Control", "private, no-store");
+      response.setHeader("Content-Disposition", 'inline; filename="IMAN-Revised-Invoice.pdf"');
+      return response.end(pdf);
+    }
     if (request.method === "GET") {
       const pkg = { teamHours: Number(booking.estimate?.teamHours || booking.estimate?.hours || 2) };
       const slots = ["Confirmed", "Cleaner assigned"].includes(booking.status)
         ? await availableSlotsForPackage(pkg, undefined, new Date(), booking.id)
         : [];
-      return json(response, 200, { booking: safeBooking(booking), slots: customerRescheduleSlots(booking, slots) });
+      return json(response, 200, { booking: safeBooking(booking), slots: customerRescheduleSlots(booking, slots), appointmentChoices: require("./_reschedule-pricing").choices(booking, slots) });
     }
 
     const action = cleanText(body.action, 30);
@@ -389,8 +399,10 @@ async function handler(request, response) {
         return json(response, 409, { error: "This booking can no longer be rescheduled online." });
       }
       const pkg = { teamHours: Number(booking.estimate?.teamHours || booking.estimate?.hours || 2) };
-      const slots = customerRescheduleSlots(booking, await availableSlotsForPackage(pkg, undefined, new Date(), booking.id));
-      const slot = slots.find((item) => item.value === cleanText(body.schedule, 100));
+      const rawSlots = await availableSlotsForPackage(pkg, undefined, new Date(), booking.id);
+      const slots = body.choiceId ? require("./_reschedule-pricing").choices(booking, rawSlots) : customerRescheduleSlots(booking, rawSlots);
+      const slot = slots.find((item) => item.value === cleanText(body.schedule, 100) && (!body.choiceId || item.choiceId === body.choiceId));
+      if (body.choiceId && slot && (body.quoteId !== slot.pricing.id || body.acceptPrice !== true)) return json(response, 409, { error: "The price has changed. Refresh and accept the updated total before submitting." });
       if (!slot) return json(response, 409, { error: "That appointment is no longer available. Please choose another time." });
       const updated = await rescheduling.requestChange(booking, body, slot);
       const delivery = await require("./_reschedule-notifications").notifyOwner(updated, "requested");

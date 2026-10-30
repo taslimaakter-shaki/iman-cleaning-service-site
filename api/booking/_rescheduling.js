@@ -1,8 +1,8 @@
 const crypto = require('crypto');
 const shared = require('./_shared');
 const { stripePost, cancelRemainingAuthorization } = require('./_payments');
-const VERSION = '2026-10-30-rescheduling-v1';
-const POLICY = 'One approved reschedule at least 48 hours ahead is free. Rescheduling with less than 48 hours notice costs 10% of the booked cleaning price, including tax, separate from the cleaning payment. If that booking is later canceled, the 25% cancellation fee applies regardless of the new date, with paid late-rescheduling fees credited toward it. Second requests require direct contact and approval. Approved booking fees are charged to the payment method used for the 25% deposit.';
+const VERSION = '2026-10-30-arrival-rescheduling-v2';
+const POLICY = 'One approved reschedule at least 48 hours ahead is free. Rescheduling with less than 48 hours notice costs 10% of the booked cleaning price, including tax, separate from the cleaning payment. If that booking is later canceled, the 25% cancellation fee applies regardless of the new date, with paid late-rescheduling fees credited toward it. Second requests require direct contact and approval. Approved booking fees are charged to the payment method used for the 25% deposit. Changing arrival preferences replaces the flexibility discount and may change the cleaning total. The customer must accept the revised total before approval; payments already made are credited and a revised invoice is issued after approval.';
 const fail = message => Object.assign(new Error(message), { statusCode: 409 });
 function terms(booking, now = new Date()) {
   const state = booking.estimate?.rescheduling || {};
@@ -22,20 +22,21 @@ async function save(booking, state, changes = {}) {
   if (!process.env.SUPABASE_URL || !process.env.SUPABASE_SERVICE_ROLE_KEY) throw fail('Rescheduling requests are unavailable. Please call 929-232-1930.');
   const rows = await shared.supabaseRequest(`?id=eq.${encodeURIComponent(booking.id)}&status=eq.${encodeURIComponent(booking.status)}&schedule=eq.${encodeURIComponent(booking.schedule)}&estimate=eq.${encodeURIComponent(JSON.stringify(booking.estimate || {}))}&select=*`, {
     method: 'PATCH', headers: { Prefer: 'return=representation' },
-    body: JSON.stringify({ ...changes, estimate: { ...booking.estimate, rescheduling: state } })
+    body: JSON.stringify({ ...changes, estimate: { ...(changes.estimate || booking.estimate), rescheduling: state } })
   });
   if (!rows?.[0]) throw fail('This booking changed. Refresh before continuing.');
   return rows[0];
 }
 async function requestChange(booking, body, slot, now = new Date()) {
   const t = terms(booking, now);
+  if ((t.state.priceRefunds || []).some(r => r.status === 'pending') || (t.state.request?.status === 'approved' && Number(t.state.request?.pricing?.refundCents || 0) > (t.state.priceRefunds || []).filter(r=>r.requestId===t.state.request.id && r.status==='succeeded').reduce((sum,r)=>sum+r.amountCents,0))) throw fail('Your previous price refund is still being processed. Please contact us before requesting another change.');
   if (t.state.cancellationOperation) throw fail('Cancellation is already being processed.');
   if (!['Confirmed', 'Cleaner assigned'].includes(booking.status) || new Date(booking.schedule) <= now) throw fail('Please contact us about this appointment.');
   if (['pending', 'processing', 'declining'].includes(t.state.request?.status)) throw fail('Your request is already awaiting review. Please call or text us for updates.');
   if (t.count >= 1 && body.directContact !== true) throw fail('A second reschedule requires direct contact. Please call or text 929-232-1930.');
   if (body.acceptPolicy !== true || body.policyVersion !== VERSION || Number(body.feeCents) !== t.feeCents) throw fail('Review and accept the current rescheduling fee and payment terms.');
-  if (slot.value === booking.schedule) throw fail('Choose a different appointment.');
-  const request = { id: crypto.randomUUID(), status: 'pending', previousSchedule: booking.schedule, schedule: slot.value, label: slot.label, requestedAt: now.toISOString(), feeCents: t.feeCents, cancellationCents: t.cancellationCents, late: t.late, consent: POLICY, policyVersion: VERSION, acceptedAt: now.toISOString(), directContactConfirmed: body.directContact === true };
+  if (slot.value === booking.schedule && (!slot.pricing || slot.preferenceKey === (booking.estimate?.arrivalPreference?.key || 'exact'))) throw fail('Choose a different appointment.');
+  const request = { ...(slot.pricing ? { pricing: slot.pricing, choiceId: slot.choiceId, priceAcceptedAt: now.toISOString() } : {}), id: crypto.randomUUID(), status: 'pending', previousSchedule: booking.schedule, schedule: slot.value, label: slot.label, requestedAt: now.toISOString(), feeCents: t.feeCents, cancellationCents: t.cancellationCents, late: t.late, consent: POLICY, policyVersion: VERSION, acceptedAt: now.toISOString(), directContactConfirmed: body.directContact === true };
   return save(booking, { ...t.state, request, ownerNotifications: {}, customerNotifications: {} });
 }
 async function stripeGet(id) {
@@ -50,7 +51,8 @@ async function decide(booking, requestId, decision) {
   let req = state.request;
   if (state.cancellationOperation) throw fail('Cancellation is already being processed.');
   if (!req || req.id !== requestId) throw fail('Refresh the booking to see its latest request.');
-  if (req.status === 'approved' || (req.status === 'declined' && decision === 'decline')) return booking;
+  if (req.status === 'approved') return settlePriceRefund(booking);
+  if (req.status === 'declined' && decision === 'decline') return booking;
   if (!['Confirmed', 'Cleaner assigned'].includes(booking.status) || !['pending', 'processing', 'declining'].includes(req.status)) throw fail('This request can no longer be approved.');
   if (decision === 'decline') {
     booking = await save(booking, { ...state, request: { ...req, status: 'declining' } });
@@ -72,6 +74,7 @@ async function decide(booking, requestId, decision) {
   if (req.status === 'declining') throw fail('Complete the decline and refund before continuing.');
   if (decision !== 'approve') throw fail('Choose approve or decline.');
   if (booking.schedule !== req.previousSchedule) throw fail('The original appointment changed. Contact the customer.');
+  if (req.pricing && require('./_reschedule-pricing').quote(booking, req.pricing.preference.key, req.choiceId?.startsWith('keep:')).id !== req.pricing.id) throw fail('The booking price or payments changed. Decline this request and ask the customer to review a new price.');
   const duration = Number(booking.estimate.calendarReservationHours || shared.bookingDurationHours(booking));
   await shared.assertScheduleAvailable(req.schedule, duration, booking.id);
   if (req.status === 'pending') {
@@ -101,10 +104,10 @@ async function decide(booking, requestId, decision) {
   if (req.id !== requestId || req.status !== 'processing') throw fail('The request changed while payment was processing. Refresh its status.');
   const fees = [...(state.fees || [])];
   if (intent && !fees.some(f => f.requestId === req.id)) fees.push({ requestId: req.id, paymentIntentId: intent.id, amountCents: req.feeCents, status: 'paid', paidAt: new Date().toISOString() });
-  const next = { ...state, fees, count: Number(state.count || (state.previousSchedule ? 1 : 0)) + 1, previousSchedule: booking.schedule, cancellationLocked: Boolean(state.cancellationLocked || req.late), cancellationFeeCents: Math.max(Number(state.cancellationFeeCents || 0), req.late ? req.cancellationCents : 0), request: { ...req, status: 'approved', decidedAt: new Date().toISOString() } };
+  const next = { ...state, invoiceHistory: req.pricing ? [...(state.invoiceHistory || []), { request: { ...req, status: 'approved' }, schedule:req.schedule, schedule_label:req.label, issuedAt:new Date().toISOString() }] : (state.invoiceHistory || []), fees, count: Number(state.count || (state.previousSchedule ? 1 : 0)) + 1, previousSchedule: booking.schedule, cancellationLocked: Boolean(state.cancellationLocked || req.late), cancellationFeeCents: Math.max(Number(state.cancellationFeeCents || 0), req.late ? req.cancellationCents : 0), request: { ...req, status: 'approved', decidedAt: new Date().toISOString() } };
   // Preserve a paid fee even if a slot is taken between availability check and save.
   booking = await save(booking, { ...state, fees });
-  try { booking = await save(booking, next, { schedule: req.schedule, schedule_label: req.label }); }
+  try { booking = await save(booking, next, { schedule: req.schedule, schedule_label: req.label, estimate: require('./_reschedule-pricing').revisedEstimate(booking, req) }); }
   catch (error) { throw fail(`Fee payment is recorded, but the appointment needs review: ${error.message} Retry approval; the fee will not be charged again.`); }
   const followup = {};
   try { await cancelRemainingAuthorization({ booking, resetForReschedule: true }); }
@@ -116,10 +119,35 @@ async function decide(booking, requestId, decision) {
     booking = await save(latest, { ...latest.estimate.rescheduling, followup });
     await require('../_form-notifications').trySendFormSubmissionNotification({ source: 'Rescheduling approval', eventLabel: 'follow-up required', recordId: booking.id, fields: followup, summaryLines: ['The new appointment is confirmed. Review the balance authorization or calendar synchronization in CRM.'] }).catch(() => {});
   }
-  return booking;
+  booking = await shared.getBooking(booking.id);
+  return settlePriceRefund(booking);
+}
+async function settlePriceRefund(booking) {
+  const state = booking.estimate.rescheduling, req = state.request;
+  const due = Number(req.pricing?.refundCents || 0);
+  if (!due || (state.priceRefunds || []).filter(r => r.requestId === req.id && r.status === 'succeeded').reduce((sum,r)=>sum+r.amountCents,0) >= due) return booking;
+  const p = booking.estimate.payment || {};
+  const sources = [...(p.capturedBalanceHistory || []).map(r=>({id:r.paymentIntentId,amount:r.amountCents})), {id:p.remaining?.status === 'captured' ? p.remaining.paymentIntentId : '', amount:Number(p.remaining?.amountCents || 0)}, {id:p.depositPaymentIntentId || p.paymentIntentId, amount:Number(p.depositCents || 0)}];
+  let remaining = due;
+  const refunds = [...(state.priceRefunds || []).filter(r => r.requestId !== req.id)];
+  for (const source of sources) {
+    if (!remaining || !source.id) continue;
+    const previous = refunds.filter(r=>r.paymentIntentId===source.id && ['pending','succeeded'].includes(r.status)).reduce((sum,r)=>sum+r.amountCents,0);
+    const amount = Math.min(remaining, Math.max(0,source.amount-previous));
+    if (!amount) continue;
+    const refund = await stripePost({path:'refunds',idempotencyKey:`reschedule-price-refund-${req.id}-${source.id}`,params:{payment_intent:source.id,amount}});
+    if (!['succeeded','pending'].includes(refund.status)) throw fail('The revised appointment is confirmed, but its price refund needs review. Retry approval.');
+    refunds.push({requestId:req.id,paymentIntentId:source.id,id:refund.id,amountCents:amount,status:refund.status});
+    remaining -= amount;
+  }
+  if (remaining) throw fail('The revised appointment is confirmed, but the original payment must be reviewed to complete its refund.');
+  return save(booking,{...state,priceRefunds:refunds});
 }
 async function beginCancellation(booking, source) {
   const state = booking.estimate?.rescheduling || {};
+  const refundDue = Number(state.request?.pricing?.refundCents || 0);
+  const refundDone = (state.priceRefunds || []).filter(r=>r.requestId===state.request?.id && r.status==='succeeded').reduce((sum,r)=>sum+r.amountCents,0);
+  if (state.request?.status === 'approved' && refundDue > refundDone) throw fail('Please contact us while the price-adjustment refund is being completed.');
   if (!process.env.SUPABASE_URL || !process.env.SUPABASE_SERVICE_ROLE_KEY) return booking;
   if (['processing', 'declining'].includes(state.request?.status)) throw fail('Resolve the rescheduling payment before canceling this booking.');
   if (state.cancellationOperation) {

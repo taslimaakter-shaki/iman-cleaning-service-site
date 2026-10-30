@@ -7,7 +7,7 @@ const root = path.join(__dirname, '..');
 function load(file, dependencies, extra={}) {
   const module = {exports:{}};
   vm.runInNewContext(fs.readFileSync(path.join(root,file),'utf8'), {
-    module,exports:module.exports,require:name=>dependencies[name] || (name === '../booking/_staffing-options' ? require('../api/booking/_staffing-options') : require(name)),Buffer,Date,Intl,URLSearchParams,AbortSignal,
+    module,exports:module.exports,require:name=>dependencies[name] || (['../booking/_staffing-options','./_staffing-options'].includes(name) ? require('../api/booking/_staffing-options') : require(name)),Buffer,Date,Intl,URLSearchParams,AbortSignal,
     console,process:{env:{SUPABASE_URL:'https://db.test',SUPABASE_SERVICE_ROLE_KEY:'test-only',STRIPE_SECRET_KEY:'sk_test_mock',BOOKING_MANAGEMENT_SECRET:'test-only'}},
     fetch:async()=>{throw new Error('Unexpected network call');},...extra
   },{filename:file}); return module.exports;
@@ -64,10 +64,11 @@ async function rescheduleTests() {
   const original={id:'BK-1',status:'Confirmed',email:'test@example.test',phone:'',schedule:'2030-09-12T08:00:00-04:00',estimate:{teamHours:9,total:720,payment:{paidCents:18000}}};
   const calls=[];
   const shared={cleanText:x=>String(x||''),getBooking:async()=>clone(original),readJsonBody:async req=>req.body,json:(r,s,b)=>Object.assign(r,{status:s,body:b}),
-    availableSlotsForPackage:async(pkg,days,now,exclude)=>{assert.equal(exclude,original.id);assert.equal(pkg.teamHours,9);return [{value:'2030-09-13T08:00:00-04:00',label:'September 13 at 8 AM'}];}
+    availableSlotsForPackage:async(pkg,days,now,exclude)=>{assert.equal(exclude,original.id);assert.equal(pkg.teamHours,9);return [{value:'2030-09-13T08:00:00-04:00',date:'2030-09-13',time:'08:00',flexibleEligible:true,label:'September 13 at 8 AM'}];}
   };
   const handler=load('api/booking/_manage.js',{
     './_shared':shared,
+    './_reschedule-pricing':require('../api/booking/_reschedule-pricing'),
     './_reschedule-notifications':{notifyOwner:async()=>{calls.push('team-alert');return {}; }},
     './_rescheduling':{recordOwnerNotification:async()=>{},VERSION:'test', POLICY:'test', terms:()=>({feeCents:0,count:0,state:{}}), cancellationProtection:()=>({locked:false}), requestChange:async(booking,body,slot)=>{calls.push('request');assert.equal(slot.value,body.schedule);return {...booking,estimate:{...booking.estimate,rescheduling:{request:{feeCents:0,id:"test"}}}};}},
     './_notifications':{formatAppointment:x=>x},
@@ -81,6 +82,12 @@ async function rescheduleTests() {
   assert.match(res.body.message,/original appointment remains confirmed/);
   const unavailable={};await handler({method:'POST',body:{action:'reschedule',token,schedule:'2030-09-14T08:00:00-04:00'}},unavailable);
   assert.equal(unavailable.status,409);
+  const get={};await handler({method:'GET',query:{token}},get);assert.equal(get.status,200);
+  const choice=get.body.appointmentChoices.find(c=>c.mode==='new' && c.preferenceKey==='exact');assert(choice);
+  const payload={action:'reschedule',token,schedule:choice.value,choiceId:choice.choiceId,quoteId:choice.pricing.id,acceptPrice:true};
+  const stale={};await handler({method:'POST',body:{...payload,quoteId:'tampered'}},stale);assert.equal(stale.status,409);
+  const noConsent={};await handler({method:'POST',body:{...payload,acceptPrice:false}},noConsent);assert.equal(noConsent.status,409);
+  const accepted={};await handler({method:'POST',body:payload},accepted);assert.equal(accepted.status,200);
 }
 async function paidConfirmationTests() {
   const calls=[];let paid=true,booking={id:'BK-PAID',status:'New',estimate:{teamHours:9}};

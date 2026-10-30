@@ -11,6 +11,7 @@ function details(booking, event) {
   const lines = [
     `Original appointment: ${formatAppointment(request.previousSchedule)}`,
     `Requested appointment: ${request.label || formatAppointment(request.schedule)}`,
+    ...(request.pricing ? [`Previous preference: ${request.pricing.previousPreference.label || request.pricing.previousPreference.key}`, `New preference: ${request.pricing.preference.label} ${request.pricing.preference.windowLabel}`, `Cleaning total: $${(request.pricing.previousTotalCents/100).toFixed(2)} -> $${(request.pricing.totalCents/100).toFixed(2)}`, `Remaining cleaning balance: $${(request.pricing.remainingCents/100).toFixed(2)}`, `Work duration: ${request.pricing.duration}`] : []),
     `Late-rescheduling fee: $${(Number(request.feeCents || 0) / 100).toFixed(2)}`,
     event === 'requested' ? 'Approval is required. The original appointment remains confirmed. Open CRM to approve or decline.' : event === 'approved' ? 'The appointment change is approved. Any applicable fee was charged to the deposit payment method.' : 'The change was declined. The original appointment remains confirmed. Any fee collected for this request was refunded.'
   ];

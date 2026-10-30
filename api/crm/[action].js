@@ -112,19 +112,21 @@ function cancellationAmountsForSource(booking = {}, cancellationSource = "", now
     payment.paidCents || (payment.status === "deposit_paid" ? statedDepositCents : 0)
   )));
   const depositCents = Math.min(paidCents, statedDepositCents);
+  const refundedPriceCents = (booking.estimate?.rescheduling?.priceRefunds || []).filter(r=>["pending","succeeded"].includes(r.status)).reduce((sum,r)=>sum+Number(r.amountCents || 0),0);
+  const netPaidCents = Math.max(0,paidCents-refundedPriceCents);
   now = new Date(booking.estimate?.rescheduling?.cancellationOperation?.startedAt || now);
   const appointmentTime = new Date(booking.schedule).getTime();
   const protection = reschedulingPolicy.cancellationProtection(booking);
   const lessThan48Hours = protection.locked || !Number.isFinite(appointmentTime)
     || appointmentTime - now.getTime() < 48 * 3600000;
-  const retainedCents = cancellationSource === "customer" && lessThan48Hours ? Math.min(paidCents, protection.locked ? protection.remainingCents : Math.max(0, depositCents - protection.creditCents)) : 0;
+  const retainedCents = cancellationSource === "customer" && lessThan48Hours ? Math.min(netPaidCents, protection.locked ? protection.remainingCents : Math.max(0, (booking.estimate?.rescheduling?.invoiceHistory?.length ? Math.round(totalCents*.25) : depositCents) - protection.creditCents)) : 0;
   return {
     cancellationSource,
     lessThan48Hours,
-    paidCents,
+    paidCents: netPaidCents,
     depositCents,
     retainedCents,
-    refundCents: Math.max(0, paidCents - retainedCents)
+    refundCents: Math.max(0, netPaidCents - retainedCents)
   };
 }
 

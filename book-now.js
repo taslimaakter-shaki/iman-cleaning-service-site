@@ -5,7 +5,7 @@
   const BOOKING_DRAFT_VERSION = 3;
   const BOOKING_DRAFT_MAX_AGE = 7 * 24 * 60 * 60 * 1000;
   const INSTANT_PRICING_NOTICE_KEY = "imanInstantPricingOpenedNoticeV1";
-  const AGREEMENT_VERSION = "2026-10-30-rescheduling-v1";
+  const AGREEMENT_VERSION = "2026-10-30-arrival-rescheduling-v2";
   const AGREEMENT_ACCEPTANCE_TEXT = "I have reviewed and agree to the Service Agreement and payment terms. I authorize the 25% deposit, the remaining-balance authorization described above, any customer-caused access charge, and disclosed booking fees to the same payment method used for my deposit, as described in the agreement.";
   let persistBookingDraft = () => {};
   let saveBookingDraft = () => {};

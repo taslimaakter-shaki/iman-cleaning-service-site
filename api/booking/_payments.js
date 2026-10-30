@@ -63,7 +63,7 @@ function paymentAmounts(booking) {
   const payment = booking?.estimate?.payment || {};
   const totalCents = Number(payment.totalCents || Math.round(Number(booking?.estimate?.total || 0) * 100));
   const depositCents = Number(payment.depositCents || payment.paidCents || Math.round(totalCents * 0.25));
-  const remainingCents = Number(payment.remainingCents || Math.max(0, totalCents - depositCents));
+  const remainingCents = Number(payment.remainingCents ?? Math.max(0, totalCents - depositCents));
   return {
     totalCents: Math.max(0, Math.round(totalCents)),
     depositCents: Math.max(0, Math.round(depositCents)),
@@ -80,8 +80,9 @@ function cancellationPaymentAmounts(booking, now = new Date()) {
     || millisecondsUntil < AUTHORIZATION_DUE_HOURS * 3600000;
   const amounts = paymentAmounts(booking);
   const payment = booking?.estimate?.payment || {};
-  const paidCents = Math.max(0, Math.round(Number(payment.paidCents || 0)));
-  const feeCents = protection.locked ? protection.remainingCents : Math.max(0, amounts.depositCents - protection.creditCents);
+  const priorRefunds = (booking.estimate?.rescheduling?.priceRefunds || []).filter(r=>["pending","succeeded"].includes(r.status)).reduce((sum,r)=>sum+Number(r.amountCents || 0),0);
+  const paidCents = Math.max(0, Math.round(Number(payment.paidCents || 0)) - priorRefunds);
+  const feeCents = protection.locked ? protection.remainingCents : Math.max(0, (booking.estimate?.rescheduling?.invoiceHistory?.length ? Math.round(amounts.totalCents * .25) : amounts.depositCents) - protection.creditCents);
   const retainedCents = lessThan48Hours ? Math.min(paidCents, feeCents) : 0;
   return {
     lessThan48Hours,
@@ -98,6 +99,7 @@ function automaticBalanceCollection(booking) {
 }
 
 function authorizationDue(booking, now = new Date()) {
+  if (["processing", "declining"].includes(booking.estimate?.rescheduling?.request?.status)) return false;
   const appointment = new Date(booking?.schedule);
   if (!Number.isFinite(appointment.getTime())) return false;
   const hoursUntil = (appointment.getTime() - now.getTime()) / 3600000;
@@ -306,7 +308,7 @@ async function captureRemainingBalance({
     const payment = booking.estimate?.payment || {};
     await savePaymentState(booking, {
       status: "paid",
-      paidCents: Number(payment.depositCents || payment.paidCents || 0) + Number(nextRemaining.amountCents || 0),
+      paidCents: Number(payment.paidCents || payment.depositCents || 0) + Number(nextRemaining.amountCents || 0),
       remainingCents: 0,
       completedPaymentAt: capturedAt,
       remaining: nextRemaining
@@ -336,7 +338,7 @@ async function cancelRemainingAuthorization({
   if (!booking) return { status: "not_found" };
   if (!automaticBalanceCollection(booking)) return { status: "not_applicable" };
   const remaining = currentRemainingState(booking);
-  if (remaining.status === "captured") return { status: "already_captured", paymentIntentId: remaining.paymentIntentId || "" };
+  if (remaining.status === "captured" && !resetForReschedule) return { status: "already_captured", paymentIntentId: remaining.paymentIntentId || "" };
   if (remaining.paymentIntentId && ["authorized", "capture_failed", "requires_action"].includes(remaining.status)) {
     try {
       await stripeCall({
@@ -363,7 +365,7 @@ async function cancelRemainingAuthorization({
       status: "canceled",
       canceledAt: now.toISOString()
     };
-  await savePaymentState(booking, { remaining: nextRemaining }, updateEstimate);
+  await savePaymentState(booking, { remaining: nextRemaining, ...(remaining.status === "captured" && resetForReschedule ? { capturedBalanceHistory: [...(booking.estimate.payment.capturedBalanceHistory || []), remaining] } : {}) }, updateEstimate);
   return { status: nextRemaining.status, paymentIntentId: remaining.paymentIntentId || "" };
 }
 

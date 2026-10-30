@@ -56,7 +56,7 @@ The management link submits a request; it does not move an appointment. Owner al
 - The first approved change requested at least 48 hours ahead is free. Exactly 48 hours is outside the late window.
 - A change requested less than 48 hours ahead costs 10% of the booked cleaning price, including tax, separate from the cleaning balance. Approval charges the customer and payment method saved with the deposit. No replacement payment method is silently selected.
 - After an approved late change, later customer cancellation still costs 25%, regardless of the replacement date. Paid rescheduling fees are credited toward this amount; a paid 10% fee leaves 15% to retain from the deposit. Company cancellation refunds paid rescheduling fees as well as the refundable booking payment.
-- Customers explicitly accept the fee amount and current terms when requesting a change, including for older bookings. Checkout agreement version `2026-10-30-rescheduling-v1` discloses the policy for new bookings.
+- Customers explicitly accept the fee amount and current terms when requesting a change, including for older bookings. Checkout agreement version `2026-10-30-arrival-rescheduling-v2` discloses the policy for new bookings.
 - The request, consent, original appointment, payment intent, fee receipts, approval count, and cancellation protection are stored in `estimate.rescheduling`. Requests require Supabase and use conditional writes; no schema migration is required.
 - A declined payment or bank verification requirement leaves the original appointment in place. Staff may retry approval or decline the request. Declining cancels an unfinished fee payment or refunds a successful one. If payment succeeds but the slot cannot be saved, the receipt is retained and retries reuse that payment. Authorization/calendar follow-up failures are displayed in CRM.
 
@@ -730,3 +730,9 @@ Therefore:
 - The same GitHub commit deployed to the same Vercel project with the same environment settings should produce the same website.
 - Changing an external service or environment variable can change backend behavior even when the GitHub files have not changed.
 - Website code, deployment configuration, and external-service settings must all be treated as parts of one production system.
+
+### Arrival changes during rescheduling (local implementation)
+
+Customers choose a date, then keep their available previous arrival preference or choose a new one. Exact arrival expands into available time buttons. Server-generated quotes replace only the arrival discount, preserve other agreed discounts, and require explicit price acceptance. CRM approval rechecks availability and the saved price/payment fingerprint. Approval credits existing payments, updates the balance, archives a revised invoice, and includes the invoice and booking PDF in customer email; SMS includes a signed invoice link. Declines keep the original booking and invoice. Refunds use request-specific idempotency keys; CRM can retry refunds and failed notifications.
+
+Validation: `node test/reschedule-pricing.test.js`, `node test/reschedule-repricing-approval.test.js`, and `npm test`. These tests mock payment, database and notification providers. No live charges or messages are required for local preview.
