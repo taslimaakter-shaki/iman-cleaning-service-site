@@ -24,7 +24,7 @@ const booking = {
   email: "amina@example.com",
   address: "123 Main Street, Apt 4B, Queens, NY, 11432",
   addons: ["Inside refrigerator", "Inside oven"],
-  notes: "Customer requested special attention in the kitchen.",
+  notes: "Customer requested special attention in the kitchen. Maximum labor: 5 labor-hours; two-person team for up to 2.5 hours. Service may be completed sooner.",
   estimate: {
     manHours: 5,
     teamHours: 2.5,
@@ -131,7 +131,7 @@ const record = {
   assert.ok(sections.flatMap((section) => section.rows).some(([label, value]) => label === "Booking reference" && value === booking.id));
   const customerNotesSection = sections.find((section) => section.title === "Customer notes - review before service");
   assert.equal(customerNotesSection?.tone, "caution");
-  assert.deepEqual(customerNotesSection?.rows, [["Customer instructions", booking.notes]]);
+  assert.deepEqual(customerNotesSection?.rows, [["Customer instructions", "Customer requested special attention in the kitchen. Maximum labor: 5 labor-hours; 1 team member for up to 5 hours, or 2 team members for up to 2 hours 30 minutes. Service may be completed sooner."]]);
 
   const movingSections = buildSections({
     booking: {
@@ -246,7 +246,7 @@ const record = {
   assert.match(decoded, /Hi Amina,/);
   assert.match(decoded, /Appointment Details/);
   assert.match(decoded, /Estimated arrival time/);
-  assert.match(decoded, /2 cleaning professionals, up to 2 hours 30 minutes/);
+  assert.match(decoded, /1 team member for up to 5 hours, or 2 team members for up to 2 hours 30 minutes/);
   assert.match(decoded, /https:\/\/www\.imancleaningservice\.com\/move-in-move-out-cleaning\.html/);
   assert.match(decoded, /View Move-In Cleaning Details &amp; Inclusions/);
   assert.match(decoded, /Your Payment Summary/);

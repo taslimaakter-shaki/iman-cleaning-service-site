@@ -10,7 +10,7 @@ const request = { method: 'POST', headers: { host: 'www.imancleaningservice.com'
 function load(file, dependencies, extras = {}) {
   const module = { exports: {} };
   vm.runInNewContext(fs.readFileSync(path.join(__dirname, '..', file), 'utf8'), {
-    module, exports: module.exports, require: name => dependencies[name] || require(name),
+    module, exports: module.exports, require: name => dependencies[name] || (name === './_staffing-options' ? require('../api/booking/_staffing-options') : require(name)),
     process: { env: { STRIPE_SECRET_KEY: 'sk_test_mock' } }, Buffer, URL, URLSearchParams, Date, Intl, console, ...extras
   }, { filename: file });
   return module.exports;

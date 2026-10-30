@@ -1,3 +1,4 @@
+const { staffingOptions } = require("../booking/_staffing-options");
 const {
   centsToDollars,
   cleanText,
@@ -419,11 +420,11 @@ function buildCustomerEmail({ record, booking = null, invoicePdf, confirmationPd
   const maximumTime = formatMaximumTime(booking?.estimate?.teamHours);
   const serviceDetailsUrl = selectedServiceDetailsUrl(record, booking);
   const serviceDetailsLabel = `View ${record.service || "Service"} Details & Inclusions`;
-  const staffing = cleanerCount
+  const staffing = staffingOptions(booking?.estimate) || (cleanerCount
     ? `${cleanerCount} cleaning ${cleanerCount === 1 ? "professional" : "professionals"}${maximumTime ? `, up to ${maximumTime}` : ""}`
     : maximumTime
       ? `Up to ${maximumTime}`
-      : "";
+      : "");
   const remainingValue = Number(String(record.remainingAmount).replace(/[^0-9.-]/g, ""));
   const hasRemainingBalance = Number.isFinite(remainingValue) && remainingValue > 0;
   const discountLabel = /^FALL10\b/i.test(record.discountLabel || "")

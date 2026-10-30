@@ -1,3 +1,4 @@
+const { staffingOptions } = require("./_staffing-options");
 const crypto = require("crypto");
 const {
   HOLD_MINUTES,
@@ -469,10 +470,10 @@ module.exports = async function handler(request, response) {
         `Package: ${pkg.tierLabel}.`,
         unitSummary,
         timeBasedMode
-          ? `Included service: ${pkg.manHours} total work-hours; 2 team members for ${pkg.teamHours} hours.`
+          ? `Included service: ${pkg.manHours} total work-hours; ${staffingOptions(pkg) || `2 team members for ${pkg.teamHours} hours`}.`
           : windowMode
           ? `Maximum estimated service time: up to ${pkg.teamHours} hours with a two-person team. Service may be completed sooner.`
-          : `Maximum labor: ${pkg.manHours} labor-hours; two-person team for up to ${pkg.teamHours} hours. Service may be completed sooner.`,
+          : `Maximum labor: ${pkg.manHours} labor-hours; ${staffingOptions(pkg) || `two-person team for up to ${pkg.teamHours} hours`}. Service may be completed sooner.`,
         priorities.length ? `Priorities: ${priorities.join(", ")}.` : "",
         notes ? `Customer notes: ${notes}` : "",
       ].filter(Boolean).join(" "),

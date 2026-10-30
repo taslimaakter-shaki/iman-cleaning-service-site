@@ -1,3 +1,4 @@
+const { staffingOptions, displayNotes } = require("./_staffing-options");
 const PDFDocument = require("pdfkit");
 
 const COLORS = {
@@ -169,6 +170,8 @@ function meaningfulUnitRows(source, omitted = new Set()) {
 }
 
 function formatTeamTime(estimate = {}) {
+  const options = staffingOptions(estimate);
+  if (options) return `${options}; service may be completed sooner`;
   const cleaners = Number(estimate.cleanerCount || 0);
   const totalMinutes = Math.round(Number(estimate.teamHours || 0) * 60);
   const duration = totalMinutes > 0
@@ -266,7 +269,7 @@ function buildSections({ booking, record }) {
   if (booking?.notes) {
     sections.push({
       title: "Customer notes - review before service",
-      rows: [["Customer instructions", booking.notes]],
+      rows: [["Customer instructions", displayNotes(booking.notes, estimate)]],
       tone: "caution"
     });
   }
