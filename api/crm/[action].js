@@ -576,12 +576,17 @@ async function updateStatus(body, request, response) {
     try {
       if (["processing", "declining"].includes(booking.estimate?.rescheduling?.request?.status)) throw Object.assign(new Error("Resolve the rescheduling payment before canceling this booking."), { statusCode: 409 });
       booking = await reschedulingPolicy.beginCancellation(booking, cancellationSource);
+      const feeRefunds = [];
       if (cancellationSource === "iman") {
         for (const fee of booking.estimate?.rescheduling?.fees || []) {
-          if (fee.status === "paid") await require("../booking/_payments").stripePost({ path: "refunds", idempotencyKey: `iman-reschedule-refund-${fee.requestId}`, params: { payment_intent: fee.paymentIntentId, amount: fee.amountCents } });
+          if (fee.status === "paid") {
+            const result = await require("../booking/_payments").stripePost({ path: "refunds", idempotencyKey: `iman-reschedule-refund-${fee.requestId}`, params: { payment_intent: fee.paymentIntentId, amount: fee.amountCents } });
+            feeRefunds.push({id:result.id,status:result.status,amountCents:fee.amountCents});
+          }
         }
       }
       const cancellation = cancellationAmountsForSource(booking, cancellationSource);
+      const beforeAuthorization = JSON.parse(JSON.stringify(booking));
       const authorization = await cancelRemainingAuthorization({ booking });
       const refund = await refundBookingPayment({
         booking,
@@ -624,6 +629,7 @@ async function updateStatus(body, request, response) {
           refundStatus: refund.status || ""
         }
       };
+      estimate.cancellation.receipt = require("../booking/_cancellation-receipt").snapshot(beforeAuthorization, {...estimate.cancellation, paidCents:cancellation.paidCents}, authorization, feeRefunds);
       await updateBooking(id, { status, estimate });
       payment = {
         status: cancellation.refundCents ? "refunded" : authorization.status,
@@ -650,7 +656,8 @@ async function updateStatus(body, request, response) {
       calendar = await updateBookingGoogleCalendar(current, status === 'Cancelled' ? 'cancel' : 'reschedule');
     } catch { calendar = { status: 'error', error: 'Google Calendar could not be updated. The CRM booking status was saved.' }; }
   }
-  return json(response, 200, { ok: true, payment, completionReceipt, additionalWork, reviewRequest, calendar });
+  const cancellationReceipt = status === "Cancelled" ? await require("../booking/_cancellation-receipt").notify(await getBooking(id)).catch(error=>({status:"error",error:error.message})) : null;
+  return json(response, 200, { ok: true, payment, completionReceipt, additionalWork, reviewRequest, calendar, cancellationReceipt });
 }
 
 async function resendAdditionalWork(body, request, response) {
@@ -944,6 +951,12 @@ async function handler(request, response) {
         const customerDelivery = await require("../booking/_reschedule-customer-notifications").notifyCustomerDecision(latest);
         await reschedulingPolicy.recordOwnerNotification(updated.id, updated.estimate.rescheduling.request.id, customerDelivery, "customer").catch(() => {});
         return json(response, 200, { ok: true });
+      }
+      if (body.bookingAction === "resend_cancellation_receipt") {
+        const booking = await getBooking(text(body.id,200));
+        if (!booking) return json(response,404,{error:"Booking not found."});
+        const delivery = await require("../booking/_cancellation-receipt").notify(booking);
+        return json(response,200,{ok:true,delivery});
       }
       if (body.bookingAction === "save_details") return updateBookingDetails(body, response);
       return updateStatus(body, request, response);

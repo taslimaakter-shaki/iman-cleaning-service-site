@@ -233,6 +233,7 @@ function safeBooking(booking) {
     service: booking.service_label || booking.service,
     schedule: booking.schedule,
     scheduleLabel: booking.schedule_label || formatAppointment(booking.schedule),
+    cancellationReceiptAvailable: Boolean(booking.status === "Cancelled" && booking.estimate?.cancellation?.receipt),
     arrivalPreference: booking.estimate?.arrivalPreference || null,
     duration: require("./_staffing-options").staffingOptions(booking.estimate),
     address: booking.address,
@@ -376,6 +377,14 @@ async function handler(request, response) {
     const token = cleanText(body.token || request.query?.token, 3000);
     let { booking } = await bookingForToken(token);
 
+    if (request.method === "GET" && request.query?.document === "cancellation-receipt") {
+      const receipts = require("./_cancellation-receipt");
+      const pdf = await receipts.buildPdf(await receipts.refreshRefundStatus(booking));
+      response.setHeader("Content-Type", "application/pdf");
+      response.setHeader("Cache-Control", "private, no-store");
+      response.setHeader("Content-Disposition", 'inline; filename="IMAN-Cancellation-Receipt.pdf"');
+      return response.end(pdf);
+    }
     if (request.method === "GET" && request.query?.document === "invoice") {
       const invoice = booking.estimate?.rescheduling?.invoiceHistory?.at(-1);
       if (!invoice) return json(response, 404, { error: "No revised invoice is available." });
@@ -412,7 +421,8 @@ async function handler(request, response) {
 
     if (action === "cancel") {
       if (booking.status === "Cancelled") {
-        return json(response, 200, { ok: true, action, alreadyCancelled: true, booking: safeBooking(booking) });
+        const delivery = booking.estimate?.cancellation?.receipt ? await require("./_cancellation-receipt").notify(booking).catch(error => ({status:"error",error:error.message})) : null;
+        return json(response, 200, { ok: true, action, alreadyCancelled: true, booking: safeBooking(booking), delivery });
       }
       if (!["Confirmed", "Cleaner assigned"].includes(booking.status)) {
         return json(response, 409, { error: "This booking can no longer be cancelled online." });
@@ -421,7 +431,8 @@ async function handler(request, response) {
       booking = await rescheduling.beginCancellation(booking, "customer");
       const { lessThan48Hours, paidCents, retainedCents, refundCents } = cancellationPaymentAmounts(booking);
       const totalCents = Number(booking.estimate?.payment?.totalCents || Math.round(Number(booking.estimate?.total || 0) * 100));
-      await cancelRemainingAuthorization({ booking });
+      const beforeAuthorization = JSON.parse(JSON.stringify(booking));
+      const authorization = await cancelRemainingAuthorization({ booking });
       const refund = await createRefund(booking, refundCents);
       const estimate = {
         ...(booking.estimate || {}),
@@ -437,13 +448,14 @@ async function handler(request, response) {
           refundStatus: refund.status || ""
         }
       };
+      estimate.cancellation.receipt = require("./_cancellation-receipt").snapshot(beforeAuthorization, {...estimate.cancellation, source:"customer", paidCents}, authorization);
       const updated = await updateBooking(booking.id, { status: "Cancelled", estimate });
       const calendar = await updateBookingGoogleCalendar(updated, "cancel").catch(() => ({ status: "error" }));
       const refundAmount = `$${(refundCents / 100).toFixed(2)}`;
       const message = lessThan48Hours
         ? `Your appointment was cancelled. $${(retainedCents / 100).toFixed(2)} was retained from your booking payment under the cancellation policy, after crediting paid late-rescheduling fees${refundCents ? `, and ${refundAmount} is being returned to your original payment method` : ""}. Any uncaptured authorization for the remaining balance was released.`
         : `Your appointment was cancelled. A full refund of ${refundAmount} is being returned to your original payment method.`;
-      const delivery = await notifyManagementChange(updated, "Your appointment was cancelled", message);
+      const delivery = await require("./_cancellation-receipt").notify(updated).catch(error => ({status:"error",error:error.message}));
       return json(response, 200, {
         ok: true,
         action,

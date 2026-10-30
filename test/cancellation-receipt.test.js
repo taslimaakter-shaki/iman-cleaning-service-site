@@ -1,0 +1,24 @@
+const assert=require('node:assert/strict');const fs=require('fs');
+const receipts=require('../api/booking/_cancellation-receipt');
+const shared=require('../api/booking/_shared');
+process.env.BOOKING_MANAGEMENT_SECRET='test-only';
+const booking={id:'BK-TEST',status:'Confirmed',client_name:'Preview Customer',email:'customer@example.test',phone:'+15555550100',service_label:'Deep Cleaning',schedule:'2030-11-06T14:00:00Z',estimate:{orderNumber:'12345678',total:200,payment:{paidCents:5000,depositCents:5000,totalCents:20000,cardBrand:'Visa',cardLast4:'4242',remaining:{status:'authorized',paymentIntentId:'pi_hold'}},rescheduling:{}}};
+const cancel={cancelledAt:'2030-10-30T14:00:00Z',source:'customer',paidCents:5000,retainedCents:0,refundCents:5000,refundId:'re_test',refundStatus:'pending',lessThan48Hours:false};
+(async()=>{
+ assert.throws(()=>receipts.receiptFor(booking),/No cancellation receipt/);
+ let r=receipts.snapshot(booking,cancel,{status:'canceled'});assert.equal(r.paidCents,5000);assert.equal(r.feeCents,0);assert.equal(r.refundCents,5000);assert.equal(r.holdStatus,'Release requested');assert.equal(receipts.refundLabel(r.refundStatus,r.refundCents),'Submitted - processing');
+ const late=receipts.snapshot(booking,{...cancel,lessThan48Hours:true,retainedCents:5000,refundCents:0});assert.equal(late.feeCents,5000);assert.equal(receipts.refundLabel('',0),'No refund due');
+ const locked=structuredClone(booking);locked.estimate.rescheduling={cancellationLocked:true,cancellationFeeCents:5000,fees:[{amountCents:2000,status:'paid'}]};
+ const credit=receipts.snapshot(locked,{...cancel,lessThan48Hours:true,retainedCents:3000,refundCents:2000});assert.equal(credit.feeCreditCents,2000);assert.equal(credit.retainedCents,3000);assert.match(credit.reason,/earlier late reschedule/);
+ const company=receipts.snapshot(locked,{...cancel,source:'iman'}, {},[{id:'re_fee',amountCents:2000,status:'pending'}]);assert.equal(company.feeCents,0);assert.equal(company.feeCreditCents,0);assert.equal(company.feeRefunds[0].amountCents,2000);
+ const canceled={...booking,status:'Cancelled',estimate:{...booking.estimate,payment:{...booking.estimate.payment,paidCents:0},cancellation:{...cancel,receipt:r}}};
+ assert.equal(receipts.receiptFor(canceled).paidCents,5000,'Retain original payment snapshot after cancellation changes payment totals');
+ const msg=receipts.messages(canceled);assert.match(msg.sms,/Submitted - processing/);assert.match(msg.text,/Receipt|receipt/);const url=new URL(msg.link);const claims=require('../api/booking/_manage').decodeBookingManagementToken(url.searchParams.get('token'));assert.equal(claims.bookingId,booking.id);assert.equal(url.searchParams.get('document'),'cancellation-receipt');
+ let stored=canceled,emailCount=0,smsCount=0;shared.getBooking=async()=>stored;shared.updateBookingEstimate=async(_id,e)=>{stored={...stored,estimate:e};};
+ let delivery=await receipts.notify(stored,{email:async()=>{emailCount++;throw Error('offline');},sms:async()=>{smsCount++;return {status:'sent'};}});assert.equal(delivery.email.status,'error');assert.equal(delivery.sms.status,'sent');
+ await receipts.notify(stored,{email:async()=>{emailCount++;return {status:'sent'};},sms:async()=>{smsCount++;return {status:'sent'};}});assert.equal(emailCount,2);assert.equal(smsCount,1);
+ let raw;require('../api/quote/_shared').getGoogleClients=()=>({gmail:{users:{messages:{send:async({requestBody})=>{raw=Buffer.from(requestBody.raw,'base64url').toString();return {data:{id:'mock'}};}}}}});await receipts.sendEmail(canceled,msg);assert.match(raw,/IMAN-Cancellation-Receipt.pdf/);assert.match(raw,/multipart\/mixed/);
+ process.env.STRIPE_SECRET_KEY='test-only';global.fetch=async()=>({ok:true,json:async()=>({id:'re_test',status:'succeeded'})});assert.equal((await receipts.refreshRefundStatus(canceled)).estimate.cancellation.receipt.refundStatus,'succeeded');
+ fs.writeFileSync('/tmp/iman-cancellation-receipt-preview.pdf',await receipts.buildPdf(canceled));
+ console.log('Cancellation receipts: full refund, late fee, late-reschedule credit, company cancellation, immutable payment snapshot, signed links, PDF attachment, refund status and independent delivery retries passed. No live providers.');
+})().catch(e=>{console.error(e);process.exitCode=1;});

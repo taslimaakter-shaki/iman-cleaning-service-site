@@ -72,6 +72,24 @@
     .exact-time-grid .time-option small{display:block;margin-top:6px;font-size:.7rem;font-weight:500;color:#607579}
     .exact-time-grid .time-option[aria-pressed="true"]{background:var(--teal);color:#fff}
     .exact-time-grid .time-option[aria-pressed="true"] small{color:#fff}
+    .cancellation-title{margin:0 0 10px;font-size:1.1rem;color:var(--ink)}
+    .cancellation-explanation{margin:0 0 20px;font-size:.9rem;color:#614b1c}
+    .cancellation-amounts{margin:0;background:#fff;border:1px solid #eadfc9;border-radius:12px;overflow:hidden}
+    .cancellation-amounts>div{display:flex;align-items:center;justify-content:space-between;gap:20px;padding:14px 16px;font-size:.88rem}
+    .cancellation-amounts>div+div{border-top:1px solid #ece7dc}
+    .cancellation-amounts dt{color:#536a6e}
+    .cancellation-amounts dd{margin:0;font-weight:800;color:var(--ink);white-space:nowrap;font-variant-numeric:tabular-nums}
+    .cancellation-amounts .cancellation-refund{background:#edf7f6;font-weight:800}
+    .cancellation-refund dd{font-size:1.2rem}
+    .cancellation-note{margin:16px 0 0;font-size:.8rem;line-height:1.6;color:#74613c}
+    .action-choices{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-top:22px}
+    .action-choice{display:flex;flex-direction:column;gap:10px;align-items:flex-start;margin:0;padding:22px;border:1px solid #bed9db;border-radius:16px;background:#f0f8f7;color:var(--ink);text-align:left;line-height:1.5}
+    .action-choice strong{font-size:1rem}
+    .action-choice span{font-size:.85rem;font-weight:450;color:#536a6e}
+    .action-choice:hover{background:#e2f1f0;border-color:var(--teal)}
+    .action-back{margin:0 0 22px;padding:0;background:transparent;color:var(--teal);min-height:36px;border-radius:6px;font-size:.85rem}
+    .action-back:hover{background:var(--soft)}
+    @media(max-width:600px){.action-choices{grid-template-columns:1fr}}
     .invoice-preview{margin-top:20px;border:1px solid var(--line);border-radius:20px;overflow:hidden;background:#fff;box-shadow:0 10px 30px rgba(5,61,69,.06)}
     .invoice-heading{display:flex;justify-content:space-between;align-items:flex-start;gap:16px;padding:24px;background:#f0f7f6;border-top:4px solid var(--teal)}
     .invoice-heading h3{margin:4px 0 0;font-size:1.35rem}
@@ -159,9 +177,19 @@
             <div class="detail"><dt>Address</dt><dd data-address></dd></div>
             <div class="detail"><dt>Total service price</dt><dd data-total></dd></div>
           </dl>
+          <p class="hidden" data-cancellation-receipt><a data-cancellation-receipt-link target="_blank" rel="noopener">View cancellation &amp; refund receipt (PDF)</a></p>
         </section>
-        <section class="section" data-active-tools>
-          <h2>Request a different appointment</h2>
+        <section class="section hidden" data-action-choice>
+          <h2 tabindex="-1" data-choice-heading>Would you like to reschedule or cancel?</h2>
+          <p>Choose what you would like to do with your appointment.</p>
+          <div class="action-choices">
+            <button type="button" class="action-choice" data-choose-action="reschedule"><strong>Reschedule appointment</strong><span>Request a different date or arrival time.</span></button>
+            <button type="button" class="action-choice" data-choose-action="cancel"><strong>Cancel appointment</strong><span>Review the cancellation fee and refund before confirming.</span></button>
+          </div>
+        </section>
+        <section class="section hidden" data-active-tools="reschedule">
+          <button type="button" class="action-back" data-back-to-choice>← Back to appointment options</button>
+          <h2 tabindex="-1">Request a different appointment</h2>
           <p>Only currently available dates and times are listed. Your existing appointment stays reserved until the new time is confirmed.</p>
           <h3>Choose an appointment</h3>
           <input type="hidden" data-slot-select>
@@ -191,8 +219,9 @@
           <label class="check hidden" data-second-request><input type="checkbox" data-direct-contact><span>I have contacted IMAN about this additional rescheduling request.</span></label>
           <button type="button" data-reschedule>Submit change request</button>
         </section>
-        <section class="section" data-active-tools>
-          <h2>Cancel this appointment</h2>
+        <section class="section hidden" data-active-tools="cancel">
+          <button type="button" class="action-back" data-back-to-choice>← Back to appointment options</button>
+          <h2 tabindex="-1">Cancel this appointment</h2>
           <div class="policy" data-policy></div>
           <label class="check">
             <input type="checkbox" data-cancel-confirm>
@@ -218,6 +247,8 @@
       const cancelConfirm = document.querySelector("[data-cancel-confirm]");
       let booking = null;
       let challenge = "";
+      let selectedAction = "";
+      let actionBusy = false;
 
       const money = (value) => new Intl.NumberFormat("en-US", { style: "currency", currency: "USD" }).format(Number(value || 0));
       const showStatus = (message, error = false) => {
@@ -227,9 +258,39 @@
       };
       const clearStatus = () => { status.className = "status"; status.textContent = ""; };
       const setBusy = (busy) => {
+        actionBusy = busy;
+        document.querySelectorAll("[data-back-to-choice], [data-choose-action]").forEach(button => { button.disabled = busy; });
         rescheduleButton.disabled = busy || ["pending", "processing", "declining"].includes(booking?.rescheduling?.requestStatus);
         cancelButton.disabled = busy || !cancelConfirm.checked;
       };
+      const showAction = (action = "", focus = false) => {
+        const active = ["Confirmed", "Cleaner assigned"].includes(booking?.status);
+        selectedAction = active && ["reschedule", "cancel"].includes(action) ? action : "";
+        document.querySelector("[data-action-choice]").classList.toggle("hidden", !active || Boolean(selectedAction));
+        document.querySelectorAll("[data-active-tools]").forEach(section => {
+          section.classList.toggle("hidden", !active || section.dataset.activeTools !== selectedAction);
+        });
+        cancelConfirm.checked = false;
+        document.querySelector("[data-reschedule-consent]").checked = false;
+        document.querySelector("[data-price-consent]").checked = false;
+        document.querySelector("[data-direct-contact]").checked = false;
+        setBusy(false);
+        if (focus && active) {
+          const heading = selectedAction ? document.querySelector(`[data-active-tools="${selectedAction}"] h2`) : document.querySelector("[data-choice-heading]");
+          heading.focus({preventScroll:true});
+          heading.scrollIntoView({behavior:"smooth",block:"start"});
+        }
+      };
+      document.querySelectorAll("[data-choose-action]").forEach(button => button.addEventListener("click", () => {
+        if (actionBusy) return;
+        clearStatus();
+        showAction(button.dataset.chooseAction, true);
+      }));
+      document.querySelectorAll("[data-back-to-choice]").forEach(button => button.addEventListener("click", () => {
+        if (actionBusy) return;
+        clearStatus();
+        showAction("", true);
+      }));
       let availableSlots = [], appointmentChoices = [], selectedChoice = null, timeMode = "", exactExpanded = false, selectedDate = "", visibleMonth = "";
       const calendar = document.querySelector("[data-calendar]");
       const previousMonth = document.querySelector("[data-prev-month]");
@@ -407,18 +468,45 @@
         document.querySelector("[data-schedule]").textContent = booking.scheduleLabel;
         document.querySelector("[data-address]").textContent = booking.address;
         document.querySelector("[data-total]").textContent = money(booking.total);
+        document.querySelector("[data-cancellation-receipt]").classList.toggle("hidden", !booking.cancellationReceiptAvailable);
+        document.querySelector("[data-cancellation-receipt-link]").href = `/api/booking/manage?document=cancellation-receipt&token=${encodeURIComponent(token)}`;
         const rescheduling = booking.rescheduling;
         document.querySelector("[data-reschedule-policy]").textContent = `${rescheduling.policy} Fee for this request: ${money(rescheduling.feeCents / 100)}. ${["pending", "processing", "declining"].includes(rescheduling.requestStatus) ? "Your request is awaiting review; your original appointment remains confirmed." : ""}`;
         document.querySelector("[data-second-request]").classList.toggle("hidden", rescheduling.count < 1);
         document.querySelector("[data-reschedule-consent]").checked = false;
         setBusy(false);
         const cancellation = booking.cancellation;
-        document.querySelector("[data-policy]").textContent = cancellation.lessThan48Hours
-          ? `The cancellation fee applies, including after an approved late reschedule. If you cancel now, ${money(cancellation.retainedCents / 100)} will be retained from your booking payment after crediting paid late-rescheduling fees and any uncaptured authorization will be released.`
-          : `At least 48 hours remain. If you cancel now, the full ${money(cancellation.refundCents / 100)} amount charged will be refunded and any uncaptured authorization will be released.`;
+        const cancellationPanel = document.querySelector("[data-policy]");
+        cancellationPanel.replaceChildren();
+        const policyTitle = document.createElement("h3");
+        policyTitle.className = "cancellation-title";
+        policyTitle.textContent = "Cancellation summary";
+        const explanation = document.createElement("p");
+        explanation.className = "cancellation-explanation";
+        explanation.textContent = cancellation.lessThan48Hours
+          ? (rescheduling.cancellationLocked
+            ? "A previous late reschedule kept this booking subject to the 25% cancellation fee, even though the appointment date changed. Any paid late-rescheduling fees are credited toward that fee."
+            : "Your appointment is less than 48 hours away. A cancellation fee of 25% of the booked cleaning price applies. Any paid late-rescheduling fees are credited toward that fee.")
+          : "You are canceling at least 48 hours before your appointment. No cancellation fee applies, and your booking payment will be refunded in full.";
+        const amounts = document.createElement("dl");
+        amounts.className = "cancellation-amounts";
+        [["Booking payment already received", cancellation.paidCents], ["Amount retained for cancellation", cancellation.retainedCents], ["Refund to your original payment method", cancellation.refundCents]].forEach(([label, cents], index) => {
+          const row = document.createElement("div");
+          if (index === 2) row.className = "cancellation-refund";
+          const term = document.createElement("dt"); term.textContent = label;
+          const amount = document.createElement("dd"); amount.textContent = money(cents / 100);
+          row.append(term, amount); amounts.append(row);
+        });
+        const note = document.createElement("p");
+        note.className = "cancellation-note";
+        note.textContent = cancellation.retainedCents > 0
+          ? "The amount shown above is retained from your existing payment; it is not charged again. Any remaining-balance hold that has not been charged will be released."
+          : "No cancellation charge will be made. Any remaining-balance hold that has not been charged will be released.";
+        cancellationPanel.append(policyTitle, explanation, amounts, note);
+        document.querySelector("[data-cancel-confirm-text]").textContent = `I understand that ${money(cancellation.retainedCents / 100)} will be retained and ${money(cancellation.refundCents / 100)} will be refunded. I want to cancel this appointment.`;
+        cancelButton.textContent = cancellation.refundCents > 0 ? `Cancel appointment · Refund ${money(cancellation.refundCents / 100)}` : "Confirm cancellation";
         renderAppointmentPicker(data.slots || [], data.appointmentChoices || []);
-        const active = ["Confirmed", "Cleaner assigned"].includes(booking.status);
-        document.querySelectorAll("[data-active-tools]").forEach((section) => section.classList.toggle("hidden", !active));
+        showAction();
         loading.classList.add("hidden");
         lookup.classList.add("hidden");
         verification.classList.add("hidden");
@@ -496,6 +584,7 @@
         lookup.classList.remove("hidden");
       });
       rescheduleButton.addEventListener("click", async () => {
+        if (selectedAction !== "reschedule" || actionBusy) return;
         if (!selectedChoice || !document.querySelector("[data-price-consent]").checked) return showStatus("Choose a time preference and accept the revised cleaning total first.", true);
         if (!slotSelect.value) return showStatus("Choose an available appointment first.", true);
         if (!document.querySelector("[data-reschedule-consent]").checked) return showStatus("Accept the rescheduling and payment terms first.", true);
@@ -511,6 +600,7 @@
         }
       });
       cancelButton.addEventListener("click", async () => {
+        if (selectedAction !== "cancel" || actionBusy) return;
         if (!cancelConfirm.checked) return;
         const policy = booking.cancellation.lessThan48Hours
           ? `Cancel this appointment? ${money(booking.cancellation.retainedCents / 100)} will be retained and any uncaptured authorization will be released.`
