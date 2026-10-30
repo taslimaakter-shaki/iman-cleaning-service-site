@@ -49,6 +49,19 @@ Customer visits the website
                 └── AI services support selected features
 ```
 
+## Appointment change requests and fees
+
+The management link submits a request; it does not move an appointment. Owner alerts are sent independently by email (the configured `QUOTE_EMAIL_TO` inbox) and SMS (the existing owner notification recipients) for new requests, approvals, and declines. Each includes the customer, booking number, appointment details, fee, and CRM link. Delivery results appear in the booking’s CRM details. Review requests in the booking’s CRM detail panel and choose **Approve / retry payment** or **Decline / refund any fee**. The original appointment remains confirmed until approval succeeds. A second request requires the customer to confirm direct contact with the team and still requires staff approval.
+
+- The first approved change requested at least 48 hours ahead is free. Exactly 48 hours is outside the late window.
+- A change requested less than 48 hours ahead costs 10% of the booked cleaning price, including tax, separate from the cleaning balance. Approval charges the customer and payment method saved with the deposit. No replacement payment method is silently selected.
+- After an approved late change, later customer cancellation still costs 25%, regardless of the replacement date. Paid rescheduling fees are credited toward this amount; a paid 10% fee leaves 15% to retain from the deposit. Company cancellation refunds paid rescheduling fees as well as the refundable booking payment.
+- Customers explicitly accept the fee amount and current terms when requesting a change, including for older bookings. Checkout agreement version `2026-10-30-rescheduling-v1` discloses the policy for new bookings.
+- The request, consent, original appointment, payment intent, fee receipts, approval count, and cancellation protection are stored in `estimate.rescheduling`. Requests require Supabase and use conditional writes; no schema migration is required.
+- A declined payment or bank verification requirement leaves the original appointment in place. Staff may retry approval or decline the request. Declining cancels an unfinished fee payment or refunds a successful one. If payment succeeds but the slot cannot be saved, the receipt is retained and retries reuse that payment. Authorization/calendar follow-up failures are displayed in CRM.
+
+`test/booking-rescheduling-policy.test.js` covers the time boundary, consent, original saved method, free changes, second requests, retries, declined payments, slot conflicts, fee refunds, and the public cancellation endpoint. Provider calls are mocked; tests do not charge cards.
+
 ## Important Technical Words
 
 These terms appear throughout the project:

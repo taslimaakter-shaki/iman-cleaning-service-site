@@ -1,3 +1,4 @@
+const reschedulingPolicy = require("../booking/_rescheduling");
 const {
   assertScheduleAvailable,
   bookingDurationHours,
@@ -111,10 +112,12 @@ function cancellationAmountsForSource(booking = {}, cancellationSource = "", now
     payment.paidCents || (payment.status === "deposit_paid" ? statedDepositCents : 0)
   )));
   const depositCents = Math.min(paidCents, statedDepositCents);
+  now = new Date(booking.estimate?.rescheduling?.cancellationOperation?.startedAt || now);
   const appointmentTime = new Date(booking.schedule).getTime();
-  const lessThan48Hours = !Number.isFinite(appointmentTime)
+  const protection = reschedulingPolicy.cancellationProtection(booking);
+  const lessThan48Hours = protection.locked || !Number.isFinite(appointmentTime)
     || appointmentTime - now.getTime() < 48 * 3600000;
-  const retainedCents = cancellationSource === "customer" && lessThan48Hours ? depositCents : 0;
+  const retainedCents = cancellationSource === "customer" && lessThan48Hours ? Math.min(paidCents, protection.locked ? protection.remainingCents : Math.max(0, depositCents - protection.creditCents)) : 0;
   return {
     cancellationSource,
     lessThan48Hours,
@@ -254,6 +257,9 @@ async function updateBookingDetails(body, response) {
   }
 
   const scheduleChanged = new Date(schedule).getTime() !== new Date(booking.schedule).getTime();
+  if (scheduleChanged && ["pending", "processing"].includes(estimate.rescheduling?.request?.status)) return json(response, 409, { error: "Use the appointment-change approval controls before editing the schedule." });
+  if (estimate.rescheduling?.cancellationOperation) return json(response, 409, { error: "Complete the cancellation before editing this booking." });
+  if (["processing", "declining"].includes(estimate.rescheduling?.request?.status)) return json(response, 409, { error: "Resolve the rescheduling payment before editing this booking." });
   const priorServiceHours = Number(estimate.teamHours ?? estimate.hours ?? bookingDurationHours(booking));
   const calendarReservationHours = teamHours + (estimate.arrivalPreference?.key ? 1 : 0);
   const durationChanged = Math.abs(teamHours - priorServiceHours) > 0.001;
@@ -500,7 +506,7 @@ async function updateStatus(body, request, response) {
     return json(response, 400, { error: "Invalid status." });
   }
 
-  const booking = await getBooking(id);
+  let booking = await getBooking(id);
   if (!booking) return json(response, 404, { error: "Booking not found." });
 
   const cancellationSource = String(body.cancellationSource || "").trim().toLowerCase();
@@ -566,6 +572,13 @@ async function updateStatus(body, request, response) {
     }
   } else if (status === "Cancelled") {
     try {
+      if (["processing", "declining"].includes(booking.estimate?.rescheduling?.request?.status)) throw Object.assign(new Error("Resolve the rescheduling payment before canceling this booking."), { statusCode: 409 });
+      booking = await reschedulingPolicy.beginCancellation(booking, cancellationSource);
+      if (cancellationSource === "iman") {
+        for (const fee of booking.estimate?.rescheduling?.fees || []) {
+          if (fee.status === "paid") await require("../booking/_payments").stripePost({ path: "refunds", idempotencyKey: `iman-reschedule-refund-${fee.requestId}`, params: { payment_intent: fee.paymentIntentId, amount: fee.amountCents } });
+        }
+      }
       const cancellation = cancellationAmountsForSource(booking, cancellationSource);
       const authorization = await cancelRemainingAuthorization({ booking });
       const refund = await refundBookingPayment({
@@ -586,6 +599,7 @@ async function updateStatus(body, request, response) {
       const cancelledAt = new Date().toISOString();
       const estimate = {
         ...currentEstimate,
+        ...(cancellationSource === "iman" && currentEstimate.rescheduling ? { rescheduling: { ...currentEstimate.rescheduling, fees: (currentEstimate.rescheduling.fees || []).map(fee => fee.status === "paid" ? { ...fee, status: "refunded", refundedAt: cancelledAt } : fee) } } : {}),
         payment: {
           ...currentPayment,
           status: cancellation.refundCents
@@ -915,6 +929,18 @@ async function handler(request, response) {
       if (body.assignmentAction === "save") return updateCleanerAssignment(body, response);
       if (body.additionalWorkAction === "resend") return resendAdditionalWork(body, request, response);
       if (body.bookingAction === "confirm_arrival") return confirmFlexibleArrival(body, response);
+      if (body.bookingAction === "reschedule_decision") {
+        const booking = await getBooking(text(body.id, 200));
+        if (!booking) return json(response, 404, { error: "Booking not found." });
+        const updated = await reschedulingPolicy.decide(booking, text(body.requestId, 100), body.decision);
+        const approved = updated.estimate.rescheduling.request.status === "approved";
+        if (booking.estimate?.rescheduling?.request?.status !== updated.estimate.rescheduling.request.status) {
+          const ownerDelivery = await require("../booking/_reschedule-notifications").notifyOwner(updated, approved ? "approved" : "declined");
+          await reschedulingPolicy.recordOwnerNotification(updated.id, updated.estimate.rescheduling.request.id, ownerDelivery).catch(() => {});
+        }
+        await require("../booking/_manage").notifyManagementChange(updated, approved ? "Appointment change approved" : "Appointment change declined", approved ? `Your appointment change is approved for ${updated.schedule_label}. Any applicable rescheduling fee was charged to your deposit payment method.` : "Your appointment change request was declined. Your original appointment remains confirmed.").catch(() => {});
+        return json(response, 200, { ok: true });
+      }
       if (body.bookingAction === "save_details") return updateBookingDetails(body, response);
       return updateStatus(body, request, response);
     }

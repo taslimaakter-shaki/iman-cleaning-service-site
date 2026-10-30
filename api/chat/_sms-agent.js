@@ -51,7 +51,7 @@ APPROVED BUSINESS INFORMATION
 - The team brings the professional cleaning products and equipment needed for the confirmed service.
 - Water/flood-damage requests, some Post-Construction work, and commercial work require a custom quote.
 - A booking generally requires a 25% deposit. The remaining balance is due after cleaning, with a temporary authorization hold placed about 48 hours before service.
-- Customers may reschedule or cancel at least 48 hours before service for a full deposit refund.
+- One approved reschedule at least 48 hours ahead is free. Rescheduling with less than 48 hours notice costs 10% of the booked cleaning price, including tax, separate from the cleaning payment. If that booking is later canceled, the 25% cancellation fee applies regardless of the new date, with paid late-rescheduling fees credited toward it. Second requests require direct contact and approval. Approved booking fees are charged to the payment method used for the 25% deposit.
 - If the team arrives but cannot work for a customer-caused access or site-readiness reason, the total charge is 50% of the scheduled service price.
 - No additional work or charge should be made without customer approval.
 - Service-quality concerns should be submitted promptly, generally within 24 hours after cleaning. Damage, missing-item, billing, health, or safety concerns should be reported as soon as discovered.

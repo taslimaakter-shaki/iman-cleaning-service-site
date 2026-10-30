@@ -7,11 +7,12 @@ const {
 const { resolveShortApproval } = require("./_short-approval");
 const calendar = require('../booking/_calendar');
 
-const TERMS_CHECKBOX_TEXT = "I have read, understood, and agree to the Iman Cleaning Service LLC Service Agreement.";
-const INSTANT_TERMS_CHECKBOX_TEXT = "I have reviewed and agree to the Service Agreement and payment terms. I authorize the 25% deposit, the remaining-balance authorization described below, and any customer-caused access charge described in the agreement.";
-const INSTANT_PAYMENT_TERMS = "A 25% deposit is charged now. You authorize saving your payment method and a temporary hold for the remaining 75% about 48 hours before your appointment. The hold may reduce available funds or credit; it is not a completed charge. The balance is captured after completion. Cancel at least 48 hours before your appointment for a full deposit refund. Reschedule at least 48 hours ahead at no additional charge, subject to availability; your deposit stays with your booking. For cancellations less than 48 hours ahead, the 25% deposit is non-refundable. Late rescheduling is not guaranteed.";
-const PAYMENT_BUTTON_TEXT = "By continuing, you agree that a 25% deposit of the total service price is collected now to secure the appointment. The appointment is not confirmed until the deposit has been received. The remaining balance is due immediately upon completion of service unless otherwise agreed in writing. If you cancel less than 48 hours before the scheduled appointment, the 25% deposit is non-refundable.";
-const CHECKOUT_SUMMARY_VERSION = "5";
+const TERMS_CHECKBOX_TEXT = "I agree to the Service Agreement and authorize disclosed booking fees to the saved payment method used for my deposit.";
+const INSTANT_TERMS_CHECKBOX_TEXT = "I have reviewed and agree to the Service Agreement and payment terms. I authorize the 25% deposit, the remaining-balance authorization described below, customer-caused access charges, and disclosed booking fees to the same payment method used for my deposit.";
+const INSTANT_PAYMENT_TERMS = "A 25% deposit is charged now. Your saved deposit payment method is used for approved booking fees and the remaining balance. You authorize a temporary hold for the remaining 75% about 48 hours before service, captured after completion. Cancel at least 48 hours ahead for a full deposit refund unless a prior late reschedule triggered the cancellation fee. Cancellations less than 48 hours ahead cost 25%. " + "One approved reschedule at least 48 hours ahead is free. Rescheduling with less than 48 hours notice costs 10% of the booked cleaning price, including tax, separate from the cleaning payment. If that booking is later canceled, the 25% cancellation fee applies regardless of the new date, with paid late-rescheduling fees credited toward it. Second requests require direct contact and approval. Approved booking fees are charged to the payment method used for the 25% deposit.";
+const PAYMENT_BUTTON_TEXT = "A 25% deposit is charged now. You authorize saving the deposit payment method for approved booking fees. Cancellations less than 48 hours ahead cost 25%. " + "One approved reschedule at least 48 hours ahead is free. Rescheduling with less than 48 hours notice costs 10% of the booked cleaning price, including tax, separate from the cleaning payment. If that booking is later canceled, the 25% cancellation fee applies regardless of the new date, with paid late-rescheduling fees credited toward it. Second requests require direct contact and approval. Approved booking fees are charged to the payment method used for the 25% deposit.";
+
+const CHECKOUT_SUMMARY_VERSION = "6";
 
 function depositCents(totalCents) {
   return Math.max(1, Math.round((Number(totalCents) || 0) * 0.25));
@@ -236,7 +237,7 @@ module.exports = async function handler(request, response) {
       expires_at: Math.floor(Date.now() / 1000) + 30 * 60,
       customer_email: quote.customerEmail,
       customer_creation: "always",
-      ...(automaticBalance ? { "payment_intent_data[setup_future_usage]": "off_session", "payment_method_types[0]": "card" } : {}),
+      "payment_intent_data[setup_future_usage]": "off_session", "payment_method_types[0]": "card",
       "phone_number_collection[enabled]": "true",
       "line_items[0][price_data][currency]": "usd",
       "line_items[0][price_data][unit_amount]": baseDepositCents,
@@ -253,7 +254,7 @@ module.exports = async function handler(request, response) {
       "consent_collection[terms_of_service]": "required",
       "custom_text[terms_of_service_acceptance][message]": automaticBalance ? INSTANT_TERMS_CHECKBOX_TEXT : TERMS_CHECKBOX_TEXT,
       "custom_text[submit][message]": sameDay
-        ? "By continuing, you agree to pay the full $100 same-day rush fee and a 25% deposit of the base cleaning price now. The appointment is confirmed only after payment. The remaining 75% of the base cleaning price is due after service. The rush fee is nonrefundable after confirmation unless Iman Cleaning Service cancels."
+        ? "By continuing, you agree to pay the full $100 same-day rush fee and a 25% deposit of the base cleaning price now. The appointment is confirmed only after payment. The remaining 75% of the base cleaning price is due after service. The rush fee is nonrefundable after confirmation unless Iman Cleaning Service cancels. Approved late rescheduling costs 10% of the cleaning price; later cancellation costs 25% less paid rescheduling fees. Booking fees use the saved deposit payment method."
         : automaticBalance ? INSTANT_PAYMENT_TERMS : PAYMENT_BUTTON_TEXT,
       "payment_intent_data[description]": `${quote.service} for ${quote.customerName}`,
       "payment_intent_data[receipt_email]": quote.customerEmail,

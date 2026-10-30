@@ -27,12 +27,13 @@ const {
   slotMatchesArrivalPreference
 } = require('./_arrival-preference');
 
-const AGREEMENT_VERSION = "2026-10-12-hourly-minimum-v5";
-const AGREEMENT_ACCEPTANCE_TEXT = "I have reviewed and agree to the Service Agreement and payment terms. I authorize the 25% deposit, the remaining-balance authorization described above, and any customer-caused access charge described in the agreement.";
+const AGREEMENT_VERSION = "2026-10-30-rescheduling-v1";
+const AGREEMENT_ACCEPTANCE_TEXT = "I have reviewed and agree to the Service Agreement and payment terms. I authorize the 25% deposit, the remaining-balance authorization described above, any customer-caused access charge, and disclosed booking fees to the same payment method used for my deposit, as described in the agreement.";
 const AGREEMENT_KEY_TERMS = [
   "A 25% deposit is charged today.",
+  "One approved reschedule at least 48 hours ahead is free. Rescheduling with less than 48 hours notice costs 10% of the booked cleaning price, including tax, separate from the cleaning payment. If that booking is later canceled, the 25% cancellation fee applies regardless of the new date, with paid late-rescheduling fees credited toward it. Second requests require direct contact and approval. Approved booking fees are charged to the payment method used for the 25% deposit.",
   "A temporary hold for the remaining 75% is placed about 48 hours before service and captured after completion.",
-  "Cancellations made at least 48 hours before service receive a full refund.",
+  "Cancellations at least 48 hours ahead receive a full deposit refund unless an approved late reschedule has already triggered the cancellation policy.",
   "If our team arrives but cannot work for a customer-caused reason, the total charge is 50% of the scheduled service price."
 ];
 const DEPOSIT_PERCENT = 25;
@@ -697,7 +698,7 @@ module.exports = async function handler(request, response) {
       "metadata[mold_adjustment_cents]": pkg.moldAdjustment?.amountCents || 0,
       "metadata[account_user_id]": cleanText(accountSession?.user?.id, 120),
       "consent_collection[terms_of_service]": "required",
-      "custom_text[terms_of_service_acceptance][message]": "I agree to the Service Agreement, the 25% deposit, and a temporary authorization hold for the remaining 75% about 48 hours before service. The balance is charged after completion. If the team cannot work for a customer-caused reason after arriving as scheduled, the total charge is 50%.",
+      "custom_text[terms_of_service_acceptance][message]": "I agree to the Service Agreement, the 25% deposit, and a temporary authorization hold for the remaining 75% about 48 hours before service. Late rescheduling costs 10%; later cancellation costs 25% less paid rescheduling fees. These fees use the deposit payment method. The balance is charged after completion. If the team cannot work for a customer-caused reason after arriving as scheduled, the total charge is 50%.",
       "custom_text[submit][message]": "The 25% deposit is charged now. A temporary authorization hold for the remaining 75% will be placed about 48 hours before the appointment. It is not a completed charge; the balance is charged after service is completed.",
       "invoice_creation[enabled]": "true",
       "invoice_creation[invoice_data][description]": visibleDiscount

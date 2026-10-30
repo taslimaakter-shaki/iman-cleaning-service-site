@@ -490,7 +490,7 @@ function buildCustomerEmail({ record, booking = null, invoicePdf, confirmationPd
     ...(managementUrl && !awaitingSchedule ? ["Need to Make Changes?", "", "You can reschedule or cancel your appointment using the secure link below.", managementUrl, ""] : []),
     awaitingSchedule
       ? "Cancellation timing will be measured from the appointment after it is scheduled."
-      : "Cancellations made at least 48 hours before your appointment qualify for a full refund under your booking agreement. If less than 48 hours remain, the 25% booking deposit is non-refundable and any uncaptured authorization will be released.",
+      : "Cancellations less than 48 hours ahead cost 25%. An approved late reschedule does not restore free cancellation; paid rescheduling fees are credited toward the 25% fee. Otherwise, cancellation at least 48 hours ahead qualifies for a full deposit refund. Any uncaptured authorization is released.",
     "",
     attachmentMessage,
     paymentReferenceUrl ? `Payment receipt: ${paymentReferenceUrl}` : "",
@@ -534,7 +534,7 @@ function buildCustomerEmail({ record, booking = null, invoicePdf, confirmationPd
         ${managementUrl && !awaitingSchedule ? `<h2 style="color:#073f49;font-size:20px;margin:28px 0 8px;">Need to Make Changes?</h2><p>You can reschedule or cancel your appointment using the secure link below.</p><p><a href="${escapeHtml(managementUrl)}" style="display:inline-block;padding:13px 20px;background:#0b6474;color:#fff;text-decoration:none;border-radius:999px;font-weight:bold;">Manage Your Appointment</a></p>` : ""}
         <p>${escapeHtml(awaitingSchedule
           ? "Cancellation timing will be measured from the appointment after it is scheduled."
-          : "Cancellations made at least 48 hours before your appointment qualify for a full refund under your booking agreement. If less than 48 hours remain, the 25% booking deposit is non-refundable and any uncaptured authorization will be released.")}</p>
+          : "Cancellations less than 48 hours ahead cost 25%. An approved late reschedule does not restore free cancellation; paid rescheduling fees are credited toward the 25% fee. Otherwise, cancellation at least 48 hours ahead qualifies for a full deposit refund. Any uncaptured authorization is released.")}</p>
         <p>${escapeHtml(attachmentMessage)}</p>
         ${paymentReferenceUrl ? `<p><a href="${escapeHtml(paymentReferenceUrl)}" style="color:#0b6474;font-weight:bold;">View Payment Receipt</a></p>` : ""}
         <p>We look forward to making your space fresh and ready!</p>
@@ -832,6 +832,7 @@ async function sendPaymentRecordForSessionId({ sessionId, siteUrl, source = "suc
           balanceCollection: cleanText(metadata.balance_collection || priorPayment.balanceCollection),
           status: remainingCents > 0 ? "deposit_paid" : "paid",
           totalCents,
+          cleaningPriceCents: Math.max(0, totalCents - Number(metadata.rush_fee_cents || 0)),
           paymentIntentId: cleanText(paymentIntent?.id || session.payment_intent),
           depositPaymentIntentId: cleanText(paymentIntent?.id || session.payment_intent),
           stripeCustomerId: cleanText(typeof session.customer === "object" ? session.customer?.id : session.customer, 120),

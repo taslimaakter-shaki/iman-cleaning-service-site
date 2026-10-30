@@ -1885,6 +1885,7 @@
         ${booking.notes ? `<div class="crm-detail crm-detail-wide"><span>Notes</span><strong>${escapeHtml(booking.notes)}</strong></div>` : ""}
       </div>
       <section class="crm-detail-section"><h3>Contact customer</h3>${communicationButtons({ phone: booking.phone, customerName: booking.clientName, sourceId: booking.id, sourceType: "Booking" })}</section>
+      ${booking.estimate?.rescheduling?.request ? `<section class="crm-detail-section"><h3>Appointment change request</h3>${booking.estimate.rescheduling.ownerNotifications ? `<p>Team notifications: ${escapeHtml(Object.entries(booking.estimate.rescheduling.ownerNotifications).map(([event, notice]) => `${event}: email ${notice.email?.status || "unknown"}, text ${notice.sms?.status || "unknown"}`).join("; "))}</p>` : ""}${booking.estimate.rescheduling.followup ? `<p role="alert">Follow-up required: ${escapeHtml(Object.values(booking.estimate.rescheduling.followup).join(" "))}</p>` : ""}<p>${escapeHtml(booking.estimate.rescheduling.request.label)} — ${escapeHtml(booking.estimate.rescheduling.request.status)}</p><p>Late-change fee: $${(booking.estimate.rescheduling.request.feeCents / 100).toFixed(2)}. Approval charges the deposit payment method. The original appointment remains confirmed until approval succeeds.</p>${["pending", "processing", "declining"].includes(booking.estimate.rescheduling.request.status) ? `<button type="button" class="crm-primary" data-reschedule-decision="approve" data-booking-id="${escapeHtml(booking.id)}" data-request-id="${escapeHtml(booking.estimate.rescheduling.request.id)}">Approve / retry payment</button>${["pending", "processing", "declining"].includes(booking.estimate.rescheduling.request.status) ? `<button type="button" class="crm-row-button" data-reschedule-decision="decline" data-booking-id="${escapeHtml(booking.id)}" data-request-id="${escapeHtml(booking.estimate.rescheduling.request.id)}">Decline / refund any fee</button>` : ""}` : ""}<p role="status" data-reschedule-status></p></section>` : ""}
       ${arrivalConfirmationMarkup}
       ${customerHistoryMarkup(booking.phone)}
       <section class="crm-detail-section crm-booking-editor-section">
@@ -1970,7 +1971,7 @@
           <fieldset class="crm-cancellation-options" data-cancellation-options hidden disabled>
             <legend>Who canceled this booking?</legend>
             <label><input type="radio" name="cancellationSource" value="iman" required><span><strong>Canceled by Iman Cleaning</strong><small>Refund the full ${money(payment.paidCents)} paid and release the remaining-balance hold.</small></span></label>
-            <label><input type="radio" name="cancellationSource" value="customer" required><span><strong>Canceled by customer</strong><small>48 hours or more: full refund. Less than 48 hours: keep the 25% deposit (${money(Math.min(payment.paidCents, payment.depositCents))}). Release the hold in either case.</small></span></label>
+            <label><input type="radio" name="cancellationSource" value="customer" required><span><strong>Canceled by customer</strong><small>48 hours or more: full refund unless a late reschedule already triggered the fee. Less than 48 hours: keep the 25% deposit (${money(Math.min(payment.paidCents, payment.depositCents))}). Credit paid late-rescheduling fees toward the cancellation fee. Release the hold in either case.</small></span></label>
           </fieldset>
           <button class="crm-primary" type="submit">Save status</button>
         </form>
@@ -2027,16 +2028,18 @@
       }
       const payment = paymentFor(booking);
       const appointmentTime = new Date(booking.schedule).getTime();
-      const lessThan48Hours = !Number.isFinite(appointmentTime)
+      const rescheduling = booking.estimate?.rescheduling || {};
+      const feeCredit = (rescheduling.fees || []).reduce((sum, fee) => sum + (fee.status === "paid" ? Number(fee.amountCents || 0) : 0), 0);
+      const lessThan48Hours = rescheduling.cancellationLocked || !Number.isFinite(appointmentTime)
         || appointmentTime - Date.now() < 48 * 60 * 60 * 1000;
       const retainedCents = cancellationSource === "customer" && lessThan48Hours
-        ? Math.min(payment.paidCents, payment.depositCents)
+        ? Math.min(payment.paidCents, Math.max(0, (rescheduling.cancellationLocked ? rescheduling.cancellationFeeCents : payment.depositCents) - feeCredit))
         : 0;
       const refundCents = Math.max(0, payment.paidCents - retainedCents);
       const outcome = cancellationSource === "iman"
-        ? `Iman Cleaning canceled: refund the full ${money(refundCents)} paid and release any remaining-balance hold.`
+        ? `Iman Cleaning canceled: refund the full ${money(refundCents)} paid plus any paid rescheduling fees, and release any remaining-balance hold.`
         : lessThan48Hours
-          ? `Customer canceled with less than 48 hours' notice: retain the 25% deposit of ${money(retainedCents)}, refund ${money(refundCents)}, and release any remaining-balance hold.`
+          ? `Cancellation policy applies: after crediting paid rescheduling fees, retain ${money(retainedCents)}, refund ${money(refundCents)}, and release any remaining-balance hold.`
           : `Customer canceled at least 48 hours before the appointment: refund the full ${money(refundCents)} paid and release any remaining-balance hold.`;
       if (!window.confirm(`${outcome} This cannot be undone from the CRM. Continue?`)) return;
     }
@@ -2793,6 +2796,18 @@
     if (callbackAction) updateCallbackStatus(callbackAction.dataset.callbackId, callbackAction.dataset.callbackStatus, callbackAction);
     const sameDayAction = event.target.closest("[data-same-day-action]");
     if (sameDayAction) updateSameDay(sameDayAction.dataset.sameDayId, sameDayAction.dataset.sameDayAction, sameDayAction);
+    const rescheduleDecision = event.target.closest("[data-reschedule-decision]");
+    if (rescheduleDecision) {
+      const decision = rescheduleDecision.dataset.rescheduleDecision;
+      if (!window.confirm(decision === "approve" ? "Approve this change and charge the disclosed fee to the deposit payment method?" : "Decline this change, refund any fee collected for this request, and keep the original appointment?")) return;
+      const section = rescheduleDecision.closest("section");
+      const result = section.querySelector("[data-reschedule-status]");
+      section.querySelectorAll("button").forEach(button => { button.disabled = true; });
+      api("/api/crm/bookings", { method: "PATCH", body: JSON.stringify({ bookingAction: "reschedule_decision", id: rescheduleDecision.dataset.bookingId, requestId: rescheduleDecision.dataset.requestId, decision }) })
+        .then(async () => { await loadBookings({ quiet: true }); const updated = state.bookings.find(item => item.id === rescheduleDecision.dataset.bookingId); if (updated) $("[data-booking-detail]").innerHTML = detailMarkup(updated); })
+        .catch(error => { result.textContent = error.message; section.querySelectorAll("button").forEach(button => { button.disabled = false; }); });
+      return;
+    }
     const bookingEditorToggle = event.target.closest("[data-toggle-booking-editor]");
     if (bookingEditorToggle) {
       const form = $("[data-booking-edit-form]", bookingEditorToggle.closest(".crm-booking-editor-section"));

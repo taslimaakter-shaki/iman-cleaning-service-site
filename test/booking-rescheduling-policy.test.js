@@ -1,0 +1,132 @@
+const assert = require('assert');
+const shared = require('../api/booking/_shared');
+const payments = require('../api/booking/_payments');
+const clone = value => JSON.parse(JSON.stringify(value));
+const now = new Date('2030-01-01T12:00:00Z');
+const base = () => ({ id: 'BK-RESCHEDULE', status: 'Confirmed', schedule: '2030-01-02T12:00:00Z', email: 'test@example.com', estimate: { total: 200, hours: 2, payment: { totalCents: 20000, paidCents: 5000, depositCents: 5000, stripeCustomerId: 'cus_original', paymentMethodId: 'pm_original' } } });
+let stored, calls = [], intent, failCharge = false, failSchedule = false;
+process.env.SUPABASE_URL = 'https://example.invalid';
+process.env.SUPABASE_SERVICE_ROLE_KEY = 'test';
+shared.supabaseRequest = async (path, options) => {
+  const query = new URLSearchParams(path.slice(1));
+  if (query.get('estimate') !== 'eq.' + JSON.stringify(stored.estimate) || query.get('schedule') !== 'eq.' + stored.schedule || query.get('status') !== 'eq.' + stored.status) return [];
+  const changes = JSON.parse(options.body);
+  if (changes.schedule && failSchedule) throw new Error('Slot occupied');
+  stored = { ...stored, ...changes };
+  return [clone(stored)];
+};
+shared.getBooking = async () => clone(stored);
+shared.assertScheduleAvailable = async () => {};
+shared.updateBookingGoogleCalendar = async () => {};
+payments.cancelRemainingAuthorization = async () => {};
+payments.stripePost = async call => {
+  calls.push(call);
+  if (call.path === 'payment_intents') {
+    intent = { id: 'pi_fee', amount: call.params.amount, currency: 'usd', customer: call.params.customer, payment_method: call.params.payment_method, metadata: { request_id: call.params['metadata[request_id]'] }, status: 'requires_confirmation' };
+    return clone(intent);
+  }
+  if (call.path.endsWith('/confirm')) {
+    if (failCharge) throw new Error('Card declined');
+    intent.status = 'succeeded'; intent.amount_received = intent.amount;
+    return clone(intent);
+  }
+  if (call.path.endsWith('/cancel')) { intent.status = 'canceled'; return clone(intent); }
+  if (call.path === 'refunds') return { id: 're_fee', status: 'succeeded' };
+  throw new Error('Unexpected Stripe request');
+};
+global.fetch = async () => ({ ok: true, json: async () => clone(intent) });
+const policy = require('../api/booking/_rescheduling');
+const { cancellationAmountsForSource } = require('../api/crm/[action]')._test;
+const slot = { value: '2030-01-05T12:00:00Z', label: 'January 5' };
+const body = { acceptPolicy: true, policyVersion: policy.VERSION, feeCents: 2000 };
+async function request() { return policy.requestChange(clone(stored), body, slot, now); }
+(async () => {
+  stored = base();
+  assert.equal(policy.terms(stored, new Date('2029-12-31T12:00:00Z')).feeCents, 0, 'Exactly 48 hours is free');
+  assert.equal(policy.terms(stored, new Date('2029-12-31T12:00:00.001Z')).feeCents, 2000);
+  await assert.rejects(policy.requestChange(clone(stored), { ...body, acceptPolicy: false }, slot, now), /accept/);
+  await assert.rejects(policy.requestChange(clone(stored), { ...body, feeCents: 0 }, slot, now), /accept/);
+  await request();
+  assert.equal(stored.schedule, base().schedule, 'Request must not move the appointment');
+  await assert.rejects(request(), /already/);
+  let req = stored.estimate.rescheduling.request;
+  await policy.decide(clone(stored), req.id, 'approve');
+  assert.equal(stored.schedule, slot.value);
+  assert.equal(calls.length, 2);
+  assert.equal(calls[0].params.payment_method, 'pm_original');
+  assert.equal(stored.estimate.payment.paidCents, 5000, 'Fee must not become payment toward cleaning');
+  await policy.decide(clone(stored), req.id, 'approve');
+  assert.equal(calls.length, 2, 'Approval retry must not charge twice');
+  const cancellation = payments.cancellationPaymentAmounts(stored, now);
+  assert.equal(cancellation.retainedCents, 3000, '25% minus paid 10% leaves 15%');
+  assert.equal(cancellation.refundCents, 2000);
+  assert.equal(cancellationAmountsForSource(stored, 'customer', now).retainedCents, 3000);
+  assert.equal(cancellationAmountsForSource(stored, 'iman', now).retainedCents, 0);
+  await assert.rejects(policy.requestChange(clone(stored), { ...body, feeCents: 0 }, { value: '2030-01-06T12:00:00Z', label: 'January 6' }, now), /second/);
+  stored = base(); calls = []; await request(); req = stored.estimate.rescheduling.request;
+  await policy.decide(clone(stored), req.id, 'decline');
+  assert.equal(stored.schedule, base().schedule); assert.equal(calls.length, 0);
+  stored = base(); failCharge = true; await request(); req = stored.estimate.rescheduling.request;
+  await assert.rejects(policy.decide(clone(stored), req.id, 'approve'), /declined/);
+  assert.equal(stored.schedule, base().schedule);
+  assert.equal(stored.estimate.rescheduling.request.paymentIntentId, 'pi_fee', 'Payment intent persisted before confirmation');
+  failCharge = false;
+  await policy.decide(clone(stored), req.id, 'approve');
+  assert.equal(stored.schedule, slot.value);
+  stored = base(); failSchedule = true; calls = []; await request(); req = stored.estimate.rescheduling.request;
+  await assert.rejects(policy.decide(clone(stored), req.id, 'approve'), /recorded/);
+  assert.equal(stored.schedule, base().schedule);
+  assert.equal(stored.estimate.rescheduling.fees.length, 1);
+  failSchedule = false;
+  await policy.decide(clone(stored), req.id, 'approve');
+  assert.equal(calls.filter(c => c.path.endsWith('/confirm')).length, 1);
+  assert.equal(stored.estimate.rescheduling.fees.length, 1);
+  const approvedBooking = clone(stored);
+  stored = base(); calls = []; failCharge = true;
+  await request(); req = stored.estimate.rescheduling.request;
+  await assert.rejects(policy.decide(clone(stored), req.id, 'approve'), /declined/);
+  await policy.decide(clone(stored), req.id, 'decline');
+  assert.equal(stored.estimate.rescheduling.request.status, 'declined');
+  assert.equal(intent.status, 'canceled');
+  assert.equal(stored.schedule, base().schedule);
+  failCharge = false; failSchedule = true; stored = base(); calls = [];
+  await request(); req = stored.estimate.rescheduling.request;
+  await assert.rejects(policy.decide(clone(stored), req.id, 'approve'), /recorded/);
+  failSchedule = false;
+  await policy.decide(clone(stored), req.id, 'decline');
+  assert.equal(calls.filter(call => call.path === 'refunds').length, 1);
+  assert.equal(stored.estimate.rescheduling.fees[0].status, 'refunded');
+  assert.equal(policy.cancellationProtection(stored).creditCents, 0);
+  assert.equal(stored.schedule, base().schedule);
+  stored = base(); stored.schedule = '2030-01-04T12:00:00Z'; calls = [];
+  await policy.requestChange(clone(stored), { ...body, feeCents: 0 }, slot, now);
+  await policy.decide(clone(stored), stored.estimate.rescheduling.request.id, 'approve');
+  assert.equal(calls.length, 0, 'Early first change has no charge');
+  assert.equal(payments.cancellationPaymentAmounts(stored, now).refundCents, 5000);
+  stored = approvedBooking;
+  // Exercise the public cancellation endpoint with the credited fee and actual
+  // cancellation calculation; no provider calls or real customer data are used.
+  shared.readJsonBody = async req => req.body;
+  shared.updateBooking = async (_id, patch) => { stored = { ...stored, ...patch }; return clone(stored); };
+  require('../api/booking/_notifications').sendCustomerSms = async () => ({ status: 'sent' });
+  require('../api/quote/_shared').getGoogleClients = () => ({ gmail: { users: { messages: { send: async () => ({ data: { id: 'mock' } }) } } } });
+  stored.estimate.payment.paymentIntentId = 'pi_deposit';
+  process.env.BOOKING_MANAGEMENT_SECRET = 'test';
+  process.env.STRIPE_SECRET_KEY = 'sk_test_mock';
+  const management = require('../api/booking/_manage');
+  global.fetch = async (url, options) => {
+    assert.equal(url, 'https://api.stripe.com/v1/refunds');
+    const params = new URLSearchParams(options.body);
+    assert.equal(params.get('payment_intent'), 'pi_deposit');
+    assert.equal(params.get('amount'), '2000');
+    return { ok: true, text: async () => JSON.stringify({ id: 're_credit', status: 'succeeded' }) };
+  };
+  const token = management.createBookingManagementToken({ bookingId: stored.id, email: stored.email });
+  const response = { setHeader() {}, end(value) { this.body = JSON.parse(value); } };
+  await management({ method: 'POST', body: { token, action: 'cancel' } }, response);
+  assert.equal(response.statusCode, 200, response.body.error);
+  assert.equal(response.body.refund.retainedCents, 3000);
+  assert.equal(stored.status, 'Cancelled');
+  assert.equal(stored.estimate.payment.paidCents, 3000);
+  console.log('Booking rescheduling policy tests passed');
+})().catch(error => { console.error(error); process.exitCode = 1; });

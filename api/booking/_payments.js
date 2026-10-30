@@ -72,14 +72,17 @@ function paymentAmounts(booking) {
 }
 
 function cancellationPaymentAmounts(booking, now = new Date()) {
+  now = new Date(booking.estimate?.rescheduling?.cancellationOperation?.startedAt || now);
   const appointment = new Date(booking?.schedule);
   const millisecondsUntil = appointment.getTime() - now.getTime();
-  const lessThan48Hours = !Number.isFinite(millisecondsUntil)
+  const protection = require("./_rescheduling").cancellationProtection(booking);
+  const lessThan48Hours = protection.locked || !Number.isFinite(millisecondsUntil)
     || millisecondsUntil < AUTHORIZATION_DUE_HOURS * 3600000;
   const amounts = paymentAmounts(booking);
   const payment = booking?.estimate?.payment || {};
   const paidCents = Math.max(0, Math.round(Number(payment.paidCents || 0)));
-  const retainedCents = lessThan48Hours ? Math.min(paidCents, amounts.depositCents) : 0;
+  const feeCents = protection.locked ? protection.remainingCents : Math.max(0, amounts.depositCents - protection.creditCents);
+  const retainedCents = lessThan48Hours ? Math.min(paidCents, feeCents) : 0;
   return {
     lessThan48Hours,
     paidCents,

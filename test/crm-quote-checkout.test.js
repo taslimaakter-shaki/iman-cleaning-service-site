@@ -56,8 +56,11 @@ async function request(extra={}) {
   const notice=params.get("custom_text[submit][message]");
   assert.match(notice,/temporary hold for the remaining 75% about 48 hours/);
   assert.match(notice,/Cancel at least 48 hours.*full deposit refund/);
-  assert.match(notice,/Reschedule at least 48 hours.*deposit stays with your booking/);
-  assert.match(notice,/cancellations less than 48 hours.*non-refundable/);
+  assert.match(notice,/One approved reschedule at least 48 hours ahead is free/);
+  assert.match(notice,/costs 10%/);
+  assert.match(notice,/paid late-rescheduling fees credited/);
+  assert.match(notice,/payment method used for the 25% deposit/);
+  assert.match(notice,/Cancellations less than 48 hours ahead cost 25%/);
   quote.amountCents=30663;quote.laborHours=9;quote.cleanerCount=3;quote.units=[{},{}];
   quote.pricing={subtotalCents:30000,taxCents:2663,discountCents:2000,discountLabel:"First-time customer discount",discountApplication:"after_tax",totalCents:30663};
   res=await request();assert.equal(res.status,201);params=new URLSearchParams(posts.at(-1).body);

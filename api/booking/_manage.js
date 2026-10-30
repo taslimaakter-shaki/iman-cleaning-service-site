@@ -14,6 +14,8 @@ const {
   formatAppointment,
   sendCustomerSms
 } = require("./_notifications");
+const rescheduling = require("./_rescheduling");
+const { cancellationPaymentAmounts } = require("./_payments");
 const { cancelRemainingAuthorization } = require("./_payments");
 const { trySendFormSubmissionNotification } = require("../_form-notifications");
 const { arrivalWindowLabel, slotMatchesArrivalPreference } = require("./_arrival-preference");
@@ -222,18 +224,9 @@ async function verifyBookingCode(body) {
 }
 
 function safeBooking(booking) {
-  const appointment = new Date(booking.schedule);
-  const hoursRemaining = (appointment.getTime() - Date.now()) / 3600000;
-  const lateCancellation = hoursRemaining < 48;
-  const totalCents = Math.round(Number(
-    booking.estimate?.total || booking.estimate?.high || booking.estimate?.low || 0
-  ) * 100);
-  const paidCents = Number(
-    booking.estimate?.payment?.paidCents
-    || totalCents
-  );
-  const retainedCents = lateCancellation ? Math.min(paidCents, Math.round(totalCents * 0.25)) : 0;
-  const refundCents = Math.max(0, paidCents - retainedCents);
+  const { lessThan48Hours: lateCancellation, paidCents, retainedCents, refundCents } = cancellationPaymentAmounts(booking);
+  const totalCents = Number(booking.estimate?.payment?.totalCents || Math.round(Number(booking.estimate?.total || 0) * 100));
+  const rescheduleTerms = rescheduling.terms(booking);
   return {
     id: orderNumberForBooking(booking),
     status: booking.status,
@@ -243,6 +236,7 @@ function safeBooking(booking) {
     arrivalPreference: booking.estimate?.arrivalPreference || null,
     address: booking.address,
     total: Number(booking.estimate?.total || booking.estimate?.high || booking.estimate?.low || 0),
+    rescheduling: { policyVersion: rescheduling.VERSION, policy: rescheduling.POLICY, feeCents: rescheduleTerms.feeCents, count: rescheduleTerms.count, requestStatus: rescheduleTerms.state.request?.status || "", cancellationLocked: rescheduling.cancellationProtection(booking).locked },
     cancellation: {
       lessThan48Hours: lateCancellation,
       refundPercent: paidCents ? Math.round((refundCents / paidCents) * 100) : 0,
@@ -379,7 +373,7 @@ async function handler(request, response) {
       return json(response, 200, { ok: true, token: verifiedToken });
     }
     const token = cleanText(body.token || request.query?.token, 3000);
-    const { booking } = await bookingForToken(token);
+    let { booking } = await bookingForToken(token);
 
     if (request.method === "GET") {
       const pkg = { teamHours: Number(booking.estimate?.teamHours || booking.estimate?.hours || 2) };
@@ -398,40 +392,10 @@ async function handler(request, response) {
       const slots = customerRescheduleSlots(booking, await availableSlotsForPackage(pkg, undefined, new Date(), booking.id));
       const slot = slots.find((item) => item.value === cleanText(body.schedule, 100));
       if (!slot) return json(response, 409, { error: "That appointment is no longer available. Please choose another time." });
-      const estimate = {
-        ...(booking.estimate || {}),
-        rescheduling: {
-          previousSchedule: booking.schedule,
-          requestedAt: new Date().toISOString()
-        }
-      };
-      const updated = await updateBooking(booking.id, {
-        schedule: slot.value,
-        schedule_label: slot.label,
-        estimate
-      });
-      // Reserve the new slot atomically before changing its payment authorization.
-      let paymentWarning = "";
-      try {
-        await cancelRemainingAuthorization({ booking: updated, resetForReschedule: true });
-      } catch (error) {
-        // The new slot is already committed. Do not report a failed reschedule
-        // or release it when only the authorization provider is unavailable.
-        paymentWarning = "Your new appointment is saved. Please contact our team at 929-232-1930 to review the remaining-balance authorization.";
-        updated.estimate.rescheduling.authorizationReset = {
-          status: "requires_attention", error: cleanText(error.message, 500)
-        };
-        await updateBookingEstimate(updated.id, updated.estimate).catch(() => {});
-        await trySendFormSubmissionNotification({
-          source: "Booking reschedule", eventLabel: "payment authorization needs review", recordId: updated.id,
-          fields: { "Appointment": updated.schedule },
-          summaryLines: ["The new appointment is reserved, but the previous authorization could not be reset."]
-        }).catch(() => {});
-      }
-      const calendar = await updateBookingGoogleCalendar(updated, "reschedule").catch(() => ({ status: "error" }));
-      const message = `Your appointment was rescheduled to ${slot.label}.${paymentWarning ? ` ${paymentWarning}` : ""}`;
-      const delivery = await notifyManagementChange(updated, "Your appointment was rescheduled", message);
-      return json(response, 200, { ok: true, action, booking: safeBooking(updated), calendar, delivery, ...(paymentWarning ? { warning: paymentWarning } : {}) });
+      const updated = await rescheduling.requestChange(booking, body, slot);
+      const delivery = await require("./_reschedule-notifications").notifyOwner(updated, "requested");
+      await rescheduling.recordOwnerNotification(updated.id, updated.estimate.rescheduling.request.id, delivery).catch(() => {});
+      return json(response, 200, { ok: true, action, booking: safeBooking(updated), message: "Your request was submitted for approval. Your original appointment remains confirmed." });
     }
 
     if (action === "cancel") {
@@ -441,16 +405,15 @@ async function handler(request, response) {
       if (!["Confirmed", "Cleaner assigned"].includes(booking.status)) {
         return json(response, 409, { error: "This booking can no longer be cancelled online." });
       }
-      const appointment = new Date(booking.schedule);
-      const lessThan48Hours = appointment.getTime() - Date.now() < 48 * 3600000;
-      const totalCents = Math.round(Number(booking.estimate?.total || 0) * 100);
-      const paidCents = Number(booking.estimate?.payment?.paidCents || totalCents);
-      const retainedCents = lessThan48Hours ? Math.min(paidCents, Math.round(totalCents * 0.25)) : 0;
-      const refundCents = Math.max(0, paidCents - retainedCents);
+      if (booking.estimate?.rescheduling?.request?.status === "processing") return json(response, 409, { error: "Your appointment change payment is being reviewed. Please contact us before canceling." });
+      booking = await rescheduling.beginCancellation(booking, "customer");
+      const { lessThan48Hours, paidCents, retainedCents, refundCents } = cancellationPaymentAmounts(booking);
+      const totalCents = Number(booking.estimate?.payment?.totalCents || Math.round(Number(booking.estimate?.total || 0) * 100));
       await cancelRemainingAuthorization({ booking });
       const refund = await createRefund(booking, refundCents);
       const estimate = {
         ...(booking.estimate || {}),
+        payment: { ...booking.estimate?.payment, paidCents: retainedCents, remainingCents: 0, status: refundCents ? (retainedCents ? "partially_refunded" : "refunded") : "deposit_retained" },
         cancellation: {
           cancelledAt: new Date().toISOString(),
           lessThan48Hours,
@@ -466,7 +429,7 @@ async function handler(request, response) {
       const calendar = await updateBookingGoogleCalendar(updated, "cancel").catch(() => ({ status: "error" }));
       const refundAmount = `$${(refundCents / 100).toFixed(2)}`;
       const message = lessThan48Hours
-        ? `Your appointment was cancelled. The 25% booking deposit was retained under the less-than-48-hours cancellation policy${refundCents ? `, and ${refundAmount} is being returned to your original payment method` : ""}. Any uncaptured authorization for the remaining balance was released.`
+        ? `Your appointment was cancelled. $${(retainedCents / 100).toFixed(2)} was retained from your booking payment under the cancellation policy, after crediting paid late-rescheduling fees${refundCents ? `, and ${refundAmount} is being returned to your original payment method` : ""}. Any uncaptured authorization for the remaining balance was released.`
         : `Your appointment was cancelled. A full refund of ${refundAmount} is being returned to your original payment method.`;
       const delivery = await notifyManagementChange(updated, "Your appointment was cancelled", message);
       return json(response, 200, {
@@ -501,3 +464,5 @@ module.exports.matchesBookingLookup = matchesBookingLookup;
 module.exports.orderNumberForBooking = orderNumberForBooking;
 module.exports.safeBooking = safeBooking;
 module.exports.verificationCodeHash = verificationCodeHash;
+
+module.exports.notifyManagementChange = notifyManagementChange;

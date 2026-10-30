@@ -60,7 +60,7 @@
     <div class="panel">
       <div class="header">
         <h1>Manage your appointment</h1>
-        <p>Use one secure page to reschedule or cancel your cleaning appointment.</p>
+        <p>Request an appointment change or cancel your cleaning appointment.</p>
       </div>
       <div class="status" role="status" aria-live="polite" data-status></div>
       <section class="section" data-lookup>
@@ -114,7 +114,10 @@
           <select id="schedule" data-slot-select>
             <option value="">Choose an available date and time</option>
           </select>
-          <button type="button" data-reschedule>Confirm new appointment</button>
+          <div class="policy" data-reschedule-policy></div>
+          <label class="check"><input type="checkbox" data-reschedule-consent><span>I accept these terms and authorize any approved fee to be charged to the payment method used for my deposit.</span></label>
+          <label class="check hidden" data-second-request><input type="checkbox" data-direct-contact><span>I have contacted IMAN about this additional rescheduling request.</span></label>
+          <button type="button" data-reschedule>Submit change request</button>
         </section>
         <section class="section" data-active-tools>
           <h2>Cancel this appointment</h2>
@@ -152,7 +155,7 @@
       };
       const clearStatus = () => { status.className = "status"; status.textContent = ""; };
       const setBusy = (busy) => {
-        rescheduleButton.disabled = busy;
+        rescheduleButton.disabled = busy || ["pending", "processing", "declining"].includes(booking?.rescheduling?.requestStatus);
         cancelButton.disabled = busy || !cancelConfirm.checked;
       };
       const render = (data) => {
@@ -163,9 +166,14 @@
         document.querySelector("[data-schedule]").textContent = booking.scheduleLabel;
         document.querySelector("[data-address]").textContent = booking.address;
         document.querySelector("[data-total]").textContent = money(booking.total);
+        const rescheduling = booking.rescheduling;
+        document.querySelector("[data-reschedule-policy]").textContent = `${rescheduling.policy} Fee for this request: ${money(rescheduling.feeCents / 100)}. ${["pending", "processing", "declining"].includes(rescheduling.requestStatus) ? "Your request is awaiting review; your original appointment remains confirmed." : ""}`;
+        document.querySelector("[data-second-request]").classList.toggle("hidden", rescheduling.count < 1);
+        document.querySelector("[data-reschedule-consent]").checked = false;
+        setBusy(false);
         const cancellation = booking.cancellation;
         document.querySelector("[data-policy]").textContent = cancellation.lessThan48Hours
-          ? `Less than 48 hours remain. If you cancel now, the ${money(cancellation.retainedCents / 100)} booking deposit will be retained and any uncaptured authorization will be released.`
+          ? `The cancellation fee applies, including after an approved late reschedule. If you cancel now, ${money(cancellation.retainedCents / 100)} will be retained from your booking payment after crediting paid late-rescheduling fees and any uncaptured authorization will be released.`
           : `At least 48 hours remain. If you cancel now, the full ${money(cancellation.refundCents / 100)} amount charged will be refunded and any uncaptured authorization will be released.`;
         slotSelect.innerHTML = booking.arrivalPreference?.flexible
           ? '<option value="">Choose an available date for the same arrival window</option>'
@@ -270,10 +278,12 @@
       });
       rescheduleButton.addEventListener("click", async () => {
         if (!slotSelect.value) return showStatus("Choose an available appointment first.", true);
+        if (!document.querySelector("[data-reschedule-consent]").checked) return showStatus("Accept the rescheduling and payment terms first.", true);
+        if (booking.rescheduling.count >= 1 && !document.querySelector("[data-direct-contact]").checked) return showStatus("Please call or text 929-232-1930 before requesting another change.", true);
         setBusy(true);
         try {
-          const data = await request("POST", { action: "reschedule", schedule: slotSelect.value });
-          await load(`Your appointment is now scheduled for ${data.booking.scheduleLabel}. We sent confirmation by email and text.`);
+          const data = await request("POST", { action: "reschedule", schedule: slotSelect.value, acceptPolicy: true, policyVersion: booking.rescheduling.policyVersion, feeCents: booking.rescheduling.feeCents, directContact: document.querySelector("[data-direct-contact]").checked });
+          await load(data.message);
         } catch (error) {
           showStatus(error.message, true);
         } finally {

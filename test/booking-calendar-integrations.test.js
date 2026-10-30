@@ -62,26 +62,25 @@ async function googleTests() {
 }
 async function rescheduleTests() {
   const original={id:'BK-1',status:'Confirmed',email:'test@example.test',phone:'',schedule:'2030-09-12T08:00:00-04:00',estimate:{teamHours:9,total:720,payment:{paidCents:18000}}};
-  let booking=clone(original),conflict=false,paymentOutage=false,calls=[];
-  const shared={cleanText:x=>String(x||''),getBooking:async()=>clone(booking),readJsonBody:async req=>req.body,json:(r,s,b)=>Object.assign(r,{status:s,body:b}),
-    availableSlotsForPackage:async(pkg,days,now,exclude)=>{assert.equal(exclude,booking.id);assert.equal(pkg.teamHours,9);return [{value:'2030-09-13T08:00:00-04:00',label:'September 13 at 8 AM'}];},
-    updateBooking:async(id,patch)=>{calls.push('reserve');if(conflict)throw Object.assign(new Error('Slot conflict'),{statusCode:409});return booking={...booking,...clone(patch)};},
-    updateBookingEstimate:async(id,estimate)=>{booking.estimate=clone(estimate);},
-    updateBookingGoogleCalendar:async()=>{calls.push('calendar');return {status:'rescheduled'};}
+  const calls=[];
+  const shared={cleanText:x=>String(x||''),getBooking:async()=>clone(original),readJsonBody:async req=>req.body,json:(r,s,b)=>Object.assign(r,{status:s,body:b}),
+    availableSlotsForPackage:async(pkg,days,now,exclude)=>{assert.equal(exclude,original.id);assert.equal(pkg.teamHours,9);return [{value:'2030-09-13T08:00:00-04:00',label:'September 13 at 8 AM'}];}
   };
   const handler=load('api/booking/_manage.js',{
     './_shared':shared,
-    './_notifications':{formatAppointment:x=>x,sendCustomerSms:async()=>{calls.push('sms');return {status:'sent'};}},
-    './_payments':{cancelRemainingAuthorization:async()=>{calls.push('payment');if(paymentOutage)throw new Error('Test payment outage');}},
+    './_reschedule-notifications':{notifyOwner:async()=>{calls.push('team-alert');return {}; }},
+    './_rescheduling':{recordOwnerNotification:async()=>{},VERSION:'test', POLICY:'test', terms:()=>({feeCents:0,count:0,state:{}}), cancellationProtection:()=>({locked:false}), requestChange:async(booking,body,slot)=>{calls.push('request');assert.equal(slot.value,body.schedule);return {...booking,estimate:{...booking.estimate,rescheduling:{request:{feeCents:0,id:"test"}}}};}},
+    './_notifications':{formatAppointment:x=>x},
+    './_payments':{cancellationPaymentAmounts:()=>({lessThan48Hours:false,paidCents:18000,retainedCents:0,refundCents:18000})},
     './_arrival-preference':{arrivalWindowLabel:()=>'',slotMatchesArrivalPreference:()=>true},
-    '../_form-notifications':{trySendFormSubmissionNotification:async()=>{calls.push('team-alert');}},
-    '../quote/_shared':{getGoogleClients:()=>({gmail:{users:{messages:{send:async()=>({data:{id:'test'}})}}}})}
+    '../_form-notifications':{trySendFormSubmissionNotification:async()=>{calls.push('team-alert');}}
   });
-  const token=handler.createBookingManagementToken({bookingId:booking.id,email:booking.email});
-  const request=async()=>{const res={};await handler({method:'POST',body:{action:'reschedule',token,schedule:'2030-09-13T08:00:00-04:00'}},res);return res;};
-  conflict=true;let res=await request();assert.equal(res.status,409);assert.equal(booking.schedule,original.schedule);assert.deepEqual(calls,['reserve']);
-  conflict=false;calls=[];res=await request();assert.equal(res.status,200);assert.deepEqual(calls,['reserve','payment','calendar','sms']);
-  booking=clone(original);calls=[];paymentOutage=true;res=await request();assert.equal(res.status,200);assert.match(res.body.warning,/new appointment is saved/i);assert.equal(booking.schedule,'2030-09-13T08:00:00-04:00');assert(calls.includes('team-alert'));assert(calls.includes('calendar'));
+  const token=handler.createBookingManagementToken({bookingId:original.id,email:original.email});
+  const res={};await handler({method:'POST',body:{action:'reschedule',token,schedule:'2030-09-13T08:00:00-04:00'}},res);
+  assert.equal(res.status,200);assert.equal(res.body.booking.schedule,original.schedule);assert.deepEqual(calls,['request','team-alert']);
+  assert.match(res.body.message,/original appointment remains confirmed/);
+  const unavailable={};await handler({method:'POST',body:{action:'reschedule',token,schedule:'2030-09-14T08:00:00-04:00'}},unavailable);
+  assert.equal(unavailable.status,409);
 }
 async function paidConfirmationTests() {
   const calls=[];let paid=true,booking={id:'BK-PAID',status:'New',estimate:{teamHours:9}};
@@ -98,4 +97,4 @@ async function paidConfirmationTests() {
   assert.deepEqual(calls,['confirm','notify']);assert.equal(booking.estimate.payment.remaining.status,'authorized');
   paid=false;calls.length=0;await assert.rejects(handler.sendPaymentRecordForSessionId({sessionId:'cs_test',siteUrl:'https://example.test'}),/not marked paid/);assert.equal(calls.length,0);
 }
-(async()=>{await googleTests();await rescheduleTests();await paidConfirmationTests();console.log('Calendar integration tests passed: business calendar, Google pagination/busy/free, own-event rescheduling, outage protection, duplicate-event prevention, reservation-before-payment reset, confirmed-before-notifications. All providers mocked.');})().catch(e=>{console.error(e);process.exitCode=1;});
+(async()=>{await googleTests();await rescheduleTests();await paidConfirmationTests();console.log('Calendar integration tests passed: business calendar, Google pagination/busy/free, own-event rescheduling, outage protection, duplicate-event prevention, approval-request-before-schedule-change, confirmed-before-notifications. All providers mocked.');})().catch(e=>{console.error(e);process.exitCode=1;});
