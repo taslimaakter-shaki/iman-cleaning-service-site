@@ -13,12 +13,13 @@ function duration(hours) {
 }
 function staffingOptions(estimate) {
   const hours = workHours(estimate);
+  if (hours >= 7) return `2 team members for up to ${duration(hours / 2)}`;
   return hours > 0 && hours < 7 ? `1 team member for up to ${duration(hours)}, or 2 team members for up to ${duration(hours / 2)}` : '';
 }
 function displayNotes(notes, estimate) {
   const options = staffingOptions(estimate);
   if (!options) return notes;
   // Replace only the known generated staffing sentence, preserving customer notes.
-  return String(notes || '').replace(/(Included service: [\d.]+ total work-hours; )2 team members for [\d.]+ hours\./, `$1${options}.`).replace(/(Maximum labor: [\d.]+ labor-hours; )two-person team for up to [\d.]+ hours\./, `$1${options}.`);
+  return String(notes || '').replace(/(Maximum labor: [\d.]+ labor-hours; )[^\n]*?(?=\. Service may be completed sooner\.)/, `$1${options}`).replace(/(Included service: [\d.]+ total work-hours; )2 team members for [\d.]+ hours\./, `$1${options}.`).replace(/Maximum estimated service time: up to [\d.]+ hours with a two-person team\./, `Maximum estimated service time: ${options}.`).replace(/(Maximum labor: [\d.]+ labor-hours; )two-person team for up to [\d.]+ hours\./, `$1${options}.`);
 }
 module.exports = { workHours, staffingOptions, displayNotes };

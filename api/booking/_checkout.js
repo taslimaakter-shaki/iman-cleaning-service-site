@@ -472,7 +472,7 @@ module.exports = async function handler(request, response) {
         timeBasedMode
           ? `Included service: ${pkg.manHours} total work-hours; ${staffingOptions(pkg) || `2 team members for ${pkg.teamHours} hours`}.`
           : windowMode
-          ? `Maximum estimated service time: up to ${pkg.teamHours} hours with a two-person team. Service may be completed sooner.`
+          ? `Maximum estimated service time: ${staffingOptions(pkg) || `up to ${pkg.teamHours} hours with a two-person team`}. Service may be completed sooner.`
           : `Maximum labor: ${pkg.manHours} labor-hours; ${staffingOptions(pkg) || `two-person team for up to ${pkg.teamHours} hours`}. Service may be completed sooner.`,
         priorities.length ? `Priorities: ${priorities.join(", ")}.` : "",
         notes ? `Customer notes: ${notes}` : "",
