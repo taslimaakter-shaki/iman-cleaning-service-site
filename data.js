@@ -72,7 +72,7 @@ window.IMAN_DATA = {
         { name: "Move-In / Move-Out", price: "Request a personalized quote", href: "./move-in-move-out-cleaning.html" },
         { name: "Residential Post-Construction Cleaning", price: "Request a personalized quote", href: "./post-construction-cleaning.html" },
         { name: "Hourly Cleaning Service", price: "Request a personalized quote", href: "./book-now.html?service=hourly" },
-        { name: "Recurring Cleaning Service", price: "Request a personalized quote", href: "./book-now.html?service=recurring" },
+        { name: "Recurring Cleaning Service", price: "Request a personalized quote", href: "./recurring-cleaning.html" },
       ],
     },
     {

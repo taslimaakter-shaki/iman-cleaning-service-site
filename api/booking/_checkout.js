@@ -355,6 +355,7 @@ module.exports = async function handler(request, response) {
       const recurring = require("./_recurring-discount");
       recurringDiscount = recurring.verifyRecurringDiscount(await listAllBookings(), {
         previousOrderNumber: body.recurringOrderNumber,
+        recurringPlan: body.recurringPlan,
         schedule: slot.value,
         customer: {
           email,
@@ -497,6 +498,7 @@ module.exports = async function handler(request, response) {
         arrivalDiscount: pkg.arrivalDiscount || null,
         calendarReservationHours: pkg.teamHours + 1,
         recurringDiscount: pkg.recurringDiscount || null,
+        repeatCustomer: pkg.serviceKey === "recurring" ? { firstName: cleanText(customer.firstName, 100), lastName: cleanText(customer.lastName, 100), email, phone, address, address2, city, state, zip } : null,
         previousOrderNumber: recurringDiscount?.previousOrderNumber || "",
         originalTotalCents: pkg.originalTotalCents || null,
         customQuotePricing: pkg.manualDiscount || null,

@@ -375,7 +375,7 @@ function selectedServiceDetailsUrl(record, booking) {
   ).toLowerCase();
   const pagesByServiceKey = {
     standard: "/standard-cleaning.html",
-    recurring: "/standard-cleaning.html",
+    recurring: "/recurring-cleaning.html",
     deep: "/deep-cleaning.html",
     details: "/deep-cleaning.html",
     move: "/move-in-move-out-cleaning.html",
@@ -403,7 +403,8 @@ function selectedServiceDetailsUrl(record, booking) {
   if (/medical|clinic/.test(service)) return `${site}/medical-clinic-cleaning.html`;
   if (/janitorial/.test(service)) return `${site}/janitorial-recurring-cleaning.html`;
   if (/commercial/.test(service)) return `${site}/commercial-cleaning.html`;
-  if (/standard|recurring|hourly/.test(service)) return `${site}/standard-cleaning.html`;
+  if (/recurring/.test(service)) return `${site}/recurring-cleaning.html`;
+  if (/standard|hourly/.test(service)) return `${site}/standard-cleaning.html`;
   return `${site}/services-hub.html`;
 }
 

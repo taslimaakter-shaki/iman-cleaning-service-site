@@ -322,6 +322,7 @@
                       <span><strong>Recurring Cleaning Service</strong><small>Ongoing residential cleaning for regular home maintenance</small></span>
                       <i aria-hidden="true">✓</i>
                     </button>
+                    <button class="booking-service-preview" type="button" data-service-preview-url="./recurring-cleaning.html" data-service-preview-name="Recurring Cleaning">Read the service details <span aria-hidden="true">→</span></button>
                   </div>
                   <div class="booking-service-option-row">
                     <button type="button" class="booking-answer-choice" data-booking-service="post" aria-pressed="false">
@@ -333,13 +334,32 @@
                 </div>
               </div>
               <div class="booking-organization-form" data-recurring-details-form hidden>
-                <h2>What is your previous appointment or order number?</h2>
-                <p class="booking-service-guide">We’ll verify your previous completed cleaning and apply the eligible recurring discount after you choose your new appointment date.</p>
+                <h2>Have you already had an initial cleaning with us?</h2>
+                <div class="booking-service-choice-options" role="group" aria-label="Previous cleaning with IMAN">
+                  <button type="button" class="booking-answer-choice" data-recurring-initial="yes" aria-pressed="false"><span><strong>Yes</strong><small>I’ve had an initial cleaning with IMAN.</small></span><i aria-hidden="true">✓</i></button>
+                  <button type="button" class="booking-answer-choice" data-recurring-initial="no" aria-pressed="false"><span><strong>No</strong><small>This will be my first cleaning with IMAN.</small></span><i aria-hidden="true">✓</i></button>
+                </div>
+                <div data-recurring-reference hidden>
+                <h3>What is your previous order number or booking reference?</h3>
+                <p class="booking-service-guide">Enter the order number or booking reference from your booking confirmation. It must belong to a completed, paid cleaning—not an unbooked quote. We’ll apply the eligible recurring discount after you choose your new appointment date.</p>
                 <div class="booking-fields">
                   <label class="booking-field-wide">
-                    <span>Previous appointment or order number</span>
-                    <input name="recurringOrderNumber" type="text" inputmode="numeric" autocomplete="off" maxlength="100" placeholder="Enter your previous order number">
+                    <span>Previous order number or booking reference</span>
+                    <input name="recurringOrderNumber" type="text" autocomplete="off" autocapitalize="characters" spellcheck="false" maxlength="100" placeholder="Order number or BK-… booking reference">
                   </label>
+                </div>
+              </div>
+                <div data-recurring-plan-panel hidden>
+                  <h3>Choose your recurring cleaning plan</h3>
+                  <p>Your plan is saved when your booking is confirmed. Contact us if you need to change it later.</p>
+                  <label>Cleaning frequency
+                    <select name="recurringPlan"><option value="">Choose a plan</option><option value="weekly">Weekly — 20% off · every 7–12 days</option><option value="biweekly">Every two weeks — 15% off · every 13–24 days</option><option value="monthly">Monthly — 10% off · every 25–40 days</option></select>
+                  </label>
+                </div>
+                <p data-recurring-plan-summary hidden></p>
+                <div data-recurring-repeat-verification hidden>
+                  <p>Enter the verification code sent to the contact information on your booking. We’ll reuse your previous service details so you can choose your next appointment and pay.</p>
+                  <label>Verification code <input name="recurringRepeatCode" inputmode="numeric" autocomplete="one-time-code" maxlength="6"></label>
                 </div>
               </div>
               <div class="booking-property-type-form" data-property-type-form hidden>
@@ -889,6 +909,14 @@
           </div>
         </div>
   </main>
+  <dialog class="booking-minimum-dialog" data-recurring-initial-dialog aria-labelledby="recurring-initial-title">
+    <h2 id="recurring-initial-title">Start with an initial cleaning</h2>
+    <p>Before starting recurring cleaning, your home needs an initial Standard Cleaning or Deep Cleaning with us. Once that cleaning is completed, you can book recurring maintenance.</p>
+    <div class="booking-minimum-actions">
+      <button class="booking-secondary" type="button" data-recurring-review>Review my answer</button>
+      <button class="booking-primary" type="button" data-recurring-change-service>Choose a different service</button>
+    </div>
+  </dialog>
   <dialog class="booking-minimum-dialog" data-minimum-dialog aria-labelledby="minimum-booking-title" aria-describedby="minimum-booking-description">
     <h2 id="minimum-booking-title">A $150 minimum is required to book</h2>
     <p id="minimum-booking-description">Your total after discounts and taxes is <strong data-minimum-current-total></strong>—just <strong data-minimum-shortfall></strong> below the minimum.</p>

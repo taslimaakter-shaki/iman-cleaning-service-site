@@ -91,7 +91,7 @@ const record = {
 (async () => {
   const serviceLinkCases = [
     ["standard", "Standard Cleaning", "standard-cleaning.html"],
-    ["recurring", "Recurring Cleaning Service", "standard-cleaning.html"],
+    ["recurring", "Recurring Cleaning Service", "recurring-cleaning.html"],
     ["deep", "Deep Cleaning", "deep-cleaning.html"],
     ["details", "Detailed Cleaning", "deep-cleaning.html"],
     ["move", "Move-In Cleaning", "move-in-move-out-cleaning.html"],

@@ -153,6 +153,10 @@ async function requestVerificationCode(body) {
     name: body.name,
     phone: body.phone
   });
+  return requestVerificationForBooking(booking);
+}
+
+async function requestVerificationForBooking(booking) {
   const prior = booking.estimate?.managementVerification || {};
   const requestedAt = new Date(prior.requestedAt || 0).getTime();
   if (Number.isFinite(requestedAt) && Date.now() - requestedAt < VERIFICATION_COOLDOWN_MS) {
@@ -490,3 +494,6 @@ module.exports.safeBooking = safeBooking;
 module.exports.verificationCodeHash = verificationCodeHash;
 
 module.exports.notifyManagementChange = notifyManagementChange;
+
+module.exports.requestVerificationForBooking = requestVerificationForBooking;
+module.exports.verifyBookingCode = verifyBookingCode;

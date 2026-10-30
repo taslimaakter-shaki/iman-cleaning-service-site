@@ -1,0 +1,37 @@
+const assert = require('node:assert/strict');
+const fs = require('node:fs');
+const vm = require('node:vm');
+const path = require('node:path');
+const shared = require('../api/booking/_shared');
+const promo = require('../api/booking/_promo');
+process.env.BOOKING_MANAGEMENT_SECRET = 'repeat-test-secret';
+const management = require('../api/booking/_manage');
+const initial = {id:'initial',status:'Completed',schedule:'2030-10-01',email:'test@example.com',phone:'9295550101',client_name:'Test Customer',estimate:{orderNumber:'11111111',payment:{status:'paid',paidCents:10000}}};
+const repeat = {...initial,id:'repeat',schedule:'2030-10-10',address:'123 Example St, Apt 2, Queens, NY, 11367',estimate:{...initial.estimate,orderNumber:'22222222',recurringDiscount:{plan:'weekly',code:'WEEKLY20'},units:[{bedrooms:2}],eligibility:{serviceZip:'11367'}}};
+let deliveries = 0;
+const sandbox = {module:{exports:{}},require(name) {
+  if(name === './_shared') return {...shared,listAllBookings:async()=>[initial,repeat],readJsonBody:async request=>request.body,json:(_res,status,data)=>({status,data})};
+  if(name === './_promo') return promo;
+  if(name === './_manage') return {...management,requestVerificationForBooking:async booking=>{deliveries++;assert.equal(booking.id,'initial');return {challenge:'mock',destination:'your saved phone'};}};
+  throw new Error(name);
+}};
+vm.runInNewContext(fs.readFileSync(path.join(__dirname,'../api/booking/_recurring-discount.js'),'utf8'),sandbox);
+const handler=sandbox.module.exports;
+const call=body=>handler({method:'POST',body},{});
+(async()=>{
+  const lookup=await call({lookupOnly:true,previousOrderNumber:'11111111'});
+  assert.equal(lookup.data.repeatBooking,true);
+  assert.equal(lookup.data.customer,undefined);
+  assert.equal((await call({action:'repeat-details',previousOrderNumber:'11111111'})).status,401);
+  const wrong=management.createBookingManagementToken({bookingId:'someone-else',email:initial.email});
+  assert.equal((await call({action:'repeat-details',previousOrderNumber:'11111111',token:wrong})).status,401);
+  const token=management.createBookingManagementToken({bookingId:'initial',email:initial.email});
+  const details=await call({action:'repeat-details',previousOrderNumber:'11111111',token});
+  assert.equal(details.status,200);
+  assert.equal(details.data.customer.address,'123 Example St, Apt 2');
+  assert.equal(details.data.windowStart,'2030-10-17');
+  assert.equal(details.data.unitDetails[0].bedrooms,2);
+  assert.equal((await call({action:'request-repeat-code',previousOrderNumber:'11111111'})).status,200);
+  assert.equal(deliveries,1);
+  console.log('Repeat booking privacy, token scope, latest saved details and mocked verification passed.');
+})().catch(error=>{console.error(error);process.exitCode=1;});

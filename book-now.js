@@ -402,6 +402,57 @@
   const serviceChoiceForm = form.querySelector("[data-service-choice-form]");
   const recurringDetailsForm = form.querySelector("[data-recurring-details-form]");
   const recurringOrderNumberInput = form.elements.recurringOrderNumber;
+  const recurringInitialButtons = Array.from(form.querySelectorAll("[data-recurring-initial]"));
+  const recurringReference = form.querySelector("[data-recurring-reference]");
+  const recurringInitialDialog = document.querySelector("[data-recurring-initial-dialog]");
+  let recurringInitialAnswer = "";
+  let recurringPlanContext = null;
+  let recurringVerifiedOrder = "";
+  let repeatBookingMode = false;
+  let recurringRepeatChallenge = "";
+  const repeatVerification = form.querySelector("[data-recurring-repeat-verification]");
+  const recurringPlanPanel = form.querySelector("[data-recurring-plan-panel]");
+  const recurringPlanSummary = form.querySelector("[data-recurring-plan-summary]");
+  recurringOrderNumberInput?.addEventListener("input", () => {
+    recurringVerifiedOrder = "";
+    recurringRepeatChallenge = "";
+    repeatVerification.hidden = true;
+    recurringPlanContext = null;
+    form.elements.recurringPlan.value = "";
+    recurringPlanPanel.hidden = true;
+    recurringPlanSummary.hidden = true;
+  });
+  const showRecurringInitialDialog = () => {
+    if (recurringInitialDialog && !recurringInitialDialog.open) recurringInitialDialog.showModal();
+  };
+  recurringInitialButtons.forEach(button => button.addEventListener("click", () => {
+    recurringInitialAnswer = button.dataset.recurringInitial;
+    recurringInitialButtons.forEach(choice => {
+      const selected = choice === button;
+      choice.classList.toggle("is-selected", selected);
+      choice.setAttribute("aria-pressed", String(selected));
+    });
+    recurringReference.hidden = recurringInitialAnswer !== "yes";
+    recurringPlanPanel.hidden = recurringInitialAnswer !== "yes" || !recurringVerifiedOrder || Boolean(recurringPlanContext?.locked);
+    recurringPlanSummary.hidden = recurringInitialAnswer !== "yes" || !recurringPlanContext?.plan;
+    setStatus(status, "");
+    if (recurringInitialAnswer === "no") showRecurringInitialDialog();
+    else recurringOrderNumberInput?.focus();
+  }));
+  const reviewRecurringAnswer = () => {
+    recurringInitialDialog.close();
+    recurringInitialButtons[0]?.focus();
+  };
+  recurringInitialDialog?.querySelector("[data-recurring-review]").addEventListener("click", reviewRecurringAnswer);
+  recurringInitialDialog?.addEventListener("cancel", event => {
+    event.preventDefault();
+    reviewRecurringAnswer();
+  });
+  recurringInitialDialog?.querySelector("[data-recurring-change-service]").addEventListener("click", () => {
+    recurringInitialDialog.close();
+    setStatus(status, "");
+    enterServiceChoice();
+  });
   const serviceChoiceButtons = Array.from(form.querySelectorAll("[data-booking-service]"));
   const propertyTypeForm = form.querySelector("[data-property-type-form]");
   const propertyTypeButtons = Array.from(form.querySelectorAll("[data-booking-property-type]"));
@@ -765,6 +816,10 @@
           windowMode,
           serviceChoiceMode,
           recurringDetailsMode,
+          recurringPlanContext,
+          recurringVerifiedOrder,
+          recurringInitialAnswer,
+          repeatBookingMode,
           propertyTypeMode,
           unitCountMode,
           quoteDetailsMode
@@ -1016,6 +1071,10 @@
     const stepSummary = document.querySelector("[data-step-summary]");
     if (stepSummary) stepSummary.textContent = `Step ${step} of 4`;
     syncStageProgress();
+    if (repeatBookingMode) {
+      form.querySelectorAll('[data-cleaning-schedule-details], [data-stage-target], [data-back="2"]').forEach(element => { element.hidden = true; });
+      form.elements.address.closest("section").hidden = true;
+    }
     wizardDialog?.scrollTo({ top: 0, behavior: "smooth" });
     persistBookingDraft();
   };
@@ -2118,7 +2177,7 @@
     quoteDetailsMode = false;
     syncMobileQuestion();
     wizardDialog?.scrollTo({ top: 0, behavior: "smooth" });
-    window.setTimeout(() => recurringOrderNumberInput?.focus(), 40);
+    window.setTimeout(() => (recurringInitialAnswer === "yes" ? recurringOrderNumberInput : recurringInitialButtons[0])?.focus(), 40);
   };
   const enterPropertyTypeChoice = () => {
     windowMode = false;
@@ -2304,6 +2363,16 @@
     return `${pkg?.cleanerCount || 2} cleaners${compact ? " · Up to" : " for up to"} ${formatTime(pkg?.teamHours || 0)}`;
   };
   const availabilityRequest = async () => {
+    if (state.serviceKey === "recurring") {
+      const response = await fetch("/api/booking/recurring-discount", {
+        method: "POST", headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ lookupOnly: true, previousOrderNumber: value("recurringOrderNumber"), recurringPlan: value("recurringPlan") })
+      });
+      const data = await response.json();
+      if (!response.ok || !data.windowStart) throw new Error(data.error || "Please verify your previous cleaning and choose a recurring plan first.");
+      recurringPlanContext = data;
+      form.elements.recurringPlan.value = data.plan;
+    }
     if (/_formula$/.test(state.pricingMode)) {
       return fetch("/api/booking/availability", {
         method: "POST",
@@ -2773,6 +2842,11 @@
     if (calendarNext) calendarNext.disabled = state.calendarMonthIndex >= state.availableMonths.length - 1;
   };
   const loadSchedulerSlots = (slots = []) => {
+    if (state.serviceKey === "recurring") {
+      if (!recurringPlanContext?.windowStart) throw new Error("Please verify your previous cleaning and recurring plan before choosing an appointment.");
+      slots = slots.filter(slot => slot.date >= recurringPlanContext.windowStart && slot.date <= recurringPlanContext.windowEnd);
+      if (!slots.length) throw new Error(`No appointments are available within your recurring window (${recurringPlanContext.windowStart} to ${recurringPlanContext.windowEnd}). Please contact us to arrange your next cleaning.`);
+    }
     state.availableSlots = slots.slice();
     state.availableDates = [...new Set(state.availableSlots.map((slot) => slot.date))].sort();
     state.availableMonths = [...new Set(state.availableDates.map(monthKeyForDate))];
@@ -2780,7 +2854,7 @@
     state.selectedDate = "";
     state.arrivalPreference = "";
     clearArrivalDiscount();
-    setSchedulerStatus("");
+    setSchedulerStatus(state.serviceKey === "recurring" ? `Your ${recurringPlanContext.percent}% recurring discount applies to available dates from ${longDate(recurringPlanContext.windowStart)} to ${longDate(recurringPlanContext.windowEnd)}.` : "");
 
     if (scheduleSelect) {
       scheduleSelect.replaceChildren(new Option("Select an appointment", ""));
@@ -3410,10 +3484,63 @@
       return;
     }
     if (recurringDetailsMode) {
+      if (recurringInitialAnswer !== "yes") {
+        if (recurringInitialAnswer === "no") showRecurringInitialDialog();
+        else {
+          setStatus(status, "Please tell us whether you’ve already had an initial cleaning with us.");
+          recurringInitialButtons[0]?.focus();
+        }
+        return;
+      }
       const previousOrderNumber = String(recurringOrderNumberInput?.value || "").trim();
       if (!previousOrderNumber) {
-        setStatus(status, "Enter your previous appointment or order number.");
+        setStatus(status, "Enter your previous order number or booking reference.");
         recurringOrderNumberInput?.focus();
+        return;
+      }
+      if (recurringRepeatChallenge) {
+        const button = document.querySelector("[data-check-eligibility]");
+        button.disabled = true;
+        try {
+          const verified = await fetch("/api/booking/manage", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ action: "verify-code", challenge: recurringRepeatChallenge, code: value("recurringRepeatCode") }) });
+          const verification = await verified.json();
+          if (!verified.ok) throw new Error(verification.error || "Please check your verification code.");
+          const response = await fetch("/api/booking/recurring-discount", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ action: "repeat-details", previousOrderNumber, token: verification.token }) });
+          const data = await response.json();
+          if (!response.ok) throw new Error(data.error || "We could not load your previous cleaning.");
+          recurringPlanContext = data;
+          form.elements.recurringPlan.value = data.plan;
+          Object.entries(data.customer).forEach(([key, val]) => { if (form.elements[key]) form.elements[key].value = val || ""; });
+          state.serviceKey = "recurring";
+          state.pricingMode = "recurring_formula";
+          state.eligibility = data.eligibility;
+          state.unitDetails = data.unitDetails;
+          state.packageIds = [];
+          state.promo = null;
+          state.packageBeforePromo = null;
+          state.arrivalPreference = "";
+          applyServiceZip(data.customer.zip);
+          form.querySelectorAll('input[name="priorities"]').forEach(input => { input.checked = data.priorities.includes(input.value); });
+          const available = await availabilityRequest();
+          const result = await available.json();
+          if (!available.ok) throw new Error(result.error || "Appointments could not be loaded.");
+          state.package = result.package;
+          loadSchedulerSlots(result.slots || []);
+          repeatBookingMode = true;
+          recurringDetailsMode = false;
+          syncQuotedServiceCopy();
+          goToStep(3);
+          setStatus(status, "");
+        } catch (error) {
+          recurringRepeatChallenge = "";
+          repeatVerification.hidden = true;
+          setStatus(status, error.message || "Please try again.", "error");
+        } finally { button.disabled = false; }
+        return;
+      }
+      if (recurringVerifiedOrder === previousOrderNumber && !form.elements.recurringPlan.value) {
+        setStatus(status, "Choose weekly, biweekly, or monthly cleaning to continue.");
+        form.elements.recurringPlan.focus();
         return;
       }
       const continueButton = document.querySelector("[data-check-eligibility]");
@@ -3423,11 +3550,32 @@
         const response = await fetch("/api/booking/recurring-discount", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ previousOrderNumber, lookupOnly: true })
+          body: JSON.stringify({ previousOrderNumber, lookupOnly: true, recurringPlan: recurringVerifiedOrder === previousOrderNumber ? value("recurringPlan") : "" })
         });
         const data = await response.json().catch(() => ({}));
         if (!response.ok) throw new Error(data.error || "We could not verify that completed cleaning.");
         setStatus(status, "");
+        recurringVerifiedOrder = previousOrderNumber;
+        recurringPlanContext = data;
+        recurringPlanPanel.hidden = Boolean(data.locked);
+        if (!data.plan) {
+          recurringPlanPanel.hidden = false;
+          form.elements.recurringPlan.focus();
+          return;
+        }
+        form.elements.recurringPlan.value = data.plan;
+        recurringPlanSummary.hidden = false;
+        recurringPlanSummary.textContent = `Your plan: ${data.plan === "biweekly" ? "Every two weeks" : data.plan === "weekly" ? "Weekly" : "Monthly"} · ${data.percent}% off. Next cleaning window: ${data.windowStart} to ${data.windowEnd}. Contact us to change plans.`;
+        if (data.repeatBooking && data.locked) {
+          const sent = await fetch("/api/booking/recurring-discount", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ action: "request-repeat-code", previousOrderNumber }) });
+          const challenge = await sent.json();
+          if (!sent.ok) throw new Error(challenge.error || "We could not send your verification code.");
+          recurringRepeatChallenge = challenge.challenge;
+          repeatVerification.hidden = false;
+          setStatus(status, `A verification code was sent to ${challenge.destination}.`, "info");
+          form.elements.recurringRepeatCode.focus();
+          return;
+        }
         if (recurringWelcomeName) recurringWelcomeName.textContent = data.firstName || "customer";
         if (recurringWelcomeOverlay) {
           window.clearTimeout(recurringWelcomeTimer);
@@ -3997,6 +4145,7 @@
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({
             previousOrderNumber: value("recurringOrderNumber"),
+            recurringPlan: value("recurringPlan"),
             schedule: value("schedule"),
             customer: { email: value("email"), phone: value("phone"), address: "" }
           })
@@ -4020,6 +4169,7 @@
   document.querySelectorAll("[data-back]").forEach((button) => {
     button.addEventListener("click", () => {
       const targetStep = Number(button.dataset.back);
+      if (repeatBookingMode && targetStep < 3) return;
       if (targetStep === 1) {
         if (state.serviceKey === "window") {
           enterWindowDetails();
@@ -4093,6 +4243,7 @@
       notes: value("notes"),
       promoCode: state.promo?.code || "",
       recurringOrderNumber: value("recurringOrderNumber"),
+      recurringPlan: value("recurringPlan"),
       customer: {
         firstName: value("firstName"),
         lastName: value("lastName"),
@@ -4300,6 +4451,10 @@
       windowMode = Boolean(savedView.windowMode) || state.serviceKey === "window";
       serviceChoiceMode = Boolean(savedView.serviceChoiceMode);
       recurringDetailsMode = Boolean(savedView.recurringDetailsMode);
+      recurringPlanContext = savedView.recurringPlanContext || null;
+      recurringVerifiedOrder = savedView.recurringVerifiedOrder || "";
+      recurringInitialAnswer = savedView.recurringInitialAnswer || "";
+      repeatBookingMode = Boolean(savedView.repeatBookingMode);
       propertyTypeMode = Boolean(savedView.propertyTypeMode);
       unitCountMode = Boolean(savedView.unitCountMode);
       quoteDetailsMode = Boolean(savedView.quoteDetailsMode);
