@@ -36,7 +36,7 @@ async function requestChange(booking, body, slot, now = new Date()) {
   if (body.acceptPolicy !== true || body.policyVersion !== VERSION || Number(body.feeCents) !== t.feeCents) throw fail('Review and accept the current rescheduling fee and payment terms.');
   if (slot.value === booking.schedule) throw fail('Choose a different appointment.');
   const request = { id: crypto.randomUUID(), status: 'pending', previousSchedule: booking.schedule, schedule: slot.value, label: slot.label, requestedAt: now.toISOString(), feeCents: t.feeCents, cancellationCents: t.cancellationCents, late: t.late, consent: POLICY, policyVersion: VERSION, acceptedAt: now.toISOString(), directContactConfirmed: body.directContact === true };
-  return save(booking, { ...t.state, request });
+  return save(booking, { ...t.state, request, ownerNotifications: {}, customerNotifications: {} });
 }
 async function stripeGet(id) {
   const key = process.env.STRIPE_SECRET_KEY || process.env.Stripe_Secret_Key;
@@ -50,20 +50,24 @@ async function decide(booking, requestId, decision) {
   let req = state.request;
   if (state.cancellationOperation) throw fail('Cancellation is already being processed.');
   if (!req || req.id !== requestId) throw fail('Refresh the booking to see its latest request.');
-  if (req.status === 'approved') return booking;
+  if (req.status === 'approved' || (req.status === 'declined' && decision === 'decline')) return booking;
   if (!['Confirmed', 'Cleaner assigned'].includes(booking.status) || !['pending', 'processing', 'declining'].includes(req.status)) throw fail('This request can no longer be approved.');
   if (decision === 'decline') {
     booking = await save(booking, { ...state, request: { ...req, status: 'declining' } });
     state = booking.estimate.rescheduling; req = state.request;
+    let feeRefund = req.feeRefund || null;
     if (req.paymentIntentId) {
       let payment = await stripeGet(req.paymentIntentId);
       if (!['succeeded', 'canceled'].includes(payment.status)) {
         try { payment = await stripePost({ path: `payment_intents/${req.paymentIntentId}/cancel`, idempotencyKey: `reschedule-cancel-${req.id}`, params: {} }); }
         catch (error) { payment = await stripeGet(req.paymentIntentId); if (!['succeeded', 'canceled'].includes(payment.status)) throw error; }
       }
-      if (payment.status === 'succeeded') await stripePost({ path: 'refunds', idempotencyKey: `reschedule-declined-refund-${req.id}`, params: { payment_intent: req.paymentIntentId, amount: req.feeCents } });
+      if (payment.status === 'succeeded') {
+        const refund = await stripePost({ path: 'refunds', idempotencyKey: `reschedule-declined-refund-${req.id}`, params: { payment_intent: req.paymentIntentId, amount: req.feeCents } });
+        feeRefund = { id: refund.id, status: refund.status, amountCents: req.feeCents };
+      }
     }
-    return save(booking, { ...state, fees: (state.fees || []).map(fee => fee.requestId === req.id ? { ...fee, status: 'refunded' } : fee), request: { ...req, status: 'declined', decidedAt: new Date().toISOString() } });
+    return save(booking, { ...state, fees: (state.fees || []).map(fee => fee.requestId === req.id ? { ...fee, status: 'refunded' } : fee), request: { ...req, feeRefund, status: 'declined', decidedAt: new Date().toISOString() } });
   }
   if (req.status === 'declining') throw fail('Complete the decline and refund before continuing.');
   if (decision !== 'approve') throw fail('Choose approve or decline.');
@@ -124,10 +128,11 @@ async function beginCancellation(booking, source) {
   }
   return save(booking, { ...state, cancellationOperation: { source, startedAt: new Date().toISOString() } });
 }
-async function recordOwnerNotification(bookingId, requestId, delivery) {
+async function recordOwnerNotification(bookingId, requestId, delivery, audience = "owner") {
   const booking = await shared.getBooking(bookingId);
   const state = booking?.estimate?.rescheduling;
   if (!state || state.request?.id !== requestId) return;
-  return save(booking, { ...state, ownerNotifications: { ...(state.ownerNotifications || {}), [delivery.event]: delivery } });
+  const key = audience === "customer" ? "customerNotifications" : "ownerNotifications";
+  return save(booking, { ...state, [key]: { ...(state[key] || {}), [delivery.event]: delivery } });
 }
 module.exports = { VERSION, POLICY, terms, cancellationProtection, requestChange, decide, beginCancellation, recordOwnerNotification };

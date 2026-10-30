@@ -938,7 +938,9 @@ async function handler(request, response) {
           const ownerDelivery = await require("../booking/_reschedule-notifications").notifyOwner(updated, approved ? "approved" : "declined");
           await reschedulingPolicy.recordOwnerNotification(updated.id, updated.estimate.rescheduling.request.id, ownerDelivery).catch(() => {});
         }
-        await require("../booking/_manage").notifyManagementChange(updated, approved ? "Appointment change approved" : "Appointment change declined", approved ? `Your appointment change is approved for ${updated.schedule_label}. Any applicable rescheduling fee was charged to your deposit payment method.` : "Your appointment change request was declined. Your original appointment remains confirmed.").catch(() => {});
+        const latest = await getBooking(updated.id);
+        const customerDelivery = await require("../booking/_reschedule-customer-notifications").notifyCustomerDecision(latest);
+        await reschedulingPolicy.recordOwnerNotification(updated.id, updated.estimate.rescheduling.request.id, customerDelivery, "customer").catch(() => {});
         return json(response, 200, { ok: true });
       }
       if (body.bookingAction === "save_details") return updateBookingDetails(body, response);
