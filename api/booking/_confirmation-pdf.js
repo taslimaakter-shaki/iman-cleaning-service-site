@@ -275,6 +275,23 @@ function buildSections({ booking, record }) {
   }
 
   sections.push({
+    title: "Rescheduling and cancellation policy",
+    rows: [
+      ["Approval required", "Every appointment change requires IMAN approval and availability. Your original appointment remains confirmed until the change is approved."],
+      ["At least 48 hours ahead", "One approved reschedule is free. Exactly 48 hours before the appointment is outside the late window."],
+      ["Less than 48 hours ahead", "An approved late reschedule costs 10% of the booked cleaning price, including tax and excluding separate rush or additional-work charges. This fee is separate from the cleaning payment."],
+      ["Second or later request", "Direct contact with IMAN and approval are required. The 10% fee applies if the request is received less than 48 hours before the appointment."],
+      ["Cancellation after a late reschedule", "The 25% cancellation fee still applies regardless of the new appointment date. Paid late-rescheduling fees are credited toward it. A paid 10% fee leaves 15% to retain from the deposit; the date change does not restore free cancellation."],
+      ["Payment method", "Approved booking fees are charged to the same saved payment method used for the 25% deposit. Amounts already paid are not charged twice. A failed or unverified fee payment does not confirm a new appointment."],
+      ["If IMAN cancels", "Paid rescheduling fees are refunded."],
+      ["Policy and acceptance", estimate.agreementVersion === "2026-10-30-rescheduling-v1"
+        ? "This policy is included in the Service Agreement for this booking. The recorded acceptance details follow below."
+        : "Current policy for new bookings and separately accepted appointment-change requests. This summary does not change or replace the original agreement acceptance recorded below."],
+      ["Service Agreement", "https://www.imancleaningservice.com/agreement.html"]
+    ]
+  });
+
+  sections.push({
     title: "Agreement confirmation",
     rows: [
       ["Agreement accepted", "Yes"],

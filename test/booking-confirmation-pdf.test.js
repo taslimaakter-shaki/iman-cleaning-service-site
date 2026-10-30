@@ -129,6 +129,15 @@ const record = {
     "The booking record does not duplicate itemized pricing or payment receipt details");
   assert.ok(sections.flatMap((section) => section.rows).some(([label, value]) => label === "Service ZIP code" && value === "11432"));
   assert.ok(sections.flatMap((section) => section.rows).some(([label, value]) => label === "Booking reference" && value === booking.id));
+  const policySection = sections.find(section => section.title === "Rescheduling and cancellation policy");
+  const policyText = policySection.rows.map(row => row.join(": ")).join(" ");
+  assert.match(policyText, /10%/);
+  assert.match(policyText, /25%/);
+  assert.match(policyText, /15%/);
+  assert.match(policyText, /same saved payment method/);
+  assert.match(policyText, /original appointment remains confirmed/);
+  assert.match(policyText, /does not change or replace the original agreement acceptance/);
+  assert.equal(sections.find(section => section.title === "Agreement confirmation").rows.find(row => row[0] === "Agreement version")[1], booking.estimate.agreementVersion);
   const customerNotesSection = sections.find((section) => section.title === "Customer notes - review before service");
   assert.equal(customerNotesSection?.tone, "caution");
   assert.deepEqual(customerNotesSection?.rows, [["Customer instructions", "Customer requested special attention in the kitchen. Maximum labor: 5 labor-hours; 1 team member for up to 5 hours, or 2 team members for up to 2 hours 30 minutes. Service may be completed sooner."]]);
