@@ -409,6 +409,7 @@
   let recurringPlanContext = null;
   let recurringVerifiedOrder = "";
   let repeatBookingMode = false;
+  let repeatExtrasDirty = false;
   let recurringRepeatChallenge = "";
   const repeatVerification = form.querySelector("[data-recurring-repeat-verification]");
   const recurringPlanPanel = form.querySelector("[data-recurring-plan-panel]");
@@ -1072,6 +1073,7 @@
     if (stepSummary) stepSummary.textContent = `Step ${step} of 4`;
     syncStageProgress();
     if (repeatBookingMode) {
+      if (step === 3) renderRepeatExtras();
       form.querySelectorAll('[data-cleaning-schedule-details], [data-stage-target], [data-back="2"]').forEach(element => { element.hidden = true; });
       form.elements.address.closest("section").hidden = true;
     }
@@ -2864,6 +2866,95 @@
     renderTimeSlots();
     persistBookingDraft();
   };
+  const repeatExtrasPanel = form.querySelector("[data-repeat-extras]");
+  const repeatExtrasFields = form.querySelector("[data-repeat-extras-fields]");
+  const repeatExtrasStatus = form.querySelector("[data-repeat-extras-status]");
+  const renderRepeatExtras = () => {
+    repeatExtrasPanel.hidden = !repeatBookingMode || !state.unitDetails.some(unit => Number(unit.kitchens) > 0);
+    if (repeatExtrasPanel.hidden || repeatExtrasDirty) return;
+    repeatExtrasFields.replaceChildren();
+    state.unitDetails.forEach((unit, index) => {
+      if (!(Number(unit.kitchens) > 0)) return;
+      const group = document.createElement("fieldset");
+      group.className = "booking-field-wide";
+      group.dataset.repeatUnit = String(index);
+      const legend = document.createElement("legend");
+      legend.textContent = state.unitDetails.length > 1 ? `Unit ${index + 1} · Kitchen extras` : "Kitchen extras";
+      group.append(legend);
+      const addField = (key, title, options, min) => {
+        const label = document.createElement("label");
+        const span = document.createElement("span");
+        span.textContent = title;
+        const control = document.createElement(options ? "select" : "input");
+        control.dataset.repeatExtra = key;
+        if (options) options.forEach(([value, text]) => control.add(new Option(text, value)));
+        else { control.type = "number"; control.min = String(min); control.max = "100"; control.step = "1"; }
+        control.value = unit[key] || (options ? options[0][0] : String(min));
+        label.append(span, control);
+        group.append(label);
+        return control;
+      };
+      addField("refrigerator", "Inside refrigerator", [["no", "Not this visit"], ["empty", "Empty"], ["not-empty", "Not empty"]]);
+      addField("oven", "Inside oven", [["no", "Not this visit"], ["yes", "Add inside oven cleaning"]]);
+      const cabinets = addField("cabinets", "Inside cabinets and drawers", [["no", "Not this visit"], ["yes", "Add inside cabinet cleaning"]]);
+      const count = addField("cabinetCount", "Number of cabinet compartments", null, 1);
+      const drawers = addField("drawerCount", "Number of drawers", null, 0);
+      const empty = addField("cabinetsEmpty", "Will the cabinets and drawers be empty?", [["yes", "Empty"], ["no", "Not empty"]]);
+      const syncCabinets = () => [count, drawers, empty].forEach(control => {
+        control.disabled = cabinets.value !== "yes";
+        control.parentElement.hidden = cabinets.value !== "yes";
+      });
+      cabinets.addEventListener("change", syncCabinets);
+      syncCabinets();
+      repeatExtrasFields.append(group);
+    });
+  };
+  repeatExtrasFields?.addEventListener("input", () => {
+    repeatExtrasDirty = true;
+    setStatus(repeatExtrasStatus, "Update your extras before choosing an appointment or continuing to payment.", "info");
+  });
+  form.querySelector("[data-update-repeat-extras]")?.addEventListener("click", async event => {
+    const button = event.currentTarget;
+    const continueButton = document.querySelector("[data-continue-contact]");
+    const previousUnits = state.unitDetails;
+    try {
+      const updated = state.unitDetails.map(unit => ({ ...unit }));
+      repeatExtrasFields.querySelectorAll("[data-repeat-unit]").forEach(group => {
+        const unit = updated[Number(group.dataset.repeatUnit)];
+        group.querySelectorAll("[data-repeat-extra]").forEach(control => {
+          if (!control.disabled && !control.checkValidity()) throw new Error("Enter a valid number of cabinets and drawers (up to 100 each).");
+          unit[control.dataset.repeatExtra] = control.value;
+        });
+        if (unit.cabinets !== "yes") Object.assign(unit, { cabinetCount: "", drawerCount: "", cabinetsEmpty: "" });
+      });
+      button.disabled = true;
+      continueButton.disabled = true;
+      state.unitDetails = updated;
+      const response = await availabilityRequest();
+      const data = await response.json();
+      if (!response.ok) throw new Error(data.error || "We could not update your extras.");
+      if (!(data.slots || []).some(slot => slot.date >= recurringPlanContext.windowStart && slot.date <= recurringPlanContext.windowEnd)) {
+        throw new Error("No appointments fit these extras within your recurring window. Please contact us to arrange your cleaning.");
+      }
+      state.package = data.package;
+      state.promo = null;
+      state.packageBeforePromo = null;
+      state.packageBeforeArrivalDiscount = null;
+      state.arrivalDiscount = null;
+      state.arrivalPreference = "";
+      resetAgreementReview();
+      loadSchedulerSlots(data.slots || []);
+      repeatExtrasDirty = false;
+      renderRepeatExtras();
+      renderQuoteOverview(state.package);
+      renderPriceBreakdown(state.package);
+      setStatus(repeatExtrasStatus, "Extras updated. Choose your appointment to see your final total with eligible discounts.", "success");
+    } catch (error) {
+      state.unitDetails = previousUnits;
+      repeatExtrasDirty = true;
+      setStatus(repeatExtrasStatus, error.message, "error");
+    } finally { button.disabled = false; continueButton.disabled = false; }
+  });
   calendarPrevious?.addEventListener("click", () => {
     if (state.calendarMonthIndex <= 0) return;
     state.calendarMonthIndex -= 1;
@@ -4133,6 +4224,11 @@
         ? timeSlots?.querySelector("button")
         : calendarGrid?.querySelector("button.is-available");
       focusTarget?.focus();
+      return;
+    }
+    if (repeatBookingMode && repeatExtrasDirty) {
+      setSchedulerStatus("Please update your extras before continuing to payment.", "error");
+      form.querySelector("[data-update-repeat-extras]")?.focus();
       return;
     }
     if (state.serviceKey === "recurring") {

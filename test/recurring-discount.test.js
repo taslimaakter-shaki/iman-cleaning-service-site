@@ -70,7 +70,7 @@ const fs = require("node:fs");
 const vm = require("node:vm");
 const source = fs.readFileSync(require.resolve("../book-now.js"), "utf8");
 const start = source.indexOf("  const loadSchedulerSlots = (slots = []) => {");
-const end = source.indexOf("  calendarPrevious?.addEventListener", start);
+const end = source.indexOf("  const repeatExtrasPanel", start);
 const browser = {
   state: {serviceKey: "recurring"}, recurringPlanContext: context,
   monthKeyForDate: date => date.slice(0,7), clearArrivalDiscount() {},
