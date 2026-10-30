@@ -90,6 +90,16 @@
     .action-back{margin:0 0 22px;padding:0;background:transparent;color:var(--teal);min-height:36px;border-radius:6px;font-size:.85rem}
     .action-back:hover{background:var(--soft)}
     @media(max-width:600px){.action-choices{grid-template-columns:1fr}}
+    .reschedule-fee{display:flex;justify-content:space-between;align-items:center;gap:20px;padding:18px 20px;background:#edf7f6;border:1px solid #d7e8e5;border-radius:12px;margin-bottom:22px}
+    .reschedule-fee strong{font-size:1.65rem;color:#075865;white-space:nowrap;font-variant-numeric:tabular-nums}
+    .reschedule-fee b{display:block;font-size:.95rem}
+    .reschedule-fee small{display:block;margin-top:5px;color:#607579;font-size:.8rem;line-height:1.5}
+    .reschedule-terms{margin:0}
+    .reschedule-terms>div{display:grid;grid-template-columns:145px minmax(0,1fr);gap:18px;padding:15px 0;border-bottom:1px solid #e7eeec}
+    .reschedule-terms dt{font-weight:750;font-size:.86rem}
+    .reschedule-terms dd{margin:0;font-size:.84rem;line-height:1.65;color:#536a6e}
+    .reschedule-approval{padding:15px 17px;background:#fff8e9;border:1px solid #eeddb8;border-radius:12px;margin:20px 0 0;font-size:.84rem;line-height:1.6;color:#6b5425}
+    @media(max-width:480px){.reschedule-terms>div{grid-template-columns:1fr;gap:5px}.reschedule-fee{padding:15px}}
     .invoice-preview{margin-top:20px;border:1px solid var(--line);border-radius:20px;overflow:hidden;background:#fff;box-shadow:0 10px 30px rgba(5,61,69,.06)}
     .invoice-heading{display:flex;justify-content:space-between;align-items:flex-start;gap:16px;padding:24px;background:#f0f7f6;border-top:4px solid var(--teal)}
     .invoice-heading h3{margin:4px 0 0;font-size:1.35rem}
@@ -214,7 +224,7 @@
           <p class="muted" data-selected-appointment aria-live="polite"></p>
           <section class="invoice-preview hidden" data-price-review aria-label="Revised invoice preview"></section>
           <label class="check hidden" data-price-consent-label><input type="checkbox" data-price-consent><span>I accept the requested arrival preference and revised cleaning total shown above.</span></label>
-          <div class="policy" data-reschedule-policy></div>
+          <section class="invoice-preview reschedule-summary" data-reschedule-policy aria-label="Rescheduling terms and fee"></section>
           <label class="check"><input type="checkbox" data-reschedule-consent><span>I accept these terms and authorize any approved fee to be charged to the payment method used for my deposit.</span></label>
           <label class="check hidden" data-second-request><input type="checkbox" data-direct-contact><span>I have contacted IMAN about this additional rescheduling request.</span></label>
           <button type="button" data-reschedule>Submit change request</button>
@@ -471,7 +481,30 @@
         document.querySelector("[data-cancellation-receipt]").classList.toggle("hidden", !booking.cancellationReceiptAvailable);
         document.querySelector("[data-cancellation-receipt-link]").href = `/api/booking/manage?document=cancellation-receipt&token=${encodeURIComponent(token)}`;
         const rescheduling = booking.rescheduling;
-        document.querySelector("[data-reschedule-policy]").textContent = `${rescheduling.policy} Fee for this request: ${money(rescheduling.feeCents / 100)}. ${["pending", "processing", "declining"].includes(rescheduling.requestStatus) ? "Your request is awaiting review; your original appointment remains confirmed." : ""}`;
+        const policyPanel = document.querySelector("[data-reschedule-policy]");
+        policyPanel.replaceChildren();
+        const policyNode = (tag, className, text) => { const node=document.createElement(tag);node.className=className;node.textContent=text;return node; };
+        const policyHeader=policyNode('div','invoice-heading','');
+        const headerText=policyNode('div','','');
+        headerText.append(policyNode('div','invoice-eyebrow','Appointment change'),policyNode('h3','','Rescheduling summary'));
+        policyHeader.append(headerText,policyNode('span','invoice-badge','Approval required'));
+        const policyBody=policyNode('div','invoice-body','');
+        const feeBox=policyNode('div','reschedule-fee',''),feeDescription=policyNode('div','','');
+        feeDescription.append(policyNode('b','','Rescheduling fee for this request'),policyNode('small','',rescheduling.feeCents > 0 ? 'Separate from your cleaning payment. Charged only if approved.' : 'No rescheduling fee applies to this request.'));
+        feeBox.append(feeDescription,policyNode('strong','',money(rescheduling.feeCents/100)));
+        const termRows=policyNode('dl','reschedule-terms','');
+        const terms=[
+          ['48 hours or more','One approved reschedule requested at least 48 hours before the appointment is free.'],
+          ['Less than 48 hours','A late-rescheduling fee of 10% of the booked cleaning price, including tax, applies. This fee is separate from the cleaning payment.'],
+          ['Second request','Contact IMAN directly before requesting another change. Second and later requests require approval.'],
+          ['If you later cancel','After an approved late reschedule, the 25% cancellation fee still applies even if the new date is more than 48 hours away. Paid late-rescheduling fees are credited toward that fee.'],
+          ['Arrival preference','Changing your arrival preference replaces the flexibility discount and may change your cleaning total. Review and accept the revised total before submitting.'],
+          ['Payment & receipt','Approved booking fees use the same payment method as your 25% deposit. Existing payments are credited toward the cleaning total, and a revised invoice is issued after approval.']
+        ];
+        terms.forEach(([title,description])=>{const row=policyNode('div','','');row.append(policyNode('dt','',title),policyNode('dd','',description));termRows.append(row);});
+        const awaitingReview=['pending','processing','declining'].includes(rescheduling.requestStatus);
+        policyBody.append(feeBox,termRows,policyNode('p','reschedule-approval',awaitingReview ? 'Your request is awaiting review. Your original appointment remains confirmed until we approve the change.' : 'Submitting a request does not change your appointment. Your original appointment remains confirmed until we approve the new date and time.'));
+        policyPanel.append(policyHeader,policyBody);
         document.querySelector("[data-second-request]").classList.toggle("hidden", rescheduling.count < 1);
         document.querySelector("[data-reschedule-consent]").checked = false;
         setBusy(false);
