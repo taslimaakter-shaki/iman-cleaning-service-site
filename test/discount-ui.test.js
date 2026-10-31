@@ -26,6 +26,18 @@ api.state.token='mock-admin';api.state.quotes=[quote,{...quote,id:'OTHER'}];
   api.updateDiscountPreview(form);
   const preview = form.querySelector('[data-discount-preview]').innerHTML;
   for (const price of ['$240.00','$25.00','$215.00','$53.75','$161.25']) assert(preview.includes(price),price);
+  const appliedQuote = {...quote,amountCents:20609,editFields:{...quote.editFields,amountCents:20609,discountCents:0},appliedDiscounts:[
+    {kind:'promoDiscount',label:'Fall cleaning discount',code:'FALL10',percent:5,amountCents:1052,application:'before_tax'},
+    {kind:'arrivalDiscount',label:'Anytime that day arrival discount',percent:5,amountCents:1052,application:'before_tax'}]};
+  const appliedMarkup=api.quoteEditorMarkup(appliedQuote);
+  assert.match(appliedMarkup,/Applied discounts/);assert.match(appliedMarkup,/FALL10/);assert.match(appliedMarkup,/Anytime that day/);
+  assert.equal((appliedMarkup.match(/−\$10.52/g)||[]).length,2);
+  api.quoteFormSnapshots.set(form,appliedQuote);form.elements.discount.value='0';api.updateDiscountPreview(form);
+  assert.match(form.querySelector('[data-discount-preview]').innerHTML,/\$206.09/);
+  assert.match(form.querySelector('[data-discount-preview]').innerHTML,/\$51.52/);
+  form.elements.discount.value='10';api.updateDiscountPreview(form);
+  assert.match(form.querySelector('[data-discount-preview]').innerHTML,/\$196.09/);
+  api.quoteFormSnapshots.set(form,quote);
   form.elements.discount.value='240';api.updateDiscountPreview(form);
   assert.match(form.querySelector('[data-discount-preview]').textContent,/At least \$2/);
   form.elements.discount.value='25';

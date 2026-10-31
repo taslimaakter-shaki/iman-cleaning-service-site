@@ -64,3 +64,15 @@ assert.strictEqual(saved.status, "Quote sent");
 assert.strictEqual(saved.customerName, "Sam Smith");
 
 console.log("CRM quote tests passed");
+
+const discounted = bookingQuote({id:'BK-DISCOUNTED', estimate:{total:206.09,
+  promoCode:'FALL10', promoDiscount:{label:'Fall cleaning discount',percent:5,amountCents:1052},
+  arrivalDiscount:{label:'Anytime that day arrival discount',percent:5,amountCents:1052},
+  payment:{totalCents:20609,depositCents:5152,paidCents:0}}});
+assert.deepStrictEqual(discounted.appliedDiscounts.map(d=>d.amountCents),[1052,1052]);
+assert.strictEqual(discounted.appliedDiscounts[0].code,'FALL10');
+assert.strictEqual(discounted.editFields.discountCents,0,'Existing discounts must not become a new manual discount');
+assert.strictEqual(discounted.amountCents,20609,'Do not subtract existing discounts a second time');
+const recurring = bookingQuote({id:'BK-RECURRING',estimate:{total:180,recurringDiscount:{label:'Weekly',amountCents:2000},manualDiscount:{label:'Welcome',amountCents:1000},payment:{totalCents:18000}}});
+assert.deepStrictEqual(recurring.appliedDiscounts.map(d=>d.kind),['recurringDiscount','manualDiscount']);
+assert.strictEqual(recurring.appliedDiscounts[1].application,'after_tax');

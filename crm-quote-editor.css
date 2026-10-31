@@ -56,3 +56,7 @@
 .crm-external-payment [data-external-payment-preview] { padding: 16px; margin: 16px 0; background: #fff; border: 1px solid #b8ccd0; border-radius: 10px; overflow-wrap: anywhere; }
 .crm-external-payment .crm-detail-grid { grid-template-columns: repeat(2,minmax(0,1fr)); }
 @media(max-width:600px) { .crm-external-payment .crm-detail-grid { grid-template-columns: 1fr; } }
+
+/* Keep discount signs and amounts together while long labels wrap. */
+.crm-quote-editor .crm-payment-totals > div > strong { white-space: nowrap; flex-shrink: 0; }
+.crm-quote-editor .crm-payment-totals > div > span { min-width: 0; }

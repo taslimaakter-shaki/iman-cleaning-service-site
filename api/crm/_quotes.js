@@ -17,6 +17,19 @@ function paidDeposit(booking = {}) {
   return paid > 0 && ["deposit_paid", "paid", "captured", "fully_paid"].includes(String(payment.status || "").toLowerCase());
 }
 
+function appliedDiscounts(estimate = {}, fields) {
+  const discounts = [];
+  for (const [key, fallback] of [['promoDiscount', 'Promotion'], ['recurringDiscount', 'Recurring cleaning discount'], ['arrivalDiscount', 'Flexible arrival discount']]) {
+    const item = estimate[key];
+    if (Number(item?.amountCents) > 0) discounts.push({ kind: key, label: item.label || item.code || fallback,
+      code: item.code || (key === 'promoDiscount' ? estimate.promoCode : '') || '', amountCents: Number(item.amountCents),
+      percent: Number(item.percent || 0), application: 'before_tax' });
+  }
+  const amount = fields ? Number(fields.discountCents || 0) : Number(estimate.manualDiscount?.amountCents || 0);
+  if (amount > 0) discounts.push({ kind: 'manualDiscount', label: fields?.discountLabel || estimate.manualDiscount?.label || 'Manual discount', amountCents: amount, application: 'after_tax' });
+  return discounts;
+}
+
 function bookingQuote(booking) {
   return editableQuote({
     id: booking.id,
@@ -237,7 +250,9 @@ function editableQuote(quote, record, source) {
     editHistory: (edit.history || []).map(item => ({ at: item.at, action: item.action })),
     originalDetails: quote.details || "",
     instantDiscountOnly: source === 'saved' && !edit.fields,
-    discountRevision: edit.revision || ''
+    discountRevision: edit.revision || '',
+    appliedDiscounts: appliedDiscounts(record.estimate || {}, fields),
+    savedPromoCode: source === "saved" && !edit.fields ? record.promoCode || "" : ""
   };
 }
 
@@ -323,6 +338,8 @@ async function listCrmQuotes() {
       quote.customerName = booking.client_name;
       quote.externalPayment = { paidCents: booking.estimate.payment.paidCents, totalCents: booking.estimate.payment.totalCents, remainingCents: booking.estimate.payment.remainingCents, payments: booking.estimate.payment.externalPayments || [] };
       quote.externalBookingSource = 'booking';
+      quote.appliedDiscounts = appliedDiscounts(booking.estimate);
+      quote.savedPromoCode = '';
     }
     if (booking && require("./_quote-admin").paid(booking)) { quote.editLocked = true; if (!quote.deletedAt) quote.status = booking.estimate?.payment?.status === "partial" ? "Partial payment" : "Booked"; }
   }

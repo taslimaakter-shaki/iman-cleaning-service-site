@@ -1763,6 +1763,11 @@
     return quoteMutation(quote, { operation: "payment_link", fields }, "PATCH", $("[data-custom-payment-status]", form.closest("section")), $("button[type=submit]", form));
   }
 
+  function appliedDiscountsMarkup(quote, includeManual = true) {
+    const discounts = (quote.appliedDiscounts || []).filter(item => includeManual || item.kind !== 'manualDiscount');
+    return discounts.map(item => `<div><span>${escapeHtml(item.label)}${item.code && !item.label.includes(item.code) ? ` (${escapeHtml(item.code)})` : ''}${item.percent ? ` — ${escapeHtml(String(item.percent))}%` : ''} (${item.application === 'after_tax' ? 'after tax' : 'before tax'})</span><strong>−${money(item.amountCents)}</strong></div>`).join('');
+  }
+
   function quoteEditorMarkup(quote) {
     if (!quote.editSource) return '<p class="crm-additional-copy">Open the quote folder to view this older record.</p>';
     if (quote.deletedAt) return `<section class="crm-quote-editor"><h3>Quote in Trash</h3><p>This quote is hidden from the active list. Its files and payment history are retained.</p><div class="crm-inline-actions"><button class="crm-primary" type="button" data-restore-quote="${escapeHtml(quote.id)}">Restore quote</button><button class="crm-row-button" type="button" data-view-shortcut="trash">Open Trash</button></div><p data-quote-edit-status role="status"></p></section>`;
@@ -1770,11 +1775,13 @@
     const locked = quote.editLocked ? " disabled" : "";
     const input = (name, label, type = "text", extra = "") => `<label>${label}<input name="${name}" type="${type}" value="${escapeHtml(f[name] ?? "")}" ${extra}></label>`;
     return `<section class="crm-quote-editor">
+      ${(quote.appliedDiscounts || []).length ? `<h3>Applied discounts</h3><div class="crm-payment-totals">${appliedDiscountsMarkup(quote)}<div><span>Current total, including tax</span><strong>${money(quote.amountCents)}</strong></div></div><p>These discounts are already included in the quote total.</p>` : ''}
+      ${quote.savedPromoCode ? `<p>Saved promotion: <strong>${escapeHtml(quote.savedPromoCode)}</strong>. Its final amount and any flexible-arrival discount are confirmed when the customer selects an appointment and checks out.</p>` : ''}
       <div class="crm-inline-actions"><button type="button" class="crm-primary" data-toggle-quote-editor${locked}>Edit quote</button><button type="button" class="crm-row-button" data-toggle-quote-discount${locked}>Add / edit discount</button><button type="button" class="crm-row-button crm-danger-button" data-delete-quote="${escapeHtml(quote.id)}">Delete quote</button></div>
       ${quote.editLocked ? '<p>Payment has already been received. This quote is protected. Use the booking’s additional-work, rescheduling or refund controls for changes.</p>' : ""}
       ${!quote.editLocked ? `<form data-quote-discount-form data-quote-id="${escapeHtml(quote.id)}" hidden>
-        <h3>Quote discount</h3>
-        <p>Enter a dollar amount to subtract from the total after tax. Prices for rooms, add-ons, hours and workers stay unchanged. Enter 0 to remove the discount.</p>
+        <h3>Manual discount</h3>
+        <p>Enter a dollar amount to subtract from the total after tax. Prices for rooms, add-ons, hours and workers stay unchanged. Enter 0 to remove only the manual discount. Existing promotion, recurring and flexible-arrival discounts are shown above.</p>
         ${!f.amountCents ? '<p>Set the quote price first using the quote editor or payment-link setup.</p>' : ''}
         <div class="crm-edit-grid">
           <label>Discount amount ($)<input name="discount" type="number" min="0" max="${Math.max(0, (Number(f.amountCents || 0) + Number(f.discountCents || 0) - 200) / 100).toFixed(2)}" step="0.01" required value="${((f.discountCents || 0) / 100).toFixed(2)}"></label>
@@ -1847,7 +1854,7 @@
       preview.textContent = 'At least $2 of cleaning charges must remain, plus any rush fee.'; return;
     }
     const total = before + rush - cents, deposit = Math.round((before - cents) * .25) + rush;
-    preview.innerHTML = `<div><span>Original total, including tax</span><strong>${money(before + rush)}</strong></div><div><span>${escapeHtml(form.elements.discountLabel.value.trim() || 'Discount')}</span><strong>−${money(cents)}</strong></div><div><span>Revised total</span><strong>${money(total)}</strong></div><div><span>Deposit due</span><strong>${money(deposit)}</strong></div><div><span>Remaining balance</span><strong>${money(total - deposit)}</strong></div>`;
+    preview.innerHTML = `${appliedDiscountsMarkup(quote, false)}<div><span>${(quote.appliedDiscounts || []).some(item => item.kind !== 'manualDiscount') ? 'Total after existing discounts, before manual discount (including tax)' : 'Total before manual discount, including tax'}</span><strong>${money(before + rush)}</strong></div><div><span>${escapeHtml(form.elements.discountLabel.value.trim() || 'Manual discount')}</span><strong>−${money(cents)}</strong></div><div><span>Revised total</span><strong>${money(total)}</strong></div><div><span>Deposit due</span><strong>${money(deposit)}</strong></div><div><span>Remaining balance</span><strong>${money(total - deposit)}</strong></div>`;
   }
 
   function saveQuoteDiscount(form) {
