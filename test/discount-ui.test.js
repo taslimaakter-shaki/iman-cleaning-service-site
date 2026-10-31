@@ -11,13 +11,16 @@ class Element {
 }
 const document = new Element(), requests = [], window = {navigator:{},matchMedia:()=>({matches:false}),confirm:()=>true};
 let source = fs.readFileSync(path.join(__dirname,'../crm.js'),'utf8');
-source = source.replace(/\}\)\(\);\s*$/, 'window.test={state,quoteEditorMarkup,updateDiscountPreview,saveQuoteDiscount,quoteFormSnapshots};})();');
+source = source.replace(/\}\)\(\);\s*$/, 'window.test={state,externalPaymentMarkup,quoteEditorMarkup,updateDiscountPreview,saveQuoteDiscount,quoteFormSnapshots};})();');
 vm.runInNewContext(source,{document,window,navigator:{userAgent:'Test',platform:'Test'},sessionStorage:{getItem:()=>''},localStorage:{getItem:()=>''},setTimeout:()=>1,clearTimeout(){},console,
   fetch: async (url,options) => { assert.equal(url,'/api/crm/quotes'); requests.push({url,...options}); return {ok:true,json:async()=>options.method?{ok:true,paymentReady:true}:{quotes:window.test.state.quotes}}; }});
 const api = window.test;
 const quote = {id:'SELECTED',type:'Instant quote',editSource:'saved',editVersion:'version-1',customerName:'Selected Customer',editFields:{amountCents:19000,discountCents:5000,discountLabel:'Welcome',rushFeeCents:0,submittedFields:[]}};
 api.state.token='mock-admin';api.state.quotes=[quote,{...quote,id:'OTHER'}];
 (async()=>{
+  assert.match(api.externalPaymentMarkup(quote), /Book appointment manually/);
+  assert.match(api.externalPaymentMarkup(quote), /deposit received by Zelle/);
+  assert.match(api.externalPaymentMarkup({...quote,externalPayment:{paidCents:5000,remainingCents:10000,payments:[]}}), /Record payment \/ view history/);
   for (const editSource of ['saved','booking','custom','legacy']) assert.match(api.quoteEditorMarkup({...quote,editSource}),/Add \/ edit discount/);
   assert.doesNotMatch(api.quoteEditorMarkup({...quote,editLocked:true}),/<form data-quote-discount-form/);
   assert.match(api.quoteEditorMarkup({...quote,editFields:{...quote.editFields,discountLabel:'<script>bad()</script>'}}),/&lt;script&gt;/);

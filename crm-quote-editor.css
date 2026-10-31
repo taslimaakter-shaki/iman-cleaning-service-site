@@ -60,3 +60,5 @@
 /* Keep discount signs and amounts together while long labels wrap. */
 .crm-quote-editor .crm-payment-totals > div > strong { white-space: nowrap; flex-shrink: 0; }
 .crm-quote-editor .crm-payment-totals > div > span { min-width: 0; }
+
+.crm-quote-editor summary.crm-manual-booking-action { display: inline-block; cursor: pointer; padding: 14px 20px; }

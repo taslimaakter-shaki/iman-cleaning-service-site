@@ -1409,7 +1409,10 @@
     const f = quote.editFields || {}, p = quote.externalPayment;
     const needsDetails = quote.editSource === 'saved' && !quote.bookingId;
     const history = (p?.payments || []).map(item => `<li>${escapeHtml(submittedDate(item.receivedAt))}: ${escapeHtml(money(item.amountCents))} · ${escapeHtml(item.method)} · ${escapeHtml(item.reference)}<br>Email: ${escapeHtml(item.delivery?.email?.status || 'pending')}; text: ${escapeHtml(item.delivery?.sms?.status || 'pending')}</li>`).join('');
-    return `<section class="crm-detail-section crm-quote-editor crm-external-payment"><details><summary><strong>Record Zelle / external payment</strong></summary>
+    return `<section class="crm-detail-section crm-quote-editor crm-external-payment">
+      <h3>${p ? 'Appointment payments' : 'Book this appointment'}</h3>
+      <p>${p ? 'Record another received payment or review this appointment’s payment history.' : 'Confirm this instant quote using a deposit received by Zelle, cash, cleared check or bank transfer.'}</p>
+      <details><summary class="crm-primary crm-manual-booking-action"><strong>${p ? 'Record payment / view history' : 'Book appointment manually'}</strong></summary>
       <p>Verify receipt in your bank before recording a payment. This records money already received; it does not charge the customer.</p>
       ${p ? `<p>Total paid: <strong>${escapeHtml(money(p.paidCents))}</strong> · Outstanding: <strong>${escapeHtml(money(p.remainingCents))}</strong></p>` : ''}
       ${history ? `<ul>${history}</ul><button type="button" class="crm-row-button" data-open-booking="${escapeHtml(quote.bookingId)}">Manage appointment</button>` : ''}
