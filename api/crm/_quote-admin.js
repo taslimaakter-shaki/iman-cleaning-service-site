@@ -533,4 +533,4 @@ async function checkSavedCheckout(token, session, revision) {
   return found.id;
 }
 
-module.exports = { load, version, paid, validateFields, validateUnits, unitPricing, ready, saveEdit, saveDiscount, applySavedDiscount, deleteQuote, restoreQuote, resolveManaged, ensureManagedBooking, selectCustomerSchedule, guardCheckout, legacyRecord, currentCheckout, checkSavedCheckout };
+module.exports = { bookingChanges, closeSessions, load, version, paid, validateFields, validateUnits, unitPricing, ready, saveEdit, saveDiscount, applySavedDiscount, deleteQuote, restoreQuote, resolveManaged, ensureManagedBooking, selectCustomerSchedule, guardCheckout, legacyRecord, currentCheckout, checkSavedCheckout };

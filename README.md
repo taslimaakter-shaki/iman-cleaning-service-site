@@ -736,3 +736,29 @@ Therefore:
 Customers choose a date, then keep their available previous arrival preference or choose a new one. Exact arrival expands into available time buttons. Server-generated quotes replace only the arrival discount, preserve other agreed discounts, and require explicit price acceptance. CRM approval rechecks availability and the saved price/payment fingerprint. Approval credits existing payments, updates the balance, archives a revised invoice, and includes the invoice and booking PDF in customer email; SMS includes a signed invoice link. Declines keep the original booking and invoice. Refunds use request-specific idempotency keys; CRM can retry refunds and failed notifications.
 
 Validation: `node test/reschedule-pricing.test.js`, `node test/reschedule-repricing-approval.test.js`, and `npm test`. These tests mock payment, database and notification providers. No live charges or messages are required for local preview.
+
+### Recording Zelle and other external payments for instant quotes
+
+In CRM, open any Instant quote and expand **Record Zelle / external payment**.
+For a saved quote without an appointment, enter the full service address and New
+York appointment date/time, and select the customer's arrival preference. Review
+the server-calculated total (including applicable discounts), then enter the
+amount actually received, payment date and unique bank/receipt reference. Record
+how the customer accepted the service details and the external-payment terms.
+The administrator must verify funds in the bank; the website does not verify Zelle.
+
+Partial deposits remain unconfirmed and do not reserve calendar capacity. Once
+the required deposit is covered, confirmation, calendar sync, appointment
+reminders and customer payment receipts use the recorded booking. Later payments
+can be recorded on the same quote, including the remaining balance. External
+payments never initiate Stripe holds or charges. Completing a booking with an
+unpaid external balance sends a balance-due message; recording its final payment
+sends a paid-in-full receipt. Appointment changes and refunds for these bookings
+require direct handling through the original payment method.
+
+Deploy `supabase/migrations/20261031_external_payment_references.sql` before the
+application update. The migration preserves existing bookings and registers
+external payment references atomically with booking updates. It prevents reuse
+across bookings and forbids removing or rewriting recorded payment history.
+Notification claims are durable: ambiguous sends are shown for review and are not
+automatically resent. Test payments, receipts and notifications must use mocks.

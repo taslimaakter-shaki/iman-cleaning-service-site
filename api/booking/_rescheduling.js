@@ -28,6 +28,7 @@ async function save(booking, state, changes = {}) {
   return rows[0];
 }
 async function requestChange(booking, body, slot, now = new Date()) {
+  if (booking.estimate?.payment?.provider === 'external') throw fail('Handle this externally paid booking directly with the customer; automatic card fees and refunds are unavailable.');
   const t = terms(booking, now);
   if ((t.state.priceRefunds || []).some(r => r.status === 'pending') || (t.state.request?.status === 'approved' && Number(t.state.request?.pricing?.refundCents || 0) > (t.state.priceRefunds || []).filter(r=>r.requestId===t.state.request.id && r.status==='succeeded').reduce((sum,r)=>sum+r.amountCents,0))) throw fail('Your previous price refund is still being processed. Please contact us before requesting another change.');
   if (t.state.cancellationOperation) throw fail('Cancellation is already being processed.');

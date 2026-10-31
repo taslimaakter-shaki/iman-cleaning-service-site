@@ -225,6 +225,11 @@ function buildSections({ booking, record }) {
   ].filter(([, value]) => value);
 
   const sections = [{ title: "Booking and customer information", rows: customerRows }];
+  if (estimate.externalPaymentTerms) sections.push({ title: "External payment terms", rows: [
+    ["Terms", estimate.externalPaymentTerms.text],
+    ["Customer acceptance evidence recorded by staff", estimate.externalPaymentTerms.acceptedEvidence],
+    ["Recorded at", estimate.externalPaymentTerms.recordedAt]
+  ] });
   const eligibilityRows = answerRows(estimate.eligibility);
   if (eligibilityRows.length) sections.push({ title: "Eligibility and prescreening answers", rows: eligibilityRows });
 
@@ -283,7 +288,7 @@ function buildSections({ booking, record }) {
       ["Changing arrival preferences", "The selected arrival preference replaces the previous flexibility discount. Exact arrival has no flexibility discount. The customer accepts the revised cleaning total before submitting the request. After approval a revised invoice is issued, payments are credited, and any excess payment is refunded."],
       ["Second or later request", "Direct contact with IMAN and approval are required. The 10% fee applies if the request is received less than 48 hours before the appointment."],
       ["Cancellation after a late reschedule", "The 25% cancellation fee still applies regardless of the new appointment date. Paid late-rescheduling fees are credited toward it. A paid 10% fee leaves 15% to retain from the deposit; the date change does not restore free cancellation."],
-      ["Payment method", "Approved booking fees are charged to the same saved payment method used for the 25% deposit. Amounts already paid are not charged twice. A failed or unverified fee payment does not confirm a new appointment."],
+      ["Payment method", estimate.payment?.provider === "external" ? "External payment verified by IMAN. Any balance, booking fee or refund is handled separately; no automatic card charge is authorized." : "Approved booking fees are charged to the same saved payment method used for the 25% deposit. Amounts already paid are not charged twice. A failed or unverified fee payment does not confirm a new appointment."],
       ["If IMAN cancels", "Paid rescheduling fees are refunded."],
       ["Policy and acceptance", estimate.agreementVersion === "2026-10-30-arrival-rescheduling-v2"
         ? "This policy is included in the Service Agreement for this booking. The recorded acceptance details follow below."

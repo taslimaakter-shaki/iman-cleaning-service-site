@@ -262,7 +262,7 @@ function buildPaymentReceiptPdf({ booking = null, record }) {
       ensureSpace(45);
       doc.moveDown(0.7);
       doc.fillColor(COLORS.ink).font("Helvetica").fontSize(8.8)
-        .text("The remaining balance will be temporarily authorized approximately 48 hours before the appointment and charged after service completion, according to the accepted booking agreement.", left, doc.y, { width, lineGap: 2 });
+        .text(booking?.estimate?.payment?.provider === "external" ? "The remaining balance is payable separately after service. No automatic card hold or charge will be made." : "The remaining balance will be temporarily authorized approximately 48 hours before the appointment and charged after service completion, according to the accepted booking agreement.", left, doc.y, { width, lineGap: 2 });
     }
 
     const range = doc.bufferedPageRange();

@@ -48,3 +48,11 @@
 .crm-trash-actions { display: flex; gap: 10px; flex-wrap: wrap; margin-top: 20px; }
 .crm-trash-actions button { min-height: 44px; }
 .crm-trash-item [data-quote-edit-status]:empty { display: none; }
+
+.crm-external-payment fieldset { border: 0; padding: 0; margin: 20px 0 0; min-width: 0; }
+.crm-external-payment input[type="checkbox"] { width: 20px; height: 20px; }
+.crm-external-payment label:has(input[type="checkbox"]) { display: flex; align-items: flex-start; gap: 10px; }
+.crm-external-payment input[type="checkbox"] { flex: 0 0 auto; }
+.crm-external-payment [data-external-payment-preview] { padding: 16px; margin: 16px 0; background: #fff; border: 1px solid #b8ccd0; border-radius: 10px; overflow-wrap: anywhere; }
+.crm-external-payment .crm-detail-grid { grid-template-columns: repeat(2,minmax(0,1fr)); }
+@media(max-width:600px) { .crm-external-payment .crm-detail-grid { grid-template-columns: 1fr; } }

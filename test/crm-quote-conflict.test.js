@@ -92,7 +92,7 @@ const refreshed = quote => ({status:200,data:{quotes:[{...clone(quote),id:"ANOTH
   const preserved = fixture(), status = new Element(), button = new Element();
   const form = new Element();form.enteredValues = clone(draft.fields);
   const dialog = preserved.document.querySelector("[data-booking-dialog]");
-  dialog.lists["[data-custom-payment-form], [data-quote-edit-form], [data-quote-discount-form], [data-walkthrough-confirm-form]"] = [form];
+  dialog.lists["[data-external-payment-form], [data-custom-payment-form], [data-quote-edit-form], [data-quote-discount-form], [data-walkthrough-confirm-form]"] = [form];
   preserved.api.state.quotes = [clone(original)];
   preserved.api.openQuote(original.id);
   preserved.api.state.quotes[0].editFields.amountCents = 90000;

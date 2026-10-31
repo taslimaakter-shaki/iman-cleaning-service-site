@@ -1404,6 +1404,91 @@
       : "";
   }
 
+  function externalPaymentMarkup(quote) {
+    if (quote.type !== 'Instant quote' || quote.deletedAt) return '';
+    const f = quote.editFields || {}, p = quote.externalPayment;
+    const needsDetails = quote.editSource === 'saved' && !quote.bookingId;
+    const history = (p?.payments || []).map(item => `<li>${escapeHtml(submittedDate(item.receivedAt))}: ${escapeHtml(money(item.amountCents))} · ${escapeHtml(item.method)} · ${escapeHtml(item.reference)}<br>Email: ${escapeHtml(item.delivery?.email?.status || 'pending')}; text: ${escapeHtml(item.delivery?.sms?.status || 'pending')}</li>`).join('');
+    return `<section class="crm-detail-section crm-quote-editor crm-external-payment"><details><summary><strong>Record Zelle / external payment</strong></summary>
+      <p>Verify receipt in your bank before recording a payment. This records money already received; it does not charge the customer.</p>
+      ${p ? `<p>Total paid: <strong>${escapeHtml(money(p.paidCents))}</strong> · Outstanding: <strong>${escapeHtml(money(p.remainingCents))}</strong></p>` : ''}
+      ${history ? `<ul>${history}</ul><button type="button" class="crm-row-button" data-open-booking="${escapeHtml(quote.bookingId)}">Manage appointment</button>` : ''}
+      ${p?.remainingCents === 0 ? '<p>Fully paid.</p>' : `<form data-external-payment-form data-quote-id="${escapeHtml(quote.id)}">
+        ${needsDetails ? `<div class="crm-detail-grid">
+          <label>Full service address, including ZIP<input name="address" required maxlength="400" value="${escapeHtml(/^ZIP\s/i.test(f.address || '') ? '' : f.address || '')}"></label>
+          <label>Appointment date (New York)<input type="date" name="serviceDate" required value="${escapeHtml(f.serviceDate || '')}"></label>
+          <label>Appointment start time (New York)<input type="time" name="serviceTime" required value="${escapeHtml(f.serviceTime || '')}"></label>
+          ${!quote.usesEditedPricing ? `<label>Customer's arrival choice<select name="arrivalPreference"><option value="exact">Exact time — no arrival discount</option><option value="any_day">Anytime that day — 5% off</option><option value="morning">Morning — 2% off</option><option value="afternoon">Afternoon — 2% off</option></select></label>` : '<p>This revised quote uses the agreed edited price. Review any discount in the quote editor.</p>'}
+          ${!quote.usesEditedPricing && /recurring/i.test(quote.service || '') ? '<label>Previous completed order<input name="previousOrderNumber" required></label><label>Recurring plan<select name="recurringPlan"><option value="weekly">Weekly</option><option value="biweekly">Biweekly</option><option value="monthly">Monthly</option></select></label>' : ''}
+        </div><p>For flexible arrival, enter an available start within the selected window. The customer’s confirmation will show the arrival window.</p>` : ''}
+        <button type="button" class="crm-row-button" data-preview-external-payment>Review total & payment</button>
+        <div data-external-payment-preview hidden></div>
+        <fieldset data-external-payment-fields hidden disabled>
+          <div class="crm-detail-grid">
+            <label>Payment method<select name="method"><option value="zelle">Zelle</option><option value="cash">Cash</option><option value="check">Cleared check</option><option value="bank_transfer">Bank transfer</option></select></label>
+            <label>Amount received ($)<input name="amount" type="number" min="0.01" step="0.01" required></label>
+            <label>Date received<input name="receivedAt" type="date" required></label>
+            <label>Bank transaction / unique receipt reference<input name="reference" minlength="3" maxlength="120" required></label>
+          </div>
+          <label>Payment note (optional)<textarea name="note" maxlength="1000"></textarea></label>
+          <label>How did the customer accept these service and payment terms?<textarea name="agreementEvidence" minlength="10" maxlength="1000" placeholder="For example: customer agreed by email on October 31; email subject and reference…" required></textarea></label>
+          <label><input type="checkbox" name="verified" required> I verified that this payment was received and is not already recorded.</label>
+          <label><input type="checkbox" name="agreementVerified" required> The customer accepted the service, appointment, price, Service Agreement and external-payment terms shown above.</label>
+          <p>A partial deposit is recorded without confirming the appointment. Once the deposit is covered, confirmation and receipts are sent automatically.</p>
+          <button class="crm-primary" type="submit">Record received payment</button>
+        </fieldset>
+        <p class="crm-action-status" data-external-payment-status aria-live="polite"></p>
+      </form>`}
+    </details></section>`;
+  }
+  function externalPaymentInput(form) {
+    const quote = quoteFormSnapshots.get(form) || state.quotes.find(q=>q.id === form.dataset.quoteId);
+    return {source:quote.externalBookingSource || quote.editSource,id:quote.externalBookingSource ? quote.bookingId : quote.id,
+      address:form.elements.address?.value,serviceDate:form.elements.serviceDate?.value,serviceTime:form.elements.serviceTime?.value,
+      arrivalPreference:form.elements.arrivalPreference?.value,previousOrderNumber:form.elements.previousOrderNumber?.value,recurringPlan:form.elements.recurringPlan?.value};
+  }
+  async function previewExternalPayment(form) {
+    const button=$('[data-preview-external-payment]',form), status=$('[data-external-payment-status]',form);
+    button.disabled=true; status.textContent='Checking quote and appointment…';
+    try {
+      const input=externalPaymentInput(form);
+      const data=await api('/api/crm/external-payment',{method:'POST',body:JSON.stringify({...input,operation:'preview'})});
+      form.externalPreview={input,data,operationId:crypto.randomUUID()};
+      const preview=$('[data-external-payment-preview]',form); preview.hidden=false;
+      preview.innerHTML=`<p><strong>${escapeHtml(data.customerName)}</strong><br>${escapeHtml(data.service)}<br>${escapeHtml(data.address)}<br>${escapeHtml(data.scheduleLabel)}</p>
+        <p>Total: <strong>${escapeHtml(money(data.totalCents))}</strong> · Required deposit: ${escapeHtml(money(data.depositCents))}<br>Already paid: ${escapeHtml(money(data.paidCents))} · Outstanding: ${escapeHtml(money(data.remainingCents))}</p>
+        ${data.promoDiscount?.amountCents ? `<p>${escapeHtml(data.promoDiscount.label || 'Promotion')}: −${escapeHtml(money(data.promoDiscount.amountCents))}</p>` : ''}
+        ${data.arrivalDiscount?.amountCents ? `<p>${escapeHtml(data.arrivalDiscount.label)}: −${escapeHtml(money(data.arrivalDiscount.amountCents))}</p>` : ''}
+        <p>${escapeHtml(data.terms)}</p>`;
+      const fields=$('[data-external-payment-fields]',form); fields.hidden=false; fields.disabled=data.remainingCents<=0;
+      form.elements.amount.value=(Math.min(data.remainingCents,Math.max(0,data.depositCents-data.paidCents)||data.remainingCents)/100).toFixed(2);
+      form.elements.amount.max=(data.remainingCents/100).toFixed(2);
+      form.elements.receivedAt.value=new Intl.DateTimeFormat('en-CA',{timeZone:'America/New_York',year:'numeric',month:'2-digit',day:'2-digit'}).format(new Date());
+      status.textContent=data.remainingCents ? 'Review the amount received and record the payment below.' : 'This booking is already fully paid.';
+    } catch(error) {status.textContent=error.message;status.className='crm-action-status is-error';}
+    finally {button.disabled=false;}
+  }
+  async function recordExternalPayment(form) {
+    const preview=form.externalPreview, status=$('[data-external-payment-status]',form), button=$('button[type=submit]',form);
+    if (!preview || button.disabled || !form.reportValidity()) return;
+    if (JSON.stringify(externalPaymentInput(form))!==JSON.stringify(preview.input)) {status.textContent='The appointment details changed. Review the total again.';return;}
+    const payload={...preview.input,operation:'record',operationId:preview.operationId,previewToken:preview.data.previewToken,
+      method:form.elements.method.value,amountCents:Math.round(Number(form.elements.amount.value)*100),receivedAt:form.elements.receivedAt.value,
+      reference:form.elements.reference.value,note:form.elements.note.value,verified:form.elements.verified.checked,
+      agreementVerified:form.elements.agreementVerified.checked,agreementEvidence:form.elements.agreementEvidence.value};
+    button.disabled=true; status.textContent='Recording payment…';
+    try {
+      const data=await api('/api/crm/external-payment',{method:'POST',body:JSON.stringify(payload)});
+      // Keep the receipt visible even if the subsequent CRM refresh fails.
+      status.textContent=`Payment recorded. Total paid ${money(data.paidCents)}; remaining ${money(data.remainingCents)}. Email: ${data.delivery?.email?.status || 'pending'}; text: ${data.delivery?.sms?.status || 'pending'}.`;
+      $('[data-external-payment-fields]',form).disabled=true;
+      $('[data-preview-external-payment]',form).disabled=true;
+      status.className='crm-action-status is-success';
+      try { await loadBookings({quiet:true}); } catch { toast('Payment saved. Refresh CRM to update the list.'); }
+      toast('Payment recorded.');
+    } catch(error) {status.textContent=error.message;status.className='crm-action-status is-error';button.disabled=false;}
+  }
+
   function quoteDetailMarkup(quote) {
     const value = cents(quote.amountCents) ? money(quote.amountCents) : "Pending custom review";
     const photoUpload = quote.photoUpload || {};
@@ -1414,6 +1499,7 @@
       <button class="crm-dialog-close" type="button" data-close-dialog aria-label="Close">×</button>
     </div>
     <div class="crm-dialog-body">
+      ${externalPaymentMarkup(quote)}
       ${customQuotePaymentMarkup(quote)}
       ${quoteEditorMarkup(quote)}
       <div class="crm-detail-grid">
@@ -1461,7 +1547,7 @@
     dialog.dataset.openQuoteId = id;
     $("[data-booking-detail]").innerHTML = quote.walkthrough && !quote.deletedAt ? walkthroughDetailMarkup(quote) : quoteDetailMarkup(quote);
     // Bind each form to the version the owner actually opened, not a later background refresh.
-    for (const form of $$("[data-custom-payment-form], [data-quote-edit-form], [data-quote-discount-form], [data-walkthrough-confirm-form]", dialog)) {
+    for (const form of $$("[data-external-payment-form], [data-custom-payment-form], [data-quote-edit-form], [data-quote-discount-form], [data-walkthrough-confirm-form]", dialog)) {
       quoteFormSnapshots.set(form, JSON.parse(JSON.stringify(quote)));
     }
     if (!dialog.open) dialog.showModal();
@@ -2847,7 +2933,13 @@
     if (form) updatePaymentPreview(form);
   });
 
+  document.addEventListener('click', event => {
+    const button=event.target.closest('[data-preview-external-payment]');
+    if(button) previewExternalPayment(button.closest('form'));
+  });
   document.addEventListener("submit", (event) => {
+    const externalForm=event.target.closest('[data-external-payment-form]');
+    if(externalForm) {event.preventDefault();recordExternalPayment(externalForm);return;}
     const walkthroughForm = event.target.closest('[data-walkthrough-confirm-form]');
     if (walkthroughForm) { event.preventDefault(); confirmWalkthrough(walkthroughForm); return; }
     const discountForm = event.target.closest('[data-quote-discount-form]');

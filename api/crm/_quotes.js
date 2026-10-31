@@ -228,7 +228,7 @@ function editableQuote(quote, record, source) {
     ...(edit.fields ? { customerName: fields.customerName, email: fields.email, phone: fields.phone, address: fields.address,
       service: fields.service, amountCents: fields.amountCents + fields.rushFeeCents, details: fields.details,
       status: edit.deletedAt ? "Deleted" : source === "booking" && paid(record) ? "Booked" : "Revised quote" } : {}),
-    deletedAt: edit.deletedAt || "", editSource: source, editVersion: version(record), editFields: fields,
+    deletedAt: edit.deletedAt || "", editSource: source, editVersion: version(record), editFields: fields, usesEditedPricing: Boolean(edit.fields),
     bookingId: edit.bookingId || quote.bookingId || "",
     editLocked: source === "booking" && paid(record),
     approvalUrl: edit.approvalCode ? `https://www.imancleaningservice.com/q/${edit.approvalCode}` : "",
@@ -314,8 +314,17 @@ async function listCrmQuotes() {
   const legacy = legacyFolders.map(legacyFolderQuote).filter((quote) => !customIds.has(quote.id));
   const combined = [...bookings.filter(b => !b.estimate?.managedQuote || b.estimate.managedQuote.source === "booking").map(bookingQuote), ...saved.filter(Boolean), ...custom.filter(Boolean), ...legacy];
   for (const quote of combined) {
-    const booking = bookings.find(b => b.id === quote.bookingId || (quote.editSource === 'saved' && b.estimate?.savedQuoteId === quote.id && require('./_quote-admin').paid(b)));
-    if (booking && require("./_quote-admin").paid(booking)) { quote.editLocked = true; if (!quote.deletedAt) quote.status = "Booked"; }
+    const booking = bookings.find(b => b.id === quote.bookingId || (quote.editSource === 'saved' && b.estimate?.savedQuoteId === quote.id && (require('./_quote-admin').paid(b) || b.estimate?.payment?.provider === 'external')));
+    if (booking?.estimate?.payment?.provider === 'external') {
+      quote.bookingId = booking.id;
+      quote.amountCents = booking.estimate.payment.totalCents;
+      quote.address = booking.address;
+      quote.service = booking.service_label;
+      quote.customerName = booking.client_name;
+      quote.externalPayment = { paidCents: booking.estimate.payment.paidCents, totalCents: booking.estimate.payment.totalCents, remainingCents: booking.estimate.payment.remainingCents, payments: booking.estimate.payment.externalPayments || [] };
+      quote.externalBookingSource = 'booking';
+    }
+    if (booking && require("./_quote-admin").paid(booking)) { quote.editLocked = true; if (!quote.deletedAt) quote.status = booking.estimate?.payment?.status === "partial" ? "Partial payment" : "Booked"; }
   }
   return Array.from(new Map(combined.map((quote) => [quote.id, quote])).values())
     .sort((left, right) => String(right.createdAt || "").localeCompare(String(left.createdAt || "")));

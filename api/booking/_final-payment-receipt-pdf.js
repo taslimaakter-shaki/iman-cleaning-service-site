@@ -85,6 +85,7 @@ function receiptAmounts(booking = {}) {
 
 function paymentMethodLabel(booking = {}) {
   const payment = booking.estimate?.payment || {};
+  if (payment.provider === "external") return [...new Set((payment.externalPayments || []).map(item => ({zelle:"Zelle",cash:"Cash",check:"Cleared check",bank_transfer:"Bank transfer"})[item.method] || "External payment"))].join(", ");
   const remaining = payment.remaining || {};
   const brand = safeText(remaining.cardBrand || payment.cardBrand || "").trim();
   const last4 = safeText(remaining.cardLast4 || payment.cardLast4 || "").replace(/\D/g, "").slice(-4);
@@ -221,7 +222,7 @@ function buildFinalPaymentReceiptPdf({ booking }) {
     const depositPayment = payment.paymentType === "deposit_25" && amounts.depositCents > 0;
     moneyRows([
       [depositPayment ? "Deposit previously paid" : "Payment previously received", money(depositPayment ? amounts.depositCents : amounts.paidCents)],
-      ["Final payment charged", depositPayment ? money(amounts.finalPaymentCents) : ""],
+      [payment.provider === "external" ? "Remaining balance received" : "Final payment charged", depositPayment ? money(amounts.finalPaymentCents) : ""],
       ["Total paid", money(amounts.paidCents)],
       ["Remaining balance", "$0.00"]
     ], new Set(["Total paid", "Remaining balance"]));

@@ -379,6 +379,7 @@ async function refundBookingPayment({
   const refundCents = Math.max(0, Math.round(Number(amountCents || 0)));
   if (!refundCents) return { id: "", status: "not_refunded", amountCents: 0 };
   const payment = booking?.estimate?.payment || {};
+  if (payment.provider === "external") throw Object.assign(new Error("This payment was received externally. Verify and record its refund through the original payment method; no Stripe refund was issued."), { statusCode: 409 });
   const paymentIntentId = cleanText(payment.depositPaymentIntentId || payment.paymentIntentId, 120);
   if (!paymentIntentId) {
     throw Object.assign(new Error("The original deposit payment could not be located automatically."), {

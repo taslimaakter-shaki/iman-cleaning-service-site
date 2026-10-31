@@ -407,6 +407,9 @@ async function handler(request, response) {
     }
 
     const action = cleanText(body.action, 30);
+    if (booking.estimate?.payment?.provider === "external" && ["reschedule", "cancel"].includes(action)) {
+      return json(response, 409, { error: "This booking was paid outside the website. Please call 929-232-1930 so we can handle your appointment change and any fee or refund using your original payment method." });
+    }
     if (action === "reschedule") {
       if (!["Confirmed", "Cleaner assigned"].includes(booking.status)) {
         return json(response, 409, { error: "This booking can no longer be rescheduled online." });

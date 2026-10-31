@@ -550,14 +550,17 @@ async function updateStatus(body, request, response) {
 
     await updateBooking(id, { status });
     const refreshed = await getBooking(id) || { ...booking, status };
-    try {
+    if (refreshed.estimate?.payment?.provider === "external" && Number(refreshed.estimate.payment.remainingCents) > 0) {
+      try { completionReceipt = {status:"balance_due",delivery:await require("./_external-payment").notifyBalanceDue(id)}; }
+      catch (error) { completionReceipt = {status:"balance_due",error:error.message}; }
+    } else try {
       completionReceipt = await sendCompletionReceipt({ booking: refreshed });
     } catch (error) {
       completionReceipt = { status: "failed", sent: false, error: error.message || "The final receipt could not be sent." };
     }
     const bookingAfterReceipt = await getBooking(id) || refreshed;
     const priorOffer = bookingAfterReceipt.estimate?.additionalWork || {};
-    const shouldSendOffer = Boolean(body.sendAdditionalWork || priorOffer.pendingUntilBalancePaid);
+    const shouldSendOffer = bookingAfterReceipt.estimate?.payment?.provider !== "external" && Boolean(body.sendAdditionalWork || priorOffer.pendingUntilBalancePaid);
     if (shouldSendOffer) {
       try {
         const result = await sendAdditionalWorkOffer({ booking: { ...bookingAfterReceipt, status }, baseUrl: getSiteUrl(request) });
@@ -749,12 +752,24 @@ async function handler(request, response) {
     if (["calendar-start", "calendar-status", "calendar-callback", "calendar-sync"].includes(action)) {
       return require("../google-calendar/_handler")(request, response);
     }
-    if (!new Set(["walkthroughs", "additional-work", "bookings", "quotes", "contacts", "email-suppressions", "marketing-campaign", "calls", "conversations", "callbacks", "concerns", "same-day", "voice-token", "voice-call", "customer-message", "customer-call", "payment-link-email", "photo-upload-url", "photo-record", "quote-photo-link", "quote-photo-reminders", "quote-photo-reminder-status"]).has(action)) {
+    if (!new Set(["external-payment", "walkthroughs", "additional-work", "bookings", "quotes", "contacts", "email-suppressions", "marketing-campaign", "calls", "conversations", "callbacks", "concerns", "same-day", "voice-token", "voice-call", "customer-message", "customer-call", "payment-link-email", "photo-upload-url", "photo-record", "quote-photo-link", "quote-photo-reminders", "quote-photo-reminder-status"]).has(action)) {
       return json(response, 404, { error: "CRM action not found." });
     }
     if (action === "voice-call") return handleVoiceCall(request, response);
     if (!isAdmin(request)) {
       return json(response, 401, { error: "Admin token required." });
+    }
+
+    if (action === "external-payment") {
+      response.setHeader("Cache-Control", "no-store");
+      if (request.method !== "POST") return json(response, 405, { error: "Method not allowed." });
+      const origin = request.headers.origin;
+      if (origin && origin !== new URL(getSiteUrl(request)).origin) return json(response, 403, { error: "Origin not allowed." });
+      const body = await readJsonBody(request);
+      const external = require("./_external-payment");
+      if (body.operation === "preview") return json(response, 200, external.summary(await external.resolve(body)));
+      if (body.operation !== "record") return json(response, 400, { error: "Invalid payment operation." });
+      return json(response, 200, await external.record(body));
     }
 
     if (action === "walkthroughs") {

@@ -1,0 +1,25 @@
+const assert=require('node:assert/strict');
+const fs=require('node:fs');
+const {PGlite}=require('@electric-sql/pglite');
+(async()=>{
+ const db=new PGlite();
+ await db.exec('create role anon; create role authenticated; create role service_role;');
+ await db.exec(fs.readFileSync('supabase-schema.sql','utf8').match(/create table if not exists public.bookings \([\s\S]*?\n\);/)[0]);
+ await db.exec(fs.readFileSync('supabase/migrations/20260910_shared_booking_calendar.sql','utf8'));
+ await db.exec(fs.readFileSync('supabase/migrations/20261031_external_payment_references.sql','utf8'));
+ const row=id=>({id,created_at:new Date().toISOString(),status:'New',service:'standard',service_label:'Cleaning',schedule:id==='a'?'2030-12-10T09:00:00-05:00':'2030-12-12T09:00:00-05:00',schedule_label:'',bedrooms_label:'',bathrooms_label:'',sqft:0,addons:[],client_name:'Test',email:'test@example.test',phone:'',address:'Test',notes:'',estimate:{teamHours:2,calendarReservation:{state:'draft'}}});
+ for(const id of ['a','b'])await db.query('insert into bookings select * from jsonb_populate_record(null::bookings,$1::jsonb)',[JSON.stringify(row(id))]);
+ const entry={referenceKey:'zelle:BANK-123',operationId:'operation-00000001',amountCents:5000,delivery:{email:{status:'pending'}}};
+ const estimate={teamHours:2,payment:{externalPayments:[entry]},calendarReservation:{state:'confirmed'}};
+ await db.query("update bookings set status='Confirmed', estimate=$1 where id='a'",[JSON.stringify(estimate)]);
+ await assert.rejects(db.query("update bookings set estimate=$1 where id='b'",[JSON.stringify(estimate)]),/already recorded/);
+ await assert.rejects(db.query("update bookings set estimate='{}' where id='a'"),/cannot be overwritten/);
+ entry.delivery.email.status='sent';await db.query("update bookings set estimate=$1 where id='a'",[JSON.stringify(estimate)]);
+ await db.query("update bookings set schedule='2030-12-10T09:00:00-05:00' where id='b'");
+ await assert.rejects(db.query("update bookings set estimate=jsonb_set(estimate,'{payment,externalPayments,0,delivery,email,status}','\"pending\"') where id='a'"),/notification history/);
+ const other={...entry,referenceKey:'zelle:BANK-124',operationId:'operation-00000002'};
+ await assert.rejects(db.query("update bookings set status='Confirmed',estimate=$1 where id='b'",[JSON.stringify({...estimate,payment:{externalPayments:[other]}})]),/conflicts/);
+ assert.equal((await db.query("select count(*)::int as n from iman_external_payment_references where reference_key='zelle:BANK-124'")).rows[0].n,0,'Calendar conflict rolls back reference registration');
+ assert.equal((await db.query("select count(*)::int as n from iman_external_payment_references")).rows[0].n,1);
+ await db.close();console.log('External payment PostgreSQL guard: global unique references, immutable history, delivery updates, and calendar/payment atomic rollback passed.');
+})().catch(e=>{console.error(e);process.exitCode=1;});
