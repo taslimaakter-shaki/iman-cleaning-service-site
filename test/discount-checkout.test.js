@@ -7,6 +7,10 @@ const shared = require('../api/booking/_shared');
 const discount = require('../api/booking/_discount');
 const clone = x => JSON.parse(JSON.stringify(x));
 const request = { method: 'POST', headers: { host: 'www.imancleaningservice.com' } };
+// Include optional fields in the budget, even if a particular fixture omits them.
+const checkoutSource = fs.readFileSync(path.join(__dirname, '../api/booking/_checkout.js'), 'utf8');
+const sessionMetadataKeys = new Set([...checkoutSource.matchAll(/"metadata\[([^\]]+)\]":/g)].map(match => match[1]));
+assert(sessionMetadataKeys.size <= 50, `Checkout can send ${sessionMetadataKeys.size} session metadata keys; Stripe allows 50`);
 function load(file, dependencies, extras = {}) {
   const module = { exports: {} };
   vm.runInNewContext(fs.readFileSync(path.join(__dirname, '..', file), 'utf8'), {
@@ -37,6 +41,12 @@ function load(file, dependencies, extras = {}) {
   }, { fetch: async (url, options) => {
     assert.equal(url, 'https://api.stripe.com/v1/checkout/sessions');
     stripe = new URLSearchParams(options.body);
+    for (const prefix of ['metadata[', 'payment_intent_data[metadata][']) {
+      const keys = [...stripe.keys()].filter(key => key.startsWith(prefix));
+      assert(keys.length <= 50, `${prefix}: Stripe metadata limit exceeded (${keys.length})`);
+    }
+    assert(stripe.get('metadata[booking_id]'));
+    assert(stripe.get('metadata[agreement_record_hash]'));
     const session = { id: `cs_checkout_${f.sessions.length}`, status: 'open', metadata: { saved_quote_id: 'SAVED-1' }, url: 'https://checkout.stripe.test/test' };
     f.sessions.push(session);
     if (afterStripe) await afterStripe();

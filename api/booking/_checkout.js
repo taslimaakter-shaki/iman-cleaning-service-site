@@ -691,15 +691,8 @@ module.exports = async function handler(request, response) {
       "metadata[remaining_amount_cents]": remainingAmountCents,
       "metadata[payment_type]": "deposit_25",
       "metadata[balance_collection]": "automatic_48h_authorization",
-      "metadata[base_labor_hours]": pkg.baseLaborHours || pkg.manHours,
-      "metadata[buildup_percentage]": pkg.buildupAdjustment?.percentage || 0,
-      "metadata[buildup_added_labor_hours]": pkg.buildupAdjustment?.addedLaborHours || 0,
-      "metadata[buildup_charge_cents]": pkg.buildupAdjustment?.amountCents || 0,
-      "metadata[clutter_percentage]": pkg.clutterAdjustment?.percentage || 0,
-      "metadata[clutter_added_labor_hours]": pkg.clutterAdjustment?.addedLaborHours || 0,
-      "metadata[clutter_charge_cents]": pkg.clutterAdjustment?.amountCents || 0,
-      "metadata[mold_adjustment_percentage]": pkg.moldAdjustment?.percentage || 0,
-      "metadata[mold_adjustment_cents]": pkg.moldAdjustment?.amountCents || 0,
+      // Keep detailed labor/condition fields on the PaymentIntent and saved
+      // booking above; duplicating them here exceeds Stripe's 50-key limit.
       "metadata[account_user_id]": cleanText(accountSession?.user?.id, 120),
       "consent_collection[terms_of_service]": "required",
       "custom_text[terms_of_service_acceptance][message]": "I agree to the Service Agreement, the 25% deposit, and a temporary authorization hold for the remaining 75% about 48 hours before service. Late rescheduling costs 10%; later cancellation costs 25% less paid rescheduling fees. These fees use the deposit payment method. The balance is charged after completion. If the team cannot work for a customer-caused reason after arriving as scheduled, the total charge is 50%.",
