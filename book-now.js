@@ -3002,7 +3002,9 @@
   const renderPriceBreakdown = (pkg) => {
     // Repair promo totals restored from drafts created before FALL10 was
     // consistently applied to the pretax subtotal.
-    if (state.promo && state.packageBeforePromo && pkg === state.package) {
+    // Arrival totals already include the promo. Rebuilding promo-only totals here
+    // would discard the arrival discount and invalidate the accepted agreement.
+    if (state.promo && state.packageBeforePromo && !state.arrivalDiscount && pkg === state.package) {
       const original = state.packageBeforePromo;
       const originalSubtotalCents = Math.round(Number(original.subtotalCents) || 0);
       const originalTotalCents = Math.round(Number(original.priceCents || original.totalCents) || 0);
