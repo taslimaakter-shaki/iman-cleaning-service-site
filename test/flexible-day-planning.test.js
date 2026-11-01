@@ -38,7 +38,7 @@ assert.equal(shared.planBookingDay(iso('15:00'), 3.5, [late, external]), null);
  await db.exec(schema);
  for (const name of ['20260910_shared_booking_calendar.sql','20261025_flexible_arrival_reservations.sql','20261031_capacity_based_flexible_booking.sql','20261101_flexible_day_planning.sql']) await db.exec(fs.readFileSync('supabase/migrations/'+name,'utf8'));
  const insert = b => db.query('insert into bookings select * from jsonb_populate_record(null::bookings, $1::jsonb)', [JSON.stringify({created_at:new Date().toISOString(),sqft:0,addons:[],notes:'',...b})]);
- assert.equal((await db.query('select iman_booking_calendar_version() as v')).rows[0].v,4);
+ assert.equal((await db.query('select iman_booking_day_planner_version() as v')).rows[0].v,4);
  await insert(late);
  await insert(make('second','15:00',5));
  const rows = (await db.query('select booking_id, lower(busy) as start, upper(busy) as finish from booking_calendar_slots order by lower(busy)')).rows;

@@ -5,7 +5,7 @@ const fail = (message, statusCode = 409) => Object.assign(new Error(message), { 
 async function assertCalendarReady() {
   const url = process.env.SUPABASE_URL, key = process.env.SUPABASE_SERVICE_ROLE_KEY;
   if (!url || !key) throw fail('Shared booking availability is not configured. Please contact our team.', 503);
-  const response = await fetch(`${url.replace(/\/$/, '')}/rest/v1/rpc/iman_booking_calendar_version`, {
+  const response = await fetch(`${url.replace(/\/$/, '')}/rest/v1/rpc/iman_booking_day_planner_version`, {
     headers: { apikey: key, Authorization: `Bearer ${key}` }, signal: AbortSignal.timeout(10000)
   });
   const version = response.ok ? Number(await response.json()) : 0;

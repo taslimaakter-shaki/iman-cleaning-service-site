@@ -120,8 +120,11 @@ create trigger iman_booking_calendar_guard after insert or update or delete on p
   for each statement execute function public.iman_sync_day_plans();
 select public.iman_rebuild_day_plans();
 
-create or replace function public.iman_booking_calendar_version()
+-- Keep the legacy readiness endpoint at version 3 for the current deployment.
+create or replace function public.iman_booking_day_planner_version()
 returns integer language sql stable security definer set search_path = public, pg_temp as $$ select 4; $$;
+revoke all on function public.iman_booking_day_planner_version() from public, anon, authenticated;
+grant execute on function public.iman_booking_day_planner_version() to service_role;
 revoke all on function public.iman_lock_booking_day_plan() from public, anon, authenticated;
 revoke all on function public.iman_find_day_plan(jsonb,timestamptz) from public, anon, authenticated;
 revoke all on function public.iman_rebuild_day_plans() from public, anon, authenticated;
