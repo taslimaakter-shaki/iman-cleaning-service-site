@@ -40,7 +40,7 @@ async function googleTests() {
   events.push(event('free','2030-09-12T07:00:00-04:00','2030-09-12T22:00:00-04:00',{transparency:'transparent'}));
   events.push(event('busy','2030-09-12T08:00:00-04:00','2030-09-12T17:00:00-04:00'));
   let slots=await shared.availableSlotsForPackage({teamHours:.5},2,new Date('2030-09-10T12:00:00Z'));
-  assert.deepEqual(slots.filter(s=>s.date==='2030-09-12').map(s=>s.time).join(','),'20:00');
+  assert.deepEqual(slots.filter(s=>s.date==='2030-09-12').map(s=>s.time).join(','),'19:00,19:30,20:00');
   assert(calls.some(c=>c.pageToken==='page-two'),'All Google pages must be read');
   events[1].extendedProperties={private:{iman_booking_id:'booking-own'}};
   slots=await shared.availableSlotsForPackage({teamHours:9},2,new Date('2030-09-10T12:00:00Z'),'booking-own');

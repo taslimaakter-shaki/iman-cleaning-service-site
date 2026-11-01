@@ -5,6 +5,7 @@ const { PGlite } = require(process.env.PGLITE_TEST_MODULE || '@electric-sql/pgli
 const root = path.join(__dirname, '..');
 const migration = fs.readFileSync(path.join(root, 'supabase/migrations/20260910_shared_booking_calendar.sql'), 'utf8');
 const flexibleArrivalMigration = fs.readFileSync(path.join(root, 'supabase/migrations/20261025_flexible_arrival_reservations.sql'), 'utf8');
+const capacityMigration = fs.readFileSync(path.join(root, 'supabase/migrations/20261031_capacity_based_flexible_booking.sql'), 'utf8');
 const table = fs.readFileSync(path.join(root, 'supabase-schema.sql'), 'utf8').match(/create table if not exists public.bookings \([\s\S]*?\n\);/)[0];
 const shared = require('../api/booking/_shared');
 
@@ -28,23 +29,34 @@ async function insert(db, b) {
   await insert(db, record('existing-custom', '08:00', 9));
   await db.exec(migration);
   await db.exec(flexibleArrivalMigration);
-  assert.equal((await db.query('select iman_booking_calendar_version() as v')).rows[0].v, 2);
+  await db.exec(capacityMigration);
+  assert.equal((await db.query('select iman_booking_calendar_version() as v')).rows[0].v, 3);
   assert.equal((await db.query('select count(*)::int as n from booking_calendar_slots')).rows[0].n, 1);
   await assert.rejects(insert(db, record('instant-overlap', '10:00')), /conflicts/);
-  await assert.rejects(insert(db, record('instant-too-soon', '19:30')), /conflicts/);
-  await insert(db, record('instant-boundary', '20:00', 0.5));
+  await assert.rejects(insert(db, record('instant-too-soon', '18:30')), /conflicts/);
+  await insert(db, record('instant-boundary', '19:00', 0.5));
   assert.deepEqual(shared.availableSlotsForDate({teamHours: 2}, '2030-09-12', [record('custom', '08:00', 9)]), []);
-  assert.deepEqual(shared.availableSlotsForDate({teamHours: 0.5}, '2030-09-12', [record('custom', '08:00', 9)]).map(s=>s.time), ['20:00']);
+  assert.deepEqual(shared.availableSlotsForDate({teamHours: 0.5}, '2030-09-12', [record('custom', '08:00', 9)]).map(s=>s.time)[0], '19:00');
+  assert.equal(shared.availableSlotsForDate({teamHours: 4}, '2030-09-12', [record('flexible', '08:00', 3, 'Confirmed', {calendarReservationHours:4})])[0].time, '14:00');
   // Price never determines time; fractional on-site duration is not forced to one hour.
   assert.equal(shared.bookingDurationHours(record('fractional', '08:00', .25)), .25);
   assert.equal(shared.bookingDurationHours(record('flexible', '08:00', 3, 'Confirmed', {calendarReservationHours: 4})), 4);
-  await assert.rejects(db.query("update bookings set schedule = '2030-09-12T19:00:00-04:00' where id = 'instant-boundary'"), /conflicts/);
-  assert.match((await db.query("select schedule from bookings where id='instant-boundary'")).rows[0].schedule, /20:00/);
+  await assert.rejects(db.query("update bookings set schedule = '2030-09-12T18:30:00-04:00' where id = 'instant-boundary'"), /conflicts/);
+  assert.match((await db.query("select schedule from bookings where id='instant-boundary'")).rows[0].schedule, /19:00/);
   await assert.rejects(db.query("update bookings set estimate = '{\"teamHours\":10}' where id = 'existing-custom'"), /conflicts/);
   await db.query("update bookings set status='Cancelled' where id='existing-custom'");
   await insert(db, record('replacement', '08:00', 1));
   await db.query("update bookings set status='Completed' where id='replacement'");
-  await assert.rejects(insert(db, record('completed-buffer', '10:00', 1)), /conflicts/);
+  await assert.rejects(insert(db, record('completed-travel-overlap', '10:30', 1)), /conflicts/);
+  await insert(db, record('after-completed-travel', '11:00', 1));
+  await db.query("delete from bookings");
+
+  // A three-hour service reserves four hours including the protected extension,
+  // followed by two hours for travel. An 8 AM booking permits a 2 PM start.
+  await insert(db, record('flexible-morning', '08:00', 3, 'Confirmed', {calendarReservationHours:4,arrivalPreference:{key:'any_day',flexible:true}}));
+  await insert(db, record('flexible-afternoon', '14:00', 3, 'Confirmed', {calendarReservationHours:4,arrivalPreference:{key:'afternoon',flexible:true}}));
+  await assert.rejects(insert(db, record('flexible-travel-overlap', '13:30', 3, 'Confirmed', {calendarReservationHours:4})), /reserved service capacity|travel window|conflicts/);
+  assert.equal((await db.query('select count(*)::int as n from booking_calendar_slots')).rows[0].n, 2);
   await db.query("delete from bookings");
 
   // Draft offers do not reserve time. Two racing real reservations cannot both win.
@@ -76,5 +88,5 @@ async function insert(db, b) {
   assert.equal((await conflict.query("select to_regclass('public.booking_calendar_slots') as name")).rows[0].name, null);
   assert.equal((await conflict.query('select count(*)::int as n from bookings')).rows[0].n, 2);
   await conflict.close();
-  console.log('Shared calendar PostgreSQL tests passed: backfill, overlap exclusion, 3-hour boundary, competing reservations, cancellation, failed reschedule/duration rollback, drafts, protected checkout and safe migration rollback. Isolated test database only.');
+  console.log('Shared calendar PostgreSQL tests passed: capacity-based same-day bookings, overlap exclusion, competing reservations, cancellation, failed reschedule/duration rollback, drafts, protected checkout and safe migration rollback. Isolated test database only.');
 })().catch(error => { console.error(error); process.exitCode = 1; });

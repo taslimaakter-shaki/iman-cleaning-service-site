@@ -1746,7 +1746,7 @@
         const start = Date.parse(`${date}T${time}:00${zone}`);
         const format = elapsed => new Intl.DateTimeFormat('en-US', {timeZone:'America/New_York',month:'short',day:'numeric',hour:'numeric',minute:'2-digit'})
           .format(new Date(start + elapsed * 3600000));
-        schedulePreview.textContent = `${date} · ${hours} hours on site · Estimated finish: ${format(hours)} · 3-hour gap · Next possible start: ${format(hours + 3)} (New York time). Availability is checked again at payment; creating this link does not reserve the time.`;
+        schedulePreview.textContent = `${date} · ${hours} hours on site · Estimated finish: ${format(hours)} · 2-hour travel window · Next possible start: ${format(hours + 2)} (New York time). Availability is checked again at payment; creating this link does not reserve the time.`;
       } else if (!date && !time) schedulePreview.textContent = 'No appointment selected. The customer will choose an available date and time from the live calendar before payment.';
       else schedulePreview.textContent = 'Enter both the service date and start time, or leave both blank.';
     }

@@ -20,7 +20,7 @@ module.exports = async function handler(request, response) {
     }
     if (request.method === "GET" && request.query?.calendarStatus === "1") {
       await require('./_calendar').assertCalendarReady();
-      return json(response, 200, { ready: true, gapHours: 3 });
+      return json(response, 200, { ready: true, gapHours: 2, protectedExtensionHours: 1 });
     }
     if (request.method === "GET" && request.query?.googleCalendarStatus === "1") {
       try {

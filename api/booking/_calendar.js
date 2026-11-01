@@ -8,7 +8,9 @@ async function assertCalendarReady() {
   const response = await fetch(`${url.replace(/\/$/, '')}/rest/v1/rpc/iman_booking_calendar_version`, {
     headers: { apikey: key, Authorization: `Bearer ${key}` }, signal: AbortSignal.timeout(10000)
   });
-  if (!response.ok || await response.json() !== 2) throw fail('The shared calendar database update must be installed before booking.', 503);
+  const version = response.ok ? Number(await response.json()) : 0;
+  if (![2, 3].includes(version)) throw fail('The shared calendar database update must be installed before booking.', 503);
+  return version;
 }
 
 function newReservation() {

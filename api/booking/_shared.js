@@ -12,7 +12,10 @@ const HOLD_MINUTES = 30;
 const TIME_ZONE = "America/New_York";
 const OPEN_TIME = "08:00";
 const CLOSE_TIME = "20:30";
-const APPOINTMENT_GAP_HOURS = 3;
+// Every customer-facing arrival option reserves the expected on-site duration
+// plus one protected extension hour in calendarReservationHours. Keep another
+// two hours after that protected block for travel to the next appointment.
+const APPOINTMENT_GAP_HOURS = 2;
 const SLOT_INTERVAL_MINUTES = 30;
 // Customers may book any available slot beginning at 8:00 AM on the next
 // calendar day, even when they book late the night before. Same-day slots are
@@ -1443,7 +1446,7 @@ async function supabaseRequest(path, options = {}) {
   const text = await response.text();
   const data = text ? JSON.parse(text) : null;
   if (!response.ok) {
-    if (data?.code === "23P01") throw Object.assign(new Error("That appointment conflicts with another booking or its three-hour buffer. Please choose another time."), { statusCode: 409 });
+    if (data?.code === "23P01") throw Object.assign(new Error("That appointment conflicts with another booking's reserved service capacity or two-hour travel window. Please choose another time."), { statusCode: 409 });
     throw Object.assign(new Error(data?.message || "Booking storage request failed."), {
       statusCode: response.status,
       details: data
@@ -1800,8 +1803,8 @@ async function listActiveBookings() {
 async function assertScheduleAvailable(startIso, hours, excludeBookingId = '') {
   const start = new Date(startIso).getTime();
   if (!Number.isFinite(start) || start <= Date.now() || !Number.isFinite(hours) || hours <= 0 || hours > 200) throw Object.assign(new Error("Choose a future start time and valid on-site duration."), { statusCode: 400 });
-  const [bookings, calendar] = await Promise.all([listActiveBookings(), googleCalendarBusyRecords(new Date(start - 3 * 3600000).toISOString(), new Date(start + (hours + 3) * 3600000).toISOString())]);
-  if (!slotAvailable(startIso, hours, bookings.concat(calendar.records).filter(b => b.id !== excludeBookingId))) throw Object.assign(new Error("That appointment conflicts with another booking or its three-hour buffer. Choose another time."), { statusCode: 409 });
+  const [bookings, calendar] = await Promise.all([listActiveBookings(), googleCalendarBusyRecords(new Date(start - APPOINTMENT_GAP_HOURS * 3600000).toISOString(), new Date(start + (hours + APPOINTMENT_GAP_HOURS) * 3600000).toISOString())]);
+  if (!slotAvailable(startIso, hours, bookings.concat(calendar.records).filter(b => b.id !== excludeBookingId))) throw Object.assign(new Error("That appointment conflicts with another booking's reserved service capacity or two-hour travel window. Choose another time."), { statusCode: 409 });
 }
 
 function intervalsOverlap(left, right) {
