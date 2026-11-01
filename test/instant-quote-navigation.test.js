@@ -22,6 +22,14 @@ assert.doesNotMatch(
   /scheduleAutoAdvance|autoAdvanceTimer/,
   "Instant quote answers must not automatically advance to the next question."
 );
+const detailAnswerHandler = browserCode.indexOf('button.addEventListener("click", () => {', browserCode.indexOf("(isCounterBreakdown"));
+const detailAnswerRedraw = browserCode.indexOf("loadCurrentUnitDetails();", detailAnswerHandler);
+const petAnswerAdvance = browserCode.indexOf('if (question.key === "propertyHasPets") {', detailAnswerHandler);
+assert.ok(detailAnswerHandler >= 0 && detailAnswerRedraw >= 0 && petAnswerAdvance >= 0);
+assert.ok(
+  petAnswerAdvance < detailAnswerRedraw,
+  "The whole-property pet answer must advance before the answer controls are redrawn."
+);
 assert.doesNotMatch(html, /name="organizationPhotos"|data-organization-photos/);
 assert.doesNotMatch(html, /organized or decluttered/i);
 assert.doesNotMatch(browserCode, /uploadOrganizationPhotos|organizationPhotoFiles/);
