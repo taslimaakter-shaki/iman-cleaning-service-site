@@ -70,7 +70,3 @@ for (const [laborHours, end, label] of [[4, '17:30', '8:00 AM–5:30 PM'], [2, '
   assert.equal(discounted.arrivalDiscount.windowLabel, label);
   assert.equal(arrivalWindowEnd('any_day', laborHours / 2), end);
 }
-
-const { newArrivalPreferenceForKey } = require('../api/booking/_arrival-preference');
-for (const key of ['morning', 'afternoon']) assert.throws(() => newArrivalPreferenceForKey(key), /Anytime that day or an exact/);
-for (const key of ['any_day', 'exact']) assert.equal(newArrivalPreferenceForKey(key).key, key);

@@ -32,7 +32,7 @@ function choices(booking, slots) {
   const original = booking.estimate?.arrivalPreference || { key: 'exact' };
   const time = new Intl.DateTimeFormat('en-GB', {timeZone:'America/New_York',hour:'2-digit',minute:'2-digit',hourCycle:'h23'}).format(new Date(booking.schedule));
   const options = [];
-  for (const keep of [true,false]) for (const key of (keep ? ['any_day','exact'].filter(key => key === original.key) : ['any_day','exact'])) {
+  for (const keep of [true,false]) for (const key of (keep ? [original.key] : ['any_day','morning','afternoon','exact'])) {
     let pricing;
     try { pricing = quote(booking, key, keep); } catch { continue; }
     const seen = new Set();

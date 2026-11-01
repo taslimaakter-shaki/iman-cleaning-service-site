@@ -2611,6 +2611,8 @@
   const slotsForDate = (dateString) => state.availableSlots.filter((slot) => slot.date === dateString);
   const ARRIVAL_OPTIONS = [
     { key: "any_day", title: "Anytime that day", detail: "Arrival window based on your service duration", percent: 5, start: "08:00", end: "20:30", flexible: true },
+    { key: "morning", title: "Morning", detail: "Estimated arrival 8:00 AM–12:00 PM", percent: 2, start: "08:00", end: "12:00", flexible: true },
+    { key: "afternoon", title: "Afternoon", detail: "Estimated arrival 12:00 PM–4:00 PM", percent: 2, start: "12:00", end: "16:00", flexible: true },
     { key: "exact", title: "Choose an exact arrival time", detail: "Select a specific available time", percent: 0, start: "08:00", end: "20:30", flexible: false }
   ];
   const arrivalOption = (key) => ARRIVAL_OPTIONS.find((option) => option.key === key) || null;
@@ -2625,7 +2627,10 @@
     return value >= timeMinutes(option.start)
       && value <= timeMinutes(arrivalWindowEndTime(option));
   });
-  const visibleArrivalOptions = () => ARRIVAL_OPTIONS;
+  const hasExtendedLabor = () => Number(state.package?.manHours || 0) > 8;
+  const visibleArrivalOptions = () => hasExtendedLabor()
+    ? ARRIVAL_OPTIONS.filter((option) => option.key === "any_day" || option.key === "exact")
+    : ARRIVAL_OPTIONS;
   const arrivalWindowEndTime = (option) => {
     const serviceHours = Number(state.package?.teamHours);
     const reservedMinutes = (serviceHours + 1) * 60;
@@ -2705,7 +2710,7 @@
     if (arrivalOptions) {
       arrivalOptions.hidden = false;
       arrivalOptions.replaceChildren();
-      if (state.arrivalPreference && !arrivalOption(state.arrivalPreference)) {
+      if (hasExtendedLabor() && (state.arrivalPreference === "morning" || state.arrivalPreference === "afternoon")) {
         state.arrivalPreference = "";
         clearArrivalDiscount();
         if (scheduleSelect) scheduleSelect.value = "";

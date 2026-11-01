@@ -23,7 +23,7 @@ const calendar = require('./_calendar');
 const {
   applyArrivalDiscount,
   assertArrivalPreferenceEligible,
-  newArrivalPreferenceForKey,
+  arrivalPreferenceForKey,
   arrivalWindowLabel,
   slotMatchesArrivalPreference
 } = require('./_arrival-preference');
@@ -304,7 +304,7 @@ module.exports = async function handler(request, response) {
       }
     }
 
-    const arrivalPreference = newArrivalPreferenceForKey(body.arrivalPreference || "exact");
+    const arrivalPreference = arrivalPreferenceForKey(body.arrivalPreference || "exact");
     assertArrivalPreferenceEligible(pkg, arrivalPreference);
     const selectedSlot = cleanText(body.schedule, 80);
     const slots = await availableSlotsForPackage(pkg);

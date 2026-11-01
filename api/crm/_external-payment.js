@@ -40,7 +40,7 @@ async function resolve(body) {
       pkg = require('../booking/_saved-quote').validateAndPrice(found.record).pkg;
       pkg = require('../booking/_saved-quote').applySavedQuotePromotion(pkg, found.record, found.record.customer, bookings);
       pkg = require('../booking/_discount').applyPackageDiscount(pkg, found.state.manualDiscount);
-      const preference = arrival.newArrivalPreferenceForKey(body.arrivalPreference || 'exact');
+      const preference = arrival.arrivalPreferenceForKey(body.arrivalPreference || 'exact');
       const date = text(body.serviceDate, 10), time = text(body.serviceTime, 5);
       require('./_walkthroughs').validateVisit(date, time);
       const schedule = shared.toZonedIso(date, time);
