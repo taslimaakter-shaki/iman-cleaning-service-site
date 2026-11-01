@@ -22,3 +22,11 @@ home-hero-cleaners.png
 iman-logo-mark.png
 iman-logo-source.png
 weekly-flyer-01.png
+
+# Local diagnostics and private configuration must never enter deployments.
+output
+coverage
+*.log
+*.pid
+.env
+.env.*
