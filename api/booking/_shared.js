@@ -1900,7 +1900,12 @@ function availableSlotsForDate(pkg, dateString, bookings = [], minimumStartMs = 
   const earliestStart = Number.isFinite(Number(minimumStartMs)) ? Number(minimumStartMs) : 0;
   const slots = [];
 
-  for (let candidateStart = open; candidateStart + duration <= close; candidateStart += interval) {
+  const starts = [];
+  for (let time = open; time + duration <= close; time += interval) starts.push(time);
+  const latestProtectedStart = close - (Math.ceil(pkg.teamHours * 60) + 60) * 60000;
+  if (latestProtectedStart >= open && !starts.includes(latestProtectedStart)) starts.push(latestProtectedStart);
+  starts.sort((a, b) => a - b);
+  for (const candidateStart of starts) {
     if (candidateStart < earliestStart) continue;
     const startDate = new Date(candidateStart);
     const time = timeStringForDate(startDate);

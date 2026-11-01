@@ -3,6 +3,8 @@ const fs = require('node:fs');
 const { PGlite } = require('@electric-sql/pglite');
 const shared = require('../api/booking/_shared');
 const date = '2030-11-02';
+const quarterSlots = shared.availableSlotsForDate({teamHours:4.75}, date, []);
+assert(quarterSlots.some(s=>s.time==='14:45'), 'Calculated afternoon start is available off the half-hour grid');
 const iso = time => shared.toZonedIso(date, time);
 const make = (id, time, labor, flexible = true, start = '08:00', end = '17:30') => ({
   id, status: 'Confirmed', schedule: iso(time), service: 'standard', service_label: 'Cleaning',

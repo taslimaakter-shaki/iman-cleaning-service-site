@@ -304,7 +304,7 @@ module.exports = async function handler(request, response) {
       }
     }
 
-    const arrivalPreference = arrivalPreferenceForKey(body.arrivalPreference || "exact");
+    const arrivalPreference = arrivalPreferenceForKey(body.arrivalPreference || "exact", pkg.teamHours);
     assertArrivalPreferenceEligible(pkg, arrivalPreference);
     const selectedSlot = cleanText(body.schedule, 80);
     const slots = await availableSlotsForPackage(pkg);

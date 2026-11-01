@@ -45,3 +45,11 @@ for (const [hours, latest, tooLate, expected] of [[4, '17:30', '18:00', '8:00 AM
   assert.equal(vm.runInContext("arrivalWindowText(arrivalOption('any_day'))", context), `Estimated arrival ${expected}`);
   assert.equal(vm.runInContext("slotsForArrivalOption(arrivalOption('any_day')).map(s => s.time).join(',')", context), latest);
 }
+
+assert.equal(vm.runInContext("visibleArrivalOptions().map(o => o.key).join(',')", context), 'any_day,morning,afternoon');
+for (const [hours, latest] of [[4, '17:30'], [5, '17:00'], [9.5, '14:45']]) {
+ state.package = { manHours: hours, teamHours: hours / 2 };
+ state.availableSlots = ['08:00','08:30',latest].map(time => ({ time, flexibleEligible:true }));
+ assert.equal(vm.runInContext("slotsForArrivalOption(arrivalOption('morning')).map(s=>s.time).join(',')",context),'08:00');
+ assert.equal(vm.runInContext("slotsForArrivalOption(arrivalOption('afternoon')).map(s=>s.time).join(',')",context),latest);
+}

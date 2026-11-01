@@ -99,6 +99,31 @@ function load(file, dependencies, extras = {}) {
   assert.equal(booking.estimate.payment.depositCents, Math.round(flexiblePkg.priceCents * 0.25));
   assert.match(booking.schedule_label, /Estimated arrival 8:00 AM–5:30 PM/);
 
+  const originalSlot = { ...slot };
+  for (const [preferenceKey, time, value] of [
+    ['morning', '08:00', '2030-09-15T12:00:00Z'],
+    ['afternoon', '17:30', '2030-09-15T21:30:00Z']
+  ]) {
+    Object.assign(slot, { time, value });
+    body.arrivalPreference = preferenceKey;
+    body.schedule = value;
+    body.agreementReview.contextFingerprint = JSON.stringify({ packageId: pkg.id, total: pkg.price, laborHours: 4, schedule: value });
+    await handler(request, {});
+    assert.equal(result.status, 201, result.error);
+    assert.equal(booking.schedule, value);
+    assert.equal(booking.estimate.arrivalPreference.flexible, false);
+    assert.equal(booking.estimate.arrivalPreference.confirmationStatus, 'confirmed');
+    assert.equal(booking.estimate.arrivalPreference.windowStart, time);
+    assert.equal(booking.estimate.arrivalPreference.windowEnd, time);
+    assert.equal(booking.estimate.arrivalDiscount, null);
+    assert.equal(booking.estimate.payment.totalCents, pkg.priceCents, 'Fixed choices add no arrival discount');
+    // A stale page must not turn a fixed Morning/Afternoon choice into another time.
+    slot.time = '09:30';
+    await handler(request, {});
+    assert.equal(result.status, 409);
+  }
+  Object.assign(slot, originalSlot);
+  body.schedule = slot.value;
   body.arrivalPreference = 'exact';
   body.agreementReview.contextFingerprint = JSON.stringify({ packageId: pkg.id, total: 270, laborHours: 4, schedule: slot.value });
   body.discountCents = 23000;

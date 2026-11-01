@@ -1421,9 +1421,9 @@
           <label>Full service address, including ZIP<input name="address" required maxlength="400" value="${escapeHtml(/^ZIP\s/i.test(f.address || '') ? '' : f.address || '')}"></label>
           <label>Appointment date (New York)<input type="date" name="serviceDate" required value="${escapeHtml(f.serviceDate || '')}"></label>
           <label>Appointment start time (New York)<input type="time" name="serviceTime" required value="${escapeHtml(f.serviceTime || '')}"></label>
-          ${!quote.usesEditedPricing ? `<label>Customer's arrival choice<select name="arrivalPreference"><option value="exact">Exact time — no arrival discount</option><option value="any_day">Anytime that day — 5% off</option><option value="morning">Morning — 2% off</option><option value="afternoon">Afternoon — 2% off</option></select></label>` : '<p>This revised quote uses the agreed edited price. Review any discount in the quote editor.</p>'}
+          ${!quote.usesEditedPricing ? `<label>Customer's arrival choice<select name="arrivalPreference"><option value="any_day">Anytime that day — 5% off</option><option value="morning">Morning at 8 AM — no arrival discount</option><option value="afternoon">Afternoon latest start — no arrival discount</option></select></label>` : '<p>This revised quote uses the agreed edited price. Review any discount in the quote editor.</p>'}
           ${!quote.usesEditedPricing && /recurring/i.test(quote.service || '') ? '<label>Previous completed order<input name="previousOrderNumber" required></label><label>Recurring plan<select name="recurringPlan"><option value="weekly">Weekly</option><option value="biweekly">Biweekly</option><option value="monthly">Monthly</option></select></label>' : ''}
-        </div><p>For flexible arrival, enter an available start within the selected window. The customer’s confirmation will show the arrival window.</p>` : ''}
+        </div><p>For Anytime, enter an available provisional start. Morning starts at 8 AM; Afternoon is calculated from service duration and closing time. Review the confirmed time below before recording payment.</p>` : ''}
         <button type="button" class="crm-row-button" data-preview-external-payment>Review total & payment</button>
         <div data-external-payment-preview hidden></div>
         <fieldset data-external-payment-fields hidden disabled>

@@ -5,11 +5,12 @@ const cents = value => Math.round(Number(value || 0) * 100);
 const error = message => Object.assign(new Error(message), { statusCode: 409 });
 function quote(booking, key, keep = false) {
   const e = booking.estimate || {}, payment = e.payment || {};
-  const preference = arrival.arrivalPreferenceForKey(key);
+  let preference = arrival.arrivalPreferenceForKey(key, e.teamHours || e.hours);
+  if (keep && e.arrivalPreference?.flexible) preference = { ...preference, ...e.arrivalPreference, start: e.arrivalPreference.windowStart || preference.start, end: e.arrivalPreference.windowEnd || preference.end, fixedStart: false };
   arrival.assertArrivalPreferenceEligible(e, preference);
   const previousTotalCents = Number(payment.cleaningPriceCents ?? payment.totalCents ?? cents(e.total));
   const previousDiscount = e.arrivalDiscount || null;
-  const same = key === (e.arrivalPreference?.key || 'exact');
+  const same = key === (e.arrivalPreference?.key || 'exact') && (keep || !['morning','afternoon'].includes(key) || !e.arrivalDiscount?.amountCents);
   const subtotalCents = cents(e.subtotal);
   const previousTaxCents = cents(e.tax);
   const previousDiscountCents = Number(previousDiscount?.amountCents || 0);
@@ -23,8 +24,8 @@ function quote(booking, key, keep = false) {
   const paidCents = Number(payment.paidCents ?? payment.depositCents ?? 0);
   const refundedCents = (e.rescheduling?.priceRefunds || []).reduce((sum, r) => sum + (['pending','succeeded'].includes(r.status) ? Number(r.amountCents) : 0), 0);
   const creditedCents = Math.max(0, paidCents - refundedCents);
-  const windowLabel = preference.flexible ? (keep && same && e.arrivalPreference?.windowLabel || arrival.arrivalWindowLabel(preference, e.teamHours || e.hours)) : '';
-  const result = { preference: { ...preference, windowLabel, windowStart: preference.start, windowEnd: preference.flexible ? arrival.arrivalWindowEnd(preference, e.teamHours || e.hours) : preference.end }, previousPreference: e.arrivalPreference || { key: 'exact', label: 'Exact arrival time' }, previousDiscount, previousTotalCents, subtotalCents, discountedSubtotalCents, taxCents, totalCents, paidCents: creditedCents, depositCents: Number(payment.depositCents || 0), remainingCents: Math.max(0, totalCents - creditedCents), refundCents: Math.max(0, creditedCents - totalCents), duration: staffingOptions(e), arrivalDiscount: discountCents ? { code: key.toUpperCase(), label: preference.label, percent: same ? Number(previousDiscount?.percent || preference.percent) : preference.percent, amountCents: discountCents, application: 'before_tax', windowLabel } : null };
+  const windowLabel = (preference.flexible || preference.fixedStart) ? (keep && same && e.arrivalPreference?.windowLabel || arrival.arrivalWindowLabel(preference, e.teamHours || e.hours)) : '';
+  const result = { preference: { ...preference, windowLabel, windowStart: preference.start, windowEnd: (preference.flexible || preference.fixedStart) ? arrival.arrivalWindowEnd(preference, e.teamHours || e.hours) : preference.end }, previousPreference: e.arrivalPreference || { key: 'exact', label: 'Exact arrival time' }, previousDiscount, previousTotalCents, subtotalCents, discountedSubtotalCents, taxCents, totalCents, paidCents: creditedCents, depositCents: Number(payment.depositCents || 0), remainingCents: Math.max(0, totalCents - creditedCents), refundCents: Math.max(0, creditedCents - totalCents), duration: staffingOptions(e), arrivalDiscount: discountCents ? { code: key.toUpperCase(), label: preference.label, percent: same ? Number(previousDiscount?.percent || preference.percent) : preference.percent, amountCents: discountCents, application: 'before_tax', windowLabel } : null };
   result.id = crypto.createHash('sha256').update(JSON.stringify(result)).digest('hex');
   return result;
 }
@@ -32,12 +33,12 @@ function choices(booking, slots) {
   const original = booking.estimate?.arrivalPreference || { key: 'exact' };
   const time = new Intl.DateTimeFormat('en-GB', {timeZone:'America/New_York',hour:'2-digit',minute:'2-digit',hourCycle:'h23'}).format(new Date(booking.schedule));
   const options = [];
-  for (const keep of [true,false]) for (const key of (keep ? [original.key] : ['any_day','morning','afternoon','exact'])) {
+  for (const keep of [true,false]) for (const key of (keep ? [original.key] : ['any_day','morning','afternoon'])) {
     let pricing;
     try { pricing = quote(booking, key, keep); } catch { continue; }
     const seen = new Set();
     for (const slot of slots) {
-      if (!arrival.slotMatchesArrivalPreference(slot,key)) continue;
+      if (!arrival.slotMatchesArrivalPreference(slot,pricing.preference)) continue;
       if (keep && key === 'exact' && slot.time !== time) continue;
       if (pricing.preference.flexible && slot.time > pricing.preference.windowEnd) continue;
       if (pricing.preference.flexible && seen.has(slot.date)) continue;

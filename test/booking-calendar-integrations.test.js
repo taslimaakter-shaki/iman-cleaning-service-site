@@ -61,7 +61,7 @@ async function googleTests() {
   assert.equal(silent.requestBody.end.dateTime,'2030-09-12T21:00:00.000Z');
 }
 async function rescheduleTests() {
-  const original={id:'BK-1',status:'Confirmed',email:'test@example.test',phone:'',schedule:'2030-09-12T08:00:00-04:00',estimate:{teamHours:9,total:720,payment:{paidCents:18000}}};
+  const original={id:'BK-1',status:'Confirmed',email:'test@example.test',phone:'',schedule:'2030-09-12T08:00:00-04:00',estimate:{teamHours:9,subtotal:661.31,tax:58.69,total:720,payment:{paidCents:18000}}};
   const calls=[];
   const shared={cleanText:x=>String(x||''),getBooking:async()=>clone(original),readJsonBody:async req=>req.body,json:(r,s,b)=>Object.assign(r,{status:s,body:b}),
     availableSlotsForPackage:async(pkg,days,now,exclude)=>{assert.equal(exclude,original.id);assert.equal(pkg.teamHours,9);return [{value:'2030-09-13T08:00:00-04:00',date:'2030-09-13',time:'08:00',flexibleEligible:true,label:'September 13 at 8 AM'}];}
@@ -83,7 +83,7 @@ async function rescheduleTests() {
   const unavailable={};await handler({method:'POST',body:{action:'reschedule',token,schedule:'2030-09-14T08:00:00-04:00'}},unavailable);
   assert.equal(unavailable.status,409);
   const get={};await handler({method:'GET',query:{token}},get);assert.equal(get.status,200);
-  const choice=get.body.appointmentChoices.find(c=>c.mode==='new' && c.preferenceKey==='exact');assert(choice);
+  const choice=get.body.appointmentChoices.find(c=>c.mode==='new' && c.preferenceKey==='any_day');assert(choice);
   const payload={action:'reschedule',token,schedule:choice.value,choiceId:choice.choiceId,quoteId:choice.pricing.id,acceptPrice:true};
   const stale={};await handler({method:'POST',body:{...payload,quoteId:'tampered'}},stale);assert.equal(stale.status,409);
   const noConsent={};await handler({method:'POST',body:{...payload,acceptPrice:false}},noConsent);assert.equal(noConsent.status,409);

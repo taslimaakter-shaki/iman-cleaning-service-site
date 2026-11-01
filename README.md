@@ -788,3 +788,14 @@ records, prices, payments, agreed windows, or send customer messages. Existing
 explicit calendar reservation durations remain authoritative. Confirm the actual
 arrival time before dispatch; using fewer cleaners requires reserving sufficient
 additional on-site time and rechecking capacity.
+
+
+Scheduling offers three choices for new customer appointments: Anytime (5% arrival
+discount), Morning at 8:00 AM (no arrival discount), and Afternoon at closing minus
+the quoted two-person duration and one protected hour (no arrival discount).
+Morning and Afternoon are confirmed fixed starts, so daily planning cannot move
+them. The calculated Afternoon start is also offered when it falls between the
+usual half-hour calendar slots. Other agreed quote discounts remain intact.
+Legacy exact-time bookings and previously agreed windows remain readable and
+can retain their previous preference when rescheduling; new time choices use the
+three current options. Separate exact-time selection is no longer offered.

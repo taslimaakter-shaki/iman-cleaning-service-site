@@ -10,6 +10,7 @@ const {
 
 const packageWithFall5 = {
   serviceKey: "deep",
+  teamHours: 2,
   subtotalCents: 50000,
   originalSubtotalCents: 50000,
   originalTaxCents: 4438,
@@ -29,29 +30,23 @@ assert.equal(anytime.taxCents, 3994);
 assert.equal(anytime.priceCents, 48994);
 
 const morning = applyArrivalDiscount(packageWithFall5, "morning");
-assert.equal(morning.arrivalDiscount.amountCents, 1000);
-assert.equal(morning.discountedSubtotalCents, 46500);
-assert.equal(morning.taxCents, 4127);
-assert.equal(morning.priceCents, 50627);
+assert.equal(morning.arrivalDiscount, null);
+assert.equal(morning.discountedSubtotalCents, 47500);
+assert.equal(morning.taxCents, 4216);
+assert.equal(morning.priceCents, 51716);
 
 const exact = applyArrivalDiscount(packageWithFall5, "exact");
 assert.equal(exact.arrivalDiscount, null);
 assert.equal(exact.priceCents, packageWithFall5.priceCents);
 
-assert.equal(arrivalWindowLabel("afternoon"), "12:00 PM–4:00 PM");
+assert.equal(arrivalWindowLabel("afternoon", 2), "5:30 PM");
 assert.equal(arrivalWindowLabel("any_day", 5), "8:00 AM–2:30 PM");
 assert.equal(arrivalWindowEnd("any_day", 5), "14:30");
-assert.equal(arrivalWindowEnd("morning", 4), "12:00");
-assert.equal(arrivalPreferenceForKey("morning").percent, 2);
+assert.equal(arrivalWindowEnd("morning", 4), "08:00");
+assert.equal(arrivalPreferenceForKey("morning").percent, 0);
 assert.equal(assertArrivalPreferenceEligible({ manHours: 8 }, "morning").key, "morning");
-assert.throws(
-  () => assertArrivalPreferenceEligible({ manHours: 8.01 }, "morning"),
-  /8 total labor hours or less/
-);
-assert.throws(
-  () => applyArrivalDiscount({ ...packageWithFall5, manHours: 9 }, "afternoon"),
-  /8 total labor hours or less/
-);
+assert.equal(assertArrivalPreferenceEligible({ manHours: 10, teamHours: 5 }, "morning").start, "08:00");
+assert.equal(assertArrivalPreferenceEligible({ manHours: 10, teamHours: 5 }, "afternoon").start, "14:30");
 assert.equal(assertArrivalPreferenceEligible({ manHours: 12 }, "any_day").key, "any_day");
 assert.equal(assertArrivalPreferenceEligible({ manHours: 12 }, "exact").key, "exact");
 assert.equal(slotMatchesArrivalPreference({ value: "2030-10-01T08:00:00-04:00", time: "08:00", flexibleEligible: true }, "any_day"), true);
@@ -70,3 +65,12 @@ for (const [laborHours, end, label] of [[4, '17:30', '8:00 AM–5:30 PM'], [2, '
   assert.equal(discounted.arrivalDiscount.windowLabel, label);
   assert.equal(arrivalWindowEnd('any_day', laborHours / 2), end);
 }
+
+for (const [hours, time] of [[2,'18:30'],[4,'17:30'],[5,'17:00'],[9.5,'14:45']]) {
+ const pref = arrivalPreferenceForKey('afternoon', hours / 2);
+ assert.equal(pref.flexible,false); assert.equal(pref.start,time); assert.equal(pref.end,time);
+ assert(slotMatchesArrivalPreference({value:'test',time,teamHours:hours/2,flexibleEligible:true},'afternoon'));
+ assert(!slotMatchesArrivalPreference({value:'test',time:'08:00',teamHours:hours/2,flexibleEligible:true},'afternoon'));
+}
+assert(!slotMatchesArrivalPreference({value:'test',time:'08:30',teamHours:2,flexibleEligible:true},'morning'));
+assert(slotMatchesArrivalPreference({value:'test',time:'08:00',teamHours:2,flexibleEligible:true},'morning'));

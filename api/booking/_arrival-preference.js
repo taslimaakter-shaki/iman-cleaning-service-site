@@ -3,30 +3,32 @@ const { cleanText } = require("./_shared");
 const ARRIVAL_PREFERENCES = Object.freeze({
   exact: Object.freeze({ key: "exact", label: "Exact arrival time", percent: 0, start: "08:00", end: "20:30", flexible: false }),
   any_day: Object.freeze({ key: "any_day", label: "Anytime arrival discount", percent: 5, start: "08:00", end: "20:30", flexible: true }),
-  morning: Object.freeze({ key: "morning", label: "Morning arrival discount", percent: 2, start: "08:00", end: "12:00", flexible: true }),
-  afternoon: Object.freeze({ key: "afternoon", label: "Afternoon arrival discount", percent: 2, start: "12:00", end: "16:00", flexible: true })
+  morning: Object.freeze({ key: "morning", label: "Morning arrival", percent: 0, start: "08:00", end: "08:00", flexible: false, fixedStart: true }),
+  afternoon: Object.freeze({ key: "afternoon", label: "Afternoon arrival", percent: 0, start: "08:00", end: "20:30", flexible: false, fixedStart: true })
 });
 
 function arrivalError(message, statusCode = 400) {
   return Object.assign(new Error(message), { statusCode, code: "ARRIVAL_PREFERENCE_INVALID" });
 }
 
-function arrivalPreferenceForKey(value) {
+function arrivalPreferenceForKey(value, serviceTeamHours) {
   const key = cleanText(value, 30).toLowerCase();
   const preference = ARRIVAL_PREFERENCES[key];
   if (!preference) throw arrivalError("Choose an arrival-time option.");
+  if (preference.key === "afternoon" && Number.isFinite(Number(serviceTeamHours))) {
+    const latest = 20 * 60 + 30 - Math.ceil(Number(serviceTeamHours) * 60) - 60;
+    if (latest < 480) throw arrivalError("This service cannot fit before closing with the additional reserved hour.", 409);
+    const time = `${String(Math.floor(latest / 60)).padStart(2, '0')}:${String(latest % 60).padStart(2, '0')}`;
+    return { ...preference, start: time, end: time };
+  }
   return preference;
 }
 
 function assertArrivalPreferenceEligible(pkg, preferenceValue) {
   if (!pkg) throw arrivalError("Your quote must be completed before choosing an arrival window.");
   const preference = typeof preferenceValue === "object"
-    ? preferenceValue
-    : arrivalPreferenceForKey(preferenceValue);
-  const laborHours = Number(pkg.manHours ?? pkg.laborHours);
-  if (Number.isFinite(laborHours) && laborHours > 8 && (preference.key === "morning" || preference.key === "afternoon")) {
-    throw arrivalError("Morning and afternoon arrival windows are available only for bookings of 8 total labor hours or less.", 409);
-  }
+    ? (preferenceValue.fixedStart ? arrivalPreferenceForKey(preferenceValue.key, pkg.teamHours) : preferenceValue)
+    : arrivalPreferenceForKey(preferenceValue, pkg.teamHours);
   return preference;
 }
 
@@ -38,9 +40,10 @@ function minutes(value) {
 function slotMatchesArrivalPreference(slot, preferenceValue) {
   const preference = typeof preferenceValue === "object"
     ? preferenceValue
-    : arrivalPreferenceForKey(preferenceValue);
+    : arrivalPreferenceForKey(preferenceValue, slot?.teamHours);
   if (!slot || !slot.value) return false;
   if (slot.flexibleEligible !== true) return false;
+  if (preference.fixedStart) return slot.time === preference.start && (preference.key !== "afternoon" || preference.start === preference.end);
   if (!preference.flexible) return true;
   const slotMinutes = minutes(slot.time);
   return Number.isFinite(slotMinutes)
@@ -51,10 +54,11 @@ function slotMatchesArrivalPreference(slot, preferenceValue) {
 function arrivalWindowEnd(preferenceValue, serviceTeamHours) {
   const preference = typeof preferenceValue === "object"
     ? preferenceValue
-    : arrivalPreferenceForKey(preferenceValue);
+    : arrivalPreferenceForKey(preferenceValue, serviceTeamHours);
+  if (preference.fixedStart) return preference.start;
   if (!preference.flexible) return "";
   const closeMinutes = minutes("20:30");
-  const reservedMinutes = (Number(serviceTeamHours) + 1) * 60;
+  const reservedMinutes = Math.ceil(Number(serviceTeamHours) * 60) + 60;
   const calculatedLatest = Number.isFinite(reservedMinutes) ? closeMinutes - reservedMinutes : minutes(preference.end);
   const effectiveEndMinutes = Math.min(minutes(preference.end), calculatedLatest);
   if (!Number.isFinite(effectiveEndMinutes) || effectiveEndMinutes < minutes(preference.start)) {
@@ -66,13 +70,14 @@ function arrivalWindowEnd(preferenceValue, serviceTeamHours) {
 function arrivalWindowLabel(preferenceValue, serviceTeamHours) {
   const preference = typeof preferenceValue === "object"
     ? preferenceValue
-    : arrivalPreferenceForKey(preferenceValue);
-  if (!preference.flexible) return "";
+    : arrivalPreferenceForKey(preferenceValue, serviceTeamHours);
+  if (!preference.flexible && !preference.fixedStart) return "";
   const display = (value) => {
     const [hourValue, minute = "00"] = value.split(":");
     const hour = Number(hourValue);
     return `${hour % 12 || 12}:${minute} ${hour >= 12 ? "PM" : "AM"}`;
   };
+  if (preference.fixedStart) return display(preference.start);
   return `${display(preference.start)}–${display(arrivalWindowEnd(preference, serviceTeamHours))}`;
 }
 

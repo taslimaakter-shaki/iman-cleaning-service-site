@@ -394,12 +394,12 @@
             button.append(copy,tag);return button;
           };
           const seen=new Set();
-          newChoices.filter(c=>c.pricing.preference.flexible).forEach(choice=>{
+          newChoices.filter(c=>c.pricing.preference.key !== 'exact').forEach(choice=>{
             const q=choice.pricing,pref=q.preference;if(seen.has(pref.key))return;seen.add(pref.key);
-            const button=card(pref.key==='any_day'?'Anytime that day':pref.key==='morning'?'Morning':'Afternoon',`Estimated arrival ${pref.windowLabel}`,`Save ${q.arrivalDiscount?.percent || 0}%`,selectedChoice?.choiceId===choice.choiceId,()=>{exactExpanded=false;selectChoice(choice);});
+            const button=card(pref.key==='any_day'?'Anytime that day':pref.key==='morning'?'Morning':'Afternoon',`${pref.flexible ? "Estimated arrival" : "Arrival at"} ${pref.windowLabel}`,q.arrivalDiscount?.percent ? `Save ${q.arrivalDiscount.percent}%` : "No arrival discount",selectedChoice?.choiceId===choice.choiceId,()=>{exactExpanded=false;selectChoice(choice);});
             button.dataset.choiceSelected=String(selectedChoice?.choiceId===choice.choiceId);
           });
-          const exactChoices=newChoices.filter(c=>!c.pricing.preference.flexible);
+          const exactChoices=newChoices.filter(c=>c.pricing.preference.key === 'exact');
           if(exactChoices.length){
             const toggle=card('Choose an exact arrival time','Select a specific available time','No added discount',exactExpanded,()=>{
               exactExpanded=!exactExpanded;clearPrice();renderTimes();document.querySelector('[data-exact-toggle]')?.focus({preventScroll:true});
