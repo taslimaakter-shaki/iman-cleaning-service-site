@@ -13,5 +13,9 @@ assert.match(script, /persistBookingDraft = saveBookingDraft;/);
 assert.match(script, /saveBookingDraft\(\{ immediate: true \}\);\s*closeWizard\(\{ preserveDraft: true \}\);/);
 assert.match(script, /window\.addEventListener\("pagehide"/);
 assert.match(script, /BOOKING_DRAFT_MAX_AGE = 7 \* 24 \* 60 \* 60 \* 1000/);
+const detailLoader = script.indexOf("const loadCurrentUnitDetails = () => {");
+const resumedUnitClamp = script.indexOf("state.currentUnitIndex = Math.max(0, Math.min(Number(state.currentUnitIndex) || 0, count - 1));", detailLoader);
+const currentUnitRead = script.indexOf("const current = state.unitDetails[state.currentUnitIndex] || emptyUnitDetails();", detailLoader);
+assert.ok(detailLoader >= 0 && resumedUnitClamp > detailLoader && resumedUnitClamp < currentUnitRead);
 
 console.log("Booking resume-draft tests passed.");

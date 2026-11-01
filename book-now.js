@@ -1587,11 +1587,12 @@
   };
   const loadCurrentUnitDetails = () => {
     syncUnitCount();
+    const count = selectedUnitCount();
+    state.currentUnitIndex = Math.max(0, Math.min(Number(state.currentUnitIndex) || 0, count - 1));
     const current = state.unitDetails[state.currentUnitIndex] || emptyUnitDetails();
     if (current.livingRooms !== "" && current.diningRooms === "") {
       current.diningRooms = current.livingRooms;
     }
-    const count = selectedUnitCount();
     const questions = pricingDetailQuestions(current);
       state.currentDetailQuestionIndex = Math.max(0, Math.min(state.currentDetailQuestionIndex, questions.length - 1));
       const question = questions[state.currentDetailQuestionIndex];
