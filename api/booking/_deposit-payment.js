@@ -63,13 +63,11 @@ async function cancel(order) {
  return record(order,intent); // Only Stripe's canceled status frees capacity.
 }
 async function finish(order, intent) {
- order=await record(order,intent);
- if (order.state==='paid') {
-  try { await require('../quote/_payment-record').sendPaymentRecordForSessionId({sessionId:`bp_${order.id}`,siteUrl:ORIGIN,source:'booking_payment'}); }
-  catch { /* The webhook and status checks retry confirmation delivery. */ }
- }
- return order;
+ // Confirm capacity before returning. The signed webhook and confirmation page
+ // deliver receipts, so email/PDF outages never delay a customer's Pay response.
+ return record(order,intent);
 }
+
 async function pay(order, confirmationToken) {
  if (!/^ctoken_[A-Za-z0-9]+$/.test(confirmationToken || '')) throw fail('Please enter your payment details again.',400);
  if (order.state==='paid') return order;

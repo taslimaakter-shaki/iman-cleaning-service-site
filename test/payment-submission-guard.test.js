@@ -68,5 +68,7 @@ const shared=require('../api/booking/_shared');
  const changed=await make('changed','2030-11-11');await db.query("update bookings set schedule=$1 where id='changed'",[shared.toZonedIso('2030-11-12','08:00')]);await assert.rejects(api._test.pay(changed.order,'ctoken_changed'),/quote changed/i);
  assert.throws(()=>api._test.verify(a.token+'tampered'),/invalid/);assert.equal(api._test.verify(a.token),a.order.id);
  const session=await api.syntheticSession('bp_'+paid.id);assert.equal(session.payment_status,'paid');assert.equal(session.amount_total,10000);assert.equal(session.metadata.booking_id,winner.order.booking_id);
+ const beforeDelivery=notifications;await api.handleEvent({type:'payment_intent.succeeded',data:{object:intents.get(paid.intent_id)}});assert.equal(notifications,beforeDelivery+1,'Webhook delivers confirmation after capacity is committed');
+ await api.handleEvent({type:'payment_intent.canceled',data:{object:oldIntent}});assert.equal((await getBooking('declined')).status,'Confirmed','Old failed-attempt events cannot undo a successful retry');
  await db.close();console.log('Payment submission guard: real PostgreSQL capacity race, no hold on browsing, paid/stale blocking, repeated clicks, decline/retry, 3DS cancel, processing retention, stale quote and token checks passed. All providers simulated.');
 })().catch(e=>{console.error(e);process.exit(1);});
