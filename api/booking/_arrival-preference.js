@@ -2,7 +2,7 @@ const { cleanText } = require("./_shared");
 
 const ARRIVAL_PREFERENCES = Object.freeze({
   exact: Object.freeze({ key: "exact", label: "Exact arrival time", percent: 0, start: "08:00", end: "20:30", flexible: false }),
-  any_day: Object.freeze({ key: "any_day", label: "Anytime arrival discount", percent: 5, start: "08:00", end: "16:00", flexible: true }),
+  any_day: Object.freeze({ key: "any_day", label: "Anytime arrival discount", percent: 5, start: "08:00", end: "20:30", flexible: true }),
   morning: Object.freeze({ key: "morning", label: "Morning arrival discount", percent: 2, start: "08:00", end: "12:00", flexible: true }),
   afternoon: Object.freeze({ key: "afternoon", label: "Afternoon arrival discount", percent: 2, start: "12:00", end: "16:00", flexible: true })
 });

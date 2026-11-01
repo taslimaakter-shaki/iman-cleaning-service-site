@@ -56,9 +56,17 @@ assert.equal(assertArrivalPreferenceEligible({ manHours: 12 }, "any_day").key, "
 assert.equal(assertArrivalPreferenceEligible({ manHours: 12 }, "exact").key, "exact");
 assert.equal(slotMatchesArrivalPreference({ value: "2030-10-01T08:00:00-04:00", time: "08:00", flexibleEligible: true }, "any_day"), true);
 assert.equal(slotMatchesArrivalPreference({ value: "2030-10-01T16:00:00-04:00", time: "16:00", flexibleEligible: true }, "any_day"), true);
-assert.equal(slotMatchesArrivalPreference({ value: "2030-10-01T16:30:00-04:00", time: "16:30", flexibleEligible: true }, "any_day"), false);
+assert.equal(slotMatchesArrivalPreference({ value: "2030-10-01T16:30:00-04:00", time: "16:30", flexibleEligible: true }, "any_day"), true);
 assert.equal(slotMatchesArrivalPreference({ value: "2030-10-01T10:00:00-04:00", time: "10:00", flexibleEligible: false }, "morning"), false, "Flexible choices require the extra hour of calendar capacity");
 assert.equal(slotMatchesArrivalPreference({ value: "2030-10-01T18:00:00-04:00", time: "18:00", flexibleEligible: true }, "exact"), true);
 assert.equal(slotMatchesArrivalPreference({ value: "2030-10-01T18:00:00-04:00", time: "18:00", flexibleEligible: false }, "exact"), false, "Exact times also preserve the additional hour");
 
 console.log("Arrival preference tests passed: windows, extra-capacity eligibility, exact-time behavior, and stacked pretax discounts.");
+
+for (const [laborHours, end, label] of [[4, '17:30', '8:00 AM–5:30 PM'], [2, '18:30', '8:00 AM–6:30 PM']]) {
+  const pkg = { ...packageWithFall5, manHours: laborHours, teamHours: laborHours / 2 };
+  const discounted = applyArrivalDiscount(pkg, 'any_day');
+  assert.equal(discounted.arrivalDiscount.windowEnd, end);
+  assert.equal(discounted.arrivalDiscount.windowLabel, label);
+  assert.equal(arrivalWindowEnd('any_day', laborHours / 2), end);
+}

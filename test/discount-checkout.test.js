@@ -92,12 +92,12 @@ function load(file, dependencies, extras = {}) {
   assert.equal(stripe.get('metadata[arrival_discount_cents]'), String(flexiblePkg.arrivalDiscount.amountCents));
   assert.equal(booking.estimate.arrivalPreference.flexible, true);
   assert.equal(booking.estimate.arrivalPreference.confirmationStatus, 'pending');
-  assert.equal(booking.estimate.arrivalPreference.windowLabel, '8:00 AM–4:00 PM');
-  assert.equal(booking.estimate.arrivalPreference.windowEnd, '16:00');
+  assert.equal(booking.estimate.arrivalPreference.windowLabel, '8:00 AM–5:30 PM');
+  assert.equal(booking.estimate.arrivalPreference.windowEnd, '17:30');
   assert.equal(booking.estimate.calendarReservationHours, flexiblePkg.teamHours + 1);
   assert.equal(booking.estimate.payment.totalCents, flexiblePkg.priceCents);
   assert.equal(booking.estimate.payment.depositCents, Math.round(flexiblePkg.priceCents * 0.25));
-  assert.match(booking.schedule_label, /Estimated arrival 8:00 AM–4:00 PM/);
+  assert.match(booking.schedule_label, /Estimated arrival 8:00 AM–5:30 PM/);
 
   body.arrivalPreference = 'exact';
   body.agreementReview.contextFingerprint = JSON.stringify({ packageId: pkg.id, total: 270, laborHours: 4, schedule: slot.value });
