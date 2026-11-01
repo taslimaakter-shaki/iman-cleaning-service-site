@@ -1434,9 +1434,10 @@
             <label>Bank transaction / unique receipt reference<input name="reference" minlength="3" maxlength="120" required></label>
           </div>
           <label>Payment note (optional)<textarea name="note" maxlength="1000"></textarea></label>
-          <label>How did the customer accept these service and payment terms?<textarea name="agreementEvidence" minlength="10" maxlength="1000" placeholder="For example: customer agreed by email on October 31; email subject and reference…" required></textarea></label>
+          <p data-saved-service-agreement hidden></p>
+          <label data-manual-agreement-evidence>How did the customer accept these service and payment terms?<textarea name="agreementEvidence" minlength="10" maxlength="1000" placeholder="For example: customer agreed by email on October 31; email subject and reference…" required></textarea></label>
           <label><input type="checkbox" name="verified" required> I verified that this payment was received and is not already recorded.</label>
-          <label><input type="checkbox" name="agreementVerified" required> The customer accepted the service, appointment, price, Service Agreement and external-payment terms shown above.</label>
+          <label data-manual-agreement-confirmation><input type="checkbox" name="agreementVerified" required> The customer accepted the service, appointment, price, Service Agreement and external-payment terms shown above.</label>
           <p>A partial deposit is recorded without confirming the appointment. Once the deposit is covered, confirmation and receipts are sent automatically.</p>
           <button class="crm-primary" type="submit">Record received payment</button>
         </fieldset>
@@ -1464,6 +1465,15 @@
         ${data.arrivalDiscount?.amountCents ? `<p>${escapeHtml(data.arrivalDiscount.label)}: −${escapeHtml(money(data.arrivalDiscount.amountCents))}</p>` : ''}
         <p>${escapeHtml(data.terms)}</p>`;
       const fields=$('[data-external-payment-fields]',form); fields.hidden=false; fields.disabled=data.remainingCents<=0;
+      const savedAgreement = Boolean(data.agreement);
+      const agreementNotice = $('[data-saved-service-agreement]',form);
+      agreementNotice.hidden = !savedAgreement;
+      agreementNotice.textContent = savedAgreement ? `Service Agreement already signed online by ${data.agreement.signedName} on ${submittedDate(data.agreement.acceptedAt)}. The existing signature will be included in the booking record; no repeat acceptance is needed.` : '';
+      for (const [name, selector] of [['agreementEvidence','[data-manual-agreement-evidence]'],['agreementVerified','[data-manual-agreement-confirmation]']]) {
+        $(selector,form).hidden = savedAgreement;
+        form.elements[name].disabled = savedAgreement;
+        form.elements[name].required = !savedAgreement;
+      }
       form.elements.amount.value=(Math.min(data.remainingCents,Math.max(0,data.depositCents-data.paidCents)||data.remainingCents)/100).toFixed(2);
       form.elements.amount.max=(data.remainingCents/100).toFixed(2);
       form.elements.receivedAt.value=new Intl.DateTimeFormat('en-CA',{timeZone:'America/New_York',year:'numeric',month:'2-digit',day:'2-digit'}).format(new Date());

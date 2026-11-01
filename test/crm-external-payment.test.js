@@ -58,6 +58,19 @@ function fixture(options={}) {
   f.bookings[0].status='Completed';
   await f.api.notifyBalanceDue('BK-TEST');await f.api.notifyBalanceDue('BK-TEST');
   assert.equal(f.calls.filter(x=>x==='balance-email').length,1);assert.equal(f.calls.filter(x=>x==='balance-sms').length,1);
+  const signed=fixture();
+  signed.bookings[0].estimate.manHours=4;signed.bookings[0].estimate.packageId='PKG-TEST';
+  const acceptance={signedName:'Jane Example',recordHash:'saved-evidence-hash',serverRecordedAt:'2026-10-31T14:00:00Z',customerAcceptedAt:'2026-10-31T13:59:00Z',
+    context:{scheduledFor:signed.bookings[0].schedule,totalCents:20609,laborHours:4,packageId:'PKG-TEST',service:'Standard Cleaning'}};
+  signed.bookings[0].estimate.agreementAcceptance=clone(acceptance);
+  const signedPreview=await signed.api.resolve({source:'booking',id:'BK-TEST'});
+  assert.equal(signed.api.summary(signedPreview).agreement.signedName,'Jane Example');
+  await signed.api.record(await signed.request({agreementVerified:false,agreementEvidence:''}));
+  assert.deepEqual(signed.get('BK-TEST').estimate.agreementAcceptance,acceptance);
+  assert.equal(signed.get('BK-TEST').estimate.payment.externalPayments[0].agreementSource,'instant_quote');
+  signed.bookings[0].schedule='2030-12-11T09:00:00-05:00';
+  assert.equal(signed.api.summary(await signed.api.resolve({source:'booking',id:'BK-TEST'})).agreement,null);
+  await assert.rejects(signed.api.record(await signed.request({operationId:'operation-00000022',reference:'BANK-NEW',agreementVerified:false,agreementEvidence:''})),/accepted/);
   const {content}=require('../api/crm/_external-payment-notifications');
   const b=f.get('BK-TEST'),entry=b.estimate.payment.externalPayments[0];const message=content(b,entry);assert.match(message.text,/Zelle/);assert.match(message.text,/154.57/);assert.match(message.text,/No automatic card hold/);
   const saved={quoteId:'SAVED-TEST',pricingMode:'hourly_formula',eligibility:{serviceIntent:'cleaning',requestedService:'hourly',serviceZip:'11432'},unitDetails:[{hours:4}],customer:{firstName:'Jane',lastName:'Example',email:'jane@example.test',phone:'+12125550123'}};

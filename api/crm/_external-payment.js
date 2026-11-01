@@ -78,13 +78,23 @@ async function resolve(body) {
   const token = hash({ source:found.source, id:found.id, version:found.version, booking });
   return { found, bookings, booking, token };
 }
+function savedAgreement(booking) {
+  const estimate = booking.estimate || {}, acceptance = estimate.agreementAcceptance, context = acceptance?.context;
+  if (!acceptance?.signedName || !acceptance.recordHash || !acceptance.serverRecordedAt || !context || estimate.crmQuote?.fields) return null;
+  if (!Number.isFinite(Date.parse(acceptance.serverRecordedAt)) || !Number.isFinite(Date.parse(context.scheduledFor))
+    || Date.parse(context.scheduledFor) !== Date.parse(booking.schedule)
+    || Number(context.totalCents) !== total(booking)
+    || Number(context.laborHours) !== Number(estimate.manHours)
+    || context.packageId !== estimate.packageId || context.service !== booking.service_label) return null;
+  return {source:'instant_quote',signedName:acceptance.signedName,acceptedAt:acceptance.customerAcceptedAt || acceptance.serverRecordedAt,recordHash:acceptance.recordHash};
+}
 function summary(resolved) {
   const { booking:b, token } = resolved;
   const payment = b.estimate.payment || {};
   return { previewToken: token, bookingId:b.id, customerName:b.client_name, service:b.service_label, address:b.address, scheduleLabel:b.schedule_label,
     totalCents:total(b), depositCents:Number(payment.depositCents || Math.round(total(b)*.25)), paidCents:paid(b), remainingCents:total(b)-paid(b),
     promoDiscount:b.estimate.promoDiscount || null, arrivalDiscount:b.estimate.arrivalDiscount || null, terms:TERMS,
-    payments:payment.externalPayments || [] };
+    payments:payment.externalPayments || [], agreement:savedAgreement(b) };
 }
 async function cas(booking, patch) {
   const rows = await shared.supabaseRequest(`?id=eq.${encodeURIComponent(booking.id)}&status=eq.${encodeURIComponent(booking.status)}&estimate=eq.${encodeURIComponent(JSON.stringify(booking.estimate || {}))}`, {
@@ -108,7 +118,9 @@ async function record(body) {
   const payment = validatePayment(body, total(booking)-paid(booking));
   if ((booking.estimate.payment.externalPayments || []).length >= 100) throw fail('This booking has reached its payment entry limit. Contact support.',409);
   if (bookings.some(b => (b.estimate?.payment?.externalPayments || []).some(p => p.referenceKey === payment.referenceKey))) throw fail('That payment reference is already recorded. Check payment history instead of entering it again.',409);
-  if (body.agreementVerified !== true || text(body.agreementEvidence,1000).length < 10) throw fail('Record how the customer accepted the service details and external-payment terms.');
+  const agreement = savedAgreement(booking);
+  const agreementEvidence = agreement ? `Service Agreement signed online by ${agreement.signedName} at ${agreement.acceptedAt}. Record: ${agreement.recordHash}` : text(body.agreementEvidence,1000);
+  if (!agreement && (body.agreementVerified !== true || agreementEvidence.length < 10)) throw fail('Record how the customer accepted the service details and external-payment terms.');
   if (!paid(booking)) {
     await shared.assertScheduleAvailable(booking.schedule, shared.bookingDurationHours(booking), booking.id);
     await quotes.closeSessions(found);
@@ -130,7 +142,7 @@ async function record(body) {
   const depositCents = Number(prior.depositCents || Math.round(total(booking)*.25));
   const confirms = cumulative >= depositCents;
   if (booking.status === 'New' && confirms) await shared.assertScheduleAvailable(booking.schedule, shared.bookingDurationHours(booking), booking.id);
-  const entry = { ...payment, operationId:body.operationId, recordedAt:new Date().toISOString(), recordedBy:'CRM administrator', agreementEvidence:text(body.agreementEvidence,1000),
+  const entry = { ...payment, operationId:body.operationId, recordedAt:new Date().toISOString(), recordedBy:'CRM administrator', agreementEvidence, agreementSource:agreement ? 'instant_quote' : 'administrator_evidence',
     terms:TERMS, totalCents:total(booking), cumulativePaidCents:cumulative, remainingCents:total(booking)-cumulative, confirms, newlyConfirmed:booking.status==='New' && confirms,
     delivery:{ email:{status:'pending'}, sms:{status:'pending'} } };
   const estimate = { ...booking.estimate, externalPaymentTerms:{ text:TERMS, acceptedEvidence:entry.agreementEvidence, recordedAt:entry.recordedAt, recordedBy:entry.recordedBy },
