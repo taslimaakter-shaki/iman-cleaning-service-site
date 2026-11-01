@@ -21,3 +21,8 @@ const long=clone(base);long.estimate.manHours=14;long.estimate.teamHours=7;asser
 const unqualified=slots.map(s=>({...s,flexibleEligible:false}));assert.equal(choices(base,unqualified).length,0);
 const changed=clone(base);changed.estimate.payment.paidCents++;assert.notEqual(quote(changed,'exact').id,exact.id,'Consent fingerprint changes when payments change');
 console.log('Reschedule pricing: discount replacement, exact-time removal, round trip, preserved promos, deposits, refunds, availability and stale consent passed.');
+
+for (const key of ['any_day', 'exact', 'morning', 'afternoon']) {
+ const legacy = clone(base); legacy.estimate.arrivalPreference.key = key;
+ assert(choices(legacy, slots).every(choice => ['any_day', 'exact'].includes(choice.preferenceKey)));
+}

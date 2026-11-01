@@ -18,6 +18,15 @@ function arrivalPreferenceForKey(value) {
   return preference;
 }
 
+// Keep legacy definitions for existing booking records, but reject retired choices on new bookings.
+function newArrivalPreferenceForKey(value) {
+  const preference = arrivalPreferenceForKey(value);
+  if (!["any_day", "exact"].includes(preference.key)) {
+    throw arrivalError("Choose Anytime that day or an exact arrival time.");
+  }
+  return preference;
+}
+
 function assertArrivalPreferenceEligible(pkg, preferenceValue) {
   if (!pkg) throw arrivalError("Your quote must be completed before choosing an arrival window.");
   const preference = typeof preferenceValue === "object"
@@ -126,6 +135,7 @@ function applyArrivalDiscount(pkg, preferenceValue) {
 
 module.exports = {
   ARRIVAL_PREFERENCES,
+  newArrivalPreferenceForKey,
   applyArrivalDiscount,
   assertArrivalPreferenceEligible,
   arrivalPreferenceForKey,
