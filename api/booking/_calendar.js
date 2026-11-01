@@ -9,7 +9,7 @@ async function assertCalendarReady() {
     headers: { apikey: key, Authorization: `Bearer ${key}` }, signal: AbortSignal.timeout(10000)
   });
   const version = response.ok ? Number(await response.json()) : 0;
-  if (![2, 3].includes(version)) throw fail('The shared calendar database update must be installed before booking.', 503);
+  if (version !== 4) throw fail('The shared calendar database update must be installed before booking.', 503);
   return version;
 }
 

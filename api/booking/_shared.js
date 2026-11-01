@@ -1803,25 +1803,71 @@ async function listActiveBookings() {
 async function assertScheduleAvailable(startIso, hours, excludeBookingId = '') {
   const start = new Date(startIso).getTime();
   if (!Number.isFinite(start) || start <= Date.now() || !Number.isFinite(hours) || hours <= 0 || hours > 200) throw Object.assign(new Error("Choose a future start time and valid on-site duration."), { statusCode: 400 });
-  const [bookings, calendar] = await Promise.all([listActiveBookings(), googleCalendarBusyRecords(new Date(start - APPOINTMENT_GAP_HOURS * 3600000).toISOString(), new Date(start + (hours + APPOINTMENT_GAP_HOURS) * 3600000).toISOString())]);
+  const [bookings, calendar] = await Promise.all([listActiveBookings(), googleCalendarBusyRecords(toZonedIso(localDateString(new Date(start)), '00:00'), toZonedIso(localDateString(new Date(start)), '23:59'))]);
   if (!slotAvailable(startIso, hours, bookings.concat(calendar.records).filter(b => b.id !== excludeBookingId))) throw Object.assign(new Error("That appointment conflicts with another booking's reserved service capacity or two-hour travel window. Choose another time."), { statusCode: 409 });
 }
 
-function intervalsOverlap(left, right) {
-  return left.start < right.end && right.start < left.end;
+// A flexible booking's schedule is provisional until an arrival time is confirmed.
+// Plan capacity without rewriting customer records or sending schedule-change messages.
+function flexibleBooking(record, now = Date.now()) {
+  const preference = record.estimate?.arrivalPreference;
+  return record.source !== 'google-calendar' && preference?.flexible === true
+    && preference.confirmationStatus !== 'confirmed'
+    && ['New', 'Confirmed', 'Cleaner assigned'].includes(record.status)
+    && Date.parse(record.schedule) > now;
+}
+
+function planBookingDay(startIso, reservedHours, records, now = Date.now()) {
+  const date = localDateString(new Date(startIso));
+  const open = Date.parse(toZonedIso(date, OPEN_TIME));
+  const close = Date.parse(toZonedIso(date, CLOSE_TIME));
+  const gap = APPOINTMENT_GAP_HOURS * 3600000;
+  const knownIds = new Set(records.filter(b => b.source !== 'google-calendar').map(b => b.id));
+  const bookings = records.filter(b => !(b.source === 'google-calendar' && knownIds.has(b.id)));
+  const jobs = [];
+  for (const booking of bookings) {
+    const interval = bookingInterval(booking);
+    if (interval.end + gap <= open || interval.start - gap >= close) continue;
+    const movable = flexibleBooking(booking, now) && localDateString(new Date(booking.schedule)) === date;
+    const preference = booking.estimate?.arrivalPreference;
+    const duration = interval.end - interval.start;
+    let earliest = interval.start, latest = interval.start;
+    if (movable) {
+      if (!/^\d{2}:\d{2}$/.test(preference.windowStart || '') || !/^\d{2}:\d{2}$/.test(preference.windowEnd || '')) {
+        throw Object.assign(new Error('A flexible booking has an invalid arrival window. Please contact our team.'), { statusCode: 503 });
+      }
+      earliest = Math.max(open, now, Date.parse(toZonedIso(date, preference.windowStart)));
+      latest = Math.min(close - duration, Date.parse(toZonedIso(date, preference.windowEnd)));
+    }
+    jobs.push({ id: booking.id, earliest, latest, duration });
+  }
+  const start = Date.parse(startIso), duration = reservedHours * 3600000;
+  if (!Number.isFinite(start) || !Number.isFinite(duration) || duration <= 0 || start < open || start + duration > close) return null;
+  jobs.push({ id: '__candidate__', earliest: start, latest: start, duration });
+  // Earliest-deadline ordering is a search heuristic, not a greedy acceptance rule.
+  jobs.sort((a, b) => a.latest - b.latest || a.id.localeCompare(b.id));
+  const failed = new Set();
+  function search(remaining, cursor) {
+    if (!remaining.length) return [];
+    const earliest = Math.max(cursor, Math.min(...remaining.map(j => j.earliest)));
+    const deadline = Math.max(...remaining.map(j => j.latest + j.duration));
+    if (earliest + remaining.reduce((sum, j) => sum + j.duration, 0) + (remaining.length - 1) * gap > deadline) return null;
+    const key = remaining.map(j => j.id).join('|') + ':' + cursor;
+    if (failed.has(key)) return null;
+    for (let index = 0; index < remaining.length; index++) {
+      const job = remaining[index], begins = Math.max(cursor, job.earliest);
+      if (begins > job.latest) continue;
+      const tail = search(remaining.filter((_, i) => i !== index), begins + job.duration + gap);
+      if (tail) return [{ id: job.id, start: new Date(begins).toISOString(), end: new Date(begins + job.duration).toISOString() }, ...tail];
+    }
+    failed.add(key);
+    return null;
+  }
+  return search(jobs, Math.min(open, ...jobs.map(job => job.earliest)));
 }
 
 function slotAvailable(startIso, teamHours, bookings) {
-  const start = new Date(startIso).getTime();
-  const candidate = { start, end: start + teamHours * 60 * 60 * 1000 };
-  const gap = APPOINTMENT_GAP_HOURS * 60 * 60 * 1000;
-  return !bookings.some((booking) => {
-    const existing = bookingInterval(booking);
-    return intervalsOverlap(
-      { start: candidate.start - gap, end: candidate.end + gap },
-      existing
-    );
-  });
+  return planBookingDay(startIso, teamHours, bookings) !== null;
 }
 
 function formatSlotLabel(dateString, timeString) {
@@ -2128,6 +2174,7 @@ module.exports = {
   availableSlotsForPackage,
   availableSlotsForDate,
   assertScheduleAvailable,
+  planBookingDay,
   bookingDurationHours,
   bookingInterval,
   activeBooking,

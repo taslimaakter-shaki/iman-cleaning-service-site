@@ -762,3 +762,29 @@ external payment references atomically with booking updates. It prevents reuse
 across bookings and forbids removing or rewriting recorded payment history.
 Notification claims are durable: ambiguous sends are shown for review and are not
 automatically resent. Test payments, receipts and notifications must use mocks.
+
+### Whole-day flexible booking capacity
+
+Install `supabase/migrations/20261101_flexible_day_planning.sql` **before**
+deploying the version-4 calendar code. The migration requires the existing shared
+calendar migrations through `20261031_capacity_based_flexible_booking.sql`.
+The application refuses new payment reservations until calendar version 4 is
+available. The migration is transactional: inconsistent existing bookings cause
+it to roll back, rather than dropping or rewriting customer appointments.
+
+Availability searches feasible job orders between 8:00 AM and 8:30 PM in
+America/New_York. New bookings reserve their two-cleaner service duration plus
+one protected hour, with two hours between reserved blocks. The last job's
+protected hour must finish by closing; no outbound travel is required after it.
+Pending flexible arrivals can be rearranged within their saved windows. Exact
+arrivals, confirmed arrival times, started work, and external calendar events
+remain fixed. Linked Google mirrors are counted once, using the booking record.
+
+The database serializes booking mutations using a private mutex row and rebuilds
+internal `booking_calendar_slots` plans within the same transaction. If the day
+cannot fit, the entire mutation rolls back. These slots represent capacity plans,
+not customer-facing confirmed arrival times: replanning does not rewrite booking
+records, prices, payments, agreed windows, or send customer messages. Existing
+explicit calendar reservation durations remain authoritative. Confirm the actual
+arrival time before dispatch; using fewer cleaners requires reserving sufficient
+additional on-site time and rechecking capacity.
