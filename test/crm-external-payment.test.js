@@ -20,7 +20,13 @@ function fixture(options={}) {
   const quoteAdmin={load:async(source,id)=>({source,id,record:options.saved || get(id),state:{},version:JSON.stringify(options.saved || get(id))}),closeSessions:async()=>{calls.push('expire');if(faults.stripe)throw new Error('Stripe verification unavailable');}};
   const module={exports:{}};
   vm.runInNewContext(fs.readFileSync(require.resolve('../api/crm/_external-payment'),'utf8'),{module,require:name=>{
-    if(name==='../booking/_additional-store')return {rpc:async()=>1};
+    if(name==='../booking/_additional-store')return {rpc:async(name,body)=>{
+      if(name==='iman_external_payment_version')return 1;
+      assert.equal(name,'iman_update_external_payment_booking');
+      const b=bookings.find(x=>x.id===body.p_booking_id);
+      if(!b || b.status!==body.p_expected_status || JSON.stringify(b.estimate)!==JSON.stringify(body.p_expected_estimate) || faults.rejectCas)return [];
+      b.estimate=clone(body.p_estimate);if(body.p_status)b.status=body.p_status;return [get(b.id)];
+    }};
     if(name==='../booking/_shared')return shared;
     if(name==='./_quote-admin')return quoteAdmin;
     if(name==='../quote/_photo-later')return {sendWalkthroughEmail:async()=>{calls.push('balance-email');return {status:'sent'};}};

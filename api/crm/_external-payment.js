@@ -97,8 +97,9 @@ function summary(resolved) {
     payments:payment.externalPayments || [], agreement:savedAgreement(b) };
 }
 async function cas(booking, patch) {
-  const rows = await shared.supabaseRequest(`?id=eq.${encodeURIComponent(booking.id)}&status=eq.${encodeURIComponent(booking.status)}&estimate=eq.${encodeURIComponent(JSON.stringify(booking.estimate || {}))}`, {
-    method:'PATCH', headers:{Prefer:'return=representation'}, body:JSON.stringify(patch)
+  const rows = await require('../booking/_additional-store').rpc('iman_update_external_payment_booking', {
+    p_booking_id:booking.id, p_expected_status:booking.status, p_expected_estimate:booking.estimate || {},
+    p_estimate:patch.estimate, p_status:patch.status || null
   });
   if (!rows?.[0]) throw fail('This booking changed. Refresh and review its payment history before continuing.',409);
   return rows[0];

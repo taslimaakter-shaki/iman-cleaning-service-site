@@ -7,8 +7,10 @@ async function request(path, options = {}) {
     ...options, headers: { apikey: key, Authorization: `Bearer ${key}`, 'Content-Type': 'application/json', Prefer: 'return=representation', ...options.headers },
     signal: AbortSignal.timeout(12000)
   });
-  const data = await response.json();
-  if (!response.ok) throw fail(data?.code === 'P0001' ? data.message : 'This request could not be saved. Refresh and try again.', ['P0001','23505'].includes(data?.code) ? 409 : 503);
+  let data;
+  try { data = await response.json(); }
+  catch { throw fail('Booking storage returned an invalid response. Refresh and check payment history before retrying.', 503); }
+  if (!response.ok) throw fail(['P0001','23P01'].includes(data?.code) ? data.message : 'This request could not be saved. Refresh and try again.', ['P0001','23505','23P01'].includes(data?.code) ? 409 : 503);
   return data;
 }
 const rpc = (name, body) => request(`rpc/${name}`, { method: 'POST', body: JSON.stringify(body) });
