@@ -710,6 +710,7 @@ async function markPaymentRecordSent(secretKey, record, source) {
 }
 
 async function retrieveCheckoutSession(secretKey, sessionId) {
+  if (/^bp_[a-f0-9-]{36}$/.test(sessionId)) return require("../booking/_deposit-payment").syntheticSession(sessionId);
   return stripeRequest(
     secretKey,
     `https://api.stripe.com/v1/checkout/sessions/${encodeURIComponent(sessionId)}?expand[]=payment_intent.latest_charge&expand[]=invoice`
@@ -895,7 +896,7 @@ async function handler(request, response) {
 
     const body = await readJsonBody(request);
     const sessionId = cleanText(body.sessionId);
-    if (!sessionId || !sessionId.startsWith("cs_")) {
+    if (!sessionId || (!sessionId.startsWith("cs_") && !/^bp_[a-f0-9-]{36}$/.test(sessionId))) {
       return json(response, 400, { error: "A valid Stripe Checkout Session ID is required." });
     }
 

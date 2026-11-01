@@ -1,5 +1,6 @@
 const handlers = {
   "additional-work": () => require("./_additional-work"),
+  "deposit-payment": () => require("./_deposit-payment").handler,
   availability: () => require("./_availability"),
   checkout: () => require("./_checkout"),
   manage: () => require("./_manage"),

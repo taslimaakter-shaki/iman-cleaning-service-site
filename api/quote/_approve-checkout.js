@@ -198,16 +198,18 @@ module.exports = async function handler(request, response) {
       if (!fields.selectedSchedule) return json(response, 400, { error: "Please choose an available appointment date and time before payment." });
       quote = await adminQuotes.selectCustomerSchedule(quote, fields.selectedSchedule);
     }
+    const guardedPayment = process.env.BOOKING_PAYMENT_FLOW === 'server';
     const existingCheckout = await adminQuotes.currentCheckout(quote, { summaryVersion: CHECKOUT_SUMMARY_VERSION });
-    if (existingCheckout.session) {
+    if (existingCheckout.session && !guardedPayment) {
       await adminQuotes.guardCheckout(quote, existingCheckout.session);
       if (!quote.bookingId) throw Object.assign(new Error('Our team needs to update this quote with its appointment duration before payment.'), { statusCode: 409 });
       if (quote.serviceDate && quote.serviceTime) await calendar.reserveBooking(quote.bookingId, existingCheckout.session);
       return json(response, 200, { quoteId: quote.quoteId, checkoutUrl: existingCheckout.session.url, sessionId: existingCheckout.session.id });
     }
+    if (guardedPayment && existingCheckout.session) await calendar.expireBookingCheckout(quote.bookingId);
     quote = await adminQuotes.ensureManagedBooking(quote);
     if (!quote.bookingId) throw Object.assign(new Error('Our team needs to update this quote with its appointment duration before payment.'), { statusCode: 409 });
-    if (quote.serviceDate && quote.serviceTime) reservedBooking = await calendar.reserveBooking(quote.bookingId);
+    if (!guardedPayment && quote.serviceDate && quote.serviceTime) reservedBooking = await calendar.reserveBooking(quote.bookingId);
 
     const siteUrl = getSiteUrl(request);
     const breakdown = paymentBreakdown(quote.amountCents, quote.rushFeeCents);
@@ -233,7 +235,8 @@ module.exports = async function handler(request, response) {
     ];
     const productDescription = checkoutDetails.join("\n").slice(0, 500);
 
-    checkoutSession = await createCheckoutSession(secretKey, {
+    const checkoutFactory = guardedPayment ? async (_key, params) => require('../booking/_deposit-payment').prepare(quote.bookingId, params, { quote }) : createCheckoutSession;
+    checkoutSession = await checkoutFactory(secretKey, {
       mode: "payment",
       expires_at: Math.floor(Date.now() / 1000) + 30 * 60,
       customer_email: quote.customerEmail,
@@ -324,7 +327,7 @@ module.exports = async function handler(request, response) {
         : `${siteUrl}/approve-quote.html?token=${encodeURIComponent(fields.token)}`
     }, `crm-quote-${require("crypto").createHash("sha256").update(`${quote.bookingId}:${quote.revision || ''}:${reservedBooking?.estimate?.calendarReservation?.attempt || 'unscheduled'}`).digest("hex")}`);
 
-    await adminQuotes.guardCheckout(quote, checkoutSession);
+    if (!guardedPayment) await adminQuotes.guardCheckout(quote, checkoutSession);
     if (reservedBooking) await calendar.attachCheckout(quote.bookingId, reservedBooking.estimate.calendarReservation.attempt, checkoutSession);
 
     return json(response, 201, {

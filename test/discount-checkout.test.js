@@ -6,6 +6,7 @@ const { fixture } = require('./crm-quote-editor.test');
 const shared = require('../api/booking/_shared');
 const discount = require('../api/booking/_discount');
 const clone = x => JSON.parse(JSON.stringify(x));
+const testEnv = { STRIPE_SECRET_KEY: 'sk_test_mock' };
 const request = { method: 'POST', headers: { host: 'www.imancleaningservice.com' } };
 // Include optional fields in the budget, even if a particular fixture omits them.
 const checkoutSource = fs.readFileSync(path.join(__dirname, '../api/booking/_checkout.js'), 'utf8');
@@ -15,7 +16,7 @@ function load(file, dependencies, extras = {}) {
   const module = { exports: {} };
   vm.runInNewContext(fs.readFileSync(path.join(__dirname, '..', file), 'utf8'), {
     module, exports: module.exports, require: name => name.endsWith("/_minimum-total") ? require("../api/booking/_minimum-total") : dependencies[name] || (name === './_staffing-options' ? require('../api/booking/_staffing-options') : require(name)),
-    process: { env: { STRIPE_SECRET_KEY: 'sk_test_mock' } }, Buffer, URL, URLSearchParams, Date, Intl, console, ...extras
+    process: { env: testEnv }, Buffer, URL, URLSearchParams, Date, Intl, console, ...extras
   }, { filename: file });
   return module.exports;
 }
@@ -36,6 +37,7 @@ function load(file, dependencies, extras = {}) {
       availableSlotsForPackage: async p => { assert.equal(p.manHours, 4); assert.equal(p.teamHours, 2); return [slot]; },
       createBooking: async b => { booking = clone(b); }, deletePendingBooking: async () => {}, makeUniqueOrderNumber: async () => 'TEST-ORDER' },
     '../crm/_quote-admin': f.api, '../account/_shared': { authenticatedUser: async () => null },
+    './_deposit-payment': { prepare: async (id,params) => { assert.equal(booking.id,id); assert.equal(booking.estimate.calendarReservation.state,'draft'); assert.equal(params['metadata[payment_amount_cents]'],booking.estimate.payment.depositCents); return {url:'/booking-payment.html#test'}; } },
     './_arrival-preference': require('../api/booking/_arrival-preference'),
     './_calendar': { newReservation: () => ({ attempt: 'test' }), attachCheckout: async () => {}, cleanupCheckout: async () => {} }
   }, { fetch: async (url, options) => {
@@ -149,6 +151,10 @@ function load(file, dependencies, extras = {}) {
   body.discountCents = 23000;
   await handler(request, {});
   assert.equal(result.status, 201); assert.equal(stripe.get('metadata[total_amount_cents]'), '27000', 'Ignore client discount');
+  testEnv.BOOKING_PAYMENT_FLOW='server';
+  const previousStripe=stripe;
+  await handler(request, {}); assert.equal(result.status,201,result.error); assert.equal(result.checkoutUrl,'/booking-payment.html#test'); assert.equal(stripe,previousStripe,'Draft checkout does not call Stripe');
+  delete testEnv.BOOKING_PAYMENT_FLOW;
   body.quoteRevision = 'outdated'; stripe = null;
   await handler(request, {}); assert.equal(result.status, 409); assert.equal(stripe, null);
   body.quoteRevision = revision; body.unitDetails = [{ hours: 6 }];

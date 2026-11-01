@@ -78,6 +78,9 @@ async function releaseExpiredSession(session) {
 
 async function reconcileReservation(booking) {
   const held = booking.estimate?.calendarReservation;
+  if (booking.status === 'New' && held?.paymentOrderId && !['draft','released'].includes(held.state)) {
+    try { const payment = require('./_deposit-payment'); const order = await payment.get(held.paymentOrderId); if (order) await payment.reconcile(order); return await store().getBooking(booking.id); } catch { return booking; }
+  }
   if (booking.status !== 'New' || held?.state !== 'open' || Date.parse(held.expiresAt) > Date.now()) return booking;
   try {
     const session = await stripeSession(held.sessionId);
@@ -94,6 +97,12 @@ async function expireBookingCheckout(bookingId) {
   const booking = await store().getBooking(bookingId);
   const held = booking?.estimate?.calendarReservation;
   if (booking?.status !== 'New' || !held || ['released', 'draft'].includes(held.state)) return;
+  if (held.paymentOrderId) {
+    const payment = require('./_deposit-payment');
+    const order = await payment.cancel(await payment.get(held.paymentOrderId));
+    if (order.state !== 'cancelled' && order.state !== 'draft') throw fail('Payment is received or still processing. Check its status before changing this booking.');
+    return;
+  }
   if (!held.sessionId) throw fail('A checkout is being prepared. Wait a moment before changing this quote.');
   let session = await stripeSession(held.sessionId);
   if (session.payment_status === 'paid' || session.status === 'complete') throw fail('Payment has already been received. Keep this booking unchanged.');

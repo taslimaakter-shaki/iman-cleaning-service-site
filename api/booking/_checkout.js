@@ -483,7 +483,7 @@ module.exports = async function handler(request, response) {
         notes ? `Customer notes: ${notes}` : "",
       ].filter(Boolean).join(" "),
       estimate: {
-        calendarReservation: (reservation = calendar.newReservation()),
+        calendarReservation: (reservation = process.env.BOOKING_PAYMENT_FLOW === 'server' ? { state: 'draft' } : calendar.newReservation()),
         savedQuoteId,
         manualDiscount: pkg.manualDiscount || null,
         promoCode: pkg.promoCode || "",
@@ -719,6 +719,11 @@ module.exports = async function handler(request, response) {
         "invoice_creation[invoice_data][custom_fields][3][name]": "Final service total",
         "invoice_creation[invoice_data][custom_fields][3][value]": `$${pkg.price.toFixed(2)}`
       });
+    }
+    if (process.env.BOOKING_PAYMENT_FLOW === 'server') {
+      await quoteAdmin.checkSavedCheckout(body.savedQuoteToken, undefined, body.quoteRevision || '');
+      const deferred = await require('./_deposit-payment').prepare(bookingId, stripeCheckoutParams, { savedQuoteToken: body.savedQuoteToken || '', revision: body.quoteRevision || '' });
+      return json(response, 201, { bookingId, orderNumber, checkoutUrl: deferred.url });
     }
     checkout = await createStripeCheckout(secretKey, stripeCheckoutParams);
 

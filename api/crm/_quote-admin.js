@@ -229,6 +229,11 @@ async function closeSessions(found, { allowPaid = false } = {}) {
     if (allowPaid && session.metadata?.payment_type && !["deposit_25", "same_day_deposit", "full"].includes(session.metadata.payment_type)) continue;
     if (session.status === "open") await stripe(`checkout/sessions/${encodeURIComponent(session.id)}/expire`, "POST");
   }
+  if (process.env.BOOKING_PAYMENT_FLOW === 'server' && found.source === 'saved') {
+    const related = (await bookingStore.listAllBookings()).filter(b => b.estimate?.savedQuoteId === found.id);
+    if (!allowPaid && related.some(paid)) throw fail('This quote already has a payment. Keep its payment history unchanged.', 409);
+    for (const booking of related) if (!paid(booking) && booking.estimate?.calendarReservation?.paymentOrderId) await require('../booking/_calendar').expireBookingCheckout(booking.id);
+  }
   const linkedId = found.state.bookingId || (found.source === 'booking' ? found.id : '');
   if (linkedId && !paid(await linkedBooking(found))) await require('../booking/_calendar').expireBookingCheckout(linkedId);
   return sessions;

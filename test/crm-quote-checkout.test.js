@@ -15,11 +15,12 @@ const admin = {
   guardCheckout:async()=>{if(guardError)throw Object.assign(new Error("Quote changed"),{statusCode:409});}
 };
 const shared = {cleanText:(value,fallback="")=>String(value||fallback).trim(),centsToDollars:c=>(c/100).toFixed(2),verifyQuoteToken:()=>({}),json:(res,status,body)=>{res.status=status;res.body=body;}};
+const testEnv={STRIPE_SECRET_KEY:"sk_test_mock",PUBLIC_SITE_URL:"https://www.imancleaningservice.com"};
 const moduleStub = {exports:{}};
 vm.runInNewContext(fs.readFileSync(path.join(__dirname,"../api/quote/_approve-checkout.js"),"utf8"),{
   module:moduleStub, exports:moduleStub.exports,
-  require:name=>name.endsWith("/_minimum-total")?require("../api/booking/_minimum-total"):name==="./_shared"?shared:name==="./_short-approval"?{resolveShortApproval:async()=>({...quote})}:name==="../crm/_quote-admin"?admin:name==="../booking/_calendar"?calendar:require(name),
-  process:{env:{STRIPE_SECRET_KEY:"sk_test_mock",PUBLIC_SITE_URL:"https://www.imancleaningservice.com"}},URLSearchParams,Date,console,
+  require:name=>name==="../booking/_deposit-payment"?{prepare:async(id,params)=>{assert.equal(id,"BK-TEST");assert.equal(params["metadata[payment_amount_cents]"],7666);return{url:"/booking-payment.html#test",id:"bp_test"};}}:name.endsWith("/_minimum-total")?require("../api/booking/_minimum-total"):name==="./_shared"?shared:name==="./_short-approval"?{resolveShortApproval:async()=>({...quote})}:name==="../crm/_quote-admin"?admin:name==="../booking/_calendar"?calendar:require(name),
+  process:{env:testEnv},URLSearchParams,Date,console,
   fetch:async(url,options)=>{assert.equal(url,"https://api.stripe.com/v1/checkout/sessions");posts.push(options);return {ok:true,text:async()=>JSON.stringify({id:"cs_test",url:"https://checkout.stripe.test/mock"})};}
 });
 async function request(extra={}) {
@@ -70,6 +71,9 @@ async function request(extra={}) {
   assert.match(params.get("custom_text[terms_of_service_acceptance][message]"),/remaining-balance authorization/);
   assert.equal(params.get("metadata[agreement_signature]"),"Test Customer");
 
+  testEnv.BOOKING_PAYMENT_FLOW="server"; calendarConflict=true; existing=undefined;guardError=false;
+  const previousPosts=posts.length;res=await request();assert.equal(res.status,201,res.body.error);assert.equal(res.body.checkoutUrl,"/booking-payment.html#test");assert.equal(posts.length,previousPosts,"Custom checkout does not reserve capacity or call Stripe before Pay");
+  delete testEnv.BOOKING_PAYMENT_FLOW;calendarConflict=false;
   const token=process.env.ADMIN_TOKEN;process.env.ADMIN_TOKEN="test-only-admin";
   try {
     const handler=require("../api/crm/[action]");

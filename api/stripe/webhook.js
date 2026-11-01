@@ -131,6 +131,10 @@ module.exports = async function handler(request, response) {
       const result = await require('../booking/_additional-approval').handlePaymentEvent(event);
       return json(response, 200, { received: true, processed: true, ...result });
     }
+    if (event.type.startsWith('payment_intent.') && event.data?.object?.metadata?.payment_flow === 'booking_capacity_v1') {
+      const result = await require('../booking/_deposit-payment').handleEvent(event);
+      return json(response, 200, { received: true, ...result });
+    }
     if (event.type === 'checkout.session.expired') {
       await require('../booking/_calendar').releaseExpiredSession(event.data?.object || {});
       return json(response, 200, { received: true, processed: true });
