@@ -4578,6 +4578,14 @@
         }
       }
 
+      // Older saved quotes can already be inside Home Details or Extras without
+      // the newer unit-count field. Restore a valid count before rebuilding the
+      // unit questions so their answers remain attached to a real unit.
+      if (quoteDetailsMode && !value("unitCount")) {
+        const restoredUnits = Array.isArray(state.unitDetails) ? state.unitDetails.length : 0;
+        form.elements.unitCount.value = String(Math.min(10, Math.max(1, restoredUnits || 1)));
+      }
+
       // Reopen the wizard before rebuilding its restored view. If an older draft
       // needs normalization, the customer must never be left on a blank page.
       openWizard();
