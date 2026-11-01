@@ -416,6 +416,7 @@ function buildCustomerEmail({ record, booking = null, invoicePdf, confirmationPd
   const automaticBalance = record.paymentType === "deposit_25"
     && record.balanceCollection === "automatic_48h_authorization";
   const awaitingSchedule = !(booking?.schedule || (record.serviceDate && record.serviceTime));
+  const externalPayment = record.paymentProvider === "external";
   const appointment = formatAppointmentParts(booking, record);
   const cleanerCount = Number(booking?.estimate?.cleanerCount || 0);
   const maximumTime = formatMaximumTime(booking?.estimate?.teamHours);
@@ -444,6 +445,8 @@ function buildCustomerEmail({ record, booking = null, invoicePdf, confirmationPd
     [record.arrivalDiscountLabel || "Flexible arrival discount", record.arrivalDiscountAmount],
     ["Discounted subtotal", record.discountedSubtotalBeforeTax],
     ["NY sales tax (8.875%)", record.salesTax],
+    [record.manualDiscountLabel || "Manual discount (after tax)", record.manualDiscountAmount],
+    ["Payment method", externalPayment ? record.paymentMethod : ""],
     ["Final service price", record.totalAmount],
     [record.paymentType === "deposit_25" ? "Deposit paid" : "Amount paid", record.paidAmount ? `-${record.paidAmount}` : ""],
     ["Remaining balance", record.remainingAmount]
@@ -451,7 +454,7 @@ function buildCustomerEmail({ record, booking = null, invoicePdf, confirmationPd
   const balanceMessage = automaticBalance
     ? "The remaining balance will be temporarily authorized approximately 48 hours before your appointment and charged after service completion, according to your booking agreement."
     : hasRemainingBalance
-      ? "The remaining balance is due according to your accepted booking agreement."
+      ? externalPayment ? "The remaining balance is payable separately after service. No automatic card hold or charge will be made." : "The remaining balance is due according to your accepted booking agreement."
       : "Your service has been paid in full.";
   const attachmentMessage = confirmationPdf && invoicePdf
     ? "Your booking record and payment receipt are attached for your reference."
@@ -489,6 +492,7 @@ function buildCustomerEmail({ record, booking = null, invoicePdf, confirmationPd
     "",
     "Important: Your booking covers only the services listed in your service details and attached booking record, for up to the maximum labor time shown. Any work outside that scope requires approval before it begins and may result in an additional charge.",
     "",
+    ...(externalPayment ? ["Need to Make Changes?", "", "Reply to this email or call 929-232-1930 to arrange appointment changes or refunds through your original payment method.", ""] : []),
     ...(managementUrl && !awaitingSchedule ? ["Need to Make Changes?", "", "You can reschedule or cancel your appointment using the secure link below.", managementUrl, ""] : []),
     awaitingSchedule
       ? "Cancellation timing will be measured from the appointment after it is scheduled."
@@ -533,6 +537,7 @@ function buildCustomerEmail({ record, booking = null, invoicePdf, confirmationPd
           <li>Contact us before the appointment if your property condition or requested cleaning tasks have changed.</li>
         </ul>
         <p><strong>Important:</strong> Your booking covers only the services listed in your service details and attached booking record, for up to the maximum labor time shown. Any work outside that scope requires approval before it begins and may result in an additional charge.</p>
+        ${externalPayment ? '<h2 style="color:#073f49;font-size:20px;margin:28px 0 8px;">Need to Make Changes?</h2><p>Reply to this email or call 929-232-1930 to arrange appointment changes or refunds through your original payment method.</p>' : ''}
         ${managementUrl && !awaitingSchedule ? `<h2 style="color:#073f49;font-size:20px;margin:28px 0 8px;">Need to Make Changes?</h2><p>You can reschedule or cancel your appointment using the secure link below.</p><p><a href="${escapeHtml(managementUrl)}" style="display:inline-block;padding:13px 20px;background:#0b6474;color:#fff;text-decoration:none;border-radius:999px;font-weight:bold;">Manage Your Appointment</a></p>` : ""}
         <p>${escapeHtml(awaitingSchedule
           ? "Cancellation timing will be measured from the appointment after it is scheduled."

@@ -13,6 +13,29 @@ function content(booking, payment) {
     '',payment.terms,'','For appointment changes or payment questions, reply to this email or call 929-232-1930.','IMAN Cleaning Service LLC'].join('\n');
   return {subject,text,method};
 }
+function paymentRecord(booking, payment) {
+  const estimate = booking.estimate || {};
+  const discount = estimate.promoDiscount || estimate.recurringDiscount || {};
+  const arrival = estimate.arrivalDiscount || {};
+  const manual = estimate.crmQuote?.fields
+    ? {amountCents:estimate.crmQuote.fields.discountCents, label:estimate.crmQuote.fields.discountLabel}
+    : estimate.manualDiscount || {};
+  const subtotal = Math.round(Number(estimate.subtotal || 0)*100);
+  const discountedSubtotal = estimate.discountedSubtotal != null ? Math.round(Number(estimate.discountedSubtotal)*100)
+    : subtotal - Number(discount.amountCents || 0) - Number(arrival.amountCents || 0);
+  return {quoteId:booking.id, orderNumber:estimate.orderNumber || booking.id, customerName:booking.client_name,
+    customerEmail:booking.email, customerPhone:booking.phone, service:booking.service_label, serviceLocation:booking.address,
+    serviceDescriptionUrl:estimate.serviceDescriptionUrl || '', totalAmount:money(payment.totalCents), paidAmount:money(payment.amountCents),
+    remainingAmount:money(payment.remainingCents), paymentProvider:'external',
+    paymentType:payment.newlyConfirmed && payment.remainingCents > 0 ? 'deposit_25' : 'external',
+    paymentMethod:require('./_external-payment').METHODS[payment.method], paidAt:payment.receivedAt,
+    paymentStatus:'paid', balanceCollection:'manual_after_service',
+    subtotalBeforeTax:subtotal ? money(subtotal) : '', salesTax:money(Math.round(Number(estimate.tax || 0)*100)),
+    discountedSubtotalBeforeTax:subtotal ? money(discountedSubtotal) : '',
+    discountLabel:discount.label || discount.code || 'Discount', discountAmount:discount.amountCents ? '-'+money(discount.amountCents) : '',
+    arrivalDiscountLabel:arrival.label || 'Flexible arrival discount', arrivalDiscountAmount:arrival.amountCents ? '-'+money(arrival.amountCents) : '',
+    manualDiscountLabel:manual.label || 'Manual discount (after tax)', manualDiscountAmount:manual.amountCents ? '-'+money(manual.amountCents) : ''};
+}
 async function send(booking,payment,channel) {
   const message=content(booking,payment);
   if (channel==='sms') {
@@ -20,10 +43,16 @@ async function send(booking,payment,channel) {
     return require('../booking/_notifications').sendCustomerSms(booking.phone,
       `IMAN Cleaning Service: ${money(payment.amountCents)} received via ${message.method}. Booking ${booking.estimate.orderNumber || booking.id}: ${payment.confirms?'confirmed':'awaiting full deposit and availability confirmation'}. Balance ${money(payment.remainingCents)}${payment.remainingCents?(payment.confirms?' due after service':'; complete the deposit to confirm'):''}. Details emailed. Reply STOP to opt out.`);
   }
-  const record={quoteId:booking.id,orderNumber:booking.estimate.orderNumber || booking.id,customerName:booking.client_name,customerEmail:booking.email,customerPhone:booking.phone,
-    service:booking.service_label,serviceLocation:booking.address,totalAmount:money(payment.totalCents),paidAmount:money(payment.amountCents),remainingAmount:money(payment.remainingCents),
-    paymentType:'external',paymentMethod:message.method,paidAt:payment.receivedAt,paymentStatus:'paid',balanceCollection:'manual_after_service',
-    subtotalBeforeTax:money(Math.round(Number(booking.estimate.subtotal || 0)*100)),salesTax:money(Math.round(Number(booking.estimate.tax || 0)*100))};
+  const record=paymentRecord(booking,payment);
+  if (payment.newlyConfirmed) {
+    const invoicePdf=await buildPaymentReceiptPdf({booking,record});
+    const confirmationPdf=await buildBookingConfirmationPdf({booking,record});
+    const email=require('../quote/_payment-record').buildCustomerEmail({booking,
+      record:{...record,paidAmount:money(payment.cumulativePaidCents)},invoicePdf,confirmationPdf,managementUrl:''});
+    const {gmail}=require('../quote/_shared').getGoogleClients();
+    const sent=await gmail.users.messages.send({userId:'me',requestBody:{raw:email.raw}});
+    return {status:'sent',messageId:sent.data.id,sentAt:new Date().toISOString()};
+  }
   const attachments=[{name:'Payment-receipt.pdf',data:await buildPaymentReceiptPdf({booking,record})}];
   if(payment.remainingCents === 0) attachments.push({name:'Paid-in-full-receipt.pdf',data:await require('../booking/_final-payment-receipt-pdf').buildFinalPaymentReceiptPdf({booking})});
   if(payment.newlyConfirmed) attachments.push({name:'Booking-confirmation.pdf',data:await buildBookingConfirmationPdf({booking,record})});
@@ -38,4 +67,4 @@ async function send(booking,payment,channel) {
   const sent=await gmail.users.messages.send({userId:'me',requestBody:{raw:Buffer.from(lines.join('\r\n')).toString('base64url')}});
   return {status:'sent',messageId:sent.data.id,sentAt:new Date().toISOString()};
 }
-module.exports={content,send};
+module.exports={content,send,paymentRecord};

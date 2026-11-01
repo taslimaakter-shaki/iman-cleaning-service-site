@@ -247,6 +247,7 @@ function buildPaymentReceiptPdf({ booking = null, record }) {
       [record?.arrivalDiscountLabel || "Flexible arrival discount", record?.arrivalDiscountAmount],
       ["Discounted subtotal", record?.discountedSubtotalBeforeTax],
       ["NY sales tax (8.875%)", record?.salesTax],
+      [record?.manualDiscountLabel || "Manual discount (after tax)", record?.manualDiscountAmount],
       ["Final service price", record?.totalAmount]
     ], { highlight: new Set(["Final service price"]) });
 
