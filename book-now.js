@@ -2611,7 +2611,7 @@
   const slotsForDate = (dateString) => state.availableSlots.filter((slot) => slot.date === dateString);
   const ARRIVAL_OPTIONS = [
     { key: "any_day", title: "Anytime that day", detail: "Arrival window based on your service duration", percent: 5, start: "08:00", end: "20:30", flexible: true },
-    { key: "morning", title: "Morning", detail: "Arrival at 8:00 AM", percent: 0, start: "08:00", end: "08:00", flexible: false, fixedStart: true },
+    { key: "morning", title: "Morning", detail: "Available morning arrival", percent: 0, start: "08:00", end: "08:00", flexible: false, fixedStart: true },
     { key: "afternoon", title: "Afternoon", detail: "Arrival before closing", percent: 0, start: "08:00", end: "20:30", flexible: false, fixedStart: true },
   ];
   const arrivalOption = (key) => ARRIVAL_OPTIONS.find((option) => option.key === key) || null;
@@ -2621,6 +2621,7 @@
   };
   const slotsForArrivalOption = (option) => slotsForDate(state.selectedDate).filter((slot) => {
     if (slot.flexibleEligible !== true) return false;
+    if (option?.fixedStart && Array.isArray(slot.arrivalOptions)) return slot.arrivalOptions.includes(option.key);
     if (option?.fixedStart) return slot.time === (option.key === "morning" ? "08:00" : arrivalWindowEndTime(option));
     if (!option?.flexible) return false;
     const value = timeMinutes(slot.time);
@@ -2636,7 +2637,7 @@
     return `${String(Math.floor(effectiveEnd / 60)).padStart(2, "0")}:${String(effectiveEnd % 60).padStart(2, "0")}`;
   };
   const arrivalWindowText = (option) => {
-    if (option?.fixedStart) return `Arrival at ${displayTime(option.key === "morning" ? "08:00" : arrivalWindowEndTime(option))}`;
+    if (option?.fixedStart) return `Arrival at ${displayTime(slotsForArrivalOption(option)[0]?.time || (option.key === "morning" ? "08:00" : arrivalWindowEndTime(option)))}`;
     if (!option?.flexible) return option?.detail || "";
     return `Estimated arrival ${displayTime(option.start)}–${displayTime(arrivalWindowEndTime(option))}`;
   };

@@ -53,3 +53,13 @@ for (const [hours, latest] of [[4, '17:30'], [5, '17:00'], [9.5, '14:45']]) {
  assert.equal(vm.runInContext("slotsForArrivalOption(arrivalOption('morning')).map(s=>s.time).join(',')",context),'08:00');
  assert.equal(vm.runInContext("slotsForArrivalOption(arrivalOption('afternoon')).map(s=>s.time).join(',')",context),latest);
 }
+
+state.package = { teamHours: 2.5, manHours: 5 };
+state.availableSlots = require('../api/booking/_arrival-preference').markArrivalOptions(
+  ['08:00', '11:00', '12:30'].map(time => ({ time, date: '2030-11-06', value: `2030-11-06T${time}:00-05:00`, flexibleEligible: true }))
+);
+assert.equal(vm.runInContext("arrivalWindowText(arrivalOption('afternoon'))", context), 'Arrival at 12:30 PM');
+assert.equal(vm.runInContext("slotsForArrivalOption(arrivalOption('morning'))[0].time", context), '08:00');
+state.availableSlots = require('../api/booking/_arrival-preference').markArrivalOptions(state.availableSlots.slice(0, 2));
+assert.equal(vm.runInContext("arrivalWindowText(arrivalOption('morning'))", context), 'Arrival at 11:00 AM');
+assert.equal(vm.runInContext("slotsForArrivalOption(arrivalOption('afternoon')).length", context), 0);

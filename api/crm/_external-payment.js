@@ -40,8 +40,13 @@ async function resolve(body) {
       pkg = require('../booking/_saved-quote').validateAndPrice(found.record).pkg;
       pkg = require('../booking/_saved-quote').applySavedQuotePromotion(pkg, found.record, found.record.customer, bookings);
       pkg = require('../booking/_discount').applyPackageDiscount(pkg, found.state.manualDiscount);
-      const preference = arrival.arrivalPreferenceForKey(body.arrivalPreference || 'any_day', pkg.teamHours);
-      const date = text(body.serviceDate, 10), time = preference.fixedStart ? preference.start : text(body.serviceTime, 5);
+      let preference = arrival.arrivalPreferenceForKey(body.arrivalPreference || 'any_day', pkg.teamHours);
+      const slots = await shared.availableSlotsForPackage(pkg);
+      const date = text(body.serviceDate, 10);
+      const fixedSlot = preference.fixedStart ? slots.find(s => s.date === date && arrival.slotMatchesArrivalPreference(s, preference)) : null;
+      if (preference.fixedStart && !fixedSlot) throw fail('That arrival option is unavailable for this date.', 409);
+      if (fixedSlot) preference = arrival.preferenceForSlot(preference, fixedSlot);
+      const time = fixedSlot ? fixedSlot.time : text(body.serviceTime, 5);
       require('./_walkthroughs').validateVisit(date, time);
       const schedule = shared.toZonedIso(date, time);
       if (pkg.serviceKey === 'recurring') {
@@ -50,7 +55,6 @@ async function resolve(body) {
           recurringPlan:body.recurringPlan, schedule, customer:{...found.record.customer,address:body.address} }));
       }
       pkg = arrival.applyArrivalDiscount(pkg, preference);
-      const slots = await shared.availableSlotsForPackage(pkg);
       if (!slots.some(s => Date.parse(s.value) === Date.parse(schedule) && arrival.slotMatchesArrivalPreference(s, preference))) throw fail('That appointment is unavailable for the selected arrival option. Choose another time.', 409);
       const customer = found.record.customer || {};
       const windowLabel = arrival.arrivalWindowLabel(preference, pkg.teamHours);

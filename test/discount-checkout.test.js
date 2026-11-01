@@ -122,6 +122,26 @@ function load(file, dependencies, extras = {}) {
     await handler(request, {});
     assert.equal(result.status, 409);
   }
+  for (const [preferenceKey, time, value] of [
+    ['morning', '11:00', '2030-09-15T15:00:00Z'],
+    ['afternoon', '12:30', '2030-09-15T16:30:00Z']
+  ]) {
+    Object.assign(slot, { time, value, arrivalOptions: [preferenceKey] });
+    body.arrivalPreference = preferenceKey;
+    body.schedule = value;
+    body.agreementReview.contextFingerprint = JSON.stringify({ packageId: pkg.id, total: pkg.price, laborHours: 4, schedule: value });
+    await handler(request, {});
+    assert.equal(result.status, 201, result.error);
+    assert.equal(booking.estimate.arrivalPreference.windowStart, time);
+    assert.equal(booking.estimate.arrivalPreference.windowEnd, time);
+    assert.equal(booking.estimate.arrivalPreference.flexible, false);
+    assert.equal(booking.estimate.arrivalDiscount, null);
+    assert.equal(stripe.get('metadata[service_time]'), time);
+    slot.arrivalOptions = [];
+    await handler(request, {});
+    assert.equal(result.status, 409, 'A stale choice cannot pay for an unoffered start');
+  }
+  delete slot.arrivalOptions;
   Object.assign(slot, originalSlot);
   body.schedule = slot.value;
   body.arrivalPreference = 'exact';

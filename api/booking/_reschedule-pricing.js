@@ -3,10 +3,11 @@ const arrival = require('./_arrival-preference');
 const { staffingOptions } = require('./_staffing-options');
 const cents = value => Math.round(Number(value || 0) * 100);
 const error = message => Object.assign(new Error(message), { statusCode: 409 });
-function quote(booking, key, keep = false) {
+function quote(booking, key, keep = false, slot = null) {
   const e = booking.estimate || {}, payment = e.payment || {};
   let preference = arrival.arrivalPreferenceForKey(key, e.teamHours || e.hours);
   if (keep && e.arrivalPreference?.flexible) preference = { ...preference, ...e.arrivalPreference, start: e.arrivalPreference.windowStart || preference.start, end: e.arrivalPreference.windowEnd || preference.end, fixedStart: false };
+  if (slot && preference.fixedStart) preference = arrival.preferenceForSlot(preference, slot);
   arrival.assertArrivalPreferenceEligible(e, preference);
   const previousTotalCents = Number(payment.cleaningPriceCents ?? payment.totalCents ?? cents(e.total));
   const previousDiscount = e.arrivalDiscount || null;
@@ -43,8 +44,9 @@ function choices(booking, slots) {
       if (pricing.preference.flexible && slot.time > pricing.preference.windowEnd) continue;
       if (pricing.preference.flexible && seen.has(slot.date)) continue;
       seen.add(slot.date);
+      const slotPricing = pricing.preference.fixedStart ? quote(booking, key, keep, slot) : pricing;
       const label = pricing.preference.flexible ? `${new Intl.DateTimeFormat('en-US',{timeZone:'America/New_York',weekday:'long',month:'long',day:'numeric',year:'numeric'}).format(new Date(slot.value))} · Estimated arrival ${pricing.preference.windowLabel}` : slot.label;
-      options.push({ ...slot, label, mode: keep ? 'keep' : 'new', preferenceKey: key, pricing, choiceId: `${keep?'keep':'new'}:${key}:${slot.value}` });
+      options.push({ ...slot, label, mode: keep ? 'keep' : 'new', preferenceKey: key, pricing: slotPricing, choiceId: `${keep?'keep':'new'}:${key}:${slot.value}` });
     }
   }
   return options;

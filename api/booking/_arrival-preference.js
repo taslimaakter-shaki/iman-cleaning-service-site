@@ -27,7 +27,7 @@ function arrivalPreferenceForKey(value, serviceTeamHours) {
 function assertArrivalPreferenceEligible(pkg, preferenceValue) {
   if (!pkg) throw arrivalError("Your quote must be completed before choosing an arrival window.");
   const preference = typeof preferenceValue === "object"
-    ? (preferenceValue.fixedStart ? arrivalPreferenceForKey(preferenceValue.key, pkg.teamHours) : preferenceValue)
+    ? preferenceValue
     : arrivalPreferenceForKey(preferenceValue, pkg.teamHours);
   return preference;
 }
@@ -43,12 +43,37 @@ function slotMatchesArrivalPreference(slot, preferenceValue) {
     : arrivalPreferenceForKey(preferenceValue, slot?.teamHours);
   if (!slot || !slot.value) return false;
   if (slot.flexibleEligible !== true) return false;
+  if (preference.fixedStart && Array.isArray(slot.arrivalOptions)) return slot.arrivalOptions.includes(preference.key);
   if (preference.fixedStart) return slot.time === preference.start && (preference.key !== "afternoon" || preference.start === preference.end);
   if (!preference.flexible) return true;
   const slotMinutes = minutes(slot.time);
   return Number.isFinite(slotMinutes)
     && slotMinutes >= minutes(preference.start)
     && slotMinutes <= minutes(preference.end);
+}
+
+// Availability is computed with service, buffer, travel and all existing jobs first.
+// Select at most one fixed start in each period from those feasible starts.
+function markArrivalOptions(slots) {
+  const dates = new Map();
+  const marked = slots.map(slot => ({ ...slot, arrivalOptions: [] }));
+  for (const slot of marked) {
+    if (slot.flexibleEligible !== true) continue;
+    if (!dates.has(slot.date)) dates.set(slot.date, []);
+    dates.get(slot.date).push(slot);
+  }
+  for (const daily of dates.values()) {
+    daily.sort((a, b) => minutes(a.time) - minutes(b.time));
+    const morning = daily.filter(slot => minutes(slot.time) < 720);
+    const afternoon = daily.filter(slot => minutes(slot.time) >= 720);
+    if (morning.length) (afternoon.length ? morning[0] : morning[morning.length - 1]).arrivalOptions.push('morning');
+    if (afternoon.length) afternoon[afternoon.length - 1].arrivalOptions.push('afternoon');
+  }
+  return marked;
+}
+
+function preferenceForSlot(preference, slot) {
+  return preference.fixedStart ? { ...preference, start: slot.time, end: slot.time } : preference;
 }
 
 function arrivalWindowEnd(preferenceValue, serviceTeamHours) {
@@ -131,6 +156,8 @@ function applyArrivalDiscount(pkg, preferenceValue) {
 
 module.exports = {
   ARRIVAL_PREFERENCES,
+  markArrivalOptions,
+  preferenceForSlot,
   applyArrivalDiscount,
   assertArrivalPreferenceEligible,
   arrivalPreferenceForKey,

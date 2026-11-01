@@ -1904,6 +1904,35 @@ function availableSlotsForDate(pkg, dateString, bookings = [], minimumStartMs = 
   for (let time = open; time + duration <= close; time += interval) starts.push(time);
   const latestProtectedStart = close - (Math.ceil(pkg.teamHours * 60) + 60) * 60000;
   if (latestProtectedStart >= open && !starts.includes(latestProtectedStart)) starts.push(latestProtectedStart);
+  // A feasible interval ends at closing or a neighboring job/window boundary.
+  // Include boundaries after chains of movable jobs, including off-grid times.
+  const protectedDuration = (Math.ceil(pkg.teamHours * 60) + 60) * 60000;
+  const travel = APPOINTMENT_GAP_HOURS * 3600000;
+  const relevant = bookings.filter(booking => {
+    const interval = bookingInterval(booking);
+    return interval.end + travel > open && interval.start - travel < close;
+  });
+  const anchors = new Set([open, close - protectedDuration]);
+  let offsets = new Set([0]);
+  for (const booking of relevant) {
+    const { start, end } = bookingInterval(booking);
+    const length = end - start;
+    anchors.add(start - travel - protectedDuration);
+    anchors.add(end + travel);
+    if (flexibleBooking(booking)) {
+      const pref = booking.estimate.arrivalPreference;
+      anchors.add(Date.parse(toZonedIso(dateString, pref.windowStart)) + length + travel);
+      anchors.add(Date.parse(toZonedIso(dateString, pref.windowEnd)) - travel - protectedDuration);
+      for (const offset of [...offsets]) {
+        if (offset + length + travel <= close - open) offsets.add(offset + length + travel);
+      }
+    }
+  }
+  const uniqueStarts = new Set(starts);
+  for (const anchor of anchors) for (const offset of offsets) for (const boundary of [anchor - offset, anchor + offset]) {
+    if (Number.isFinite(boundary) && boundary >= open && boundary + protectedDuration <= close) uniqueStarts.add(boundary);
+  }
+  starts.splice(0, starts.length, ...uniqueStarts);
   starts.sort((a, b) => a - b);
   for (const candidateStart of starts) {
     if (candidateStart < earliestStart) continue;
@@ -2143,7 +2172,7 @@ async function availableSlotsForPackage(pkg, days = MAX_ADVANCE_BOOKING_DAYS, no
       slots.push({ ...slot, flexibleEligible, flexibleTeamHours: extendedHours, calendarChecked: calendarAvailability.connected });
     });
   }
-  return slots;
+  return require("./_arrival-preference").markArrivalOptions(slots);
 }
 
 function makeBookingId() {

@@ -24,6 +24,7 @@ const {
   applyArrivalDiscount,
   assertArrivalPreferenceEligible,
   arrivalPreferenceForKey,
+  preferenceForSlot,
   arrivalWindowLabel,
   slotMatchesArrivalPreference
 } = require('./_arrival-preference');
@@ -304,7 +305,7 @@ module.exports = async function handler(request, response) {
       }
     }
 
-    const arrivalPreference = arrivalPreferenceForKey(body.arrivalPreference || "exact", pkg.teamHours);
+    let arrivalPreference = arrivalPreferenceForKey(body.arrivalPreference || "exact", pkg.teamHours);
     assertArrivalPreferenceEligible(pkg, arrivalPreference);
     const selectedSlot = cleanText(body.schedule, 80);
     const slots = await availableSlotsForPackage(pkg);
@@ -312,6 +313,8 @@ module.exports = async function handler(request, response) {
     if (!slot) {
       return json(response, 409, { error: "That arrival option is no longer available. Please choose another time." });
     }
+
+    arrivalPreference = preferenceForSlot(arrivalPreference, slot);
 
     const customer = body.customer || {};
     const firstName = cleanText(customer.firstName, 80);
