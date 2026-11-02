@@ -2156,6 +2156,11 @@
     serviceChoiceMode = false;
     propertyTypeMode = false;
     unitCountMode = true;
+    const house = value("propertyType") === "house";
+    unitCountForm.classList.toggle("is-house", house);
+    unitCountForm.querySelector("h2").textContent = house ? "How many floors need cleaning?" : "How many units/floors need cleaning?";
+    unitCountForm.querySelector("[data-house-floors]").hidden = !house;
+    unitCountForm.querySelector(".booking-unit-counter").hidden = house && Number(value("unitCount")) < 5;
     quoteDetailsMode = false;
     syncMobileQuestion();
     wizardDialog?.scrollTo({ top: 0, behavior: "smooth" });
@@ -3294,6 +3299,16 @@
     syncUnitCount();
     syncStageProgress();
   });
+  form.querySelectorAll('[name="houseFloorChoice"]').forEach(radio => radio.addEventListener("change", () => {
+    const more = radio.value === "5+";
+    form.elements.unitCount.value = more ? "" : radio.value;
+    unitCountValue.value = more ? "" : radio.value;
+    unitCountForm.querySelector(".booking-unit-counter").hidden = !more;
+    if (more) { unitCountValue.min = "5"; unitCountValue.focus(); }
+    else unitCountValue.min = "1";
+    invalidateDownstreamAfterEdit();
+    syncUnitCount();
+  }));
   unitCountValue?.addEventListener("input", () => {
     const rawValue = unitCountValue.value.trim();
     if (!rawValue) {

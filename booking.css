@@ -6538,3 +6538,13 @@ body.booking-agreement-open {
   cursor: pointer;
 }
 .booking-quote-navigation > [data-quote-contact-submit] { margin-left: auto; }
+.booking-house-floors[hidden], .booking-unit-counter[hidden] { display:none !important; }
+.booking-unit-count-form.is-house > .booking-unit-example,
+.booking-unit-count-form.is-house > .booking-unit-limit,
+.booking-unit-count-form.is-house > .booking-multifloor-note { display:none; }
+.booking-house-floors { text-align:left; font-size:.9375rem; line-height:1.5; }
+.booking-house-floors fieldset { border:0; padding:14px 0; margin:0 0 16px; border-bottom:1px solid #e3eae8; }
+.booking-house-floors legend { font-size:.875rem; color:#61736f; }
+.booking-house-floors label { display:flex; align-items:center; gap:10px; padding:10px 0; font-weight:400; }
+.booking-house-floors input { width:18px; height:18px; accent-color:#0b6474; }
+.booking-unit-count-form.is-house h2 { font-size:1.35rem !important; font-weight:600; line-height:1.3; }
