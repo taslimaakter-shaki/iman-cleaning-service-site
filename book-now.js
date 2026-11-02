@@ -2163,7 +2163,7 @@
     unitCountForm.querySelector("h2").textContent = house ? "How many floors need cleaning?" : apartment ? "How many apartments need cleaning?" : "How many units/floors need cleaning?";
     const choices = unitCountForm.querySelector("[data-house-floors]");
     choices.hidden = !choiceMode;
-    choices.querySelector("p").textContent = house ? "Count every level of the house that you want cleaned, including basements and attics." : "Select the number of separate apartment units you would like us to clean.";
+    choices.querySelector("p").textContent = house ? "Count every level of the house that you want cleaned." : "Select the number of separate apartment units you would like us to clean.";
     choices.querySelector("legend").textContent = house ? "Number of floors" : "Number of apartments";
     choices.querySelectorAll("label").forEach(label => {
       const input = label.querySelector("input");
