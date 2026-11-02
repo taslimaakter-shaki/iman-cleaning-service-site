@@ -2181,15 +2181,15 @@
     const otherCount = selectedLevels.filter(name => name.startsWith("Other floor")).length;
     form.elements.houseOtherCount.value = String(otherCount || 1);
     form.querySelector('[data-house-other-count]').hidden = !house || !otherCount;
-    unitCountForm.querySelector("h2").textContent = house ? "Which floors need cleaning?" : apartment ? "How many apartments need cleaning?" : "How many units/floors need cleaning?";
+    unitCountForm.querySelector("h2").textContent = house ? "Which floors need cleaning?" : apartment ? "How many units need cleaning?" : "How many units/floors need cleaning?";
     const choices = unitCountForm.querySelector("[data-house-floors]");
     choices.hidden = !choiceMode;
     choices.querySelector("p").textContent = house ? "Count every level of the house that you want cleaned." : "Select the number of separate apartment units you would like us to clean.";
-    choices.querySelector("legend").textContent = house ? "Number of floors" : "Number of apartments";
+    choices.querySelector("legend").textContent = house ? "Number of floors" : "Number of units";
     choices.querySelectorAll("label").forEach(label => {
       const input = label.querySelector("input");
       const n = input.value;
-      label.lastChild.textContent = " " + (n === "5+" ? "5 or more" : n) + (house ? (n === "1" ? " floor" : " floors") : (n === "1" ? " apartment" : " apartments"));
+      label.lastChild.textContent = " " + (n === "5+" ? "5 or more" : n) + (house ? (n === "1" ? " floor" : " floors") : (n === "1" ? " unit" : " units"));
       input.checked = n === (Number(value("unitCount")) >= 5 ? "5+" : value("unitCount"));
     });
     const paragraphs = choices.querySelectorAll("p");
@@ -3802,7 +3802,7 @@
       const enteredCount = Number(value("unitCount"));
       const moreSelected = form.querySelector('[name="houseFloorChoice"][value="5+"]:checked');
       if (!Number.isInteger(enteredCount) || enteredCount < 1 || enteredCount > 10 || (value("propertyType") === "apartment" && moreSelected && enteredCount < 5)) {
-        setStatus(status, value("propertyType") === "house" ? "Select at least one floor to continue." : "Select the number of apartments. For 5 or more, enter an exact number from 5 to 10.");
+        setStatus(status, value("propertyType") === "house" ? "Select at least one floor to continue." : "Select the number of units. For 5 or more, enter an exact number from 5 to 10.");
         return;
       }
       syncUnitCount();
