@@ -520,7 +520,7 @@ module.exports = async function handler(request, response) {
     const pkg = applySavedQuotePromotion(calculatedPackage, body, customer, await listAllBookings());
     const now = Date.now();
     const communicationConsent = consentEvidence(request, body, new Date(now));
-    const key = deliveryKey(request, customer, communicationConsent, { eligibility, unitDetails, pricingMode: pkg.pricingMode, package: packageForClient(pkg) });
+    const key = deliveryKey(request, customer, communicationConsent, { previousQuoteToken: body.previousQuoteToken || "", eligibility, unitDetails, pricingMode: pkg.pricingMode, package: packageForClient(pkg) });
     if (pendingDeliveries.has(key)) {
       const result = await pendingDeliveries.get(key);
       return json(response, 200, result);
