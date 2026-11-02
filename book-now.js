@@ -1504,6 +1504,12 @@
     });
     syncStageMenu(stageNumber);
   };
+  const quoteUnitLabel = (index) => {
+    if (value("propertyType") === "house") {
+      try { const floors = JSON.parse(form.elements.houseFloorSelection.value || "[]"); if (floors[index]) return floors[index]; } catch {}
+    }
+    return `Unit ${index + 1}`;
+  };
   const selectedUnitCount = () => Math.min(10, Math.max(1, Number(value("unitCount")) || 1));
   const syncUnitCount = () => {
     if (!value("unitCount")) {
@@ -1526,7 +1532,7 @@
       if (count > 1) {
         Array.from({ length: count }, (_, index) => {
           const unit = document.createElement("span");
-          unit.textContent = `Unit ${index + 1}`;
+          unit.textContent = quoteUnitLabel(index);
           unitPreview.append(unit);
         });
       }
@@ -1556,8 +1562,8 @@
       const question = questions[state.currentDetailQuestionIndex];
       if (unitDetailsKicker) {
         const isPropertyPetQuestion = PROPERTY_PET_KEYS.has(question.key);
-        unitDetailsKicker.textContent = isPropertyPetQuestion ? "Whole Property" : `Unit ${state.currentUnitIndex + 1} of ${count}`;
-        unitDetailsKicker.hidden = !isPropertyPetQuestion && count <= 1;
+        unitDetailsKicker.textContent = isPropertyPetQuestion ? "Whole Property" : quoteUnitLabel(state.currentUnitIndex);
+        unitDetailsKicker.hidden = !isPropertyPetQuestion && count <= 1 && value("propertyType") !== "house";
       }
       if (unitDetailsTitle) unitDetailsTitle.textContent = question.question;
       if (unitDetailsCopy) unitDetailsCopy.hidden = true;
@@ -1830,7 +1836,7 @@
         : detailQuestions.filter((question) => !HOME_DETAIL_KEYS.has(question.key));
       const localQuestionIndex = Math.max(0, stageKeys.findIndex((question) => question.key === currentDetail?.key));
       const stageName = HOME_DETAIL_KEYS.has(currentDetail?.key) ? "Home details" : "Extras";
-      const unitPrefix = count > 1 ? `Unit ${state.currentUnitIndex + 1} of ${count} · ` : "";
+      const unitPrefix = count > 1 || value("propertyType") === "house" ? `${quoteUnitLabel(state.currentUnitIndex)} · ` : "";
       const nextStage = stageName === "Home details" ? "Extras" : "Your quote";
       setQuestionMeta(
         `${unitPrefix}Question ${localQuestionIndex + 1} of ${stageKeys.length} · Next: ${nextStage}`,
@@ -2880,7 +2886,7 @@
       group.className = "booking-field-wide";
       group.dataset.repeatUnit = String(index);
       const legend = document.createElement("legend");
-      legend.textContent = state.unitDetails.length > 1 ? `Unit ${index + 1} · Kitchen extras` : "Kitchen extras";
+      legend.textContent = state.unitDetails.length > 1 ? `${quoteUnitLabel(index)} · Kitchen extras` : "Kitchen extras";
       group.append(legend);
       const addField = (key, title, options, min) => {
         const label = document.createElement("label");
@@ -3860,7 +3866,7 @@
         value("requestedService")
       );
       state.currentDetailQuestionIndex = nextUnitQuestions.findIndex((question) => HOME_DETAIL_KEYS.has(question.key));
-      setStatus(status, `✓ Unit ${completedUnit} home details completed. Now tell us about Unit ${completedUnit + 1}.`, "success");
+      setStatus(status, `✓ ${quoteUnitLabel(completedUnit - 1)} home details completed. Now tell us about ${quoteUnitLabel(completedUnit)}.`, "success");
       syncMobileQuestion();
       wizardDialog?.scrollTo({ top: 0, behavior: "smooth" });
       return;
@@ -3909,7 +3915,7 @@
       if (nextExtras) {
         state.currentUnitIndex = nextExtras.unitIndex;
         state.currentDetailQuestionIndex = nextExtras.questionIndex;
-        setStatus(status, `✓ Unit ${completedUnit} completed. Now choose extras for Unit ${nextExtras.unitIndex + 1}.`, "success");
+        setStatus(status, `✓ ${quoteUnitLabel(completedUnit - 1)} completed. Now choose extras for ${quoteUnitLabel(nextExtras.unitIndex)}.`, "success");
         syncMobileQuestion();
         wizardDialog?.scrollTo({ top: 0, behavior: "smooth" });
         return;
