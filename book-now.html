@@ -382,6 +382,17 @@
               <div class="booking-unit-count-form" data-unit-count-form hidden>
                 <h2>How many units/floors need cleaning?</h2>
                 <p class="booking-unit-example"><strong>Example:</strong> A two-story house counts as 2 floors. A house with a basement, first floor, and second floor counts as 3 floors. A single apartment counts as 1 unit.</p>
+                <div class="booking-house-levels" data-house-levels hidden>
+                  <p>Select all that apply.</p>
+                  <input type="hidden" name="houseFloorSelection" value="[]">
+                  <label><span>Basement</span><input type="checkbox" data-house-level value="Basement"></label>
+                  <label><span>First floor</span><input type="checkbox" data-house-level value="First floor"></label>
+                  <label><span>Second floor</span><input type="checkbox" data-house-level value="Second floor"></label>
+                  <label><span>Third floor</span><input type="checkbox" data-house-level value="Third floor"></label>
+                  <label><span>Attic</span><input type="checkbox" data-house-level value="Attic"></label>
+                  <label><span>Other floor</span><input type="checkbox" data-house-level value="Other floor"></label>
+                  <p class="booking-floor-summary">Floors selected <strong data-house-level-count>0</strong></p>
+                </div>
                 <div class="booking-house-floors" data-house-floors hidden>
                   <p>Count every level of the house that you want cleaned.</p>
                   <fieldset><legend>Number of floors</legend>

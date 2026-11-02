@@ -2158,9 +2158,13 @@
     unitCountMode = true;
     const house = value("propertyType") === "house";
     const apartment = value("propertyType") === "apartment";
-    const choiceMode = house || apartment;
-    unitCountForm.classList.toggle("is-house", choiceMode);
-    unitCountForm.querySelector("h2").textContent = house ? "How many floors need cleaning?" : apartment ? "How many apartments need cleaning?" : "How many units/floors need cleaning?";
+    const choiceMode = apartment;
+    unitCountForm.classList.toggle("is-house", house || apartment);
+    unitCountForm.querySelector("[data-house-levels]").hidden = !house;
+    const selectedLevels = JSON.parse(form.elements.houseFloorSelection.value || "[]");
+    unitCountForm.querySelectorAll("[data-house-level]").forEach(input => input.checked = selectedLevels.includes(input.value));
+    unitCountForm.querySelector("[data-house-level-count]").textContent = selectedLevels.length;
+    unitCountForm.querySelector("h2").textContent = house ? "Which floors need cleaning?" : apartment ? "How many apartments need cleaning?" : "How many units/floors need cleaning?";
     const choices = unitCountForm.querySelector("[data-house-floors]");
     choices.hidden = !choiceMode;
     choices.querySelector("p").textContent = house ? "Count every level of the house that you want cleaned." : "Select the number of separate apartment units you would like us to clean.";
@@ -2177,7 +2181,7 @@
     paragraphs[1].hidden = apartment;
     paragraphs[2].hidden = !house;
     unitCountValue.min = choiceMode && Number(value("unitCount")) >= 5 ? "5" : "1";
-    unitCountForm.querySelector(".booking-unit-counter").hidden = choiceMode && Number(value("unitCount")) < 5;
+    unitCountForm.querySelector(".booking-unit-counter").hidden = house || (choiceMode && Number(value("unitCount")) < 5);
     quoteDetailsMode = false;
     syncMobileQuestion();
     wizardDialog?.scrollTo({ top: 0, behavior: "smooth" });
@@ -3316,6 +3320,16 @@
     syncUnitCount();
     syncStageProgress();
   });
+  form.querySelectorAll('[data-house-level]').forEach(input => input.addEventListener("change", () => {
+    const selected = Array.from(form.querySelectorAll('[data-house-level]:checked'), item => item.value);
+    form.elements.houseFloorSelection.value = JSON.stringify(selected);
+    form.elements.unitCount.value = selected.length ? String(selected.length) : "";
+    unitCountValue.value = form.elements.unitCount.value;
+    unitCountForm.querySelector('[data-house-level-count]').textContent = selected.length;
+    invalidateDownstreamAfterEdit();
+    syncUnitCount();
+    persistBookingDraft();
+  }));
   form.querySelectorAll('[name="houseFloorChoice"]').forEach(radio => radio.addEventListener("change", () => {
     const more = radio.value === "5+";
     form.elements.unitCount.value = more ? "" : radio.value;
