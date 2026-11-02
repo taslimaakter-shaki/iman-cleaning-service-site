@@ -2173,6 +2173,8 @@
     });
     const paragraphs = choices.querySelectorAll("p");
     paragraphs[1].innerHTML = house ? "<strong>Example</strong><br>Cleaning only the basement, first floor, second floor, or attic? Enter 1 floor.<br><br>Cleaning the basement and first floor? Enter 2 floors." : "<strong>Example</strong><br>If you live in one apartment within a large building, select 1 apartment. Only count separate units that need cleaning.";
+    paragraphs[0].hidden = apartment;
+    paragraphs[1].hidden = apartment;
     paragraphs[2].hidden = !house;
     unitCountValue.min = choiceMode && Number(value("unitCount")) >= 5 ? "5" : "1";
     unitCountForm.querySelector(".booking-unit-counter").hidden = choiceMode && Number(value("unitCount")) < 5;
