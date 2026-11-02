@@ -10,36 +10,3 @@
 .hero-socials .social-ico:hover { transform:translateY(-3px); }
 .hero-socials .social-ico:focus-visible { outline:2px solid white; outline-offset:3px; }
 @media (prefers-reduced-motion:reduce) { .hero-socials .social-ico { transition:none; } }
-
-.hero-title-mobile { display: none; }
-@media (max-width: 767px) {
-  .home-page .home-hero-photo.page-hero.on-photo {
-    display: block;
-    min-height: 0;
-    padding: calc(68px + 100vw * 941 / 1672 + 22px) 0 28px;
-    background: #053640;
-  }
-  .home-page .home-hero-poster { top: 68px; bottom: auto; height: auto; aspect-ratio: 1672 / 941; }
-  .home-page .home-hero-poster img { display: block; object-fit: contain; object-position: center; }
-  .home-page .home-hero-photo.page-hero.on-photo::before {
-    top: 68px; bottom: auto; height: calc(100vw * 941 / 1672);
-    background: linear-gradient(90deg, rgba(4,40,49,.82), rgba(4,40,49,.2) 75%, transparent);
-  }
-  .home-page .home-hero-photo .page-hero-inner { position: static; width: calc(100% - 40px); margin: 0 auto; gap: 14px; }
-  .home-page .hero-title-desktop { display: none; }
-  .home-page .hero-title-mobile { display: block; }
-  .home-page .home-hero-photo h1 {
-    position: absolute; z-index: 2; top: calc(68px + 5vw); left: 20px;
-    max-width: 75%; margin: 0;
-    font-family: "DM Sans", sans-serif; font-size: clamp(1.25rem, 5.6vw, 1.8rem);
-    font-weight: 600; line-height: 1.18; letter-spacing: -.025em;
-  }
-  .home-page .home-hero-photo .page-hero-actions { position: absolute; z-index: 2; left: 20px; top: calc(68px + 34vw); width: auto; }
-  .home-page .home-hero-photo .page-hero-actions > a { font-size: .8125rem; min-height: 40px !important; padding: 10px 18px; }
-  .home-page .home-hero-photo .hero-price-time { display: none; }
-  .home-page .home-hero-photo .ds-lead { font-size: .9375rem; line-height: 1.55; }
-  .home-page .home-hero-photo .seo-static-badge,
-  .home-page .home-hero-photo .ds-badge { font-size: .65rem; line-height: 1.4; padding: 6px 9px; white-space: normal; }
-  .home-page .home-hero-photo .hero-trust-line { font-size: .875rem; }
-  .home-page .home-hero-photo .hero-socials { margin-top: 4px; }
-}
