@@ -1054,6 +1054,7 @@
     if (serviceChoiceMode && eligibilityButtonLabel) eligibilityButtonLabel.textContent = "Continue";
   };
   const syncPropertyTypeChoice = () => {
+    if (["co-op", "condo"].includes(value("propertyType"))) form.elements.propertyType.value = "apartment";
     const selectedType = value("propertyType");
     propertyTypeButtons.forEach((button) => {
       const selected = button.dataset.bookingPropertyType === selectedType;
