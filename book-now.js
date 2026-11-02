@@ -1669,17 +1669,8 @@
               current.moldBedroomCount = "";
             }
             invalidateDownstreamAfterEdit();
-            // The whole-property pet question is the final extras question for
-            // many mobile quotes. Advance before redrawing the answer controls;
-            // otherwise the redraw can replace the selected button before the
-            // Continue handler reads the saved answer.
-            if (question.key === "propertyHasPets") {
-              const answeredUnit = state.unitDetails[answeredUnitIndex];
-              if (answeredUnit) answeredUnit.propertyHasPets = option.value;
-              setStatus(document.querySelector("[data-eligibility-status]"), "");
-              window.setTimeout(() => eligibilityContinue?.click(), 0);
-              return;
-            }
+            // Persist the answer before regenerating conditional pet questions.
+            state.unitDetails[answeredUnitIndex] = current;
             loadCurrentUnitDetails();
             if (question.key === "additionalCleaning" && option.value === "yes") {
               if (additionalCleaningNotice) additionalCleaningNotice.hidden = false;
