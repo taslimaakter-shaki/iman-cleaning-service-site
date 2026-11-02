@@ -998,7 +998,13 @@
           button.dataset.answerFor = select.name;
           button.setAttribute("aria-pressed", "false");
           const label = document.createElement("span");
-          label.textContent = option.textContent;
+          if (["clutter", "buildup"].includes(select.name) && option.textContent.includes(" — ")) {
+            const [title, ...description] = option.textContent.split(" — ");
+            const strong = document.createElement("strong");
+            strong.textContent = title;
+            label.append(strong, document.createTextNode(" — " + description.join(" — ")));
+            label.classList.add("booking-condition-option-copy");
+          } else label.textContent = option.textContent;
           const check = document.createElement("i");
           check.setAttribute("aria-hidden", "true");
           check.textContent = "✓";
