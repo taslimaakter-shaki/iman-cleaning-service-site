@@ -6381,3 +6381,11 @@ body.booking-agreement-open {
     font-size: 1rem;
   }
 }
+
+.booking-wizard-dialog .booking-actions > button,
+.booking-wizard-dialog[data-current-step="1"] .booking-question-actions .booking-next {
+  min-height: 40px;
+  padding: 10px 16px;
+  font-size: .875rem;
+  line-height: 1.25;
+}
