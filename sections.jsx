@@ -20,7 +20,7 @@ function Hero() {
         <Badge tone="leaf" check size="sm">Fully Insured • Background-Checked Cleaners</Badge>
         <h1>NYC&apos;s Reliable Residential &amp; Commercial Cleaning Service</h1>
         <p className="ds-lead">
-          House, apartment, and commercial cleaning in Brooklyn, Queens, and Manhattan.
+          We Serve Queens, Manhattan and brooklyn
         </p>
         <div className="page-hero-actions">
           <Button href="./book-now.html" variant="accent" size="lg"
