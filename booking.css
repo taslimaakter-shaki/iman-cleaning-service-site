@@ -6432,3 +6432,23 @@ body.booking-agreement-open {
   font-size: .875rem;
   line-height: 1.35;
 }
+
+.booking-quote-contact-dialog { position: relative; padding-top: 64px; }
+.booking-quote-contact-close {
+  position: absolute;
+  top: 12px;
+  right: 12px;
+  z-index: 5;
+  display: grid;
+  place-items: center;
+  width: 40px;
+  height: 40px;
+  padding: 0;
+  border: 1px solid #d7edf1;
+  border-radius: 50%;
+  background: #eef7f9;
+  color: #053640;
+  font-size: 26px;
+  line-height: 1;
+  cursor: pointer;
+}
