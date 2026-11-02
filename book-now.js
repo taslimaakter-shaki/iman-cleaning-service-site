@@ -1943,6 +1943,7 @@
     hazards: value("hazards"),
     moldCleaningRequested: value("moldCleaningRequested"),
     propertyType: value("propertyType"),
+    houseFloorSelection: value("propertyType") === "house" ? JSON.parse(form.elements.houseFloorSelection.value || "[]") : [],
     unitCount: selectedUnitCount(),
     units: state.unitDetails.map((unit, index) => ({
       unitNumber: index + 1,
@@ -2168,8 +2169,11 @@
     unitCountForm.classList.toggle("is-house", house || apartment);
     unitCountForm.querySelector("[data-house-levels]").hidden = !house;
     const selectedLevels = JSON.parse(form.elements.houseFloorSelection.value || "[]");
-    unitCountForm.querySelectorAll("[data-house-level]").forEach(input => input.checked = selectedLevels.includes(input.value));
+    unitCountForm.querySelectorAll("[data-house-level]").forEach(input => input.checked = input.value === "Other floor" ? selectedLevels.some(name => name.startsWith("Other floor")) : selectedLevels.includes(input.value));
     unitCountForm.querySelector("[data-house-level-count]").textContent = selectedLevels.length;
+    const otherCount = selectedLevels.filter(name => name.startsWith("Other floor")).length;
+    form.elements.houseOtherCount.value = String(otherCount || 1);
+    form.querySelector('[data-house-other-count]').hidden = !house || !otherCount;
     unitCountForm.querySelector("h2").textContent = house ? "Which floors need cleaning?" : apartment ? "How many apartments need cleaning?" : "How many units/floors need cleaning?";
     const choices = unitCountForm.querySelector("[data-house-floors]");
     choices.hidden = !choiceMode;
@@ -3310,6 +3314,7 @@
       if (value("propertyType") !== selectedPropertyType) {
         form.elements.unitCount.value = "";
         form.elements.houseFloorSelection.value = "[]";
+        form.elements.housePetAnswers.value = "{}";
         unitCountValue.value = "";
         unitCountValue.min = "1";
         state.unitDetails = [];
@@ -3336,11 +3341,27 @@
     syncUnitCount();
     syncStageProgress();
   });
-  form.querySelectorAll('[data-house-level]').forEach(input => input.addEventListener("change", () => {
+  const updateHouseLevels = () => {
     const previous = JSON.parse(form.elements.houseFloorSelection.value || "[]");
     const byFloor = new Map(previous.map((floor, index) => [floor, state.unitDetails[index]]));
+    const petSource = state.unitDetails[state.unitDetails.length - 1] || {};
+    const pets = { ...JSON.parse(form.elements.housePetAnswers.value || "{}"), ...Object.fromEntries(Array.from(PROPERTY_PET_KEYS).filter(key => petSource[key] !== undefined && petSource[key] !== "").map(key => [key, petSource[key]])) };
+    form.elements.housePetAnswers.value = JSON.stringify(pets);
     const selected = Array.from(form.querySelectorAll('[data-house-level]:checked'), item => item.value);
+    const other = selected.includes("Other floor");
+    form.querySelector('[data-house-other-count]').hidden = !other;
+    if (other) {
+      selected.pop();
+      const extra = Number(form.elements.houseOtherCount.value);
+      if (!Number.isInteger(extra) || extra < 1 || extra > 5) {
+        form.elements.unitCount.value = "";
+        setStatus(document.querySelector('[data-eligibility-status]'), "Enter 1 to 5 additional floors.");
+        return;
+      }
+      for (let n = 1; n <= extra; n++) selected.push(`Other floor ${n}`);
+    }
     state.unitDetails = selected.map(floor => byFloor.get(floor) || emptyUnitDetails());
+    if (state.unitDetails.length) Object.assign(state.unitDetails[state.unitDetails.length - 1], pets);
     state.currentUnitIndex = 0;
     state.currentDetailQuestionIndex = 0;
     form.elements.houseFloorSelection.value = JSON.stringify(selected);
@@ -3350,7 +3371,9 @@
     invalidateDownstreamAfterEdit();
     syncUnitCount();
     persistBookingDraft();
-  }));
+  };
+  form.querySelectorAll('[data-house-level]').forEach(input => input.addEventListener("change", updateHouseLevels));
+  form.elements.houseOtherCount.addEventListener("input", updateHouseLevels);
   form.querySelectorAll('[name="houseFloorChoice"]').forEach(radio => radio.addEventListener("change", () => {
     const more = radio.value === "5+";
     form.elements.unitCount.value = more ? "" : radio.value;
@@ -3973,6 +3996,7 @@
     }
 
     const wholePropertyDetails = state.unitDetails[selectedUnitCount() - 1] || {};
+    if (value("propertyType") === "house") form.elements.housePetAnswers.value = JSON.stringify(Object.fromEntries(Array.from(PROPERTY_PET_KEYS, key => [key, wholePropertyDetails[key] || ""])));
     state.eligibility = {
       ...eligibilityFromForm(),
       propertyHasPets: wholePropertyDetails.propertyHasPets || "no",
@@ -4500,6 +4524,7 @@
       });
       state.eligibility = data.eligibility;
       state.unitDetails = Array.isArray(data.unitDetails) ? data.unitDetails : [];
+      if (Array.isArray(data.eligibility?.houseFloorSelection)) form.elements.houseFloorSelection.value = JSON.stringify(data.eligibility.houseFloorSelection);
       state.serviceKey = data.eligibility?.requestedService || data.package?.serviceKey || "";
       state.pricingMode = data.package?.pricingMode || `${state.serviceKey}_formula`;
       state.packageIds = [];
@@ -4662,6 +4687,7 @@
       if (canUseInstantQuoteZip(restoredZip)) applyServiceZip(restoredZip);
       syncServiceChoice();
       syncPropertyTypeChoice();
+      if (unitCountMode) enterUnitCountChoice();
       syncUnitCount();
       allMobileQuestions.forEach(syncAnswerChoices);
       syncMobileQuestion();

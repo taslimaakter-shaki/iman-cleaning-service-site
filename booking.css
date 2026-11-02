@@ -6554,3 +6554,5 @@ body.booking-agreement-open {
 .booking-house-levels > label { display:flex; justify-content:space-between; align-items:center; gap:16px; padding:14px; margin:8px 0; border:1px solid #d9e0de; border-radius:10px; background:white; font-weight:400; cursor:pointer; }
 .booking-house-levels input[type="checkbox"] { width:18px; height:18px; accent-color:#0b6474; }
 .booking-floor-summary { display:flex; justify-content:space-between; margin-top:20px; color:#61736f; }
+.booking-house-levels [data-house-other-count][hidden] { display:none !important; }
+.booking-house-levels [data-house-other-count] input { width:72px; height:42px; font-size:16px; }

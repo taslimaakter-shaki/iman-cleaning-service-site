@@ -385,12 +385,14 @@
                 <div class="booking-house-levels" data-house-levels hidden>
                   <p>Select all that apply.</p>
                   <input type="hidden" name="houseFloorSelection" value="[]">
+                  <input type="hidden" name="housePetAnswers" value="{}">
                   <label><span>Basement</span><input type="checkbox" data-house-level value="Basement"></label>
                   <label><span>First floor</span><input type="checkbox" data-house-level value="First floor"></label>
                   <label><span>Second floor</span><input type="checkbox" data-house-level value="Second floor"></label>
                   <label><span>Third floor</span><input type="checkbox" data-house-level value="Third floor"></label>
                   <label><span>Attic</span><input type="checkbox" data-house-level value="Attic"></label>
                   <label><span>Other floor</span><input type="checkbox" data-house-level value="Other floor"></label>
+                  <label data-house-other-count hidden><span>Number of other floors</span><input type="number" name="houseOtherCount" min="1" max="5" value="1" inputmode="numeric"></label>
                   <p class="booking-floor-summary">Floors selected <strong data-house-level-count>0</strong></p>
                 </div>
                 <div class="booking-house-floors" data-house-floors hidden>
