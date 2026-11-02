@@ -18,7 +18,7 @@ function Hero() {
       </picture>
       <div className="ds-shell page-hero-inner">
         <Badge tone="leaf" check size="sm">Fully Insured • Background-Checked Cleaners</Badge>
-        <h1>NYC&apos;s Reliable Residential &amp; Commercial Cleaning Service</h1>
+        <h1><span className="hero-title-desktop">NYC&apos;s Reliable Residential &amp; Commercial Cleaning Service</span><span className="hero-title-mobile">A cleaner home.<br />More time for you.</span></h1>
         <p className="ds-lead">
           House, apartment, and commercial cleaning in Brooklyn, Queens, and Manhattan.
         </p>
