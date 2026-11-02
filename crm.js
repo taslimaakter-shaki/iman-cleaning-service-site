@@ -717,7 +717,7 @@
       <td class="crm-service-cell"><strong>${escapeHtml(booking.serviceLabel || booking.service || "Cleaning service")}</strong><span>${escapeHtml(booking.address || "")}</span></td>
       <td class="crm-date-cell">${escapeHtml(appointmentDate(booking))}</td>
       <td class="crm-payment-cell"><strong>${money(payment.paidCents)} paid</strong><span>${money(payment.remainingCents)} remaining</span></td>
-      <td>${statusBadge(booking.status)}</td>
+      <td>${statusBadge(booking.status)}${booking.status === "New" && booking.estimate?.schedulingConflict?.status === "pending" ? '<strong class="crm-status">Paid conflict — call to reschedule</strong>' : ""}</td>
       <td><div class="crm-table-actions"><button class="crm-row-button" type="button" data-open-booking="${escapeHtml(booking.id)}">Manage</button>${booking.phone ? communicationButtons(contact) : ""}</div></td>
     </tr>`;
   }
@@ -726,7 +726,7 @@
     const payment = paymentFor(booking);
     const contact = { phone: booking.phone, customerName: booking.clientName, sourceId: booking.id, sourceType: "Booking" };
     return `<article class="crm-mobile-booking">
-      <div class="crm-mobile-booking-head"><div><h3>${escapeHtml(booking.clientName || "Customer")}</h3><p>${escapeHtml(booking.serviceLabel || booking.service || "Cleaning service")}</p></div>${statusBadge(booking.status)}</div>
+      <div class="crm-mobile-booking-head"><div><h3>${escapeHtml(booking.clientName || "Customer")}</h3><p>${escapeHtml(booking.serviceLabel || booking.service || "Cleaning service")}</p></div>${statusBadge(booking.status)}${booking.status === "New" && booking.estimate?.schedulingConflict?.status === "pending" ? '<strong class="crm-status">Paid conflict — call to reschedule</strong>' : ""}</div>
       <p>${escapeHtml(appointmentDate(booking))}</p>
       <div class="crm-mobile-booking-bottom"><strong>${money(payment.paidCents)} paid</strong><div class="crm-mobile-actions"><button class="crm-row-button" type="button" data-open-booking="${escapeHtml(booking.id)}">Manage</button>${booking.phone ? communicationButtons(contact) : ""}</div></div>
     </article>`;

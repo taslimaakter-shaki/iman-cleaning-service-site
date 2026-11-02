@@ -78,7 +78,7 @@
         if (!sessionId) return;
 
         const storageKey = `iman-payment-record-${sessionId}`;
-        if (window.localStorage.getItem(storageKey) === "sent") return;
+
 
         fetch("/api/quote/payment-record", {
           method: "POST",
@@ -89,6 +89,11 @@
             const data = await response.json().catch(() => ({}));
             if (!response.ok) {
               throw new Error(data.error || "Approval record could not be saved automatically.");
+            }
+            if (data.schedulingConflict) {
+              document.querySelector('h1').textContent = 'Payment received — appointment follow-up needed';
+              document.querySelector('main p').textContent = 'Your payment is recorded. Our team will call you to arrange a new time because the requested appointment overlaps another booking.';
+              return;
             }
             window.localStorage.setItem(storageKey, "sent");
             const purchase = data.analyticsPurchase || {};

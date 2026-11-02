@@ -1446,7 +1446,7 @@ async function supabaseRequest(path, options = {}) {
   const text = await response.text();
   const data = text ? JSON.parse(text) : null;
   if (!response.ok) {
-    if (data?.code === "23P01") throw Object.assign(new Error("That appointment conflicts with another booking's reserved service capacity or two-hour travel window. Please choose another time."), { statusCode: 409 });
+    if (data?.code === "23P01") throw Object.assign(new Error("That appointment conflicts with another booking's reserved service capacity or two-hour travel window. Please choose another time."), { statusCode: 409, code: '23P01' });
     throw Object.assign(new Error(data?.message || "Booking storage request failed."), {
       statusCode: response.status,
       details: data
@@ -1604,15 +1604,27 @@ async function confirmBooking(bookingId) {
     const records = await supabaseRequest(`?id=eq.${encodeURIComponent(bookingId)}&select=*`);
     const booking = records?.[0];
     if (!booking) throw Object.assign(new Error("Paid booking record could not be found."), { statusCode: 404 });
+    if (booking.status === 'New' && booking.estimate?.schedulingConflict?.status === 'pending') return { booking, calendarSync: { status: 'conflict' } };
     if (booking.status === 'Cancelled') throw Object.assign(new Error('This appointment was cancelled. Our team must review the payment.'), { statusCode: 409 });
     if (["Completed", "In progress", "Cleaner assigned", "Confirmed"].includes(booking.status)) {
       confirmedBooking = booking;
     } else {
-      const changed = await supabaseRequest(`?id=eq.${encodeURIComponent(bookingId)}&status=eq.New`, {
+      let changed;
+      try { changed = await supabaseRequest(`?id=eq.${encodeURIComponent(bookingId)}&status=eq.New`, {
         method: "PATCH",
         headers: { Prefer: "return=representation" },
         body: JSON.stringify({ status: "Confirmed" })
       });
+      } catch (error) {
+        if (error.code !== '23P01' || !booking.estimate?.acceptPaidConflict) throw error;
+        const conflict = { status: 'pending', detectedAt: new Date().toISOString(), requestedSchedule: booking.schedule };
+        const rows = await supabaseRequest(`?id=eq.${encodeURIComponent(bookingId)}&status=eq.New`, {
+          method: 'PATCH', headers: { Prefer: 'return=representation' },
+          body: JSON.stringify({ estimate: { ...booking.estimate, calendarReservation: { state: 'draft' }, schedulingConflict: conflict }, notes: `${booking.notes || ''}\nPAID BOOKING CONFLICT: Call customer to arrange a new appointment.` })
+        });
+        if (rows?.[0]) return { booking: rows[0], calendarSync: { status: 'conflict' } };
+        throw error;
+      }
       confirmedBooking = changed?.[0] || await getBooking(bookingId);
       if (!["Completed", "In progress", "Cleaner assigned", "Confirmed"].includes(confirmedBooking?.status)) {
         throw Object.assign(new Error('The booking changed before payment confirmation. Our team must review it.'), { statusCode: 409 });

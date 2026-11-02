@@ -49,6 +49,14 @@ async function reserveBooking(bookingId, existingSession) {
   let booking = await store().getBooking(bookingId);
   if (booking) booking = await reconcileReservation(booking);
   if (!booking || booking.status !== 'New') throw fail('This booking is no longer awaiting payment.');
+  if (process.env.BOOKING_PAYMENT_FLOW === 'hosted_unreserved') {
+    if (existingSession) {
+      existingSession = await stripeSession(existingSession.id);
+      if (existingSession.status !== 'open') throw fail('This checkout expired. Please reopen your quote to start a new payment.');
+      return changeReservation(booking, { ...(booking.estimate?.calendarReservation || newReservation()), state: 'draft', sessionId: existingSession.id, expiresAt: new Date(existingSession.expires_at * 1000).toISOString() });
+    }
+    return changeReservation(booking, { ...newReservation(), state: 'draft' });
+  }
   const prior = booking.estimate?.calendarReservation;
   if (prior && ['creating', 'open'].includes(prior.state)) {
     if (existingSession && prior.sessionId === existingSession.id && existingSession.status === 'open') return booking;
@@ -70,7 +78,8 @@ async function attachCheckout(bookingId, attempt, session) {
     await stripeSession(session.id, 'POST');
     throw fail('Your reservation changed. Please reopen the payment link.');
   }
-  await changeReservation(booking, { ...booking.estimate.calendarReservation, state: 'open', sessionId: session.id, expiresAt: hostedDeadline(session) });
+  const unreserved = process.env.BOOKING_PAYMENT_FLOW === 'hosted_unreserved';
+  await changeReservation(booking, { ...booking.estimate.calendarReservation, state: unreserved ? 'draft' : 'open', sessionId: session.id, expiresAt: unreserved ? new Date(session.expires_at * 1000).toISOString() : hostedDeadline(session) });
 }
 
 async function releaseExpiredSession(session) {
@@ -104,7 +113,7 @@ async function reconcileReservation(booking) {
 async function expireBookingCheckout(bookingId, expectedAttempt) {
   const booking = await store().getBooking(bookingId);
   const held = booking?.estimate?.calendarReservation;
-  if (booking?.status !== 'New' || !held || ['released', 'draft'].includes(held.state)) return;
+  if (booking?.status !== 'New' || !held || (held.state === 'released' || (held.state === 'draft' && !held.sessionId))) return;
   if (expectedAttempt && held.attempt !== expectedAttempt) return; // An old return link cannot cancel a newer checkout.
   if (held.paymentOrderId) {
     const payment = require('./_deposit-payment');

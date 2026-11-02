@@ -198,6 +198,10 @@ module.exports = async function handler(request, response) {
       if (!fields.selectedSchedule) return json(response, 400, { error: "Please choose an available appointment date and time before payment." });
       quote = await adminQuotes.selectCustomerSchedule(quote, fields.selectedSchedule);
     }
+    if (process.env.BOOKING_PAYMENT_FLOW === 'hosted_unreserved') {
+      const existingBooking = quote.bookingId && await require('../booking/_shared').getBooking(quote.bookingId);
+      if (existingBooking?.status === 'New') await require('../booking/_shared').updateBooking(quote.bookingId, { estimate: { ...existingBooking.estimate, acceptPaidConflict: true } });
+    }
     const guardedPayment = process.env.BOOKING_PAYMENT_FLOW === 'server';
     const existingCheckout = await adminQuotes.currentCheckout(quote, { summaryVersion: CHECKOUT_SUMMARY_VERSION });
     if (existingCheckout.session && !guardedPayment) {
@@ -209,6 +213,10 @@ module.exports = async function handler(request, response) {
     if (guardedPayment && existingCheckout.session) await calendar.expireBookingCheckout(quote.bookingId);
     quote = await adminQuotes.ensureManagedBooking(quote);
     if (!quote.bookingId) throw Object.assign(new Error('Our team needs to update this quote with its appointment duration before payment.'), { statusCode: 409 });
+    if (process.env.BOOKING_PAYMENT_FLOW === 'hosted_unreserved') {
+      const b = await require('../booking/_shared').getBooking(quote.bookingId);
+      await require('../booking/_shared').updateBooking(b.id, { estimate: { ...b.estimate, acceptPaidConflict: true } });
+    }
     if (!guardedPayment && quote.serviceDate && quote.serviceTime) reservedBooking = await calendar.reserveBooking(quote.bookingId);
 
     const siteUrl = getSiteUrl(request);

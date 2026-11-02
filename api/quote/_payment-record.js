@@ -758,6 +758,25 @@ async function sendPaymentRecordForSession({ session, siteUrl, source = "success
   const booking = bookingId ? await getBooking(bookingId) : null;
   record.orderNumber = cleanText(booking?.estimate?.orderNumber || session.metadata?.order_number || bookingId, 40);
   if (!record.customerPhone && booking?.phone) record.customerPhone = cleanText(booking.phone);
+  if (booking?.status === 'New' && booking?.estimate?.schedulingConflict?.status === 'pending') {
+    const customerText = `Your payment of ${record.paidAmount} was received. Your requested appointment overlaps another booking. Our team will call you to arrange a new time. Your payment remains recorded. Order ${record.orderNumber}. Questions? Call 929-232-1930.`;
+    const ownerText = `PAID BOOKING CONFLICT — call customer to reschedule. Order ${record.orderNumber}. ${booking.client_name}, ${booking.phone}. Requested: ${booking.schedule_label || booking.schedule}. Paid: ${record.paidAmount}. Both payments remain recorded. CRM: ${siteUrl}/crm`;
+    const from = process.env.QUOTE_EMAIL_FROM || 'Info@imancleaningservice.com';
+    for (const [to, text] of [[process.env.QUOTE_EMAIL_TO || from, ownerText], [record.customerEmail, customerText]]) {
+      if (!to) continue;
+      await gmail.users.messages.send({ userId: 'me', requestBody: { raw: base64Url([
+        `From: ${from}`, `To: ${cleanText(to).replace(/[\r\n]/g, '')}`,
+        'Subject: Payment received - appointment follow-up needed', 'MIME-Version: 1.0',
+        'Content-Type: text/plain; charset=UTF-8', '', text
+      ].join('\r\n')) } });
+    }
+    const config = getSmsConfig();
+    if (!config.accountSid || !config.authToken || !config.from || !config.to) throw new Error('Owner conflict text delivery is not configured.');
+    await twilioRequest({ ...config, body: ownerText });
+    await sendCustomerSms(record.customerPhone, customerText);
+    await markPaymentRecordSent(secretKey, record, source);
+    return { schedulingConflict: true, message: customerText, analyticsPurchase: buildAnalyticsPurchase(session) };
+  }
   const managementUrl = bookingId && record.customerEmail
     ? `${siteUrl}/manage-booking.html`
     : "";
@@ -869,12 +888,12 @@ async function sendPaymentRecordForSessionId({ sessionId, siteUrl, source = "suc
       bookingConfirmation.booking = await updateBooking(bookingId, { estimate });
     }
   }
-  // The slot is confirmed before email/SMS/PDF delivery, so a notification
-  // outage cannot leave a successfully paid appointment available to others.
+  // Persist confirmation or the paid-conflict flag before notification delivery.
   const result = await sendPaymentRecordForSession({ session, siteUrl, source, secretKey });
   return {
     ...result,
-    bookingConfirmed: Boolean(bookingId),
+    bookingConfirmed: Boolean(bookingId) && bookingConfirmation?.calendarSync?.status !== "conflict",
+    schedulingConflict: bookingConfirmation?.calendarSync?.status === "conflict",
     bookingId,
     calendarStatus: bookingConfirmation?.calendarSync?.status || ""
   };

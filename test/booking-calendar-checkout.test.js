@@ -38,7 +38,7 @@ const clone = x => JSON.parse(JSON.stringify(x));
         }
         assert.equal(options.method,'PATCH');
         const values = Object.entries(data).map(([key,value]) => {
-          assert(['estimate','status','schedule','schedule_label'].includes(key));
+          assert(['estimate','status','schedule','schedule_label','notes'].includes(key));
           params.push(key === 'estimate' ? JSON.stringify(value) : value);return `${key}=$${params.length}${key==='estimate'?'::jsonb':''}`;
         });
         return response((await db.query(`update bookings set ${values.join(',')}${where} returning *`,params)).rows);
@@ -51,13 +51,14 @@ const clone = x => JSON.parse(JSON.stringify(x));
     if (options.method === 'POST') { assert.equal(u.pathname.split('/')[5],'expire');assert.equal(session.status,'open');session.status='expired'; }
     return response(session);
   };
+  const env={SUPABASE_URL:'https://calendar.test',SUPABASE_SERVICE_ROLE_KEY:'test-only',STRIPE_SECRET_KEY:'sk_test_mock'};
   const cache = new Map();
   function load(relative) {
     const file = path.join(root,relative);if(cache.has(file)) return cache.get(file).exports;
     const module = {exports:{}};cache.set(file,module);
     vm.runInNewContext(fs.readFileSync(file,'utf8'),{module,exports:module.exports,
       require:name=>name.startsWith('.')?load(path.relative(root,path.resolve(path.dirname(file),name+'.js'))):require(name),
-      process:{env:{SUPABASE_URL:'https://calendar.test',SUPABASE_SERVICE_ROLE_KEY:'test-only',STRIPE_SECRET_KEY:'sk_test_mock'}},
+      process:{env},
       fetch,Buffer,URLSearchParams,Date,Intl,AbortSignal,console
     },{filename:file});return module.exports;
   }
@@ -120,6 +121,23 @@ const clone = x => JSON.parse(JSON.stringify(x));
   await shared.updateBooking('custom',{status:'Cancelled'});
   await assert.rejects(shared.confirmBooking('custom'),/cancelled/);
   assert.equal((await db.query('select count(*)::int as n from booking_calendar_slots')).rows[0].n,0);
+  env.BOOKING_PAYMENT_FLOW='hosted_unreserved';
+  const a={...row('paid-first'),estimate:{teamHours:9,acceptPaidConflict:true,calendarReservation:{state:'draft'}}};
+  const b={...a,id:'paid-second'};
+  await shared.createBooking(a);await shared.createBooking(b);
+  const draft=await calendar.reserveBooking(a.id);
+  const hosted={id:'cs_unreserved',status:'open',payment_status:'unpaid',expires_at:Math.floor(Date.now()/1000)+1800,metadata:{booking_id:a.id}};
+  sessions.set(hosted.id,hosted);
+  await calendar.attachCheckout(a.id,draft.estimate.calendarReservation.attempt,hosted);
+  assert.equal((await db.query('select count(*)::int as n from booking_calendar_slots')).rows[0].n,0,'Opening hosted checkout does not reserve capacity');
+  await shared.confirmBooking(a.id);
+  const conflict=await shared.confirmBooking(b.id);
+  assert.equal(conflict.calendarSync.status,'conflict');
+  assert.equal(conflict.booking.status,'New');
+  assert.equal(conflict.booking.estimate.schedulingConflict.status,'pending');
+  assert.equal((await shared.confirmBooking(b.id)).calendarSync.status,'conflict','Retries preserve the paid conflict for manual follow-up');
+  assert.equal((await shared.getBooking(a.id)).status,'Confirmed');
+  assert.equal((await db.query('select count(*)::int as n from booking_calendar_slots')).rows[0].n,1);
   await db.close();
   console.log('Actual booking/calendar modules + isolated PostgreSQL passed: readiness, draft vs checkout, custom/instant conflict, checkout reuse, expired vs paid/outage, retry fencing, definite failure cleanup, confirmation and cancellation. No live requests.');
 })().catch(error=>{console.error(error);process.exitCode=1;});

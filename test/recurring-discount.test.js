@@ -79,7 +79,7 @@ const browser = {
 };
 vm.createContext(browser);
 vm.runInContext(source.slice(start,end) + "globalThis.load = loadSchedulerSlots;", browser);
-browser.load(["2026-10-16","2026-10-17","2026-10-22","2026-10-23"].map(date => ({date})));
+browser.load(["2026-10-16","2026-10-17","2026-10-22","2026-10-23"].map(date => ({date, flexibleEligible: true})));
 assert.equal(JSON.stringify(browser.state.availableDates), JSON.stringify(["2026-10-17","2026-10-22"]));
 assert.throws(() => browser.load([{date:"2026-10-23"}]), /contact us/);
 for (const [plan, first, last] of [["weekly",7,12],["biweekly",13,24],["monthly",25,40]]) {

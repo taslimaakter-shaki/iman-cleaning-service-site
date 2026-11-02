@@ -478,7 +478,8 @@ module.exports = async function handler(request, response) {
         notes ? `Customer notes: ${notes}` : "",
       ].filter(Boolean).join(" "),
       estimate: {
-        calendarReservation: (reservation = process.env.BOOKING_PAYMENT_FLOW === 'server' ? { state: 'draft' } : calendar.newReservation()),
+        calendarReservation: (reservation = ['server', 'hosted_unreserved'].includes(process.env.BOOKING_PAYMENT_FLOW) ? { ...calendar.newReservation(), state: 'draft' } : calendar.newReservation()),
+        acceptPaidConflict: process.env.BOOKING_PAYMENT_FLOW === 'hosted_unreserved',
         savedQuoteId,
         manualDiscount: pkg.manualDiscount || null,
         promoCode: pkg.promoCode || "",

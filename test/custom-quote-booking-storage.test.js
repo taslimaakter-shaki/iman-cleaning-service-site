@@ -16,7 +16,7 @@ function fixture(units) {
   const bookings = new Map(), sessions = [], calls = [];
   let creates = 0, rejectInsert = false;
   const env = { SUPABASE_URL: "https://storage.example.test", SUPABASE_SERVICE_ROLE_KEY: "test-only",
-    STRIPE_SECRET_KEY: "sk_test_mock", PUBLIC_SITE_URL: "https://www.imancleaningservice.com" };
+    BOOKING_PAYMENT_FLOW: "hosted_unreserved", STRIPE_SECRET_KEY: "sk_test_mock", PUBLIC_SITE_URL: "https://www.imancleaningservice.com" };
   let record;
   const reply = (status, data) => ({ ok: status < 400, status, text: async () => JSON.stringify(data), json: async () => clone(data) });
   const fetch = async (url, options = {}) => {
@@ -90,6 +90,8 @@ function fixture(units) {
   const resolve = () => admin.resolveManaged({ quoteId: record.quoteId, managedSource: "custom", managedId: record.quoteId });
   const handler = load("api/quote/_approve-checkout.js", {
     "../booking/_calendar": calendar,
+    "../booking/_shared": bookingStore,
+    "../booking/_hosted-cancel": { cancelUrl: () => "https://example.test/cancel" },
     "./_shared": { cleanText: bookingStore.cleanText, centsToDollars: value => (value / 100).toFixed(2), json: bookingStore.json },
     "./_short-approval": { resolveShortApproval: async code => { assert.equal(code, "test00000001");return resolve(); } },
     "../crm/_quote-admin": admin
@@ -118,6 +120,7 @@ const room = (name, quantity = 1, kind = "room") => ({ name, quantity, kind, uni
   assert.equal(result.body.checkoutUrl, "https://checkout.stripe.test/mock");
   const booking = [...f.bookings.values()][0];
   assert.equal(booking.bedrooms_label, "1 bedroom");assert.equal(booking.bathrooms_label, "1 full bathroom");assert.equal(booking.sqft, 0);
+  assert.equal(booking.estimate.acceptPaidConflict, true);
   assert.equal(booking.estimate.payment.depositCents, 4355);assert.equal(booking.estimate.payment.remainingCents, 13065);
   assert.equal(booking.estimate.teamHours, 2);assert.equal(booking.schedule, "2030-09-15T08:00:00-04:00");
   assert.equal(f.record.crmQuote.bookingId, booking.id);assert.equal(booking.status, "New", "Only payment completion confirms a booking");
