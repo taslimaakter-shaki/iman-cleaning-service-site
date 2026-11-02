@@ -409,6 +409,15 @@ function cleanCustomer(input = {}) {
   return customer;
 }
 
+// Compare submitted details independently of object key order and form whitespace.
+function quoteDetailsKey(input) {
+  const canonical = value => Array.isArray(value) ? value.map(canonical)
+    : value && typeof value === "object" ? Object.fromEntries(Object.keys(value).sort().map(key => [key, canonical(value[key])]))
+    : typeof value === "string" ? value.trim() : value;
+  return JSON.stringify(canonical({ eligibility: input.eligibility, unitDetails: input.unitDetails,
+    pricingMode: input.pricingMode, customer: cleanCustomer(input.customer) }));
+}
+
 function deliveryKey(request, customer, consent = {}, quote = {}) {
   const ip = cleanText(request.headers["x-forwarded-for"] || request.socket?.remoteAddress, 120).split(",")[0];
   return crypto.createHash("sha256").update([
@@ -496,6 +505,18 @@ module.exports = async function handler(request, response) {
     }
     const customer = cleanCustomer(body.customer);
     const { eligibility, unitDetails, pkg: calculatedPackage } = validateAndPrice(body);
+    if (body.previousQuoteToken) {
+      const previous = decodeSavedQuote(body.previousQuoteToken);
+      const record = await loadQuoteRecord(previous.quoteId);
+      await assertQuoteUnused(previous.quoteId);
+      if (!record.crmQuote?.fields && quoteDetailsKey(record) === quoteDetailsKey({ eligibility, unitDetails, pricingMode: calculatedPackage.pricingMode, customer })) {
+        return json(response, 200, { saved: true, unchanged: true,
+          quoteUrl: `${getSiteUrl(request)}/book-now.html?quote=${encodeURIComponent(body.previousQuoteToken)}`,
+          quoteRevision: record.crmQuote?.revision || '',
+          package: record.packageSnapshot ? packageForClient(require('./_discount').applyPackageDiscount(record.packageSnapshot, record.crmQuote?.manualDiscount)) : undefined,
+          delivery: { email: "not_resent", sms: "not_resent" } });
+      }
+    }
     const pkg = applySavedQuotePromotion(calculatedPackage, body, customer, await listAllBookings());
     const now = Date.now();
     const communicationConsent = consentEvidence(request, body, new Date(now));

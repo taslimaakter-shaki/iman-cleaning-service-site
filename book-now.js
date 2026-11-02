@@ -2409,15 +2409,16 @@
       );
     }
   };
-  const sendSavedQuote = async () => {
+  const sendSavedQuote = async ({ previousQuoteUrl = state.savedQuoteUrl } = {}) => {
     const wantsQuoteText = Boolean(quoteContactForm?.elements.quoteCommunicationConsent?.checked);
     const wantsMarketingTexts = Boolean(quoteContactForm?.elements.smsMarketingConsent?.checked);
-    showSavedQuoteDelivery(`Your price is ready. Sending your secure quote link by email${wantsQuoteText ? " and text" : ""}…`);
+    showSavedQuoteDelivery("Your price is ready. Checking and saving your quote…");
     try {
       const response = await fetch("/api/booking/saved-quote", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
+          previousQuoteToken: previousQuoteUrl ? new URL(previousQuoteUrl, window.location.origin).searchParams.get("quote") || "" : "",
           pricingMode: state.pricingMode,
           eligibility: state.eligibility,
           unitDetails: state.unitDetails,
@@ -2436,7 +2437,18 @@
       const data = await response.json().catch(() => ({}));
       if (!response.ok) throw new Error(data.error || "Your secure quote link could not be sent.");
       state.savedQuoteUrl = data.quoteUrl || state.savedQuoteUrl;
-      state.quoteRevision = '';
+      state.quoteRevision = data.quoteRevision || '';
+      if (data.unchanged) {
+        if (data.package) {
+          state.package = data.package;
+          state.promo = data.package.promoDiscount || null;
+          state.packageBeforePromo = null;
+          renderQuoteOverview(state.package);
+          renderPriceBreakdown(state.package);
+        }
+        showSavedQuoteDelivery("Your quote is unchanged. Your previous link still works; no new email or text was sent.", "success");
+        return state.savedQuoteUrl;
+      }
       const emailSent = ["sent", "already_sent"].includes(data.delivery?.email);
       const smsSent = ["sent", "already_sent"].includes(data.delivery?.sms);
       if (emailSent && smsSent) {
@@ -3986,11 +3998,12 @@
         // Promo availability must never prevent a customer from receiving a quote.
         promoData = null;
       }
+      const previousQuoteUrl = state.savedQuoteUrl;
       state.savedQuoteUrl = "";
       state.quoteRevision = "";
       await calculateAndShowQuote({ sendLink: false });
       if (promoData) applyPromoData(promoData);
-      await sendSavedQuote();
+      await sendSavedQuote({ previousQuoteUrl });
       track("quote_complete", { quote_type: "instant", service: state.serviceKey || "" });
     } catch (error) {
       setStatus(quoteContactStatus, error.message || "Your quote could not be prepared.");
