@@ -2504,7 +2504,7 @@ body.booking-agreement-open {
   background: linear-gradient(90deg, var(--brand), var(--leaf-500));
   content: "";
   transform-origin: left;
-  animation: zipSuccessCountdown 3s linear both;
+  animation: zipSuccessCountdown 1s linear both;
 }
 
 .booking-zip-success-icon {

@@ -203,7 +203,7 @@
       zipForm.removeAttribute("aria-busy");
       closeZipGate();
       openWizard();
-    }, 3000);
+    }, 1000);
   });
   document.querySelector("[data-change-zip]")?.addEventListener("click", () => {
     hideWizard();
