@@ -2436,7 +2436,7 @@
     if (!sameDayDialog || !sameDayForm) return;
     sameDayDialog.hidden = false;
     sameDaySubmit.hidden = false;
-    sameDaySubmit.textContent = "Send same-day request →";
+    sameDaySubmit.textContent = "Submit request";
     setStatus(sameDayStatus, "");
     window.setTimeout(() => sameDayForm.elements.serviceAddress?.focus(), 0);
   };
@@ -2495,7 +2495,7 @@
       setStatus(sameDayStatus, error.message || "Your same-day request could not be sent.", "error");
     } finally {
       sameDaySubmit.disabled = false;
-      if (!sameDaySubmit.hidden) sameDaySubmit.textContent = "Send same-day request →";
+      if (!sameDaySubmit.hidden) sameDaySubmit.textContent = "Submit request";
     }
   });
   const syncQuotedServiceCopy = () => {

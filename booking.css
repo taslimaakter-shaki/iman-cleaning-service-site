@@ -6483,3 +6483,21 @@ body.booking-agreement-open {
   .booking-same-day-dialog select,
   .booking-same-day-dialog textarea { box-sizing: border-box; min-width: 0; max-width: 100%; font-size: 16px; }
 }
+
+.booking-same-day-dialog .booking-redirect-actions {
+  display: flex;
+  flex-direction: row;
+  flex-wrap: nowrap;
+  justify-content: space-between;
+  align-items: center;
+  gap: 12px;
+}
+.booking-same-day-dialog .booking-redirect-actions > button {
+  flex: 0 1 auto;
+  width: auto;
+  min-width: 0;
+  padding: 11px 16px;
+  font-size: .875rem;
+}
+.booking-same-day-dialog [data-close-same-day] { order: 0; margin-right: auto; }
+.booking-same-day-dialog [data-submit-same-day] { order: 1; margin-left: auto; }
