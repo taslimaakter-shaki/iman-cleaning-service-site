@@ -3307,6 +3307,16 @@
   propertyTypeButtons.forEach((button) => {
     button.addEventListener("click", () => {
       const selectedPropertyType = button.dataset.bookingPropertyType;
+      if (value("propertyType") !== selectedPropertyType) {
+        form.elements.unitCount.value = "";
+        form.elements.houseFloorSelection.value = "[]";
+        unitCountValue.value = "";
+        unitCountValue.min = "1";
+        state.unitDetails = [];
+        state.currentUnitIndex = 0;
+        state.currentDetailQuestionIndex = 0;
+        form.querySelectorAll('[data-house-level], [name="houseFloorChoice"]').forEach(input => input.checked = false);
+      }
       form.elements.propertyType.value = selectedPropertyType;
       invalidateDownstreamAfterEdit();
       syncPropertyTypeChoice();
@@ -3327,7 +3337,12 @@
     syncStageProgress();
   });
   form.querySelectorAll('[data-house-level]').forEach(input => input.addEventListener("change", () => {
+    const previous = JSON.parse(form.elements.houseFloorSelection.value || "[]");
+    const byFloor = new Map(previous.map((floor, index) => [floor, state.unitDetails[index]]));
     const selected = Array.from(form.querySelectorAll('[data-house-level]:checked'), item => item.value);
+    state.unitDetails = selected.map(floor => byFloor.get(floor) || emptyUnitDetails());
+    state.currentUnitIndex = 0;
+    state.currentDetailQuestionIndex = 0;
     form.elements.houseFloorSelection.value = JSON.stringify(selected);
     form.elements.unitCount.value = selected.length ? String(selected.length) : "";
     unitCountValue.value = form.elements.unitCount.value;
@@ -3354,7 +3369,12 @@
       return;
     }
     const enteredCount = Number(rawValue);
-    if (!Number.isInteger(enteredCount) || enteredCount < 1 || enteredCount > 10) {
+    const minimum = Number(unitCountValue.min) || 1;
+    if (!Number.isInteger(enteredCount) || enteredCount < minimum || enteredCount > 10) {
+      form.elements.unitCount.value = "";
+      invalidateDownstreamAfterEdit();
+      syncStageProgress();
+      persistBookingDraft();
       return;
     }
     form.elements.unitCount.value = String(enteredCount);
