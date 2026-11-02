@@ -6330,3 +6330,27 @@ body.booking-agreement-open {
 .booking-minimum-actions { display: flex; flex-wrap: wrap; gap: 12px; margin-top: 26px; }
 .booking-minimum-actions button { flex: 1 1 auto; }
 @media (max-width: 480px) { .booking-minimum-dialog { padding: 24px; } .booking-minimum-actions { flex-direction: column; } }
+
+.booking-arrival-time-field {
+  grid-column: 1 / -1;
+  display: grid;
+  gap: 8px;
+  padding: 4px 0 10px;
+  color: #164b51;
+  font-weight: 650;
+}
+.booking-arrival-time-field select {
+  width: 100%;
+  min-height: 48px;
+  padding: 12px 14px;
+  border: 1px solid #a9cbd0;
+  border-radius: 10px;
+  background: #fff;
+  color: #153f45;
+  font: inherit;
+  cursor: pointer;
+}
+.booking-arrival-time-field select:focus-visible {
+  outline: 3px solid rgba(11, 114, 133, .3);
+  outline-offset: 2px;
+}

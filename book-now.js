@@ -2725,15 +2725,17 @@
         const title = document.createElement("strong");
         title.textContent = option.title;
         const detail = document.createElement("span");
-        detail.textContent = optionSlots.length ? arrivalWindowText(option) : "Unavailable for this date and service duration";
+        detail.textContent = optionSlots.length ? (option.fixedStart ? "Select to choose an available time" : arrivalWindowText(option)) : "Unavailable for this date and service duration";
         const saving = document.createElement("em");
         saving.textContent = option.percent ? `Save ${option.percent}%` : "No added discount";
         button.append(title, detail, saving);
         button.addEventListener("click", () => {
+          const previousPreference = state.arrivalPreference;
           state.arrivalPreference = option.key;
           applyArrivalDiscount(option);
           if (scheduleSelect) {
-            scheduleSelect.value = optionSlots[0]?.value || "";
+            scheduleSelect.value = option.flexible ? (optionSlots[0]?.value || "")
+              : previousPreference === option.key && optionSlots.some(slot => slot.value === scheduleSelect.value) ? scheduleSelect.value : "";
             scheduleSelect.dispatchEvent(new Event("change", { bubbles: true }));
           }
           renderQuoteOverview(state.package);
@@ -2741,15 +2743,42 @@
           resetAgreementReview();
           setSchedulerStatus(option.flexible
             ? `${option.title} selected for ${longDate(state.selectedDate)}. We’ll confirm a more precise arrival time before the appointment.`
-            : `${arrivalWindowText(option)} on ${longDate(state.selectedDate)} selected.`, "success");
+            : scheduleSelect?.value ? `${arrivalWindowText(option)} on ${longDate(state.selectedDate)} selected.` : `Choose your ${option.title.toLowerCase()} arrival time below.`, option.flexible || scheduleSelect?.value ? "success" : "");
           renderTimeSlots();
+          if (option.fixedStart) timeSlots.querySelector("select")?.focus();
           persistBookingDraft();
         });
         arrivalOptions.append(button);
       });
     }
     if (arrivalNote) arrivalNote.hidden = !state.arrivalPreference;
-    timeSlots.hidden = true;
+    const selectedOption = arrivalOption(state.arrivalPreference);
+    timeSlots.hidden = !selectedOption?.fixedStart;
+    if (selectedOption?.fixedStart) {
+      const offeredSlots = slotsForArrivalOption(selectedOption);
+      if (scheduleSelect && !offeredSlots.some(slot => slot.value === scheduleSelect.value)) scheduleSelect.value = "";
+      const field = document.createElement("label");
+      field.className = "booking-arrival-time-field";
+      field.htmlFor = "booking-arrival-time";
+      const caption = document.createElement("span");
+      caption.textContent = `${selectedOption.title} arrival time`;
+      const dropdown = document.createElement("select");
+      dropdown.id = "booking-arrival-time";
+      dropdown.required = true;
+      dropdown.add(new Option("Select an available time", ""));
+      offeredSlots.forEach(slot => dropdown.add(new Option(displayTime(slot.time), slot.value)));
+      dropdown.value = scheduleSelect?.value || "";
+      dropdown.addEventListener("change", () => {
+        if (!scheduleSelect) return;
+        scheduleSelect.value = offeredSlots.some(slot => slot.value === dropdown.value) ? dropdown.value : "";
+        scheduleSelect.dispatchEvent(new Event("change", { bubbles: true }));
+        resetAgreementReview();
+        setSchedulerStatus(scheduleSelect.value ? `Arrival at ${displayTime(offeredSlots.find(slot => slot.value === scheduleSelect.value).time)} on ${longDate(state.selectedDate)} selected.` : "Please select an available arrival time.", scheduleSelect.value ? "success" : "");
+        persistBookingDraft();
+      });
+      field.append(caption, dropdown);
+      timeSlots.append(field);
+    }
   };
   const renderCalendar = () => {
     if (!calendarGrid || !calendarMonthLabel) return;
@@ -2792,14 +2821,14 @@
         button.addEventListener("click", () => {
           if (state.selectedDate !== dateString && scheduleSelect) scheduleSelect.value = "";
           state.selectedDate = dateString;
-          if (state.arrivalPreference && state.arrivalPreference !== "exact" && scheduleSelect) {
+          if (arrivalOption(state.arrivalPreference)?.flexible && scheduleSelect) {
             const matchingSlots = slotsForArrivalOption(arrivalOption(state.arrivalPreference));
             scheduleSelect.value = matchingSlots[0]?.value || "";
           }
           setSchedulerStatus("");
           renderCalendar();
           renderTimeSlots();
-          window.setTimeout(() => timeSlots?.querySelector("button")?.focus(), 40);
+          window.setTimeout(() => timeSlots?.querySelector("select, button")?.focus(), 40);
         });
       } else {
         button.setAttribute("aria-label", `${day}, unavailable`);
@@ -4194,12 +4223,12 @@
     if (!state.arrivalPreference || !value("schedule")) {
       setSchedulerStatus(
         state.selectedDate
-          ? "Please choose an arrival-time option to continue."
+          ? "Please choose an arrival option and select its available time to continue."
           : "Please choose an available date, then select a time.",
         "error"
       );
       const focusTarget = state.selectedDate
-        ? timeSlots?.querySelector("button")
+        ? (timeSlots?.querySelector("select, button") || arrivalOptions?.querySelector("button:not(:disabled)"))
         : calendarGrid?.querySelector("button.is-available");
       focusTarget?.focus();
       return;
