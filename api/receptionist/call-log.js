@@ -242,18 +242,22 @@ async function notifyAgent(request) {
     throw error;
   }
 
+  const result = await twilioRequest({
+    ...requireSmsConfig(),
+    to,
+    body: message
+  });
   const logResult = await safeUpsertCallLog(buildManualCallRow(body, {
     rawEventType: "retell_transfer_notification",
-    callStatus: "transfer_requested",
+    callStatus: "transfer_notified",
     transferRequested: true,
     source: "retell_notify_agent"
   }));
 
   return {
-    sent: false,
-    status: "disabled",
+    sent: true,
     to,
-    messageId: "",
+    messageId: cleanText(result.sid),
     callLogged: logResult.logged,
     callLogError: logResult.error || ""
   };
