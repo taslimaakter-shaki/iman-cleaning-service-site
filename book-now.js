@@ -2172,7 +2172,7 @@
       input.checked = n === (Number(value("unitCount")) >= 5 ? "5+" : value("unitCount"));
     });
     const paragraphs = choices.querySelectorAll("p");
-    paragraphs[1].innerHTML = house ? "<strong>Example</strong><br>A house with a basement, first floor, and second floor counts as 3 floors if all three need cleaning." : "<strong>Example</strong><br>If you live in one apartment within a large building, select 1 apartment. Only count separate units that need cleaning.";
+    paragraphs[1].innerHTML = house ? "<strong>Example</strong><br>Cleaning only the basement, first floor, second floor, or attic? Enter 1 floor.<br><br>Cleaning the basement and first floor? Enter 2 floors." : "<strong>Example</strong><br>If you live in one apartment within a large building, select 1 apartment. Only count separate units that need cleaning.";
     paragraphs[2].hidden = !house;
     unitCountValue.min = choiceMode && Number(value("unitCount")) >= 5 ? "5" : "1";
     unitCountForm.querySelector(".booking-unit-counter").hidden = choiceMode && Number(value("unitCount")) < 5;
