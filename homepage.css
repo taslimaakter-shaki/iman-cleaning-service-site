@@ -10,3 +10,17 @@
 .hero-socials .social-ico:hover { transform:translateY(-3px); }
 .hero-socials .social-ico:focus-visible { outline:2px solid white; outline-offset:3px; }
 @media (prefers-reduced-motion:reduce) { .hero-socials .social-ico { transition:none; } }
+
+/* Local preview: show more of the landscape photo within the mobile hero. */
+@media (max-width: 767px) {
+  .home-page .home-hero-photo.page-hero.on-photo {
+    background: #053640;
+  }
+  .home-page .home-hero-poster img {
+    object-fit: cover;
+    object-position: 65% center;
+    height: 80%;
+    margin-top: 10%;
+    mask-image: linear-gradient(to bottom, transparent, black 12%, black 88%, transparent);
+  }
+}
