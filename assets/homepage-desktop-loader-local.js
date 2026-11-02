@@ -15,7 +15,7 @@
     { src: "./assets/homepage-design-system.min.js?v=20260726-why-seo" },
     { src: "./data.js?v=20261013-residential-hourly-recurring" },
     { src: "./assets/homepage-chrome.min.js?v=20261001-no-why-us-menu" },
-    { src: "./assets/homepage-sections.min.js?v=20261101-hero-socials" }
+    { src: "./assets/homepage-sections.min.js?v=20261102-kitchen-hero" }
   ];
 
   const load = (index) => {

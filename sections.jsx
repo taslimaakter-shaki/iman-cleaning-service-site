@@ -7,111 +7,15 @@ const D = window.IMAN_DATA;
 
 /* ---- Hero -------------------------------------------------------------- */
 function Hero() {
-  const videoRef = React.useRef(null);
-  const [videoEnabled, setVideoEnabled] = React.useState(false);
-
-  const playHeroVideo = React.useCallback(() => {
-    const video = videoRef.current;
-    if (!video) return Promise.resolve();
-
-    video.muted = true;
-    video.defaultMuted = true;
-    video.playsInline = true;
-    video.setAttribute("muted", "");
-    video.setAttribute("playsinline", "");
-    video.setAttribute("webkit-playsinline", "");
-
-    const attempt = video.play();
-    if (!attempt || typeof attempt.then !== "function") return Promise.resolve();
-
-    // Mobile Safari can temporarily reject autoplay (for example, in Low
-    // Power Mode). Keep the poster visible and retry on the next lifecycle
-    // event instead of showing a manual play control.
-    return attempt.catch(() => undefined);
-  }, []);
-
-  React.useEffect(() => {
-    const reducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)");
-    const desktopViewport = window.matchMedia("(min-width: 768px)");
-    const updateVideoPreference = () => {
-      const enabled = !reducedMotion.matches && desktopViewport.matches;
-      setVideoEnabled(enabled);
-      if (!enabled && videoRef.current) videoRef.current.pause();
-    };
-    const addChangeListener = (query) => {
-      if (query.addEventListener) query.addEventListener("change", updateVideoPreference);
-      else query.addListener(updateVideoPreference);
-    };
-    const removeChangeListener = (query) => {
-      if (query.removeEventListener) query.removeEventListener("change", updateVideoPreference);
-      else query.removeListener(updateVideoPreference);
-    };
-
-    updateVideoPreference();
-    addChangeListener(reducedMotion);
-    addChangeListener(desktopViewport);
-    return () => {
-      removeChangeListener(reducedMotion);
-      removeChangeListener(desktopViewport);
-    };
-  }, []);
-
-  React.useEffect(() => {
-    if (!videoEnabled) return undefined;
-    const video = videoRef.current;
-    if (!video) return undefined;
-
-    const handleVisibility = () => {
-      if (document.hidden) {
-        video.pause();
-        return;
-      }
-      playHeroVideo();
-    };
-    const retryPlayback = () => playHeroVideo();
-
-    video.addEventListener("loadedmetadata", playHeroVideo);
-    video.addEventListener("canplay", playHeroVideo);
-    document.addEventListener("visibilitychange", handleVisibility);
-    window.addEventListener("pageshow", retryPlayback);
-    window.addEventListener("focus", retryPlayback);
-    playHeroVideo();
-
-    return () => {
-      video.removeEventListener("loadedmetadata", playHeroVideo);
-      video.removeEventListener("canplay", playHeroVideo);
-      document.removeEventListener("visibilitychange", handleVisibility);
-      window.removeEventListener("pageshow", retryPlayback);
-      window.removeEventListener("focus", retryPlayback);
-    };
-  }, [playHeroVideo, videoEnabled]);
-
   return (
     <section className="page-hero on-photo home-hero-photo" id="top">
       <picture className="home-hero-poster" aria-hidden="true">
         <source type="image/avif"
-          srcSet="./assets/home-hero-video-poster-768w.avif 768w, ./assets/home-hero-video-poster.avif 1280w"
+          srcSet="./assets/home-hero-kitchen-768w.avif 768w, ./assets/home-hero-kitchen.avif 1672w"
           sizes="100vw" />
-        <img src="./assets/home-hero-video-poster.jpg" alt="" width="1280" height="720"
+        <img src="./assets/home-hero-kitchen.jpg" alt="" width="1672" height="941"
           fetchPriority="high" decoding="sync" />
       </picture>
-      {videoEnabled && (
-        <video
-          ref={videoRef}
-          className="home-hero-video"
-          width="1280"
-          height="720"
-          autoPlay
-          muted
-          loop
-          playsInline
-          preload="auto"
-          poster="./assets/home-hero-video-poster.jpg"
-          aria-hidden="true"
-          tabIndex="-1"
-          src="./assets/home-hero-video-fast.mp4"
-        />
-      )}
       <div className="ds-shell page-hero-inner">
         <Badge tone="leaf" check size="sm">Fully Insured • Background-Checked Cleaners</Badge>
         <h1>NYC&apos;s Reliable Residential &amp; Commercial Cleaning Service</h1>
