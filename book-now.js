@@ -3182,6 +3182,23 @@
       setStatus(document.querySelector("[data-eligibility-status]"), "");
     });
   });
+  servicePreviewFrame?.addEventListener("load", () => {
+    // Service pages are same-origin; omit their site chrome inside the dialog.
+    try {
+      const doc = servicePreviewFrame.contentDocument;
+      if (!doc || servicePreviewFrame.src === "about:blank") return;
+      const style = doc.createElement("style");
+      style.textContent = `
+        .site-header, .site-footer, header.iman-unified-navbar, .cookie-banner { display: none !important; }
+        html, body { min-width: 0 !important; }
+        main { padding-top: 0 !important; }
+        .page-hero { padding-top: 32px !important; }
+        @media(max-width:620px) { .page-hero h1 { font-size: 28px !important; line-height: 1.2 !important; } }
+      `;
+      doc.head.appendChild(style);
+      servicePreviewFrame.contentWindow.scrollTo(0, 0);
+    } catch { /* Keep the ordinary page usable if an external URL is added. */ }
+  });
   let servicePreviewReturnFocus = null;
   const closeServicePreview = () => {
     if (!servicePreviewOverlay) return;
