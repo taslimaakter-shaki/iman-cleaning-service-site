@@ -2100,7 +2100,7 @@
       hourlyDetailsTitle.textContent = "How many work-hours do you need to hire us for?";
     }
     if (hourlyDetailsHelp) {
-      hourlyDetailsHelp.innerHTML = "<strong>4-work-hour minimum.</strong> Your total price will be shown before booking.";
+      hourlyDetailsHelp.innerHTML = "<strong>4-work-hour minimum.</strong>";
     }
     syncMobileQuestion();
     wizardDialog?.scrollTo({ top: 0, behavior: "smooth" });
