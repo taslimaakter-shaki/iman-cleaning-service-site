@@ -699,14 +699,16 @@ module.exports = async function handler(request, response) {
       "metadata[account_user_id]": cleanText(accountSession?.user?.id, 120),
       "consent_collection[terms_of_service]": "required",
       "custom_text[terms_of_service_acceptance][message]": "I agree to the Service Agreement, the 25% deposit, and a temporary authorization hold for the remaining 75% about 48 hours before service. Late rescheduling costs 10%; later cancellation costs 25% less paid rescheduling fees. These fees use the deposit payment method. The balance is charged after completion. If the team cannot work for a customer-caused reason after arriving as scheduled, the total charge is 50%.",
-      "custom_text[submit][message]": "The 25% deposit is charged now. A temporary authorization hold for the remaining 75% will be placed about 48 hours before the appointment. It is not a completed charge; the balance is charged after service is completed.",
+      "custom_text[submit][message]": "Please complete payment within 5 minutes. The 25% deposit is charged now. A temporary authorization hold for the remaining 75% will be placed about 48 hours before the appointment. It is not a completed charge; the balance is charged after service is completed.",
       "invoice_creation[enabled]": "true",
       "invoice_creation[invoice_data][description]": visibleDiscount
         ? `${discountName} applied. Original service total $${(originalTotalCents / 100).toFixed(2)}; discount -$${(visibleDiscount.amountCents / 100).toFixed(2)}; final service total $${pkg.price.toFixed(2)}. This invoice records the 25% booking deposit.`
         : `25% booking deposit for ${pkg.serviceLabel}. Total service price $${pkg.price.toFixed(2)}.`,
       expires_at: Math.floor(Date.now() / 1000) + HOLD_MINUTES * 60,
       success_url: `${siteUrl}/booking-confirmed.html?session_id={CHECKOUT_SESSION_ID}&order_number=${encodeURIComponent(orderNumber)}`,
-      cancel_url: `${siteUrl}/book-now.html?payment=cancelled`
+      cancel_url: process.env.BOOKING_PAYMENT_FLOW === 'server'
+        ? `${siteUrl}/book-now.html?payment=cancelled`
+        : require('./_hosted-cancel').cancelUrl(siteUrl, bookingId, reservation.attempt)
     };
     if (visibleDiscount) {
       Object.assign(stripeCheckoutParams, {

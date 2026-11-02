@@ -322,8 +322,8 @@ module.exports = async function handler(request, response) {
       "invoice_creation[invoice_data][metadata][agreement_signature]": agreementSignature,
       "invoice_creation[invoice_data][metadata][agreement_signed_at]": agreementSignedAt,
       success_url: `${siteUrl}/quote-paid.html?session_id={CHECKOUT_SESSION_ID}`,
-      cancel_url: shortCode
-        ? `${siteUrl}/q/${encodeURIComponent(shortCode)}`
+      cancel_url: reservedBooking
+        ? require('../booking/_hosted-cancel').cancelUrl(siteUrl, quote.bookingId, reservedBooking.estimate.calendarReservation.attempt, shortCode ? `/q/${encodeURIComponent(shortCode)}` : `/approve-quote.html?token=${encodeURIComponent(fields.token)}`)
         : `${siteUrl}/approve-quote.html?token=${encodeURIComponent(fields.token)}`
     }, `crm-quote-${require("crypto").createHash("sha256").update(`${quote.bookingId}:${quote.revision || ''}:${reservedBooking?.estimate?.calendarReservation?.attempt || 'unscheduled'}`).digest("hex")}`);
 

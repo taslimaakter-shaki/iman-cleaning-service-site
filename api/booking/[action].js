@@ -1,4 +1,6 @@
 const handlers = {
+  "checkout-expiry": () => require("./_checkout-expiry"),
+  "hosted-cancel": () => require("./_hosted-cancel").handler,
   "additional-work": () => require("./_additional-work"),
   "deposit-payment": () => require("./_deposit-payment").handler,
   availability: () => require("./_availability"),

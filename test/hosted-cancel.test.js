@@ -1,0 +1,13 @@
+const assert = require('node:assert/strict');
+process.env.STRIPE_SECRET_KEY = 'test-only-cancel-signing';
+const { cancelUrl, verify } = require('../api/booking/_hosted-cancel');
+const url = new URL(cancelUrl('https://www.imancleaningservice.com', 'BK-test', 'attempt-one'));
+const token = url.hash.slice(1);
+assert.deepEqual(verify(token), { bookingId: 'BK-test', attempt: 'attempt-one', returnPath: '/book-now.html?payment=cancelled' });
+assert.throws(() => verify(token + 'x'));
+const [payload, signature] = token.split('.');
+const forged = Buffer.from(JSON.stringify({ ...verify(token), bookingId: 'BK-another' })).toString('base64url');
+assert.throws(() => verify(`${forged}.${signature}`));
+assert.throws(() => verify(''));
+assert.throws(() => verify(`${token}.extra`));
+console.log('Hosted checkout cancellation links authenticate the booking, attempt, and return path; tampered links rejected.');

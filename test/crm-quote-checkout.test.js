@@ -1,3 +1,4 @@
+process.env.STRIPE_SECRET_KEY = 'sk_test_mock';
 const assert = require("node:assert/strict");
 const fs = require("node:fs");
 const path = require("node:path");
@@ -19,7 +20,7 @@ const testEnv={STRIPE_SECRET_KEY:"sk_test_mock",PUBLIC_SITE_URL:"https://www.ima
 const moduleStub = {exports:{}};
 vm.runInNewContext(fs.readFileSync(path.join(__dirname,"../api/quote/_approve-checkout.js"),"utf8"),{
   module:moduleStub, exports:moduleStub.exports,
-  require:name=>name==="../booking/_deposit-payment"?{prepare:async(id,params)=>{assert.equal(id,"BK-TEST");assert.equal(params["metadata[payment_amount_cents]"],7666);return{url:"/booking-payment.html#test",id:"bp_test"};}}:name.endsWith("/_minimum-total")?require("../api/booking/_minimum-total"):name==="./_shared"?shared:name==="./_short-approval"?{resolveShortApproval:async()=>({...quote})}:name==="../crm/_quote-admin"?admin:name==="../booking/_calendar"?calendar:require(name),
+  require:name=>name==="../booking/_hosted-cancel"?require("../api/booking/_hosted-cancel"):name==="../booking/_deposit-payment"?{prepare:async(id,params)=>{assert.equal(id,"BK-TEST");assert.equal(params["metadata[payment_amount_cents]"],7666);return{url:"/booking-payment.html#test",id:"bp_test"};}}:name.endsWith("/_minimum-total")?require("../api/booking/_minimum-total"):name==="./_shared"?shared:name==="./_short-approval"?{resolveShortApproval:async()=>({...quote})}:name==="../crm/_quote-admin"?admin:name==="../booking/_calendar"?calendar:require(name),
   process:{env:testEnv},URLSearchParams,Date,console,
   fetch:async(url,options)=>{assert.equal(url,"https://api.stripe.com/v1/checkout/sessions");posts.push(options);return {ok:true,text:async()=>JSON.stringify({id:"cs_test",url:"https://checkout.stripe.test/mock"})};}
 });

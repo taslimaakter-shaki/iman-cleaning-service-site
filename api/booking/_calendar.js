@@ -13,6 +13,9 @@ async function assertCalendarReady() {
   return version;
 }
 
+const HOSTED_HOLD_MS = 5 * 60 * 1000;
+const hostedDeadline = session => new Date(Math.min(session.expires_at * 1000, Date.now() + HOSTED_HOLD_MS)).toISOString();
+
 function newReservation() {
   return { state: 'creating', attempt: crypto.randomUUID(), startedAt: new Date().toISOString() };
 }
@@ -52,7 +55,11 @@ async function reserveBooking(bookingId, existingSession) {
     throw fail('A payment is already being prepared for this quote. Please reopen the link in a moment.');
   }
   await store().assertScheduleAvailable(booking.schedule, store().bookingDurationHours(booking), booking.id);
-  const reservation = existingSession ? { ...newReservation(), state: 'open', sessionId: existingSession.id, expiresAt: new Date(existingSession.expires_at * 1000).toISOString() } : newReservation();
+  if (existingSession) {
+    existingSession = await stripeSession(existingSession.id);
+    if (existingSession.status !== 'open') throw fail('This checkout expired. Please reopen your quote to start a new payment.');
+  }
+  const reservation = existingSession ? { ...newReservation(), state: 'open', sessionId: existingSession.id, expiresAt: hostedDeadline(existingSession) } : newReservation();
   return changeReservation(booking, reservation);
 }
 
@@ -63,7 +70,7 @@ async function attachCheckout(bookingId, attempt, session) {
     await stripeSession(session.id, 'POST');
     throw fail('Your reservation changed. Please reopen the payment link.');
   }
-  await changeReservation(booking, { ...booking.estimate.calendarReservation, state: 'open', sessionId: session.id, expiresAt: new Date(session.expires_at * 1000).toISOString() });
+  await changeReservation(booking, { ...booking.estimate.calendarReservation, state: 'open', sessionId: session.id, expiresAt: hostedDeadline(session) });
 }
 
 async function releaseExpiredSession(session) {
@@ -83,7 +90,8 @@ async function reconcileReservation(booking) {
   }
   if (booking.status !== 'New' || held?.state !== 'open' || Date.parse(held.expiresAt) > Date.now()) return booking;
   try {
-    const session = await stripeSession(held.sessionId);
+    let session = await stripeSession(held.sessionId);
+    if (session.status === 'open' && session.payment_status !== 'paid') session = await stripeSession(held.sessionId, 'POST');
     if (session.status === 'expired' && session.payment_status !== 'paid') {
       await releaseExpiredSession(session);
       return await store().getBooking(booking.id);
@@ -93,10 +101,11 @@ async function reconcileReservation(booking) {
   return booking;
 }
 
-async function expireBookingCheckout(bookingId) {
+async function expireBookingCheckout(bookingId, expectedAttempt) {
   const booking = await store().getBooking(bookingId);
   const held = booking?.estimate?.calendarReservation;
   if (booking?.status !== 'New' || !held || ['released', 'draft'].includes(held.state)) return;
+  if (expectedAttempt && held.attempt !== expectedAttempt) return; // An old return link cannot cancel a newer checkout.
   if (held.paymentOrderId) {
     const payment = require('./_deposit-payment');
     const order = await payment.cancel(await payment.get(held.paymentOrderId));
