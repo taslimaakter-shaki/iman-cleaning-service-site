@@ -6423,3 +6423,12 @@ body.booking-agreement-open {
   .booking-zip-control input { font-size: 1rem; min-height: 48px; }
   .booking-zip-control button { font-size: .9375rem; min-height: 46px; padding: 12px 18px; }
 }
+
+.booking-zip-control button {
+  width: auto;
+  min-height: 42px;
+  justify-self: center;
+  padding: 10px 22px;
+  font-size: .875rem;
+  line-height: 1.35;
+}
