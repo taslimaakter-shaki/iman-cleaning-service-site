@@ -2976,7 +2976,7 @@
       : "Noticeable buildup and grease cleaning fee";
     return [
       ...rawExtras.filter((item) => !isConditionFee(item)).map((item) => ({ ...item, description: "" })),
-      combinedFee(rawExtras.filter(isPetFee), pkg.protectedPetFeeCents ? "Pet fee — $50 (tax included)" : "Pet-related cleaning fee"),
+      combinedFee(rawExtras.filter(isPetFee), pkg.protectedPetFeeCents ? "Pet fee" : "Pet-related cleaning fee"),
       combinedFee(rawExtras.filter(isClutterFee), clutterLabel),
       combinedFee(rawExtras.filter(isBuildupFee), buildupLabel),
       combinedFee(rawExtras.filter(isMoldFee), "Surface mold and mildew cleaning fee")
