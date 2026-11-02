@@ -164,7 +164,19 @@ async function twilioRequest({ accountSid, authToken, from, to, body }) {
   return data;
 }
 
+function ownerAlertAllowed({ source, eventLabel = 'submitted' } = {}) {
+  const events = {
+    'Appointment booked': ['confirmed'],
+    'Appointment cancellation': ['cancelled'],
+    'Appointment change': ['approval required', 'approved', 'declined'],
+    'Same-day appointment request': ['submitted'],
+    'Phone call request': ['submitted']
+  };
+  return Boolean(events[source]?.includes(eventLabel));
+}
+
 async function sendFormSubmissionNotification(payload = {}) {
+  if (!ownerAlertAllowed(payload)) return { status: 'disabled', sent: [], error: '' };
   const config = getSmsConfig();
   const overrideRecipients = Array.isArray(payload.recipientOverride)
     ? payload.recipientOverride.map(normalizePhoneNumber).filter(Boolean)
@@ -223,6 +235,7 @@ module.exports = {
   cleanText,
   getOwnerSmsRecipients,
   normalizePhoneNumber,
+  ownerAlertAllowed,
   sendFormSubmissionNotification,
   trySendFormSubmissionNotification
 };

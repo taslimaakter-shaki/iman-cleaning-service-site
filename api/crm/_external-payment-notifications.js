@@ -37,6 +37,7 @@ function paymentRecord(booking, payment) {
     manualDiscountLabel:manual.label || 'Manual discount (after tax)', manualDiscountAmount:manual.amountCents ? '-'+money(manual.amountCents) : ''};
 }
 async function send(booking,payment,channel) {
+  if (channel==='ownerSms') return require('../_form-notifications').trySendFormSubmissionNotification({source:'Appointment booked',eventLabel:'confirmed',recordId:booking.estimate.orderNumber || booking.id,fields:{'Customer Name':booking.client_name,'Phone':booking.phone,'Service':booking.service_label,'Address':booking.address},summaryLines:[`Appointment: ${booking.schedule_label || booking.schedule}`]});
   const message=content(booking,payment);
   if (channel==='sms') {
     if (booking.estimate.communicationConsent?.transactionalSms?.granted === false) return {status:'skipped',reason:'Customer did not request text messages.'};

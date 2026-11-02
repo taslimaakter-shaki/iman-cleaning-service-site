@@ -49,6 +49,7 @@ function fixture(options={}) {
   await f.api.record(await f.request({amountCents:15457,reference:'BANK-124',operationId:'operation-00000002'}));
   assert.equal(f.get('BK-TEST').estimate.payment.status,'fully_paid');assert.equal(f.get('BK-TEST').estimate.payment.remainingCents,0);
   assert.equal(f.get('BK-TEST').estimate.payment.externalPayments.length,2);
+  assert.equal(f.calls.filter(x=>x==='ownerSms').length,1,'Only the newly confirmed booking alerts the owner; retries and balance payments do not');
   f=fixture();await f.api.record(await f.request({amountCents:1000}));assert.equal(f.get('BK-TEST').status,'New');assert.equal(f.get('BK-TEST').estimate.payment.status,'partial');
   f.faults.busy=true;await assert.rejects(f.api.record(await f.request({amountCents:4152,reference:'BANK-125',operationId:'operation-00000003'})),/unavailable/);assert.equal(f.get('BK-TEST').estimate.payment.paidCents,1000);
   f.faults.busy=false;await f.api.record(await f.request({amountCents:4152,reference:'BANK-125',operationId:'operation-00000003'}));assert.equal(f.get('BK-TEST').status,'Confirmed');

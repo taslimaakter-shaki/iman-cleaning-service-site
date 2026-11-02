@@ -399,33 +399,7 @@ function buildOwnerSms({ session, message, siteUrl }) {
 }
 
 async function sendOwnerSmsNotifications({ session, message, siteUrl }) {
-  const config = getSmsConfig();
-  if (!config.accountSid || !config.authToken || !config.from || !config.ownerNumbers.length) {
-    return {
-      status: "not_configured",
-      sent: [],
-      error: "Add TWILIO_ACCOUNT_SID, TWILIO_AUTH_TOKEN, and TWILIO_FROM_NUMBER in Vercel. Add OWNER_SMS_TO if the alerts should go somewhere other than 929-803-4053."
-    };
-  }
-
-  const body = buildOwnerSms({ session, message, siteUrl });
-  const sent = [];
-  for (const to of config.ownerNumbers) {
-    const result = await twilioRequest({
-      accountSid: config.accountSid,
-      authToken: config.authToken,
-      from: config.from,
-      to,
-      body
-    });
-    sent.push({ to, messageId: cleanText(result.sid, 80) });
-  }
-
-  return {
-    status: "sent",
-    sent,
-    error: ""
-  };
+  return { status: 'disabled', sent: [], error: '' };
 }
 
 module.exports = {

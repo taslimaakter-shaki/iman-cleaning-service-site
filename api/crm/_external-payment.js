@@ -149,7 +149,7 @@ async function record(body) {
   if (booking.status === 'New' && confirms) await shared.assertScheduleAvailable(booking.schedule, shared.bookingDurationHours(booking), booking.id);
   const entry = { ...payment, operationId:body.operationId, recordedAt:new Date().toISOString(), recordedBy:'CRM administrator', agreementEvidence, agreementSource:agreement ? 'instant_quote' : 'administrator_evidence',
     terms:TERMS, totalCents:total(booking), cumulativePaidCents:cumulative, remainingCents:total(booking)-cumulative, confirms, newlyConfirmed:booking.status==='New' && confirms,
-    delivery:{ email:{status:'pending'}, sms:{status:'pending'} } };
+    delivery:{ email:{status:'pending'}, sms:{status:'pending'}, ownerSms:{status:booking.status==='New' && confirms?'pending':'skipped'} } };
   const estimate = { ...booking.estimate, externalPaymentTerms:{ text:TERMS, acceptedEvidence:entry.agreementEvidence, recordedAt:entry.recordedAt, recordedBy:entry.recordedBy },
     calendarReservation: confirms ? {state:'confirmed'} : {state:'draft'},
     payment:{ ...prior, provider:'external', method:payment.method, paymentType:'deposit_25', balanceCollection:'manual_after_service',
@@ -168,10 +168,10 @@ async function notifyPayment(id, operationId) {
     try { result.calendar = (await shared.confirmBooking(id)).calendarSync || {status:'synced'}; }
     catch(error) { result.calendar={status:'failed',error:error.message}; }
   }
-  for (const channel of ['email','sms']) {
+  for (const channel of ['email','sms',...(payment.newlyConfirmed && payment.delivery.ownerSms ? ['ownerSms'] : [])]) {
     booking = await shared.getBooking(id);
     payment = booking.estimate.payment.externalPayments.find(p=>p.operationId===operationId);
-    if (payment.delivery[channel].status !== 'pending') { result[channel]=payment.delivery[channel]; continue; }
+    if (payment.delivery[channel] && payment.delivery[channel].status !== 'pending') { result[channel]=payment.delivery[channel]; continue; }
     const entries = booking.estimate.payment.externalPayments.map(p=>p.operationId===operationId?{...p,delivery:{...p.delivery,[channel]:{status:'sending',attemptedAt:new Date().toISOString()}}}:p);
     try { booking = await cas(booking,{estimate:{...booking.estimate,payment:{...booking.estimate.payment,externalPayments:entries}}}); }
     catch { result[channel]={status:'pending'}; continue; }

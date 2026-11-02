@@ -142,11 +142,11 @@ async function sendEmail(booking,message) {
   const raw=[`From: IMAN Cleaning Service LLC <${clean(process.env.QUOTE_EMAIL_FROM || 'Info@imancleaningservice.com')}>`,`To: ${clean(booking.email)}`,`Subject: ${message.subject}`,'MIME-Version: 1.0',`Content-Type: multipart/mixed; boundary="${boundary}"`,'',`--${boundary}`,'Content-Type: text/plain; charset="UTF-8"','',message.text,`--${boundary}`,'Content-Type: application/pdf','Content-Disposition: attachment; filename="IMAN-Cancellation-Receipt.pdf"','Content-Transfer-Encoding: base64','',pdf.toString('base64').match(/.{1,76}/g).join('\r\n'),`--${boundary}--`,''].join('\r\n');
   const {gmail}=require('../quote/_shared').getGoogleClients();const sent=await gmail.users.messages.send({userId:'me',requestBody:{raw:Buffer.from(raw).toString('base64url')}});return {status:'sent',messageId:sent.data.id || ''};
 }
-async function notify(booking,{email=sendEmail,sms=require('./_notifications').sendCustomerSms}={}) {
+async function notify(booking,{email=sendEmail,sms=require('./_notifications').sendCustomerSms,ownerSms=require('../_form-notifications').trySendFormSubmissionNotification}={}) {
   const shared=require('./_shared');const prior=booking.estimate?.cancellation?.receiptDelivery || {};const message=messages(booking);
-  const results=await Promise.allSettled([prior.email?.status==='sent'?prior.email:email(booking,message),prior.sms?.status==='sent'?prior.sms:sms(booking.phone,message.sms)]);
+  const results=await Promise.allSettled([prior.email?.status==='sent'?prior.email:email(booking,message),prior.sms?.status==='sent'?prior.sms:sms(booking.phone,message.sms),prior.ownerSms?.status==='sent'?prior.ownerSms:ownerSms({source:'Appointment cancellation',eventLabel:'cancelled',recordId:booking.estimate?.orderNumber || booking.id,fields:{'Customer Name':booking.client_name,'Phone':booking.phone,'Service':booking.service_label},summaryLines:[`Appointment: ${booking.schedule_label || booking.schedule}`]})]);
   const outcome=r=>r.status==='fulfilled'?r.value:{status:'error',error:String(r.reason?.message || 'Delivery failed').slice(0,240)};
-  const delivery={email:outcome(results[0]),sms:outcome(results[1]),attemptedAt:new Date().toISOString()};
+  const delivery={email:outcome(results[0]),sms:outcome(results[1]),ownerSms:outcome(results[2]),attemptedAt:new Date().toISOString()};
   const latest=await shared.getBooking(booking.id);
   if(latest?.status==='Cancelled' && latest.estimate?.cancellation?.receipt?.number===receiptFor(booking).number) await shared.updateBookingEstimate(booking.id,{...latest.estimate,cancellation:{...latest.estimate.cancellation,receiptDelivery:delivery}});
   return delivery;

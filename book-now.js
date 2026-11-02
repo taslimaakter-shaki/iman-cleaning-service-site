@@ -4,7 +4,6 @@
   const BOOKING_DRAFT_KEY = "imanBookingDraftV3";
   const BOOKING_DRAFT_VERSION = 3;
   const BOOKING_DRAFT_MAX_AGE = 7 * 24 * 60 * 60 * 1000;
-  const INSTANT_PRICING_NOTICE_KEY = "imanInstantPricingOpenedNoticeV1";
   const AGREEMENT_VERSION = "2026-10-30-arrival-rescheduling-v2";
   const AGREEMENT_ACCEPTANCE_TEXT = "I have reviewed and agree to the Service Agreement and payment terms. I authorize the 25% deposit, the remaining-balance authorization described above, any customer-caused access charge, and disclosed booking fees to the same payment method used for my deposit, as described in the agreement.";
   let persistBookingDraft = () => {};
@@ -49,47 +48,6 @@
   const serviceZipNote = document.querySelector("[data-service-zip-note]");
   let zipSuccessTimer = 0;
 
-  const instantPricingEntrySource = () => {
-    const params = new URLSearchParams(window.location.search);
-    const campaignSource = String(params.get("source") || "").trim().slice(0, 80);
-    if (campaignSource) return campaignSource;
-    try {
-      const referrer = new URL(document.referrer);
-      if (referrer.origin === window.location.origin) return referrer.pathname || "website";
-      return referrer.hostname || "direct visit";
-    } catch {
-      return "direct visit";
-    }
-  };
-
-  const notifyInstantPricingOpened = () => {
-    const params = new URLSearchParams(window.location.search);
-    if (params.has("quote") || params.get("payment") === "cancelled") return;
-    try {
-      if (window.sessionStorage.getItem(INSTANT_PRICING_NOTICE_KEY)) return;
-      window.sessionStorage.setItem(INSTANT_PRICING_NOTICE_KEY, new Date().toISOString());
-    } catch {
-      // Continue when browser privacy settings disable session storage.
-    }
-    const payload = JSON.stringify({
-      source: "Instant pricing form",
-      event: "opened",
-      pageUrl: `${window.location.origin}${window.location.pathname}`,
-      summaryLines: [`Entry source: ${instantPricingEntrySource()}`]
-    });
-    if (navigator.sendBeacon) {
-      navigator.sendBeacon("/api/form-notification", new Blob([payload], { type: "application/json" }));
-      return;
-    }
-    fetch("/api/form-notification", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: payload,
-      keepalive: true
-    }).catch(() => {});
-  };
-
-  notifyInstantPricingOpened();
   let closeQualificationRedirect = () => {};
   let closeQualificationComplete = () => {};
   let closeAdditionalCleaningNotice = () => {};

@@ -96,7 +96,7 @@ async function handleSend(request, response) {
     siteUrl: getSiteUrl(request)
   });
 
-  if (ownerSms.status !== "sent") {
+  if (!["sent", "disabled"].includes(ownerSms.status)) {
     return json(response, 503, {
       error: "Live chat SMS is not configured yet.",
       setup: ownerSms.error,
