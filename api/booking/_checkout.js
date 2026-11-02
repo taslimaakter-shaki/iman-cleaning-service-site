@@ -412,11 +412,6 @@ module.exports = async function handler(request, response) {
     const notes = cleanText(body.notes, 1200);
     const depositAmountCents = depositCents(pkg.priceCents);
     const remainingAmountCents = Math.max(0, pkg.priceCents - depositAmountCents);
-    const depositTaxableSubtotalCents = Number.isSafeInteger(pkg.discountedSubtotalCents)
-      ? pkg.discountedSubtotalCents
-      : pkg.subtotalCents;
-    const depositSubtotalCents = Math.min(depositAmountCents, Math.round(depositTaxableSubtotalCents * DEPOSIT_PERCENT / 100));
-    const depositTaxCents = depositAmountCents - depositSubtotalCents;
     let unitSummary = timeBasedMode
       ? `${pkg.manHours} total hourly-cleaning work-hours with 2 team members for ${pkg.teamHours} hours, $${pkg.total.toFixed(2)} including tax.`
       : windowMode
@@ -569,19 +564,6 @@ module.exports = async function handler(request, response) {
     await createBooking(booking);
 
     const siteUrl = getSiteUrl(request);
-    const description = cleanText(
-      timeBasedMode
-        ? `${pkg.tierLabel}. 2 team members for ${pkg.teamHours} hours (${pkg.manHours} total work-hours).`
-        : windowMode
-        ? `${pkg.tierLabel}. ${unitSummary}`
-        : `${pkg.tierLabel}. ${unitSummary} Two-person team for up to ${pkg.teamHours} hours (${pkg.manHours} maximum labor-hours). Service may be completed sooner.`,
-      500
-    );
-    const conditionFeeDescription = [
-      pkg.buildupAdjustment?.amountCents ? "Buildup and grease cleaning fee included." : "",
-      pkg.clutterAdjustment?.amountCents ? "Clutter/access cleaning fee included." : "",
-      pkg.moldAdjustment?.amountCents ? "Surface mold and mildew cleaning fee included." : ""
-    ].filter(Boolean).join(" ");
     const appliedDiscounts = [pkg.promoDiscount, pkg.manualDiscount, pkg.arrivalDiscount]
       .filter((discount) => Number(discount?.amountCents || 0) > 0);
     const visibleDiscount = appliedDiscounts.length ? {
@@ -593,27 +575,12 @@ module.exports = async function handler(request, response) {
     const discountName = visibleDiscount
       ? [visibleDiscount.code, visibleDiscount.label].filter(Boolean).join(" — ") || "Discount"
       : "";
-    const discountSummary = visibleDiscount
-      ? ` Original total: $${(originalTotalCents / 100).toFixed(2)}. ${discountName}: -$${(visibleDiscount.amountCents / 100).toFixed(2)}. Discounted service total: $${pkg.price.toFixed(2)}.`
-      : ` Total service price: $${pkg.price.toFixed(2)}.`;
     const stripeLineItems = {
       "line_items[0][price_data][currency]": "usd",
-      "line_items[0][price_data][unit_amount]": depositSubtotalCents,
-      "line_items[0][price_data][product_data][name]": `${pkg.serviceLabel} — 25% booking deposit`,
-      "line_items[0][price_data][product_data][description]": `${description} ${conditionFeeDescription}${discountSummary}`.replace(/\s+/g, " ").trim(),
-      "line_items[0][quantity]": 1,
-      "line_items[1][price_data][currency]": "usd",
-      "line_items[1][price_data][unit_amount]": depositTaxCents,
-      "line_items[1][price_data][product_data][name]": "Deposit tax portion (NY sales tax included)",
-      "line_items[1][quantity]": 1
+      "line_items[0][price_data][unit_amount]": depositAmountCents,
+      "line_items[0][price_data][product_data][name]": "25% booking deposit (tax included)",
+      "line_items[0][quantity]": 1
     };
-    if (pkg.manualDiscount?.amountCents) {
-      // The owner applies a discount after tax. Charge the exact revised deposit;
-      // do not add tax again or invent a reduced tax basis on the Stripe page.
-      for (const key of Object.keys(stripeLineItems)) if (key.startsWith('line_items[1]')) delete stripeLineItems[key];
-      stripeLineItems['line_items[0][price_data][unit_amount]'] = depositAmountCents;
-      stripeLineItems['line_items[0][price_data][product_data][description]'] = `${description} ${conditionFeeDescription}${discountSummary}`.replace(/\s+/g, " ").trim();
-    }
     const stripeCheckoutParams = {
       mode: "payment",
       "payment_method_types[0]": "card",

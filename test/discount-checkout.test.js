@@ -69,9 +69,8 @@ function load(file, dependencies, extras = {}) {
   assert.equal(stripe.get('metadata[total_amount_cents]'), '27000');
   assert.equal(stripe.get('metadata[remaining_amount_cents]'), '20250');
   assert.equal(stripe.get('metadata[discount_cents]'), '5000');
-  assert.match(stripe.get('line_items[0][price_data][product_data][description]'), /Original total: \$320\.00/);
-  assert.match(stripe.get('line_items[0][price_data][product_data][description]'), /Welcome: -\$50\.00/);
-  assert.match(stripe.get('line_items[0][price_data][product_data][description]'), /Discounted service total: \$270\.00/);
+  assert.equal(stripe.get('line_items[0][price_data][product_data][name]'), '25% booking deposit (tax included)');
+  assert.equal(stripe.has('line_items[0][price_data][product_data][description]'), false, 'No lengthy service description in Stripe checkout');
   assert.match(stripe.get('invoice_creation[invoice_data][description]'), /Original service total \$320\.00; discount -\$50\.00; final service total \$270\.00/);
   assert.equal(stripe.get('invoice_creation[invoice_data][custom_fields][2][value]'), '-$50.00');
   assert.equal(booking.estimate.total, 270); assert.equal(booking.estimate.payment.depositCents, 6750);
