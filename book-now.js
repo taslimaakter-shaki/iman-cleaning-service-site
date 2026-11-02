@@ -3986,9 +3986,11 @@
         // Promo availability must never prevent a customer from receiving a quote.
         promoData = null;
       }
+      state.savedQuoteUrl = "";
+      state.quoteRevision = "";
       await calculateAndShowQuote({ sendLink: false });
       if (promoData) applyPromoData(promoData);
-      void sendSavedQuote();
+      await sendSavedQuote();
       track("quote_complete", { quote_type: "instant", service: state.serviceKey || "" });
     } catch (error) {
       setStatus(quoteContactStatus, error.message || "Your quote could not be prepared.");

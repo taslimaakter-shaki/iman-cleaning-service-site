@@ -21,6 +21,7 @@ const TRANSACTIONAL_EMAIL_DISCLOSURE = "I agree to receive my quote and appointm
 const MARKETING_SMS_DISCLOSURE = "I agree to receive promotional emails and recurring promotional text messages from Iman Cleaning Service LLC. Texts may be sent using automated technology. Message frequency varies. Message and data rates may apply. Reply STOP to unsubscribe from texts or HELP for help. Promotional emails include an unsubscribe option. Consent is not a condition of purchase.";
 const MARKETING_EMAIL_NOTICE = MARKETING_SMS_DISCLOSURE;
 const recentDeliveries = new Map();
+const pendingDeliveries = new Map();
 
 function getSiteUrl(request) {
   const configuredUrl = process.env.PUBLIC_SITE_URL || process.env.SITE_URL;
@@ -408,12 +409,12 @@ function cleanCustomer(input = {}) {
   return customer;
 }
 
-function deliveryKey(request, customer, consent = {}) {
+function deliveryKey(request, customer, consent = {}, quote = {}) {
   const ip = cleanText(request.headers["x-forwarded-for"] || request.socket?.remoteAddress, 120).split(",")[0];
   return crypto.createHash("sha256").update([
     ip,
-    customer.email,
-    customer.phone,
+    JSON.stringify(customer),
+    JSON.stringify(quote),
     consent.transactionalSms?.granted ? "transactional-sms" : "email-only",
     consent.marketingSms?.granted ? "sms-marketing" : "no-sms-marketing",
     "email-marketing-eligible",
@@ -473,8 +474,8 @@ module.exports = async function handler(request, response) {
         if (!code || !require("../crm/_quote-admin").ready(payload.crmQuote.fields)) return json(response, 409, { error: "Our team is finalizing your updated quote. Please contact IMAN Cleaning Service." });
         return json(response, 200, { redirectUrl: `/q/${encodeURIComponent(code)}` });
       }
-      const { pkg: calculatedPackage } = validateAndPrice(payload);
-      const pkg = applySavedQuotePromotion(calculatedPackage, payload, payload.customer, await listAllBookings());
+      const pkg = payload.packageSnapshot || applySavedQuotePromotion(
+        validateAndPrice(payload).pkg, payload, payload.customer, await listAllBookings());
       return json(response, 200, {
         eligibility: payload.eligibility,
         unitDetails: payload.unitDetails,
@@ -498,56 +499,61 @@ module.exports = async function handler(request, response) {
     const pkg = applySavedQuotePromotion(calculatedPackage, body, customer, await listAllBookings());
     const now = Date.now();
     const communicationConsent = consentEvidence(request, body, new Date(now));
-    const key = deliveryKey(request, customer, communicationConsent);
-    const recent = recentDelivery(key);
-    if (recent) {
-      return json(response, 200, {
-        saved: true,
-        quoteUrl: recent.quoteUrl,
-        delivery: {
-          email: "already_sent",
-          sms: communicationConsent.transactionalSms.granted ? "already_sent" : "not_requested"
-        }
-      });
+    const key = deliveryKey(request, customer, communicationConsent, { eligibility, unitDetails, pricingMode: pkg.pricingMode, package: packageForClient(pkg) });
+    if (pendingDeliveries.has(key)) {
+      const result = await pendingDeliveries.get(key);
+      return json(response, 200, result);
     }
-    const quoteId = `SAVED-${now.toString(36).toUpperCase()}-${crypto.randomBytes(4).toString("hex").toUpperCase()}`;
-    const expiresAt = now + QUOTE_LINK_LIFETIME_MS;
-    const token = encodeSavedQuote({
-      version: TOKEN_VERSION,
-      quoteId,
-      expiresAt
-    });
-    await saveQuoteRecord({
-      version: TOKEN_VERSION,
-      quoteId,
-      eligibility,
-      unitDetails,
-      pricingMode: pkg.pricingMode,
-      customer,
-      promoCode: pkg.promoCode || "",
-      communicationConsent,
-      createdAt: now,
-      ...(process.env.QUOTE_REMINDERS_ENABLED === "true" ? { quoteReminderEligibleAt: now } : {}),
-      expiresAt
-    });
-    const quoteUrl = `${getSiteUrl(request)}/book-now.html?quote=${encodeURIComponent(token)}`;
-    recentDeliveries.set(key, { time: now, quoteUrl });
+    const recent = recentDelivery(key);
+    if (recent && recent.delivery.email === "sent" && recent.delivery.sms === "sent") {
+      return json(response, 200, { saved: true, quoteUrl: recent.quoteUrl, delivery: { email: "already_sent", sms: "already_sent" } });
+    }
+    const deliver = async () => {
+      const quoteId = recent?.quoteId || `SAVED-${now.toString(36).toUpperCase()}-${crypto.randomBytes(4).toString("hex").toUpperCase()}`;
+      const expiresAt = recent?.expiresAt || now + QUOTE_LINK_LIFETIME_MS;
+      const token = encodeSavedQuote({
+        version: TOKEN_VERSION,
+        quoteId,
+        expiresAt
+      });
+      if (!recent) await saveQuoteRecord({
+        version: TOKEN_VERSION,
+        quoteId,
+        eligibility,
+        unitDetails,
+        pricingMode: pkg.pricingMode,
+        customer,
+        promoCode: pkg.promoCode || "",
+        packageSnapshot: packageForClient(pkg),
+        communicationConsent,
+        createdAt: now,
+        ...(process.env.QUOTE_REMINDERS_ENABLED === "true" ? { quoteReminderEligibleAt: now } : {}),
+        expiresAt
+      });
+      const quoteUrl = recent?.quoteUrl || `${getSiteUrl(request)}/book-now.html?quote=${encodeURIComponent(token)}`;
 
-    const emailPromise = sendEmail({ customer, pkg, quoteUrl });
-    const smsPromise = communicationConsent.transactionalSms.granted
-      ? sendSms({ customer, pkg, quoteUrl })
-      : Promise.resolve(null);
-    const [emailResult, smsResult] = await Promise.allSettled([emailPromise, smsPromise]);
-    return json(response, 201, {
-      saved: true,
-      quoteUrl,
-      delivery: {
-        email: emailResult.status === "fulfilled" ? "sent" : "failed",
-        sms: !communicationConsent.transactionalSms.granted
-          ? "not_requested"
-          : smsResult.status === "fulfilled" ? "sent" : "failed"
-      }
-    });
+      const emailPromise = recent?.delivery.email === "sent" ? Promise.resolve() : sendEmail({ customer, pkg, quoteUrl });
+      const smsPromise = communicationConsent.transactionalSms.granted
+        ? (recent?.delivery.sms === "sent" ? Promise.resolve() : sendSms({ customer, pkg, quoteUrl }))
+        : Promise.resolve(null);
+      const [emailResult, smsResult] = await Promise.allSettled([emailPromise, smsPromise]);
+      const result = {
+        saved: true,
+        quoteUrl,
+        delivery: {
+          email: emailResult.status === "fulfilled" ? "sent" : "failed",
+          sms: !communicationConsent.transactionalSms.granted
+            ? "not_requested"
+            : smsResult.status === "fulfilled" ? "sent" : "failed"
+        }
+      };
+      recentDeliveries.set(key, { time: now, quoteId, expiresAt, quoteUrl, delivery: result.delivery });
+      return result;
+    };
+    const pending = deliver();
+    pendingDeliveries.set(key, pending);
+    try { return json(response, 201, await pending); }
+    finally { pendingDeliveries.delete(key); }
   } catch (error) {
     return json(response, error.statusCode || 500, {
       error: error.message || "Your saved quote link could not be created.",
