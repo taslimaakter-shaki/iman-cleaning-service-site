@@ -6354,3 +6354,30 @@ body.booking-agreement-open {
   outline: 3px solid rgba(11, 114, 133, .3);
   outline-offset: 2px;
 }
+
+/* Keep quote navigation in a single row on phones and larger screens. */
+.booking-wizard-dialog .booking-actions,
+.booking-wizard-dialog[data-current-step="1"] .booking-question-actions {
+  display: flex;
+  flex-direction: row;
+  flex-wrap: nowrap;
+  justify-content: space-between;
+  align-items: center;
+  gap: 12px;
+  width: 100%;
+}
+.booking-wizard-dialog .booking-actions > button,
+.booking-wizard-dialog[data-current-step="1"] .booking-question-actions .booking-next {
+  flex: 0 1 auto;
+  width: auto;
+  max-width: calc(100% - 12px);
+  margin: 0;
+}
+.booking-wizard-dialog .booking-actions > button:last-child { margin-left: auto; }
+@media (max-width: 620px) {
+  .booking-wizard-dialog .booking-actions > button {
+    min-width: 0;
+    padding: 12px 18px;
+    font-size: 1rem;
+  }
+}
