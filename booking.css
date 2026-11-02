@@ -6452,3 +6452,6 @@ body.booking-agreement-open {
   line-height: 1;
   cursor: pointer;
 }
+
+.booking-wizard-dialog [data-step="3"] .booking-actions > [data-back] { order: 0; margin-right: auto; }
+.booking-wizard-dialog [data-step="3"] .booking-actions > [data-continue-contact] { order: 1; margin-left: auto; }
