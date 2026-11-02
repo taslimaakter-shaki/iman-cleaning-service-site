@@ -2086,7 +2086,7 @@
       qualificationCompleteTimer = 0;
       if (value("requestedService")) enterPropertyTypeChoice();
       else enterServiceChoice();
-    }, 3000);
+    }, 1000);
   };
   const showQuoteContact = () => {
     if (!quoteContactOverlay) return;

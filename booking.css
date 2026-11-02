@@ -4445,7 +4445,7 @@ body.booking-agreement-open {
   background: linear-gradient(90deg, var(--brand), var(--accent));
   content: "";
   transform-origin: left;
-  animation: bookingCompleteCountdown 3s linear both;
+  animation: bookingCompleteCountdown 1s linear both;
 }
 
 @keyframes bookingCompleteCountdown {
