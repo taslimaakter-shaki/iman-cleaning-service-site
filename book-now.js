@@ -3355,6 +3355,8 @@
       const extra = Number(form.elements.houseOtherCount.value);
       if (!Number.isInteger(extra) || extra < 1 || extra > 5) {
         form.elements.unitCount.value = "";
+        invalidateDownstreamAfterEdit();
+        persistBookingDraft();
         setStatus(document.querySelector('[data-eligibility-status]'), "Enter 1 to 5 additional floors.");
         return;
       }
@@ -3388,6 +3390,8 @@
     const rawValue = unitCountValue.value.trim();
     if (!rawValue) {
       form.elements.unitCount.value = "";
+      invalidateDownstreamAfterEdit();
+      persistBookingDraft();
       syncStageProgress();
       return;
     }
@@ -4165,7 +4169,7 @@
       const originalSubtotalCents = Math.round(Number(state.packageBeforePromo?.subtotalCents ?? state.package.subtotalCents) || 0);
       const discountedSubtotalCents = Math.round(Number(state.promo.discountedSubtotalCents ?? state.package.discountedSubtotalCents) || 0);
       document.querySelector("[data-checkout-original-total]").textContent = money(originalSubtotalCents / 100);
-      document.querySelector("[data-checkout-promo-label]").textContent = `${state.promo.code} — ${state.promo.percent}% off before tax`;
+      document.querySelector("[data-checkout-promo-label]").textContent = `${state.promo.code} — ${state.promo.percent}% off ${state.promo.application === "after_tax" ? "after tax" : "before tax"}`;
       document.querySelector("[data-checkout-promo-discount]").textContent = `−${money(state.promo.amountCents / 100)}`;
       document.querySelector("[data-checkout-discounted-subtotal]").textContent = money(discountedSubtotalCents / 100);
       document.querySelector("[data-checkout-tax]").textContent = money(Number(state.package.taxCents || 0) / 100);
@@ -4226,11 +4230,13 @@
     const original = state.package;
     const originalSubtotalCents = Math.round(Number(original.subtotalCents) || 0);
     const originalTotalCents = Math.round(Number(original.priceCents || original.totalCents) || 0);
-    const amountCents = Math.round(originalSubtotalCents * Number(data.percent) / 100);
-    const discountedSubtotalCents = Math.max(0, originalSubtotalCents - amountCents);
+    const afterTax = original.serviceKey === "recurring" || data.application === "after_tax";
+    const discountBase = afterTax ? originalTotalCents - Number(original.protectedPetFeeCents || 0) : originalSubtotalCents - Number(original.protectedPetSubtotalCents || 0);
+    const amountCents = Math.round(discountBase * Number(data.percent) / 100);
+    const discountedSubtotalCents = afterTax ? originalSubtotalCents : Math.max(0, originalSubtotalCents - amountCents);
     const taxRate = Number(original.taxRate) || 0.08875;
-    const taxCents = Math.round((discountedSubtotalCents - Number(original.protectedPetSubtotalCents || 0)) * taxRate) + Number(original.protectedPetFeeCents || 0) - Number(original.protectedPetSubtotalCents || 0);
-    const totalCents = discountedSubtotalCents + taxCents;
+    const taxCents = afterTax ? Number(original.taxCents || 0) : Math.round((discountedSubtotalCents - Number(original.protectedPetSubtotalCents || 0)) * taxRate) + Number(original.protectedPetFeeCents || 0) - Number(original.protectedPetSubtotalCents || 0);
+    const totalCents = afterTax ? originalTotalCents - amountCents : discountedSubtotalCents + taxCents;
     state.packageBeforePromo = original;
     state.promo = {
       code: data.code,
@@ -4240,7 +4246,7 @@
       discountedSubtotalCents,
       originalTotalCents,
       expiresAt: data.expiresAt,
-      application: "before_tax"
+      application: afterTax ? "after_tax" : "before_tax"
     };
     state.package = {
       ...original,
@@ -4417,7 +4423,7 @@
 
     payButton.disabled = true;
     payButton.textContent = "Starting secure payment…";
-    setStatus(status, "Holding your appointment and opening Stripe…", "info");
+    setStatus(status, "Opening secure Stripe checkout…", "info");
 
     const priorities = Array.from(form.querySelectorAll('input[name="priorities"]:checked')).map((input) => input.value);
     const payload = {
@@ -4597,10 +4603,8 @@
       return null;
     }
     if (
-      draft.state?.serviceKey === "window" ||
       draft.state?.serviceKey === "organization" ||
       draft.fields.serviceIntent === "organization" ||
-      draft.fields.cleaningCategory === "window" ||
       draft.fields.requestedService === "details"
     ) {
       clearBookingDraft();
