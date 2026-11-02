@@ -2988,7 +2988,7 @@
     // consistently applied to the pretax subtotal.
     // Arrival totals already include the promo. Rebuilding promo-only totals here
     // would discard the arrival discount and invalidate the accepted agreement.
-    if (state.promo && state.packageBeforePromo && !state.arrivalDiscount && pkg === state.package) {
+    if (state.promo && state.promo.application !== "after_tax" && state.packageBeforePromo && !state.arrivalDiscount && pkg === state.package) {
       const original = state.packageBeforePromo;
       const originalSubtotalCents = Math.round(Number(original.subtotalCents) || 0);
       const originalTotalCents = Math.round(Number(original.priceCents || original.totalCents) || 0);

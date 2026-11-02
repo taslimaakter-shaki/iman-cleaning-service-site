@@ -63,3 +63,14 @@ assert.equal(vm.runInContext("slotsForArrivalOption(arrivalOption('morning'))[0]
 state.availableSlots = require('../api/booking/_arrival-preference').markArrivalOptions(state.availableSlots.slice(0, 2));
 assert.equal(vm.runInContext("arrivalWindowText(arrivalOption('morning'))", context), 'Arrival at 11:00 AM');
 assert.equal(vm.runInContext("slotsForArrivalOption(arrivalOption('afternoon')).length", context), 0);
+
+// Reopened recurring quotes must retain their after-tax discount when rendered.
+const recurringOriginal = { ...original, serviceKey: 'recurring', protectedPetFeeCents: 5000, protectedPetSubtotalCents: 4592 };
+const recurringPriced = require('../api/booking/_recurring-discount').applyRecurringDiscount(recurringOriginal, { percent: 20, code: 'WEEKLY20' });
+state.package = structuredClone(recurringPriced);
+state.packageBeforePromo = recurringOriginal;
+state.promo = recurringPriced.promoDiscount;
+state.arrivalDiscount = null;
+vm.runInContext('renderPriceBreakdown(state.package); renderPriceBreakdown(state.package);', context);
+assert.equal(state.package.priceCents, recurringPriced.priceCents, 'Rendering must preserve the recurring checkout amount');
+assert.equal(state.promo.application, 'after_tax');
