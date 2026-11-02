@@ -134,10 +134,10 @@ function applyPromotion(pkg, promotion) {
   const originalTaxCents = Math.max(0, Math.round(Number(pkg.taxCents) || 0));
   const calculatedOriginalTotalCents = originalSubtotalCents + originalTaxCents;
   const originalTotalCents = Math.max(0, Math.round(Number(pkg.priceCents || pkg.totalCents) || calculatedOriginalTotalCents));
-  const amountCents = Math.round(originalSubtotalCents * promotion.percent / 100);
+  const amountCents = Math.round((originalSubtotalCents - Number(pkg.protectedPetSubtotalCents || 0)) * promotion.percent / 100);
   const discountedSubtotalCents = Math.max(0, originalSubtotalCents - amountCents);
   const taxRate = Number(pkg.taxRate) || 0.08875;
-  const taxCents = Math.round(discountedSubtotalCents * taxRate);
+  const taxCents = Math.round((discountedSubtotalCents - Number(pkg.protectedPetSubtotalCents || 0)) * taxRate) + Number(pkg.protectedPetFeeCents || 0) - Number(pkg.protectedPetSubtotalCents || 0);
   const totalCents = discountedSubtotalCents + taxCents;
   return {
     ...pkg,

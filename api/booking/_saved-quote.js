@@ -363,7 +363,7 @@ function validateAndPrice(body) {
     error.statusCode = 400;
     throw error;
   }
-  const pkg = calculateResidentialQuoteBundle(unitDetails, serviceKey, eligibility);
+  const pkg = calculateResidentialQuoteBundle(unitDetails, serviceKey, eligibility, Boolean(body.packageSnapshot && body.packageSnapshot.protectedPetFeeCents === undefined));
   const recommendation = recommendResidentialService(eligibility);
   if (recommendation.type !== "instant" || recommendation.serviceKey !== serviceKey) {
     const error = new Error(recommendation.reason || "This cleaning request requires a custom quote.");

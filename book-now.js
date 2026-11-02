@@ -2627,10 +2627,10 @@
     const pretaxPromoCents = promo?.application === "before_tax" ? Number(promo.amountCents || 0) : 0;
     const afterTaxDiscountCents = (promo && promo.application !== "before_tax" ? Number(promo.amountCents || 0) : 0)
       + Number(manual?.amountCents || 0);
-    const amountCents = Math.round(originalSubtotalCents * option.percent / 100);
+    const amountCents = Math.round((originalSubtotalCents - Number(original.protectedPetSubtotalCents || 0)) * option.percent / 100);
     const discountedSubtotalCents = Math.max(0, originalSubtotalCents - pretaxPromoCents - amountCents);
     const taxRate = Number(original.taxRate) || 0.08875;
-    const taxCents = Math.round(discountedSubtotalCents * taxRate);
+    const taxCents = Math.round((discountedSubtotalCents - Number(original.protectedPetSubtotalCents || 0)) * taxRate) + Number(original.protectedPetFeeCents || 0) - Number(original.protectedPetSubtotalCents || 0);
     const totalCents = Math.max(0, discountedSubtotalCents + taxCents - afterTaxDiscountCents);
     state.packageBeforeArrivalDiscount = original;
     state.arrivalDiscount = {
@@ -2976,7 +2976,7 @@
       : "Noticeable buildup and grease cleaning fee";
     return [
       ...rawExtras.filter((item) => !isConditionFee(item)).map((item) => ({ ...item, description: "" })),
-      combinedFee(rawExtras.filter(isPetFee), "Pet-related cleaning fee"),
+      combinedFee(rawExtras.filter(isPetFee), pkg.protectedPetFeeCents ? "Pet fee — $50 (tax included)" : "Pet-related cleaning fee"),
       combinedFee(rawExtras.filter(isClutterFee), clutterLabel),
       combinedFee(rawExtras.filter(isBuildupFee), buildupLabel),
       combinedFee(rawExtras.filter(isMoldFee), "Surface mold and mildew cleaning fee")
@@ -2993,10 +2993,10 @@
       const originalSubtotalCents = Math.round(Number(original.subtotalCents) || 0);
       const originalTotalCents = Math.round(Number(original.priceCents || original.totalCents) || 0);
       const percent = Number(state.promo.percent) || 0;
-      const amountCents = Math.round(originalSubtotalCents * percent / 100);
+      const amountCents = Math.round((originalSubtotalCents - Number(original.protectedPetSubtotalCents || 0)) * percent / 100);
       const discountedSubtotalCents = Math.max(0, originalSubtotalCents - amountCents);
       const taxRate = Number(original.taxRate) || 0.08875;
-      const taxCents = Math.round(discountedSubtotalCents * taxRate);
+      const taxCents = Math.round((discountedSubtotalCents - Number(original.protectedPetSubtotalCents || 0)) * taxRate) + Number(original.protectedPetFeeCents || 0) - Number(original.protectedPetSubtotalCents || 0);
       const totalCents = discountedSubtotalCents + taxCents;
       state.promo = {
         ...state.promo,
@@ -4119,7 +4119,7 @@
     const amountCents = Math.round(originalSubtotalCents * Number(data.percent) / 100);
     const discountedSubtotalCents = Math.max(0, originalSubtotalCents - amountCents);
     const taxRate = Number(original.taxRate) || 0.08875;
-    const taxCents = Math.round(discountedSubtotalCents * taxRate);
+    const taxCents = Math.round((discountedSubtotalCents - Number(original.protectedPetSubtotalCents || 0)) * taxRate) + Number(original.protectedPetFeeCents || 0) - Number(original.protectedPetSubtotalCents || 0);
     const totalCents = discountedSubtotalCents + taxCents;
     state.packageBeforePromo = original;
     state.promo = {

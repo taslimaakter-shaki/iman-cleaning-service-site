@@ -3,7 +3,6 @@ const crypto = require("crypto");
 const TEAM_SIZE = 2;
 const MAN_HOUR_RATE = 80;
 const FIRST_PET_CLEANING_FEE = 50;
-const ADDITIONAL_PET_CLEANING_FEE = 20;
 const ORGANIZATION_HOURLY_RATE = 60;
 const ORGANIZATION_MIN_HOURS = 4;
 const HOURLY_CLEANING_RATE = 80;
@@ -507,12 +506,12 @@ function calculateResidentialUnitPrice(unit = {}, unitIndex = 0, serviceKey = "s
     serviceKey === "move" ? { key: "interior_windows", label: "Interior window cleaning", amount: 0, included: true } : null
   ].filter(Boolean);
   const petCleaningAmount = hasPets === "yes"
-    ? FIRST_PET_CLEANING_FEE + (Math.max(1, petCount) - 1) * ADDITIONAL_PET_CLEANING_FEE
+    ? FIRST_PET_CLEANING_FEE
     : 0;
   const addOns = [
     hasPets === "yes" ? {
       key: "pet_fee",
-      label: `Additional cleaning for ${petCount} pet${petCount === 1 ? "" : "s"}`,
+      label: "Pet fee — $50 (tax included)",
       description: "Extra time for removing pet hair, dander, and pet-related buildup from accessible surfaces.",
       amount: petCleaningAmount
     } : null,
@@ -694,7 +693,7 @@ function moldAdjustmentsFor(units, serviceKey, hazards = "", moldCleaningRequest
   };
 }
 
-function calculateResidentialQuoteBundle(unitDetails = [], serviceKey = "standard", eligibility = {}) {
+function calculateResidentialQuoteBundle(unitDetails = [], serviceKey = "standard", eligibility = {}, legacyPetPricing = false) {
   const service = FORMULA_SERVICES[serviceKey];
   if (!service) {
     throw Object.assign(new Error("Choose Standard, Deep, Move-Out, or Post-Construction Cleaning."), { statusCode: 400 });
@@ -774,14 +773,12 @@ function calculateResidentialQuoteBundle(unitDetails = [], serviceKey = "standar
     previousPetBuildup = yesNo(eligibility?.previousPetBuildup || "no", "whether pet-related buildup is present");
   }
   const propertyPetCleaningAmount = propertyHasPets === "yes"
-    ? FIRST_PET_CLEANING_FEE + (propertyPetCount - 1) * ADDITIONAL_PET_CLEANING_FEE
+    ? FIRST_PET_CLEANING_FEE + (legacyPetPricing ? (propertyPetCount - 1) * 20 : 0)
     : previousPetBuildup === "yes" ? FIRST_PET_CLEANING_FEE : 0;
   if (propertyPetCleaningAmount && units[0]) {
     const propertyPetItem = {
       key: "property_pet_fee",
-      label: propertyHasPets === "yes"
-        ? `Additional cleaning for ${propertyPetCount} pet${propertyPetCount === 1 ? "" : "s"} at the property`
-        : "Pet-related buildup cleaning",
+      label: legacyPetPricing ? (propertyHasPets === "yes" ? `Additional cleaning for ${propertyPetCount} pet${propertyPetCount === 1 ? "" : "s"} at the property` : "Pet-related buildup cleaning") : "Pet fee — $50 (tax included)",
       description: propertyHasPets === "yes"
         ? "Charged once for the entire property for pet hair, dander, and pet-related buildup on accessible surfaces."
         : "Additional cleaning for visible pet hair, odor, litter, stains, or other pet-related buildup.",
@@ -908,6 +905,8 @@ function calculateResidentialQuoteBundle(unitDetails = [], serviceKey = "standar
     buildupAdjustment,
     clutterAdjustment,
     moldAdjustment,
+    protectedPetFeeCents: legacyPetPricing ? 0 : propertyPetCleaningAmount * 100,
+    protectedPetSubtotalCents: legacyPetPricing ? 0 : Math.round(units.flatMap(unit => unit.addOns).filter(item => item.key === "property_pet_fee").reduce((sum, item) => sum + item.preTaxAmount, 0) * 100),
     propertyPets: {
       hasPets: propertyHasPets,
       petCount: propertyPetCount,

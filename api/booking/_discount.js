@@ -28,6 +28,7 @@ function packageFingerprint(pkg) {
 function applyPackageDiscount(pkg, discount) {
   if (!discount) return pkg;
   if (discount.packageFingerprint !== packageFingerprint(pkg)) throw Object.assign(new Error('This discount is for the saved cleaning details. Reopen your quote or ask our team to update it.'), { statusCode: 409 });
+  if (pkg.protectedPetFeeCents && pkg.priceCents - discount.amountCents < pkg.protectedPetFeeCents + 200) throw fail('Discounts apply to cleaning only. Keep the $50 pet fee and at least $2 of cleaning charges.');
   const pricing = flatPricing(pkg.priceCents, 0, discount.amountCents, discount.label, pkg.taxCents);
   return { ...pkg, priceCents: pricing.totalCents, totalCents: pricing.totalCents, price: pricing.totalCents / 100,
     total: pricing.totalCents / 100, manualDiscount: { ...pricing, amountCents: discount.amountCents, label: discount.label } };

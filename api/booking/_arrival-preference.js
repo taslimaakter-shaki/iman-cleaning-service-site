@@ -120,9 +120,9 @@ function applyArrivalDiscount(pkg, preferenceValue) {
   const pretaxPromoCents = promo?.application === "before_tax" ? Number(promo.amountCents || 0) : 0;
   const afterTaxDiscountCents = (promo && promo.application !== "before_tax" ? Number(promo.amountCents || 0) : 0)
     + Number(manual?.amountCents || 0);
-  const amountCents = Math.round(originalSubtotalCents * preference.percent / 100);
+  const amountCents = Math.round((originalSubtotalCents - Number(pkg.protectedPetSubtotalCents || 0)) * preference.percent / 100);
   const discountedSubtotalCents = Math.max(0, originalSubtotalCents - pretaxPromoCents - amountCents);
-  const taxCents = Math.round(discountedSubtotalCents * taxRate);
+  const taxCents = Math.round((discountedSubtotalCents - Number(pkg.protectedPetSubtotalCents || 0)) * taxRate) + Number(pkg.protectedPetFeeCents || 0) - Number(pkg.protectedPetSubtotalCents || 0);
   const totalCents = Math.max(0, discountedSubtotalCents + taxCents - afterTaxDiscountCents);
   const originalTaxCents = Math.max(0, Math.round(Number(pkg.originalTaxCents ?? pkg.taxCents) || 0));
   const originalTotalCents = Math.max(0, Math.round(Number(pkg.originalTotalCents) || originalSubtotalCents + originalTaxCents));

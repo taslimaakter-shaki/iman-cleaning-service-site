@@ -98,7 +98,7 @@ function applyRecurringDiscount(pkg, discount) {
     throw recurringError("Recurring discounts cannot be combined with another offer.", 409, "DISCOUNT_NOT_COMBINABLE");
   }
   const originalTotalCents = Math.round(Number(pkg.priceCents || pkg.totalCents) || 0);
-  const amountCents = Math.round(originalTotalCents * discount.percent / 100);
+  const amountCents = Math.round((originalTotalCents - Number(pkg.protectedPetFeeCents || 0)) * discount.percent / 100);
   const totalCents = originalTotalCents - amountCents;
   const recurringDiscount = { ...discount, amountCents, application: "after_tax" };
   return { ...pkg, originalTotalCents, totalCents, priceCents: totalCents, total: totalCents / 100, price: totalCents / 100,

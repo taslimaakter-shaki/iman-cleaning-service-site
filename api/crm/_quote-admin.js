@@ -306,7 +306,7 @@ async function saveDiscount(body) {
   if (paid(await linkedBooking(found))) throw fail('Payment has already been received. Use the refund workflow instead of changing the paid quote.', 409);
   if (found.source === 'saved' && !found.state.fields) {
     const pkg = require('../booking/_saved-quote').validateAndPrice(found.record).pkg;
-    flatPricing(pkg.priceCents, 0, discount.amountCents, discount.label, pkg.taxCents);
+    require('../booking/_discount').applyPackageDiscount(pkg, { ...discount, packageFingerprint: packageFingerprint(pkg) });
     const original = found.state, revision = crypto.randomUUID();
     found = await persist(found, { ...original, revision, updating: true });
     try {
@@ -343,6 +343,10 @@ async function applySavedDiscount(token, pkg, revision) {
   const { decodeSavedQuote } = require('../booking/_saved-quote');
   const found = await load('saved', decodeSavedQuote(token).quoteId);
   if ((found.state.revision || '') !== (revision || '') || found.state.updating || found.state.fields || found.state.deletedAt) throw fail('Your quote changed. Reopen the saved quote link before continuing.', 409);
+  // Preserve the pet pricing of previously saved quotes without changing new quotes.
+  if (found.record.packageSnapshot && found.record.packageSnapshot.protectedPetFeeCents === undefined && pkg.propertyPets?.fee) {
+    pkg = require('../booking/_shared').calculateResidentialQuoteBundle(found.record.unitDetails, pkg.serviceKey, found.record.eligibility, true);
+  }
   return require('../booking/_discount').applyPackageDiscount(pkg, found.state.manualDiscount);
 }
 
