@@ -10,3 +10,63 @@
 .hero-socials .social-ico:hover { transform:translateY(-3px); }
 .hero-socials .social-ico:focus-visible { outline:2px solid white; outline-offset:3px; }
 @media (prefers-reduced-motion:reduce) { .hero-socials .social-ico { transition:none; } }
+
+/* Give the landscape photo its own space on narrow screens. */
+@media (max-width: 767px) {
+  .home-page .home-hero-photo.page-hero.on-photo {
+    display: flex;
+    flex-direction: column;
+    align-items: stretch;
+    min-height: 0;
+    padding: 68px 0 32px;
+    background: #053640;
+  }
+  .home-page .home-hero-photo.page-hero.on-photo::before { display: none; }
+  .home-page .home-hero-poster {
+    position: relative;
+    inset: auto;
+    height: auto;
+    aspect-ratio: 1672 / 941;
+  }
+  .home-page .home-hero-poster img {
+    display: block;
+    width: 100%;
+    height: auto;
+    object-fit: contain;
+    object-position: center;
+  }
+  .home-page .home-hero-photo .page-hero-inner {
+    width: calc(100% - 40px);
+    max-width: 540px;
+    margin: 24px auto 0;
+    gap: 14px;
+  }
+  .home-page .home-hero-photo h1 {
+    font-family: "DM Sans", sans-serif;
+    font-size: clamp(1.65rem, 6.5vw, 2rem);
+    font-weight: 600;
+    line-height: 1.18;
+    letter-spacing: -.025em;
+    max-width: 24ch;
+    text-wrap: balance;
+  }
+  .home-page .home-hero-photo .ds-lead {
+    font-size: .9375rem;
+    line-height: 1.55;
+    max-width: 42ch;
+  }
+  .home-page .home-hero-photo .seo-static-badge,
+  .home-page .home-hero-photo .ds-badge {
+    font-size: .65rem;
+    line-height: 1.4;
+    padding: 6px 9px;
+    white-space: normal;
+  }
+  .home-page .home-hero-photo .page-hero-actions > a {
+    font-size: .9375rem;
+    min-height: 46px !important;
+    padding: 12px 22px;
+  }
+  .home-page .home-hero-photo .hero-trust-line { font-size: .875rem; }
+  .home-page .home-hero-photo .hero-socials { margin-top: 4px; }
+}
