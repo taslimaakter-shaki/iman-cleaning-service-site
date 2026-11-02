@@ -20,7 +20,7 @@ const SLOT_INTERVAL_MINUTES = 30;
 // calendar day, even when they book late the night before. Same-day slots are
 // still excluded by availableSlotsForPackage, which starts at dayIndex 1.
 const MIN_BOOKING_NOTICE_HOURS = 0;
-const MAX_ADVANCE_BOOKING_DAYS = 60;
+const MAX_ADVANCE_BOOKING_DAYS = 92; // Maximum span of three calendar months.
 const NY_SALES_TAX_RATE = 0.08875;
 const NYC_ZIP_PREFIXES = new Set([
   "100", "101", "102", "103", "104", "111", "112", "113", "114", "116"
@@ -2145,16 +2145,21 @@ async function updateBookingGoogleCalendar(booking, action = "reschedule", { not
   return { status: "rescheduled", eventId: event.id };
 }
 
+function advanceBookingDays(now) {
+  const [year, month, day] = localDateString(now).split('-').map(Number);
+  const lastDay = new Date(Date.UTC(year, month + 3, 0)).getUTCDate();
+  const end = Date.UTC(year, month - 1 + 3, Math.min(day, lastDay));
+  return Math.round((end - Date.UTC(year, month - 1, day)) / 86400000);
+}
+
 async function availableSlotsForPackage(pkg, days = MAX_ADVANCE_BOOKING_DAYS, now = new Date(), excludeBookingId = '') {
-  const requestedDays = Number(days);
-  const bookingDays = Math.min(
-    MAX_ADVANCE_BOOKING_DAYS,
-    Math.max(1, Number.isFinite(requestedDays) ? Math.floor(requestedDays) : MAX_ADVANCE_BOOKING_DAYS)
-  );
   const currentTime = now instanceof Date ? now : new Date(now);
   if (!Number.isFinite(currentTime.getTime())) {
     throw Object.assign(new Error("The current booking time is invalid."), { statusCode: 400 });
   }
+  const maximumDays = advanceBookingDays(currentTime);
+  const requestedDays = Number(days);
+  const bookingDays = Math.min(maximumDays, Math.max(1, Number.isFinite(requestedDays) ? Math.floor(requestedDays) : maximumDays));
   const minimumStartMs = currentTime.getTime() + MIN_BOOKING_NOTICE_HOURS * 60 * 60 * 1000;
   const slots = [];
   const today = localDateString(currentTime);
@@ -2215,6 +2220,7 @@ module.exports = {
   HOURLY_CLEANING_RATE,
   HOURLY_CLEANING_MIN_HOURS,
   MAX_ADVANCE_BOOKING_DAYS,
+  advanceBookingDays,
   MIN_BOOKING_NOTICE_HOURS,
   NY_SALES_TAX_RATE,
   OPEN_TIME,
