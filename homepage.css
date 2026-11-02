@@ -3,3 +3,10 @@
 @import "./site.css";
 @import "./homepage-footer.css";
 @import "./site-reviews.css";
+
+.hero-socials { display:flex; flex-wrap:wrap; gap:7px; margin-top:16px; }
+.hero-socials .social-ico { display:inline-flex; align-items:center; justify-content:center; width:32px; height:32px; border-radius:50%; box-shadow:0 8px 20px rgba(0,0,0,.28); transition:transform 140ms ease; }
+.hero-socials .social-ico svg { width:18px; height:18px; }
+.hero-socials .social-ico:hover { transform:translateY(-3px); }
+.hero-socials .social-ico:focus-visible { outline:2px solid white; outline-offset:3px; }
+@media (prefers-reduced-motion:reduce) { .hero-socials .social-ico { transition:none; } }
