@@ -7,7 +7,7 @@ const root = path.join(__dirname, '..');
 function load(file, dependencies, extra={}) {
   const module = {exports:{}};
   vm.runInNewContext(fs.readFileSync(path.join(root,file),'utf8'), {
-    module,exports:module.exports,require:name=>name === "./_arrival-preference" ? require("../api/booking/_arrival-preference") : name.endsWith("/_minimum-total")?require("../api/booking/_minimum-total"):dependencies[name] || (['../booking/_staffing-options','./_staffing-options'].includes(name) ? require('../api/booking/_staffing-options') : require(name)),Buffer,Date,Intl,URLSearchParams,AbortSignal,
+    module,exports:module.exports,require:name=>name === "./_anytime-policy" ? require("../api/booking/_anytime-policy") : name === "./_arrival-preference" ? require("../api/booking/_arrival-preference") : name.endsWith("/_minimum-total")?require("../api/booking/_minimum-total"):dependencies[name] || (['../booking/_staffing-options','./_staffing-options'].includes(name) ? require('../api/booking/_staffing-options') : require(name)),Buffer,Date,Intl,URLSearchParams,AbortSignal,
     console,process:{env:{SUPABASE_URL:'https://db.test',SUPABASE_SERVICE_ROLE_KEY:'test-only',STRIPE_SECRET_KEY:'sk_test_mock',BOOKING_MANAGEMENT_SECRET:'test-only'}},
     fetch:async()=>{throw new Error('Unexpected network call');},...extra
   },{filename:file}); return module.exports;
@@ -26,6 +26,7 @@ async function googleTests() {
     insert:async args=>{calls.push({action:'insert',...args});if(duplicate)throw {code:409};return {data:{id:args.requestBody.id}};},
     patch:async()=>{throw new Error('Unexpected patch');},delete:async()=>{throw new Error('Unexpected delete');}
   }};
+  let stored=[];
   const shared=load('api/booking/_shared.js',{
     'googleapis/build/src/apis/calendar':{calendar:()=>google},
     '../quote/_shared':{getGoogleClients:()=>({auth:{getAccessToken:async()=>({token:'test-token-never-returned'}),getTokenInfo:async()=>({scopes:['https://www.googleapis.com/auth/calendar.events']})}})},
@@ -33,7 +34,7 @@ async function googleTests() {
     './_calendar':{reconcileReservation:async b=>b}
   },{
     process:{env:{SUPABASE_URL:'https://db.test',SUPABASE_SERVICE_ROLE_KEY:'test',GOOGLE_CLIENT_ID:'test',GOOGLE_CLIENT_SECRET:'test',GOOGLE_REFRESH_TOKEN:'test'}},
-    fetch:async()=>({ok:true,text:async()=>JSON.stringify([])})
+    fetch:async()=>({ok:true,text:async()=>JSON.stringify(stored)})
   });
   assert.deepEqual(clone(await shared.googleCalendarConnectionStatus()),{connected:true,writable:true,calendarId:'info@imancleaningservice.com'});
   const event=(id,start,end,extra={})=>({id,start:{dateTime:start},end:{dateTime:end},...extra});
@@ -45,6 +46,15 @@ async function googleTests() {
   events[1].extendedProperties={private:{iman_booking_id:'booking-own'}};
   slots=await shared.availableSlotsForPackage({teamHours:9},2,new Date('2030-09-10T12:00:00Z'),'booking-own');
   assert(slots.some(s=>s.date==='2030-09-12'&&s.time==='08:00'),'Own Google mirror does not prevent rescheduling');
+  events.length=0;
+  stored=[{id:'long',status:'Confirmed',schedule:'2030-09-12T08:00:00-04:00',estimate:{manHours:6,teamHours:3,calendarReservationHours:4,arrivalPreference:{key:'any_day',flexible:true,windowStart:'08:00',windowEnd:'16:30'}}}];
+  slots=await shared.availableSlotsForPackage({teamHours:1},2,new Date('2030-09-10T12:00:00Z'));
+  assert(slots.some(s=>s.date==='2030-09-12'&&s.arrivalOptions.includes('morning')));
+  assert(slots.filter(s=>s.date==='2030-09-12').every(s=>s.anytimeEligible===false));
+  assert(slots.filter(s=>s.date==='2030-09-11').every(s=>s.anytimeEligible===true));
+  slots=await shared.availableSlotsForPackage({teamHours:1},2,new Date('2030-09-10T12:00:00Z'),'long');
+  assert(slots.every(s=>s.anytimeEligible===true),'Rescheduling excludes the current booking itself');
+  stored=[];
   outage=true;await assert.rejects(shared.assertScheduleAvailable('2030-09-12T08:00:00-04:00',2),/could not be verified/);outage=false;
   const booking={id:'booking-own',schedule:'2030-09-12T08:00:00-04:00',estimate:{teamHours:9},client_name:'Test',email:''};
   const first=await shared.updateBookingGoogleCalendar(booking);

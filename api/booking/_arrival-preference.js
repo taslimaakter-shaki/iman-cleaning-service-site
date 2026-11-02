@@ -43,6 +43,7 @@ function slotMatchesArrivalPreference(slot, preferenceValue) {
     : arrivalPreferenceForKey(preferenceValue, slot?.teamHours);
   if (!slot || !slot.value) return false;
   if (slot.flexibleEligible !== true) return false;
+  if (preference.key === "any_day" && slot.anytimeEligible === false) return false;
   if (preference.fixedStart && Array.isArray(slot.arrivalOptions)) return slot.arrivalOptions.includes(preference.key);
   if (preference.fixedStart) return slot.time === preference.start && (preference.key !== "afternoon" || preference.start === preference.end);
   if (!preference.flexible) return true;

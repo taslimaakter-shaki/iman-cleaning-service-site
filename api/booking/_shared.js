@@ -2160,6 +2160,10 @@ async function availableSlotsForPackage(pkg, days = MAX_ADVANCE_BOOKING_DAYS, no
   // Checking identical intervals twice does not add another buffer. Exclude
   // both representations of the current booking when offering reschedule times.
   const bookings = storedBookings.concat(calendarAvailability.records).filter(b => b.id !== excludeBookingId);
+  const { laborHours } = require('./_anytime-policy');
+  const datesWithoutAnytime = new Set(storedBookings
+    .filter(booking => booking.id !== excludeBookingId && laborHours(booking.estimate) >= 6)
+    .map(booking => localDateString(new Date(booking.schedule))));
 
   for (let dayIndex = 1; dayIndex <= bookingDays; dayIndex += 1) {
     const date = new Date(base.getTime() + dayIndex * 24 * 60 * 60 * 1000);
@@ -2169,7 +2173,7 @@ async function availableSlotsForPackage(pkg, days = MAX_ADVANCE_BOOKING_DAYS, no
       const extendedEnd = new Date(slot.value).getTime() + extendedHours * 60 * 60 * 1000;
       const closesAt = new Date(toZonedIso(dateString, CLOSE_TIME)).getTime();
       const flexibleEligible = extendedEnd <= closesAt && slotAvailable(slot.value, extendedHours, bookings);
-      slots.push({ ...slot, flexibleEligible, flexibleTeamHours: extendedHours, calendarChecked: calendarAvailability.connected });
+      slots.push({ ...slot, anytimeEligible: !datesWithoutAnytime.has(dateString), flexibleEligible, flexibleTeamHours: extendedHours, calendarChecked: calendarAvailability.connected });
     });
   }
   return require("./_arrival-preference").markArrivalOptions(slots);

@@ -1,0 +1,42 @@
+const assert=require('node:assert/strict'),fs=require('node:fs'),vm=require('node:vm'),crypto=require('node:crypto');
+const {PGlite}=require('@electric-sql/pglite');
+const shared=require('../api/booking/_shared');
+const {laborHours}=require('../api/booking/_anytime-policy');
+const {slotMatchesArrivalPreference}=require('../api/booking/_arrival-preference');
+const estimates=[{manHours:5.99},{manHours:6},{laborHours:6.5},{teamHours:3},{hours:6,cleanerCount:1},{manHours:3,teamHours:3,calendarReservationHours:7},{teamHours:'invalid',hours:2}];
+const expected=[5.99,6,6.5,6,6,3,4];
+estimates.forEach((e,i)=>assert.equal(laborHours(e),expected[i]));
+const slot={value:'test',time:'08:00',flexibleEligible:true,anytimeEligible:false,arrivalOptions:['morning']};
+assert.equal(slotMatchesArrivalPreference(slot,'any_day'),false);assert.equal(slotMatchesArrivalPreference(slot,'morning'),true);
+const source=fs.readFileSync('book-now.js','utf8'),state={selectedDate:'2030-11-06',package:{teamHours:1}};
+let slots=[slot];const ctx=vm.createContext({state,slotsForDate:()=>slots});
+vm.runInContext(source.slice(source.indexOf('  const ARRIVAL_OPTIONS ='),source.indexOf('  const arrivalWindowText =')),ctx);
+assert.equal(vm.runInContext('visibleArrivalOptions().map(o=>o.key).join(",")',ctx),'morning,afternoon');
+assert.equal(vm.runInContext('slotsForArrivalOption(arrivalOption("any_day")).length',ctx),0);
+slots=[{...slot,anytimeEligible:true}];assert.equal(vm.runInContext('visibleArrivalOptions().length',ctx),3);
+(async()=>{
+ const db=new PGlite();await db.exec('create role anon; create role authenticated; create role service_role;');
+ await db.exec(fs.readFileSync('supabase-schema.sql','utf8').match(/create table if not exists public.bookings \([\s\S]*?\n\);/)[0]);
+ for(const name of ['20260910_shared_booking_calendar.sql','20261025_flexible_arrival_reservations.sql','20261031_capacity_based_flexible_booking.sql','20261101_flexible_day_planning.sql','20261101_payment_submission_guard.sql','20261101_six_hour_anytime_rule.sql'])await db.exec(fs.readFileSync('supabase/migrations/'+name,'utf8'));
+ for(let i=0;i<estimates.length;i++)assert.equal(Number((await db.query('select iman_booking_labor_hours($1) as n',[estimates[i]])).rows[0].n),expected[i]);
+ const make=(id,labor,status='Confirmed',reservation='',fixed=false,day='2030-11-06')=>({id,created_at:new Date().toISOString(),sqft:0,addons:[],notes:'',status,service:'standard',service_label:'Cleaning',schedule_label:'',bedrooms_label:'',bathrooms_label:'',client_name:'Test',phone:'',email:'',address:'',schedule:shared.toZonedIso(day,'08:00'),estimate:{manHours:labor,teamHours:labor/2,calendarReservationHours:labor/2+1,calendarReservation:{state:reservation},arrivalPreference:{key:fixed?'morning':'any_day',flexible:!fixed,windowStart:'08:00',windowEnd:'18:30',confirmationStatus:fixed?'confirmed':'pending'}}});
+ const insert=b=>db.query('insert into bookings select * from jsonb_populate_record(null::bookings,$1)',[b]);
+ const clear=()=>db.exec('delete from booking_payment_orders; delete from bookings');
+ await insert(make('long',6));await assert.rejects(insert(make('new',2)),/at least six labor hours/);
+ await insert(make('fixed',2,'Confirmed','',true));
+ await db.query("update bookings set notes='preserve existing agreement' where id='long'");
+ await clear();await insert(make('short',5.99));await insert(make('new',2));
+ for(const [status,reservation] of [['Cancelled',''],['New','draft'],['New','released']]){await clear();await insert(make('ignored',6,status,reservation));await insert(make('new',2));}
+ await clear();await insert(make('held',6,'New','creating'));await assert.rejects(insert(make('new',2)),/at least six labor hours/);
+ await db.exec("update bookings set estimate=jsonb_set(estimate,'{calendarReservation,state}','\"released\"') where id='held'");await insert(make('new',2));
+ await clear();await insert(make('one',3));await insert(make('two',3));await insert(make('three',1));
+ await clear();await insert(make('long',6));await insert(make('otherday',2,'Confirmed','',false,'2030-11-07'));
+ await assert.rejects(db.query("update bookings set schedule=$1 where id='otherday'",[shared.toZonedIso('2030-11-06','08:00')]),/at least six labor hours/);
+ await clear();await insert(make('early',2,'New','creating'));await insert(make('late',6,'Confirmed','',true));await db.exec("update bookings set status='Confirmed' where id='early'");
+ await clear();const orders=[];
+ for(const id of ['race1','race2']){await insert(make(id,6,'New','draft'));const order=crypto.randomUUID();orders.push(order);await db.query("select iman_payment_order('prepare',$1,$2)",[order,{bookingId:id,draft:{}}]);}
+ const results=await Promise.allSettled(orders.map(id=>db.query("select iman_payment_order('acquire',$1,$2)",[id,{attempt:crypto.randomUUID(),confirmationToken:'test'}])));
+ assert.equal(results.filter(r=>r.status==='fulfilled').length,1);assert.match(results.find(r=>r.status==='rejected').reason.message,/at least six labor hours/);
+ assert.equal((await db.query("select count(*)::int n from bookings where estimate->'calendarReservation'->>'state'='draft'")).rows[0].n,1,'Losing payment remains unreserved');
+ await db.close();console.log('Six-hour policy: cutoff, labor accounting, UI filtering, fixed options, drafts, cancellations, holds, grandfathering, dates and atomic payment acquisition passed.');
+})().catch(e=>{console.error(e);process.exitCode=1});

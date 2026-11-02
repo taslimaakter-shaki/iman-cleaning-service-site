@@ -2621,6 +2621,7 @@
   };
   const slotsForArrivalOption = (option) => slotsForDate(state.selectedDate).filter((slot) => {
     if (slot.flexibleEligible !== true) return false;
+    if (option?.key === "any_day" && slot.anytimeEligible === false) return false;
     if (option?.fixedStart && Array.isArray(slot.arrivalOptions)) return slot.arrivalOptions.includes(option.key);
     if (option?.fixedStart) return slot.time === (option.key === "morning" ? "08:00" : arrivalWindowEndTime(option));
     if (!option?.flexible) return false;
@@ -2628,7 +2629,7 @@
     return value >= timeMinutes(option.start)
       && value <= timeMinutes(arrivalWindowEndTime(option));
   });
-  const visibleArrivalOptions = () => ARRIVAL_OPTIONS;
+  const visibleArrivalOptions = () => ARRIVAL_OPTIONS.filter(option => option.key !== "any_day" || !state.selectedDate || slotsForDate(state.selectedDate).some(slot => slot.anytimeEligible !== false));
   const arrivalWindowEndTime = (option) => {
     const serviceHours = Number(state.package?.teamHours);
     const reservedMinutes = Math.ceil(serviceHours * 60) + 60;
@@ -2709,10 +2710,13 @@
     if (arrivalOptions) {
       arrivalOptions.hidden = false;
       arrivalOptions.replaceChildren();
-      if (state.arrivalPreference && !arrivalOption(state.arrivalPreference)) {
+      if (state.arrivalPreference && !visibleArrivalOptions().some(option => option.key === state.arrivalPreference)) {
         state.arrivalPreference = "";
         clearArrivalDiscount();
         if (scheduleSelect) scheduleSelect.value = "";
+        resetAgreementReview();
+        renderQuoteOverview(state.package);
+        renderPriceBreakdown(state.package);
       }
       visibleArrivalOptions().forEach((option) => {
         const optionSlots = slotsForArrivalOption(option);
