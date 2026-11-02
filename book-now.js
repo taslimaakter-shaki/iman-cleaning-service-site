@@ -2823,6 +2823,11 @@
     if (calendarNext) calendarNext.disabled = state.calendarMonthIndex >= state.availableMonths.length - 1;
   };
   const loadSchedulerSlots = (slots = []) => {
+    // Calendar dates must have an arrival choice that includes the reserved
+    // extra hour, not merely enough room for the cleaning itself.
+    slots = slots.filter(slot => slot.flexibleEligible === true
+      && (slot.anytimeEligible !== false
+        || slot.arrivalOptions?.some(key => key === "morning" || key === "afternoon")));
     if (state.serviceKey === "recurring") {
       if (!recurringPlanContext?.windowStart) throw new Error("Please verify your previous cleaning and recurring plan before choosing an appointment.");
       slots = slots.filter(slot => slot.date >= recurringPlanContext.windowStart && slot.date <= recurringPlanContext.windowEnd);
