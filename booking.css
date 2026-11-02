@@ -6389,3 +6389,11 @@ body.booking-agreement-open {
   font-size: .875rem;
   line-height: 1.25;
 }
+
+.booking-help-shared {
+  margin: 0;
+  padding: 14px 20px 20px;
+  text-align: center;
+  font-size: .875rem;
+  line-height: 1.5;
+}
