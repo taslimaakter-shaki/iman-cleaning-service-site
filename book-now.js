@@ -3745,6 +3745,12 @@
       return;
     }
     if (unitCountMode) {
+      const enteredCount = Number(value("unitCount"));
+      const moreSelected = form.querySelector('[name="houseFloorChoice"][value="5+"]:checked');
+      if (!Number.isInteger(enteredCount) || enteredCount < 1 || enteredCount > 10 || (value("propertyType") === "apartment" && moreSelected && enteredCount < 5)) {
+        setStatus(status, value("propertyType") === "house" ? "Select at least one floor to continue." : "Select the number of apartments. For 5 or more, enter an exact number from 5 to 10.");
+        return;
+      }
       syncUnitCount();
       state.currentUnitIndex = 0;
       setStatus(status, "✓ Service details completed. Now tell us about your home.", "success");
