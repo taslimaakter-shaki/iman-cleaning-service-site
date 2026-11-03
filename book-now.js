@@ -2401,6 +2401,30 @@
       );
     }
   };
+  const packageWithoutPromo = (pkg) => {
+    if (!pkg?.promoDiscount) return pkg;
+    // Saved quotes contain discounted tax and totals. Restore all price fields
+    // so removing or replacing the promo agrees with checkout's recalculation.
+    const subtotalCents = Number(pkg.originalSubtotalCents ?? pkg.subtotalCents);
+    const totalCents = Number(pkg.originalTotalCents ?? pkg.promoDiscount.originalTotalCents);
+    const taxCents = Number(pkg.originalTaxCents ?? (totalCents - subtotalCents));
+    return {
+      ...pkg,
+      promoCode: "",
+      promoDiscount: null,
+      recurringDiscount: null,
+      subtotalCents,
+      subtotal: subtotalCents / 100,
+      discountedSubtotalCents: subtotalCents,
+      discountedSubtotal: subtotalCents / 100,
+      taxCents,
+      tax: taxCents / 100,
+      priceCents: totalCents,
+      price: totalCents / 100,
+      totalCents,
+      total: totalCents / 100
+    };
+  };
   const sendSavedQuote = async ({ previousQuoteUrl = state.savedQuoteUrl } = {}) => {
     const wantsQuoteText = Boolean(quoteContactForm?.elements.quoteCommunicationConsent?.checked);
     const wantsMarketingTexts = Boolean(quoteContactForm?.elements.smsMarketingConsent?.checked);
@@ -2434,7 +2458,7 @@
         if (data.package) {
           state.package = data.package;
           state.promo = data.package.promoDiscount || null;
-          state.packageBeforePromo = null;
+          state.packageBeforePromo = state.promo ? packageWithoutPromo(data.package) : null;
           renderQuoteOverview(state.package);
           renderPriceBreakdown(state.package);
         }
@@ -4212,7 +4236,7 @@
   const removePromo = ({ announce = true, preserveArrival = true } = {}) => {
     const selectedArrival = preserveArrival ? arrivalOption(state.arrivalPreference) : null;
     clearArrivalDiscount();
-    if (state.packageBeforePromo) state.package = state.packageBeforePromo;
+    state.package = state.packageBeforePromo || packageWithoutPromo(state.package);
     state.packageBeforePromo = null;
     state.promo = null;
     if (promoInput) {
@@ -4543,15 +4567,7 @@
       state.packageIds = [];
       state.package = data.package;
       state.promo = data.package?.promoDiscount?.amountCents ? data.package.promoDiscount : null;
-      state.packageBeforePromo = state.promo ? {
-        ...data.package,
-        promoCode: "",
-        promoDiscount: null,
-        priceCents: data.package.originalTotalCents,
-        price: data.package.originalTotalCents / 100,
-        totalCents: data.package.originalTotalCents,
-        total: data.package.originalTotalCents / 100
-      } : null;
+      state.packageBeforePromo = state.promo ? packageWithoutPromo(data.package) : null;
       state.savedQuoteUrl = window.location.href;
       state.quoteRevision = data.quoteRevision || '';
       state.initialSlots = [];
