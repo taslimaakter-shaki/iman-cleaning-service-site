@@ -829,7 +829,7 @@
 
   function renderWalkthroughs() {
     const requests = state.quotes.filter(q => q.walkthrough && !q.deletedAt && quoteMatchesSearch(q));
-    const button = q => `<button type="button" class="crm-row-button" data-open-quote="${escapeHtml(q.id)}">${q.walkthrough.confirmation ? 'View confirmation' : 'Confirm walkthrough'}</button>`;
+    const button = q => `<div class="crm-table-actions"><button type="button" class="crm-row-button" data-edit-walkthrough="${escapeHtml(q.id)}">Edit walkthrough</button><button type="button" class="crm-row-button" data-open-quote="${escapeHtml(q.id)}">${q.walkthrough.confirmation ? 'View confirmation' : 'Confirm walkthrough'}</button></div>`;
     $('[data-walkthroughs-table]').innerHTML = requests.map(q => `<tr>
       <td class="crm-customer-cell"><strong>${escapeHtml(q.businessName || q.customerName)}</strong>${q.businessName ? `<span>${escapeHtml(q.customerName)}</span>` : ''}<span>${escapeHtml(q.email)}</span><span>${escapeHtml(q.phone)}</span></td>
       <td class="crm-service-cell">${escapeHtml(q.address)}</td><td>${escapeHtml(walkthroughVisit(q.walkthrough.preferredDate, q.walkthrough.preferredTime))}</td>
@@ -837,6 +837,87 @@
     $('[data-mobile-walkthroughs]').innerHTML = requests.map(q => `<article class="crm-mobile-booking"><div class="crm-mobile-booking-head"><h3>${escapeHtml(q.businessName || q.customerName)}</h3>${statusBadge(q.status)}</div>${q.businessName ? `<p>${escapeHtml(q.customerName)}</p>` : ''}<p>${escapeHtml(q.address)}</p><p>${escapeHtml(walkthroughVisit(q.walkthrough.preferredDate, q.walkthrough.preferredTime))}</p>${button(q)}</article>`).join('');
     $('[data-walkthroughs-empty]').hidden = requests.length > 0;
     $('[data-walkthroughs-wrap]').hidden = !requests.length;
+  }
+
+  function walkthroughEditorMarkup(quote) {
+    const schema = window.IMAN_WALKTHROUGH;
+    const fields = quote.walkthrough.fields || {};
+    const input = (name, type = 'text', attrs = '', label = name) => `<label>${escapeHtml(label)}<input name="${escapeHtml(name)}" type="${type}" value="${escapeHtml(fields[name] === 'I’m not sure' ? '' : fields[name] || '')}" ${attrs}></label>`;
+    const select = (name, options, required = true) => `<label>${escapeHtml(name)}<select name="${escapeHtml(name)}"${required ? ' required' : ''}><option value="">Select answer</option>${options.map(value => `<option${fields[name] === value ? ' selected' : ''}>${escapeHtml(value)}</option>`).join('')}</select></label>`;
+    const textarea = (name, max = 1500) => `<label>${escapeHtml(name)}<textarea name="${escapeHtml(name)}" rows="3" maxlength="${max}">${escapeHtml(fields[name] || '')}</textarea></label>`;
+    const choices = (name, options) => `<fieldset class="crm-walkthrough-choices"><legend>${escapeHtml(name)} (optional)</legend>${options.map(value => `<label><input type="checkbox" name="${escapeHtml(name)}" value="${escapeHtml(value)}"${String(fields[name] || '').split(' | ').includes(value) ? ' checked' : ''}>${escapeHtml(value)}</label>`).join('')}</fieldset>`;
+    const unsure = (name, target) => `<label class="crm-walkthrough-checkbox"><input type="checkbox" name="${name}" value="Yes"${fields[target] === 'I’m not sure' ? ' checked' : ''}>I’m not sure</label>`;
+    return `<div class="crm-dialog-head"><div><p class="crm-eyebrow">Walkthrough request</p><h2>Edit walkthrough</h2><p>${escapeHtml(quote.businessName || quote.customerName)}</p></div><button class="crm-dialog-close" type="button" data-close-dialog aria-label="Close">×</button></div>
+      <div class="crm-dialog-body"><form class="crm-walkthrough-form" data-walkthrough-edit-form data-quote-id="${escapeHtml(quote.id)}">
+        <p class="crm-walkthrough-notice">Saving updates the request without sending a text or email.${quote.walkthrough.confirmation ? ' The existing confirmation keeps the date, time and contact details already sent to the customer.' : ' Use Confirm walkthrough separately when the visit is ready.'}</p>
+        <section><h3>Customer and property</h3><div class="crm-walkthrough-fields">
+          ${input('Business Name', 'text', 'required maxlength="160"')}${input('Full Name', 'text', 'required maxlength="120"')}
+          ${input('Contact Role', 'text', 'maxlength="100"')}${input('Email', 'email', 'required maxlength="254"')}
+          ${input('Phone', 'tel', 'required maxlength="30"')}${input('Street Address', 'text', 'required maxlength="250"')}
+          ${input('Floor or Suite', 'text', 'maxlength="100"')}${input('City', 'text', 'required maxlength="100"')}
+          ${input('ZIP Code', 'text', 'required pattern="[0-9]{5}" maxlength="5" inputmode="numeric"')}
+          ${select('Commercial Space Type', schema.spaceTypes)}
+          <div data-walkthrough-other>${input('Other Commercial Space', 'text', 'maxlength="120"')}</div>
+          <div>${input('Approximate Square Footage', 'number', 'min="1" max="10000000" step="1"')}${unsure('Square Footage Unknown', 'Approximate Square Footage')}</div>
+        </div></section>
+        <section><h3>Cleaning needs</h3>${select('Cleaning Plan', ['One-time cleaning', 'Recurring cleaning'])}
+          ${choices('Areas Needing Cleaning', schema.areas)}${choices('Conditions to Review', schema.conditions)}${textarea('Condition Details')}
+          <div data-walkthrough-restaurant>${select('Restaurant Specialty Work', ['Yes', 'No', 'Unsure'])}${textarea('Restaurant Specialty Details', 1000)}</div>
+          <div data-walkthrough-medical>${select('Medical Specialty Work', ['Yes', 'No', 'Unsure'])}${textarea('Medical Specialty Details', 1000)}</div>
+        </section>
+        <section><h3>Visit preferences</h3><div class="crm-walkthrough-fields">
+          <div>${input('Preferred Service Start Date', 'date')}${unsure('Service Start Unknown', 'Preferred Service Start Date')}</div>
+          ${input('Preferred Walkthrough Date', 'date', 'required')}${input('Preferred Walkthrough Time', 'time', '', 'Preferred walkthrough time (New York, optional)')}
+          ${input('Alternative Walkthrough Date', 'date')}${input('Alternative Walkthrough Time', 'time', '', 'Alternative time (New York, optional)')}
+        </div></section>
+        ${textarea('Walkthrough Notes', 2000)}
+        <p class="crm-action-status" data-walkthrough-edit-status role="status"></p>
+        <div class="crm-inline-actions"><button type="submit" class="crm-primary">Save changes</button><button type="button" class="crm-row-button" data-open-quote="${escapeHtml(quote.id)}">Cancel</button></div>
+      </form></div>`;
+  }
+
+  function syncWalkthroughEditor(form) {
+    const field = name => form.elements.namedItem(name);
+    for (const [flag, target] of [['Square Footage Unknown', 'Approximate Square Footage'], ['Service Start Unknown', 'Preferred Service Start Date']]) {
+      field(target).disabled = field(flag).checked;
+      field(target).required = !field(flag).checked;
+    }
+    const property = field('Commercial Space Type').value;
+    for (const [selector, visible] of [['[data-walkthrough-other]', property === 'Other'], ['[data-walkthrough-restaurant]', property === 'Restaurant / café'], ['[data-walkthrough-medical]', property === 'Medical office']]) {
+      const section = $(selector, form);
+      section.hidden = !visible;
+      for (const control of $$('input, select, textarea', section)) control.disabled = !visible;
+    }
+    field('Other Commercial Space').required = property === 'Other';
+    field('Restaurant Specialty Details').required = property === 'Restaurant / café' && field('Restaurant Specialty Work').value === 'Yes';
+    field('Medical Specialty Details').required = property === 'Medical office' && field('Medical Specialty Work').value === 'Yes';
+    const conditions = $$('input[name="Conditions to Review"]:checked', form).map(input => input.value);
+    field('Condition Details').required = conditions.length > 0 && !conditions.some(value => ['None', 'Unsure'].includes(value));
+  }
+
+  async function saveWalkthroughEdit(form) {
+    if (form.dataset.saving === 'true' || !form.reportValidity()) return;
+    const quote = quoteFormSnapshots.get(form);
+    if (!quote) return;
+    const status = $('[data-walkthrough-edit-status]', form);
+    const buttons = $$('button', form);
+    const data = new FormData(form);
+    const fields = Object.fromEntries([...window.IMAN_WALKTHROUGH.editableFields, 'Square Footage Unknown', 'Service Start Unknown']
+      .map(name => [name, data.getAll(name).join(' | ')]));
+    form.dataset.saving = 'true'; buttons.forEach(button => { button.disabled = true; });
+    status.textContent = 'Saving walkthrough details…';
+    try {
+      const result = await api('/api/crm/walkthroughs', { method: 'POST', body: JSON.stringify({ operation: 'edit', id: quote.id, version: quote.editVersion, fields }) });
+      state.quotes = state.quotes.map(item => item.id === result.request.id ? result.request : item);
+      renderCounts(); renderWalkthroughs(); renderQuotes();
+      openQuote(result.request.id);
+      toast('Walkthrough updated. No messages sent.', 'success');
+    } catch (error) {
+      status.textContent = error.message;
+      status.style.color = '#b42318';
+    } finally {
+      form.dataset.saving = 'false'; buttons.forEach(button => { button.disabled = false; });
+    }
   }
 
   function walkthroughDetailMarkup(quote) {
@@ -849,6 +930,7 @@
     const time = confirmed?.time || visit.preferredTime || '';
     return `<div class="crm-dialog-head"><div><p class="crm-eyebrow">Walkthrough request</p><h2>${escapeHtml(quote.businessName || quote.customerName)}</h2>${quote.businessName ? `<p>${escapeHtml(quote.customerName)}</p>` : ''}</div><button class="crm-dialog-close" type="button" data-close-dialog aria-label="Close">×</button></div>
       <div class="crm-dialog-body">
+        <div class="crm-inline-actions"><button type="button" class="crm-row-button" data-edit-walkthrough="${escapeHtml(quote.id)}">Edit walkthrough</button></div>
         <div class="crm-detail-grid">
           <div class="crm-detail crm-detail-wide"><span>Commercial address</span><strong>${escapeHtml(quote.address)}</strong></div>
           <div class="crm-detail"><span>Email</span><strong>${escapeHtml(quote.email)}</strong></div><div class="crm-detail"><span>Phone</span><strong>${escapeHtml(quote.phone)}</strong></div>
@@ -862,6 +944,7 @@
         <section class="crm-detail-section"><h3>${confirmed ? 'Confirmed walkthrough' : 'Confirm walkthrough'}</h3>
           ${visit.error ? `<p class="crm-walkthrough-notice is-warning">${escapeHtml(visit.error)} Refresh before confirming.</p>` : ''}
           ${confirmed ? `<p class="crm-walkthrough-notice"><strong>${escapeHtml(walkthroughVisit(confirmed.date, confirmed.time))}</strong><br>Confirmed by your team ${escapeHtml(submittedDate(confirmed.confirmedAt))}.</p>
+          ${confirmed.address ? `<p class="crm-quote-details">Confirmation address: ${escapeHtml(confirmed.address)}<br>Confirmation contacts: ${escapeHtml(confirmed.email)} · ${escapeHtml(confirmed.phone)}</p>` : ''}
           <div class="crm-walkthrough-deliveries">${['sms', 'email'].map(channel => `<p><strong>${channel === 'sms' ? 'Text message' : 'Email'}</strong>${escapeHtml(labels[confirmed[channel]?.status] || 'Check status')}${confirmed[channel]?.sentAt ? `<br>${escapeHtml(submittedDate(confirmed[channel].sentAt))}` : ''}</p>`).join('')}</div>
           ${attention ? '<p class="crm-walkthrough-notice is-warning">One or more messages need attention. Check the sending history before contacting the customer manually; this action will not resend an attempted message.</p>' : ''}` : ''}
           ${!confirmed || pending ? `<form class="crm-walkthrough-form" data-walkthrough-confirm-form data-quote-id="${escapeHtml(quote.id)}">
@@ -1553,17 +1636,20 @@
     </div>`;
   }
 
-  function openQuote(id) {
+  function openQuote(id, { editWalkthrough = false } = {}) {
     const quote = state.quotes.find((item) => item.id === id);
     if (!quote) return;
     state.selectedId = "";
     dialog.dataset.openQuoteId = id;
-    $("[data-booking-detail]").innerHTML = quote.walkthrough && !quote.deletedAt ? walkthroughDetailMarkup(quote) : quoteDetailMarkup(quote);
+    $("[data-booking-detail]").innerHTML = quote.walkthrough && !quote.deletedAt ? (editWalkthrough ? walkthroughEditorMarkup(quote) : walkthroughDetailMarkup(quote)) : quoteDetailMarkup(quote);
     // Bind each form to the version the owner actually opened, not a later background refresh.
-    for (const form of $$("[data-external-payment-form], [data-custom-payment-form], [data-quote-edit-form], [data-quote-discount-form], [data-walkthrough-confirm-form]", dialog)) {
+    for (const form of $$("[data-external-payment-form], [data-custom-payment-form], [data-quote-edit-form], [data-quote-discount-form], [data-walkthrough-confirm-form], [data-walkthrough-edit-form]", dialog)) {
       quoteFormSnapshots.set(form, JSON.parse(JSON.stringify(quote)));
     }
+    const walkthroughEditor = editWalkthrough ? $('[data-walkthrough-edit-form]', dialog) : null;
+    if (walkthroughEditor) syncWalkthroughEditor(walkthroughEditor);
     if (!dialog.open) dialog.showModal();
+    if (walkthroughEditor) walkthroughEditor.elements.namedItem('Business Name').focus();
     if (!quote.walkthrough && Array.isArray(quote.photoUpload?.scheduledReminders) && quote.photoUpload.scheduledReminders.length) {
       refreshQuotePhotoReminderStatus(quote);
     }
@@ -2758,6 +2844,8 @@
     if (bookingButton) openBooking(bookingButton.dataset.openBooking);
     const quoteButton = event.target.closest("[data-open-quote]");
     if (quoteButton) openQuote(quoteButton.dataset.openQuote);
+    const editWalkthroughButton = event.target.closest('[data-edit-walkthrough]');
+    if (editWalkthroughButton) openQuote(editWalkthroughButton.dataset.editWalkthrough, { editWalkthrough: true });
     const preparePayment = event.target.closest("[data-prepare-custom-payment]");
     if (preparePayment) {
       openQuote(preparePayment.dataset.prepareCustomPayment);
@@ -2958,6 +3046,8 @@
     if(button) previewExternalPayment(button.closest('form'));
   });
   document.addEventListener("submit", (event) => {
+    const walkthroughEditor = event.target.closest('[data-walkthrough-edit-form]');
+    if (walkthroughEditor) { event.preventDefault(); saveWalkthroughEdit(walkthroughEditor); return; }
     const externalForm=event.target.closest('[data-external-payment-form]');
     if(externalForm) {event.preventDefault();recordExternalPayment(externalForm);return;}
     const walkthroughForm = event.target.closest('[data-walkthrough-confirm-form]');
@@ -3021,6 +3111,16 @@
   });
 
   document.addEventListener("change", (event) => {
+    const walkthroughEditor = event.target.closest('[data-walkthrough-edit-form]');
+    if (walkthroughEditor) {
+      if (event.target.name === 'Conditions to Review' && event.target.checked) {
+        const exclusive = ['None', 'Unsure'].includes(event.target.value);
+        for (const checkbox of $$('input[name="Conditions to Review"]', walkthroughEditor)) {
+          if (checkbox !== event.target && (exclusive || ['None', 'Unsure'].includes(checkbox.value))) checkbox.checked = false;
+        }
+      }
+      syncWalkthroughEditor(walkthroughEditor);
+    }
     const manualSmsConsent = event.target.closest("[data-manual-sms-consent]");
     if (manualSmsConsent) {
       const source = $("[data-sms-consent-source]", manualSmsConsent.form);

@@ -9,6 +9,13 @@
   const spaceTypes = ["Office", "Retail store", "Restaurant / café", "Salon / spa", "School / daycare", "Medical office", "Warehouse", "Building common areas", "Other"];
   const areas = ["Workspaces", "Restrooms", "Kitchen / break room", "Lobby / reception", "Hallways / stairs", "Dining areas", "Storage areas", "Windows / glass", "Other"];
   const conditions = ["Construction dust / debris", "Heavy grease", "Significant clutter", "Pest activity", "Suspected mold", "Water / sewage damage", "Bodily fluids / sharps", "None", "Unsure"];
+  const editableFields = [
+    "Business Name", "Full Name", "Contact Role", "Email", "Phone", "Street Address", "Floor or Suite", "City", "ZIP Code",
+    "Commercial Space Type", "Other Commercial Space", "Approximate Square Footage", "Cleaning Plan",
+    "Areas Needing Cleaning", "Conditions to Review", "Condition Details", "Preferred Service Start Date",
+    "Preferred Walkthrough Date", "Preferred Walkthrough Time", "Alternative Walkthrough Date", "Alternative Walkthrough Time",
+    "Restaurant Specialty Work", "Restaurant Specialty Details", "Medical Specialty Work", "Medical Specialty Details", "Walkthrough Notes"
+  ];
 
   function newYorkNow(now = new Date()) {
     const parts = new Intl.DateTimeFormat("en-US", {
@@ -23,7 +30,7 @@
     throw Object.assign(new Error(message), { field, statusCode: 400 });
   }
 
-  function validate(raw = {}, now = new Date()) {
+  function validate(raw = {}, now = new Date(), { allowPastDates = false } = {}) {
     function value(field, limit, required = true) {
       const text = typeof raw[field] === "string" ? raw[field].trim() : "";
       if (required && !text) fail(field, `Please enter ${field.toLowerCase()}.`);
@@ -89,11 +96,15 @@
     const alternativeTime = timeValue("Alternative Walkthrough Time");
     if (alternativeTime && !alternativeDate) fail("Alternative Walkthrough Date", "Choose an alternative date or leave the alternative time blank.");
     const localNow = newYorkNow(now);
-    if (date < localNow.slice(0, 10)) fail("Preferred Walkthrough Date", "Please choose today or a future walkthrough date.");
-    if (time && `${date}T${time}` <= localNow) fail("Preferred Walkthrough Time", "Please choose a future walkthrough time or leave the time blank.");
-    if (alternativeDate && alternativeDate < localNow.slice(0, 10)) fail("Alternative Walkthrough Date", "Please choose today or a future alternative date.");
-    if (alternativeDate && alternativeTime && `${alternativeDate}T${alternativeTime}` <= localNow) fail("Alternative Walkthrough Time", "Please choose a future alternative time or leave the time blank.");
-    if (serviceStartDate && serviceStartDate < localNow.slice(0, 10)) fail("Preferred Service Start Date", "Please choose today or a future service start date.");
+    // Staff may correct an existing request after its preferred dates have passed.
+    // New public submissions still require current or future dates.
+    if (!allowPastDates) {
+      if (date < localNow.slice(0, 10)) fail("Preferred Walkthrough Date", "Please choose today or a future walkthrough date.");
+      if (time && `${date}T${time}` <= localNow) fail("Preferred Walkthrough Time", "Please choose a future walkthrough time or leave the time blank.");
+      if (alternativeDate && alternativeDate < localNow.slice(0, 10)) fail("Alternative Walkthrough Date", "Please choose today or a future alternative date.");
+      if (alternativeDate && alternativeTime && `${alternativeDate}T${alternativeTime}` <= localNow) fail("Alternative Walkthrough Time", "Please choose a future alternative time or leave the time blank.");
+      if (serviceStartDate && serviceStartDate < localNow.slice(0, 10)) fail("Preferred Service Start Date", "Please choose today or a future service start date.");
+    }
     const conditionDetailsRequired = Boolean(selectedConditions) && !conditionList.some(item => item === "None" || item === "Unsure");
     const conditionDetails = value("Condition Details", 1500, conditionDetailsRequired);
     const restaurant = spaceType === "Restaurant / café";
@@ -133,5 +144,5 @@
     return result;
   }
   function isWalkthrough(fields) { return fields?.["Request Type"] === requestType; }
-  return { validate, isWalkthrough, requestType, spaceTypes, areas, conditions, newYorkNow };
+  return { validate, isWalkthrough, requestType, spaceTypes, areas, conditions, editableFields, newYorkNow };
 });

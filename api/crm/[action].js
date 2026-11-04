@@ -775,7 +775,11 @@ async function handler(request, response) {
     if (action === "walkthroughs") {
       response.setHeader("Cache-Control", "no-store");
       if (request.method !== "POST") return json(response, 405, { error: "Method not allowed." });
-      return json(response, 200, { request: await require("./_walkthroughs").confirm(await readJsonBody(request)) });
+      const body = await readJsonBody(request);
+      const walkthroughs = require("./_walkthroughs");
+      if (body.operation === "edit") return json(response, 200, { request: await walkthroughs.edit(body) });
+      if (body.operation && body.operation !== "confirm") return json(response, 400, { error: "Invalid walkthrough operation." });
+      return json(response, 200, { request: await walkthroughs.confirm(body) });
     }
 
     if (action === 'additional-work') {

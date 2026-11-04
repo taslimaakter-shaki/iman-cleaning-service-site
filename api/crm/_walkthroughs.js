@@ -1,4 +1,5 @@
-const { newYorkNow } = require("../../walkthrough-fields");
+const schema = require("../../walkthrough-fields");
+const { newYorkNow } = schema;
 const fail = (message, statusCode = 400) => Object.assign(new Error(message), { statusCode });
 const parse = value => Buffer.isBuffer(value) ? JSON.parse(value.toString("utf8")) : typeof value === "string" ? JSON.parse(value) : value;
 const code = error => Number(error.response?.status || error.statusCode || error.code);
@@ -28,6 +29,7 @@ function toClient(record, confirmation = null) {
     walkthrough: { preferredDate: fields["Preferred Walkthrough Date"] || "", preferredTime: fields["Preferred Walkthrough Time"] || "",
       alternativeDate: fields["Alternative Walkthrough Date"] || "", alternativeTime: fields["Alternative Walkthrough Time"] || "",
       notes: fields["Walkthrough Notes"] || "", details: detailFields, uploadedFileCount: Number(record.photoCount || 0),
+      fields: Object.fromEntries(schema.editableFields.map(key => [key, String(fields[key] || "")])),
       canConfirm: validId(record.walkthroughConfirmationFileId), confirmation }
   };
 }
@@ -50,7 +52,8 @@ async function readConfirmation(drive, record) {
 async function hydrate(drive, record) {
   const saved = await readConfirmation(drive, record);
   if (!saved) return toClient(record);
-  const confirmation = { date: saved.date, time: saved.time, confirmedAt: saved.confirmedAt };
+  const confirmation = { date: saved.date, time: saved.time, confirmedAt: saved.confirmedAt,
+    address: saved.address, email: saved.email, phone: saved.sms };
   for (const channel of ["sms", "email"]) {
     const delivery = await readFile(drive, saved.deliveryIds[channel]);
     if (delivery && (delivery.quoteId !== record.quoteId || delivery.channel !== channel)) throw fail("Message status does not match this request.", 409);
@@ -120,6 +123,41 @@ async function sendClaimed(drive, parent, confirmation, channel) {
   await drive.files.update({ fileId: id, media: { mimeType: "application/json", body: JSON.stringify({ ...attempt, ...result }) } }, { retry: false, timeout: 15000 });
 }
 
+async function edit(body = {}) {
+  if (!validId(body.id)) throw fail("Invalid walkthrough reference.");
+  const { load } = require("./_quote-admin");
+  const found = await load("custom", body.id);
+  if (!schema.isWalkthrough(found.record.formFields) || found.record.crmQuote?.deletedAt) throw fail("Walkthrough request not found.", 404);
+  if (body.version !== found.version) throw fail("This request changed. Reopen it before saving your edits.", 409);
+  if (!body.fields || typeof body.fields !== "object" || Array.isArray(body.fields)) throw fail("Walkthrough details are required.");
+  const allowed = new Set([...schema.editableFields, "Square Footage Unknown", "Service Start Unknown"]);
+  for (const [key, value] of Object.entries(body.fields)) {
+    if (!allowed.has(key) || typeof value !== "string") throw fail("Invalid walkthrough field.");
+  }
+  const fields = schema.validate({ ...found.record.formFields, ...body.fields }, new Date(), { allowPastDates: true });
+  if (!require("../booking/_shared").isNYCServiceZip(fields["ZIP Code"])) throw fail("Enter a ZIP code within our New York City service area.");
+  const latest = await load("custom", body.id);
+  if (latest.version !== found.version) throw fail("This request changed. Reopen it before saving your edits.", 409);
+  const changedFields = schema.editableFields.filter(key => (latest.record.formFields[key] || "") !== (fields[key] || ""));
+  if (!changedFields.length) return hydrate(latest.drive, latest.record);
+  const updatedAt = new Date().toISOString();
+  const record = {
+    ...latest.record,
+    originalFormFields: latest.record.originalFormFields || latest.record.formFields,
+    formFields: { ...latest.record.formFields, ...fields },
+    crmQuote: { ...latest.record.crmQuote, revision: require("crypto").randomUUID(), updatedAt,
+      history: [...(latest.record.crmQuote?.history || []), { at: updatedAt, action: "walkthrough_edited", changedFields }] }
+  };
+  // Older quote records may contain address/contact aliases. Keep them in sync
+  // with the structured fields used by the editor and confirmation messages.
+  if ("Service Address" in record.formFields) record.formFields["Service Address"] = [fields["Street Address"], fields["Floor or Suite"], fields.City, fields.State, fields["ZIP Code"]].filter(Boolean).join(", ");
+  if ("Phone Number" in record.formFields) record.formFields["Phone Number"] = fields.Phone;
+  await latest.drive.files.update({ fileId: latest.file.id,
+    media: { mimeType: "application/json", body: JSON.stringify(record) } }, { retry: false, timeout: 15000 });
+  // Saving request details never creates a confirmation or sends a message.
+  return hydrate(latest.drive, record);
+}
+
 async function confirm(body = {}) {
   if (!validId(body.id)) throw fail("Invalid walkthrough reference.");
   const { load } = require("./_quote-admin");
@@ -159,4 +197,4 @@ async function confirm(body = {}) {
   return hydrate(found.drive, record);
 }
 
-module.exports = { toClient, hydrate, confirm, validateVisit, content };
+module.exports = { toClient, hydrate, edit, confirm, validateVisit, content };

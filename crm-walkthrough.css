@@ -1,8 +1,17 @@
 .crm-walkthrough-form { display: grid; gap: 18px; }
 .crm-walkthrough-form .crm-walkthrough-fields { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
 .crm-walkthrough-form label { display: grid; gap: 8px; font-size: .875rem; font-weight: 600; }
-.crm-walkthrough-form input { width: 100%; min-width: 0; box-sizing: border-box; padding: 12px; border: 1px solid #cadcde; border-radius: 6px; font: inherit; font-size: 1rem; color: #123b42; background: #fff; }
-.crm-walkthrough-form input:focus-visible { outline: 2px solid #0b7181; outline-offset: 2px; }
+.crm-walkthrough-form input, .crm-walkthrough-form select, .crm-walkthrough-form textarea { width: 100%; min-width: 0; box-sizing: border-box; padding: 12px; border: 1px solid #cadcde; border-radius: 6px; font: inherit; font-size: 1rem; color: #123b42; background: #fff; }
+.crm-walkthrough-form :is(input, select, textarea):focus-visible { outline: 2px solid #0b7181; outline-offset: 2px; }
+.crm-walkthrough-form section { display: grid; gap: 14px; }
+.crm-walkthrough-form h3 { margin: 0; color: var(--teal); font-size: 1rem; }
+.crm-walkthrough-form :is(input, select, textarea):disabled { background: #f0f4f4; color: #667b7e; }
+.crm-walkthrough-form input[type="checkbox"] { width: 18px; height: 18px; flex: 0 0 18px; accent-color: #0b7181; }
+.crm-walkthrough-form .crm-walkthrough-checkbox, .crm-walkthrough-choices label { display: flex; align-items: center; gap: 8px; font-weight: 400; }
+.crm-walkthrough-form .crm-walkthrough-checkbox { margin-top: 10px; }
+.crm-walkthrough-choices { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin: 0; padding: 16px; border: 1px solid #cadcde; border-radius: 8px; }
+.crm-walkthrough-choices legend { padding: 0 6px; font-size: .875rem; font-weight: 600; }
+.crm-walkthrough-form [hidden] { display: none; }
 .crm-walkthrough-form button { justify-self: start; max-width: 100%; white-space: normal; }
 .crm-walkthrough-notice { padding: 14px 16px; border: 1px solid #cbe2dc; border-radius: 8px; background: #f0f8f5; font-size: .875rem; line-height: 1.6; overflow-wrap: anywhere; }
 .crm-walkthrough-notice.is-warning { background: #fff8eb; border-color: #e7cf9f; }
@@ -16,5 +25,5 @@
 [data-view="walkthroughs"] .crm-mobile-booking-head { flex-wrap: wrap; }
 [data-view="walkthroughs"] .crm-status { max-width: 100%; white-space: normal; overflow-wrap: anywhere; }
 @media (max-width: 540px) {
-  .crm-walkthrough-form .crm-walkthrough-fields, .crm-walkthrough-deliveries { grid-template-columns: 1fr; }
+  .crm-walkthrough-form .crm-walkthrough-fields, .crm-walkthrough-deliveries, .crm-walkthrough-choices { grid-template-columns: 1fr; }
 }
