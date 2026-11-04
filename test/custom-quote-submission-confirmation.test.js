@@ -252,6 +252,34 @@ async function main() {
   assert.equal(schema.validate(simplifiedWalkthrough, now)['Conditions to Review'], '');
   assert.equal(schema.validate({ ...simplifiedWalkthrough, 'Preferred Service Start Date': '', 'Service Start Unknown': 'Yes' }, now)['Preferred Service Start Date'], 'I’m not sure');
   assert.equal(schema.validate({ ...walkthrough, 'Approximate Square Footage': '', 'Square Footage Unknown': 'Yes' }, now)['Approximate Square Footage'], 'I’m not sure');
+  // The browser submits the normalized output, which both API routes validate
+  // again. Unknown answers must survive that complete path, not just one pass.
+  for (const unknownSize of [true, false]) {
+    for (const unknownStart of [true, false]) {
+      const raw = { ...walkthrough, 'Commercial Space Type': 'Medical office', 'Medical Specialty Work': 'Unsure' };
+      if (unknownSize) {
+        raw['Square Footage Unknown'] = 'Yes';
+        delete raw['Approximate Square Footage'];
+      }
+      if (unknownStart) {
+        raw['Service Start Unknown'] = 'Yes';
+        delete raw['Preferred Service Start Date'];
+      }
+      const browserFields = schema.validate(raw, now);
+      assert.deepEqual(schema.validate(browserFields, now), browserFields, 'Normalized unknown answers can be validated again');
+      reset();
+      const req = Readable.from([JSON.stringify({ formFields: browserFields })]); req.method = 'POST';
+      const res = { setHeader() {}, end(text) { this.data = JSON.parse(text); } };
+      await start(req, res);
+      assert.equal(res.statusCode, 201, res.data.error);
+      result = await submit(browserFields);
+      assert.equal(result.statusCode, 200, result.data.error);
+      assert.equal(saved().formFields['Approximate Square Footage'], unknownSize ? 'I’m not sure' : '4500');
+      assert.equal(saved().formFields['Preferred Service Start Date'], unknownStart ? 'I’m not sure' : '2099-09-20');
+      assert.equal(saved().formFields['Medical Specialty Work'], 'Unsure');
+      assert.equal(texts.length, 1); assert.equal(customerEmails().length, 1);
+    }
+  }
   assert.throws(() => schema.validate({ ...walkthrough, 'Cleaning Plan': '' }, now), { statusCode: 400 });
   assert.throws(() => schema.validate({ ...walkthrough, 'Conditions to Review': 'None | Heavy grease' }, now), { statusCode: 400 });
   assert.throws(() => schema.validate({ ...walkthrough, 'Alternative Walkthrough Date': '', 'Alternative Walkthrough Time': '10:00' }, now), { statusCode: 400 });
@@ -265,7 +293,7 @@ async function main() {
   for (const invalid of [{ 'Preferred Walkthrough Date': '' }, { 'Preferred Walkthrough Date': '2026-09-10' }, { 'Preferred Walkthrough Time': '11:00' }, { 'Preferred Walkthrough Time': '12:00' }, { 'Preferred Walkthrough Time': '25:00' }]) {
     assert.throws(() => schema.validate({ ...today, ...invalid }, now), { statusCode: 400 });
   }
-  for (const invalid of [{ 'Full Name': '' }, { Email: 'bad email' }, { Phone: '123' }, { 'Preferred Walkthrough Date': '2000-01-01' }, { 'Preferred Walkthrough Date': '2099-02-30' }, { 'Preferred Walkthrough Time': '25:00' }, { 'Street Address': '' }, { 'ZIP Code': '90210' }, { 'Walkthrough Notes': 'x'.repeat(2001) }]) {
+  for (const invalid of [{ 'Full Name': '' }, { Email: 'bad email' }, { Phone: '123' }, { 'Preferred Walkthrough Date': '2000-01-01' }, { 'Preferred Walkthrough Date': '2099-02-30' }, { 'Preferred Walkthrough Time': '25:00' }, { 'Street Address': '' }, { 'ZIP Code': '90210' }, { 'Walkthrough Notes': 'x'.repeat(2001) }, { 'Approximate Square Footage': '' }, { 'Approximate Square Footage': '0' }, { 'Approximate Square Footage': '10000001' }, { 'Approximate Square Footage': 'unknown' }, { 'Preferred Service Start Date': '2099-02-30' }, { 'Preferred Service Start Date': '' }]) {
     reset(); result = await submit({ ...walkthrough, ...invalid });
     assert.equal(result.statusCode, 400, JSON.stringify(invalid));
     assert.equal(records.size, 0); assert.equal(emails.length, 0); assert.equal(texts.length, 0);

@@ -5,6 +5,7 @@
 })(typeof window !== "undefined" ? window : globalThis, function () {
   "use strict";
   const requestType = "Commercial walkthrough";
+  const unsureAnswer = "I’m not sure";
   const spaceTypes = ["Office", "Retail store", "Restaurant / café", "Salon / spa", "School / daycare", "Medical office", "Warehouse", "Building common areas", "Other"];
   const areas = ["Workspaces", "Restrooms", "Kitchen / break room", "Lobby / reception", "Hallways / stairs", "Dining areas", "Storage areas", "Windows / glass", "Other"];
   const conditions = ["Construction dust / debris", "Heavy grease", "Significant clutter", "Pest activity", "Suspected mold", "Water / sewage damage", "Bodily fluids / sharps", "None", "Unsure"];
@@ -73,11 +74,15 @@
     const selectedConditions = selections("Conditions to Review", conditions, false);
     const conditionList = selectedConditions.split(" | ");
     if (conditionList.length > 1 && conditionList.some(item => item === "None" || item === "Unsure")) fail("Conditions to Review", "Choose either specific conditions, None, or Unsure.");
-    const squareFeetUnknown = String(raw["Square Footage Unknown"] || "") === "Yes";
-    const squareFeet = value("Approximate Square Footage", 10, !squareFeetUnknown);
+    // The browser sends this validator's normalized output to both API routes.
+    // Accept the normalized answer as well as the original checkbox value.
+    const squareFeetUnknown = String(raw["Square Footage Unknown"] || "") === "Yes"
+      || raw["Approximate Square Footage"] === unsureAnswer;
+    const squareFeet = squareFeetUnknown ? "" : value("Approximate Square Footage", 10);
     if (squareFeet && (!/^\d+$/.test(squareFeet) || Number(squareFeet) < 1 || Number(squareFeet) > 10000000)) fail("Approximate Square Footage", "Enter a valid square footage or choose I’m not sure.");
-    const serviceStartUnknown = String(raw["Service Start Unknown"] || raw["Service Start Flexible"] || "") === "Yes";
-    const serviceStartDate = dateValue("Preferred Service Start Date", !serviceStartUnknown);
+    const serviceStartUnknown = String(raw["Service Start Unknown"] || raw["Service Start Flexible"] || "") === "Yes"
+      || raw["Preferred Service Start Date"] === unsureAnswer;
+    const serviceStartDate = serviceStartUnknown ? "" : dateValue("Preferred Service Start Date", true);
     const date = dateValue("Preferred Walkthrough Date", true);
     const time = timeValue("Preferred Walkthrough Time");
     const alternativeDate = dateValue("Alternative Walkthrough Date");
@@ -107,10 +112,10 @@
       "Commercial Space Type": spaceType,
       "Cleaning Plan": cleaningPlan,
       "Other Commercial Space": spaceType === "Other" ? value("Other Commercial Space", 120) : "",
-      "Approximate Square Footage": squareFeetUnknown ? "I’m not sure" : squareFeet,
+      "Approximate Square Footage": squareFeetUnknown ? unsureAnswer : squareFeet,
       "Areas Needing Cleaning": selectedAreas,
       "Conditions to Review": selectedConditions, "Condition Details": conditionDetails,
-      "Preferred Service Start Date": serviceStartUnknown ? "I’m not sure" : serviceStartDate,
+      "Preferred Service Start Date": serviceStartUnknown ? unsureAnswer : serviceStartDate,
       "Preferred Walkthrough Date": date, "Preferred Walkthrough Time": time,
       "Alternative Walkthrough Date": alternativeDate, "Alternative Walkthrough Time": alternativeTime,
       "Walkthrough Time Zone": "America/New_York",
