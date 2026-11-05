@@ -31,6 +31,28 @@ assert(shared.planBookingDay(iso('15:00'), 3.5, [late, mirror]), 'Linked mirror 
 const external = { ...mirror, id:'google:external' };
 assert.equal(shared.planBookingDay(iso('15:00'), 3.5, [late, external]), null);
 
+const joinedExternal = [
+  { ...external, id: 'google:first', schedule: iso('08:00'), estimate: { teamHours: 1 } },
+  { ...external, id: 'google:second', schedule: iso('09:00'), estimate: { teamHours: 1 } }
+];
+const joinedAsOne = [{ ...joinedExternal[0], estimate: { teamHours: 2 } }];
+for (const cleaning of [late, pinned]) {
+  for (const time of ['10:00', '11:30', '12:00', '14:00', '17:00']) {
+    assert.equal(
+      Boolean(shared.planBookingDay(iso(time), 3, [cleaning, { ...mirror, id: cleaning.id }, ...joinedExternal])),
+      Boolean(shared.planBookingDay(iso(time), 3, [cleaning, { ...mirror, id: cleaning.id }, ...joinedAsOne])),
+      'Merged external periods preserve fixed/flexible bookings and their linked calendar mirror'
+    );
+  }
+}
+const spanningDays = [
+  { ...external, id: 'google:overnight', schedule: '2030-11-01T08:00:00-04:00', estimate: { teamHours: 24 } },
+  ...joinedExternal
+];
+assert(shared.planBookingDay(iso('14:00'), 3, spanningDays), 'An overnight event joining morning events still leaves the afternoon available');
+assert.equal(shared.planBookingDay(iso('11:30'), 3, spanningDays), null, 'The buffer after the final joined event is enforced');
+assert(shared.planBookingDay(shared.toZonedIso('2030-11-03', '08:00'), 3, spanningDays), 'Busy periods do not spill into unrelated days');
+
 (async()=>{
  const db = new PGlite();
  await db.exec('create role anon; create role authenticated; create role service_role;');
