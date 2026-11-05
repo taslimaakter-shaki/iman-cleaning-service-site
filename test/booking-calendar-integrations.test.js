@@ -57,6 +57,17 @@ async function googleTests() {
     assert(!slots.some(s => s.date === '2026-11-07'), 'The imported event still blocks overlapping dates');
     events.length = 0;
   }
+  events.push(event('long-checkout-block', '2030-11-07T11:30:00-05:00', '2030-11-16T11:30:00-05:00'));
+  await shared.assertScheduleAvailable('2030-11-20T08:00:00-05:00', 3);
+  await assert.rejects(shared.assertScheduleAvailable('2030-11-10T08:00:00-05:00', 3), /conflicts with another booking/);
+  await assert.rejects(shared.assertScheduleAvailable('2030-11-16T13:00:00-05:00', 3), /conflicts with another booking/);
+  await shared.assertScheduleAvailable('2030-11-16T13:30:00-05:00', 3);
+  events.length = 0;
+  for (const extra of [{ transparency: 'transparent' }, { status: 'cancelled' }]) {
+    events.push(event('ignored-long-block', '2030-11-07T00:00:00-05:00', '2030-12-07T00:00:00-05:00', extra));
+    await shared.assertScheduleAvailable('2030-11-20T08:00:00-05:00', 3);
+    events.length = 0;
+  }
   stored=[{id:'long',status:'Confirmed',schedule:'2030-09-12T08:00:00-04:00',estimate:{manHours:6,teamHours:3,calendarReservationHours:4,arrivalPreference:{key:'any_day',flexible:true,windowStart:'08:00',windowEnd:'16:30'}}}];
   slots=await shared.availableSlotsForPackage({teamHours:1},2,new Date('2030-09-10T12:00:00Z'));
   assert(slots.some(s=>s.date==='2030-09-12'&&s.arrivalOptions.includes('morning')));
