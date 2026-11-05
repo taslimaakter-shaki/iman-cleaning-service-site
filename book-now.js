@@ -2776,6 +2776,7 @@
         const optionSlots = slotsForArrivalOption(option);
         const button = document.createElement("button");
         button.type = "button";
+        button.dataset.arrivalOption = option.key;
         button.className = `booking-arrival-option${state.arrivalPreference === option.key ? " is-selected" : ""}`;
         button.disabled = !optionSlots.length;
         button.setAttribute("role", "radio");
@@ -4147,8 +4148,26 @@
   });
 
   const minimumDialog = document.querySelector("[data-minimum-dialog]");
-  const belowBookingMinimum = () => !Number.isFinite(Number(state.package?.price)) || Math.round(Number(state.package.price) * 100) < 12000;
+  const belowBookingMinimum = (pkg = state.package) => !Number.isFinite(Number(pkg?.price)) || Math.round(Number(pkg.price) * 100) < 12000;
   const showBookingMinimum = () => {
+    if (state.serviceKey === "recurring" && state.arrivalPreference === "any_day" &&
+        !belowBookingMinimum(state.packageBeforeArrivalDiscount)) {
+      const anytimePrice = money(state.package.price);
+      clearArrivalDiscount();
+      state.arrivalPreference = "";
+      scheduleSelect.value = "";
+      state.highestStageReached = 6;
+      renderQuoteOverview(state.package);
+      renderPriceBreakdown(state.package);
+      goToStep(3);
+      renderCalendar();
+      renderTimeSlots();
+      const fixedArrivalPrice = state.promo ? ` for ${money(state.package.price)} with your recurring discount` : "";
+      setSchedulerStatus(`Anytime brings your total to ${anytimePrice}, below the $120 minimum. Choose an available Morning or Afternoon time${fixedArrivalPrice}.`, "info");
+      const nextOption = arrivalOptions?.querySelector('button:not([data-arrival-option="any_day"]):not(:disabled)');
+      (nextOption || calendarGrid?.querySelector("button.is-available"))?.focus();
+      return;
+    }
     minimumDialog.querySelector("[data-minimum-current-total]").textContent = new Intl.NumberFormat("en-US", { style: "currency", currency: "USD" }).format(Number(state.package?.price) || 0);
     minimumDialog.querySelector("[data-minimum-shortfall]").textContent = new Intl.NumberFormat("en-US", { style: "currency", currency: "USD" }).format(Math.max(0, 12000 - Math.round(Number(state.package?.price || 0) * 100)) / 100);
     const undiscounted = packageWithoutPromo(state.packageBeforeArrivalDiscount || state.package);
