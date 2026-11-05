@@ -2327,7 +2327,10 @@
     minimumFractionDigits: Number(amount) % 1 ? 2 : 0,
     maximumFractionDigits: 2
   }).format(amount);
-  const bookingDeposit = (amount) => Math.round(Number(amount || 0) * 25) / 100;
+  const bookingDeposit = (amount) => {
+    const totalCents = Math.round(Number(amount || 0) * 100);
+    return Math.round(totalCents / 4) / 100;
+  };
   const hours = (amount) => Number(amount).toLocaleString("en-US", { maximumFractionDigits: 3 });
   const teamTime = (amount) => {
     const totalMinutes = Math.round(Number(amount) * 60);
@@ -2421,7 +2424,13 @@
       total: totalCents / 100
     };
   };
-  const sendSavedQuote = async ({ previousQuoteUrl = state.savedQuoteUrl } = {}) => {
+  const sendSavedQuote = ({ previousQuoteUrl = state.savedQuoteUrl } = {}) => {
+    const saveRequest = {};
+    state.pendingQuoteSave = saveRequest;
+    saveRequest.done = saveQuoteLink(saveRequest, previousQuoteUrl);
+    return saveRequest.done;
+  };
+  const saveQuoteLink = async (saveRequest, previousQuoteUrl) => {
     const wantsQuoteText = Boolean(quoteContactForm?.elements.quoteCommunicationConsent?.checked);
     const wantsMarketingTexts = Boolean(quoteContactForm?.elements.smsMarketingConsent?.checked);
     showSavedQuoteDelivery("Your price is ready. Checking and saving your quote…");
@@ -2447,11 +2456,14 @@
         })
       });
       const data = await response.json().catch(() => ({}));
+      if (state.pendingQuoteSave !== saveRequest) return "";
       if (!response.ok) throw new Error(data.error || "Your secure quote link could not be sent.");
       state.savedQuoteUrl = data.quoteUrl || state.savedQuoteUrl;
       state.quoteRevision = data.quoteRevision || '';
       if (data.unchanged) {
-        if (data.package) {
+        // Once the customer is choosing an appointment, the active package
+        // includes their arrival selection. A saved link contains only the base quote.
+        if (data.package && state.step === 2 && !state.arrivalPreference) {
           state.package = data.package;
           state.promo = data.package.promoDiscount || null;
           state.packageBeforePromo = state.promo ? packageWithoutPromo(data.package) : null;
@@ -2482,8 +2494,11 @@
       }
       return state.savedQuoteUrl;
     } catch (error) {
+      if (state.pendingQuoteSave !== saveRequest) return "";
       showSavedQuoteDelivery(error.message || "Your price is ready, but the secure quote link could not be sent.", "error");
       return "";
+    } finally {
+      if (state.pendingQuoteSave === saveRequest) state.pendingQuoteSave = null;
     }
   };
   const openSameDayDialog = () => {
@@ -2594,6 +2609,9 @@
     const response = await availabilityRequest();
     const data = await response.json().catch(() => ({}));
     if (!response.ok) throw new Error(data.error || "The package could not be loaded.");
+    state.pendingQuoteSave = null;
+    resetAppointmentSelection();
+    state.highestStageReached = 5;
     state.package = data.package;
     state.promo = null;
     state.packageBeforePromo = null;
@@ -2671,6 +2689,15 @@
     if (state.packageBeforeArrivalDiscount) state.package = state.packageBeforeArrivalDiscount;
     state.packageBeforeArrivalDiscount = null;
     state.arrivalDiscount = null;
+  };
+  const resetAppointmentSelection = () => {
+    clearArrivalDiscount();
+    state.arrivalPreference = "";
+    state.selectedDate = "";
+    state.availableSlots = [];
+    state.availableDates = [];
+    state.availableMonths = [];
+    scheduleSelect?.replaceChildren(new Option("Select an appointment", ""));
   };
   const applyArrivalDiscount = (option) => {
     clearArrivalDiscount();
@@ -4361,8 +4388,18 @@
     });
   });
 
+  let startingCheckout = false;
+  window.addEventListener("pageshow", (event) => {
+    if (!event.persisted || !startingCheckout) return;
+    startingCheckout = false;
+    if (state.step === 4 && state.package) {
+      syncCheckoutReview();
+      setStatus(document.querySelector("[data-checkout-status]"), "");
+    }
+  });
   form.addEventListener("submit", async (event) => {
     event.preventDefault();
+    if (startingCheckout) return;
     const status = document.querySelector("[data-checkout-status]");
     if (belowBookingMinimum()) { showBookingMinimum(); return; }
     if (!state.agreementReview.accepted || state.agreementReview.contextFingerprint !== agreementContextFingerprint()) {
@@ -4387,15 +4424,13 @@
     checkoutZip.value = finalZip;
     applyServiceZip(finalZip);
 
+    startingCheckout = true;
     payButton.disabled = true;
     payButton.textContent = "Starting secure payment…";
-    setStatus(status, "Opening secure Stripe checkout…", "info");
 
     const priorities = Array.from(form.querySelectorAll('input[name="priorities"]:checked')).map((input) => input.value);
     const payload = {
       accountMode: accountMode(),
-      savedQuoteToken: state.savedQuoteUrl ? new URL(state.savedQuoteUrl, window.location.origin).searchParams.get("quote") || "" : "",
-      quoteRevision: state.quoteRevision || '',
       packageId: state.package.id,
       packageIds: state.packageIds,
       pricingMode: state.pricingMode,
@@ -4441,6 +4476,16 @@
     };
 
     try {
+      if (state.pendingQuoteSave) {
+        setStatus(status, "Finishing your saved quote before opening checkout…", "info");
+        await state.pendingQuoteSave.done;
+        if (state.step !== 4 || !state.agreementReview.accepted || agreementContextFingerprint() !== payload.agreementReview.contextFingerprint) {
+          throw new Error("Your booking details changed. Review your current quote before payment.");
+        }
+      }
+      payload.savedQuoteToken = state.savedQuoteUrl ? new URL(state.savedQuoteUrl, window.location.origin).searchParams.get("quote") || "" : "";
+      payload.quoteRevision = state.quoteRevision || "";
+      setStatus(status, "Opening secure Stripe checkout…", "info");
       const response = await fetch("/api/booking/checkout", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -4463,8 +4508,9 @@
       }
       window.location.href = data.checkoutUrl;
     } catch (error) {
+      startingCheckout = false;
       setStatus(status, error.message || "Secure checkout could not be started.");
-      payButton.textContent = `Pay ${money(bookingDeposit(state.package.price))} & confirm booking`;
+      payButton.textContent = `Pay ${money(bookingDeposit(state.package?.price))} & confirm booking`;
       syncAgreementControls();
     }
   });
@@ -4571,6 +4617,27 @@
     return draft;
   };
 
+  const restoreDraftAppointment = (savedSchedule) => {
+    if (!Array.isArray(state.availableSlots) || !state.availableSlots.length) {
+      resetAppointmentSelection();
+      return;
+    }
+    const savedSelectedDate = state.selectedDate;
+    const savedCalendarMonthIndex = Math.max(0, Number(state.calendarMonthIndex) || 0);
+    const savedArrival = arrivalOption(state.arrivalPreference);
+    loadSchedulerSlots(state.availableSlots);
+    if (state.availableDates.includes(savedSelectedDate)) state.selectedDate = savedSelectedDate;
+    state.calendarMonthIndex = Math.min(savedCalendarMonthIndex, Math.max(0, state.availableMonths.length - 1));
+    const offeredSlots = savedArrival ? slotsForArrivalOption(savedArrival) : [];
+    if (offeredSlots.length) {
+      state.arrivalPreference = savedArrival.key;
+      applyArrivalDiscount(savedArrival);
+      if (scheduleSelect && offeredSlots.some(slot => slot.value === savedSchedule)) scheduleSelect.value = savedSchedule;
+    }
+    renderCalendar();
+    renderTimeSlots();
+  };
+
   const restoreBookingDraft = (draft = readBookingDraft()) => {
     if (!draft) return false;
 
@@ -4655,28 +4722,17 @@
       syncMobileQuestion();
 
       if (state.package) {
+        restoreDraftAppointment(String(draft.fields.schedule || ""));
         renderQuoteOverview(state.package);
         syncQuotedServiceCopy();
         renderPriceBreakdown(state.package);
-
-        const savedSchedule = String(draft.fields.schedule || "");
-        const savedSelectedDate = state.selectedDate;
-        const savedCalendarMonthIndex = state.calendarMonthIndex;
-        if (Array.isArray(state.availableSlots) && state.availableSlots.length) {
-          loadSchedulerSlots(state.availableSlots);
-          state.selectedDate = savedSelectedDate;
-          state.calendarMonthIndex = Math.min(
-            savedCalendarMonthIndex,
-            Math.max(0, state.availableMonths.length - 1)
-          );
-          if (scheduleSelect && savedSchedule) scheduleSelect.value = savedSchedule;
-          renderCalendar();
-          renderTimeSlots();
-        }
       }
 
-      const restoredStep = state.package ? Math.min(4, Math.max(1, Number(state.step) || 1)) : 1;
-      if (restoredStep === 4 && value("schedule")) syncCheckoutReview();
+      let restoredStep = state.package ? Math.min(4, Math.max(1, Number(state.step) || 1)) : 1;
+      if (restoredStep >= 3 && !state.availableSlots.length) restoredStep = 2;
+      if (restoredStep === 4 && (!state.arrivalPreference || !value("schedule"))) restoredStep = 3;
+      if (state.package && restoredStep < Number(savedState.step)) state.highestStageReached = restoredStep === 2 ? 5 : 6;
+      if (restoredStep === 4) syncCheckoutReview();
       goToStep(restoredStep);
       closeZipGate();
       const saveCopy = document.querySelector("[data-booking-save-copy]");
@@ -4723,21 +4779,13 @@
     const editedStage = currentStageNumber();
     if (editedStage >= state.highestStageReached) return;
     if (editedStage <= 4) {
+      state.pendingQuoteSave = null;
       state.highestStageReached = editedStage;
+      resetAppointmentSelection();
       state.package = null;
       state.promo = null;
       state.packageBeforePromo = null;
-      state.arrivalPreference = "";
-      state.arrivalDiscount = null;
-      state.packageBeforeArrivalDiscount = null;
       state.initialSlots = [];
-      state.availableSlots = [];
-      state.availableDates = [];
-      state.availableMonths = [];
-      state.selectedDate = "";
-      if (scheduleSelect) {
-        scheduleSelect.replaceChildren(new Option("Select an appointment", ""));
-      }
       resetAgreementReview();
     } else if (editedStage === 6) {
       state.highestStageReached = 6;

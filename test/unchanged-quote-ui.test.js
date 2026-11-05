@@ -1,6 +1,6 @@
 const assert=require('node:assert/strict'),fs=require('node:fs'),vm=require('node:vm');
 const source=fs.readFileSync('book-now.js','utf8');
-const state={savedQuoteUrl:'https://example.test/book-now.html?quote=original-token',pricingMode:'hourly_formula',eligibility:{},unitDetails:[],promo:null};
+const state={step:2,savedQuoteUrl:'https://example.test/book-now.html?quote=original-token',pricingMode:'hourly_formula',eligibility:{},unitDetails:[],promo:null};
 let payload,message;
 const context=vm.createContext({state,URL,window:{location:{origin:'https://example.test'}},quoteContactForm:{elements:{quoteCommunicationConsent:{checked:true},smsMarketingConsent:{checked:false}}},value:name=>name,showSavedQuoteDelivery:text=>message=text,renderQuoteOverview(){},renderPriceBreakdown(){},fetch:async(_url,args)=>{payload=JSON.parse(args.body);return{ok:true,json:async()=>({unchanged:true,quoteUrl:state.savedQuoteUrl,quoteRevision:'saved-revision',package:{price:100},delivery:{email:'not_resent',sms:'not_resent'}})};}});
 vm.runInContext(source.slice(source.indexOf('  const sendSavedQuote ='),source.indexOf('  const openSameDayDialog =')),context);
