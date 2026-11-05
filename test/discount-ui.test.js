@@ -14,6 +14,7 @@ let source = fs.readFileSync(path.join(__dirname,'../crm.js'),'utf8');
 source = source.replace(/\}\)\(\);\s*$/, 'window.test={state,externalPaymentMarkup,quoteEditorMarkup,updateDiscountPreview,saveQuoteDiscount,quoteFormSnapshots};})();');
 vm.runInNewContext(source,{document,window,navigator:{userAgent:'Test',platform:'Test'},sessionStorage:{getItem:()=>''},localStorage:{getItem:()=>''},setTimeout:()=>1,clearTimeout(){},console,
   fetch: async (url,options) => { assert.equal(url,'/api/crm/quotes'); requests.push({url,...options}); return {ok:true,json:async()=>options.method?{ok:true,paymentReady:true}:{quotes:window.test.state.quotes}}; }});
+window.imanBookingDiscountName = require('../booking-discount-names');
 const api = window.test;
 const quote = {id:'SELECTED',type:'Instant quote',editSource:'saved',editVersion:'version-1',customerName:'Selected Customer',editFields:{amountCents:19000,discountCents:5000,discountLabel:'Welcome',rushFeeCents:0,submittedFields:[]}};
 api.state.token='mock-admin';api.state.quotes=[quote,{...quote,id:'OTHER'}];
@@ -33,7 +34,7 @@ api.state.token='mock-admin';api.state.quotes=[quote,{...quote,id:'OTHER'}];
     {kind:'promoDiscount',label:'Fall cleaning discount',code:'FALL10',percent:5,amountCents:1052,application:'before_tax'},
     {kind:'arrivalDiscount',label:'Anytime that day arrival discount',percent:5,amountCents:1052,application:'before_tax'}]};
   const appliedMarkup=api.quoteEditorMarkup(appliedQuote);
-  assert.match(appliedMarkup,/Applied discounts/);assert.match(appliedMarkup,/FALL10/);assert.match(appliedMarkup,/Anytime that day/);
+  assert.match(appliedMarkup,/Applied discounts/);assert.match(appliedMarkup,/Fall Cleaning Discount/);assert.doesNotMatch(appliedMarkup,/FALL10/);assert.match(appliedMarkup,/Anytime that day/);
   assert.equal((appliedMarkup.match(/−\$10.52/g)||[]).length,2);
   api.quoteFormSnapshots.set(form,appliedQuote);form.elements.discount.value='0';api.updateDiscountPreview(form);
   assert.match(form.querySelector('[data-discount-preview]').innerHTML,/\$206.09/);
@@ -58,8 +59,19 @@ api.state.token='mock-admin';api.state.quotes=[quote,{...quote,id:'OTHER'}];
   assert.match(html,/data-checkout-tax-row hidden/);
   assert(js.includes("querySelector('[data-quote-discount-label]').textContent"));
   assert.match(html,/data-quote-discount-description/);
-  assert.match(js,/promo discount/);
-  assert.match(js,/off before tax/);
+  assert.doesNotMatch(html, /name="promoCode"|data-apply-promo/);
+  const priceRow = js.slice(js.indexOf("    const discountRow = document.querySelector('[data-quote-discount-row]')"), js.indexOf("    const discountedSubtotalRow = document.querySelector('[data-quote-discounted-subtotal-row]')"));
+  for (const [code, label, percent, application] of [
+    ['FALL10', 'Fall Cleaning Discount', 5, 'before_tax'],
+    ['RETURNING5', 'Returning Customer Discount', 5, 'before_tax'],
+    ['WEEKLY20', 'Recurring Client Discount', 20, 'after_tax'],
+    ['BIWEEKLY15', 'Recurring Client Discount', 15, 'after_tax'],
+    ['MONTHLY10', 'Recurring Client Discount', 10, 'after_tax']
+  ]) {
+    vm.runInNewContext(priceRow, {window, document, state:{}, money:()=>'$10', pkg:{promoDiscount:{code,label:code,percent,application,amountCents:1000}}});
+    assert.equal(document.querySelector('[data-quote-discount-label]').textContent,label);
+    assert.equal(document.querySelector('[data-quote-discount-description]').textContent,percent+'% off '+application.replace('_',' '));
+  }
   assert.match(js,/state\.promo\?\.amountCents/);
   assert.match(js,/state.quoteRevision = data.quoteRevision/);
   console.log('Discount UI passed: every quote source, selected-customer binding, replacement preview, exact deposit/balance, escaping, paid protection and no message/charge.');

@@ -1,6 +1,6 @@
 const fs=require('node:fs'),vm=require('node:vm'),assert=require('node:assert/strict');
 const source=fs.readFileSync('book-now.js','utf8');
-const code=source.slice(source.indexOf('  const applyPromoData ='),source.indexOf('  const applyPromo ='));
+const code=source.slice(source.indexOf('  const applyPromoData ='),source.indexOf('  document.querySelector("[data-continue-contact]").addEventListener'));
 const original={serviceKey:'recurring',subtotalCents:20000,taxCents:1775,priceCents:21775,taxRate:.08875,protectedPetFeeCents:5000,protectedPetSubtotalCents:4592};
 for(const serviceKey of ['standard','recurring']) {
  const pkg={...original,serviceKey},state={package:pkg};const noop=()=>{};

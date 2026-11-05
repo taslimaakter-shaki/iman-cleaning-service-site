@@ -1,10 +1,11 @@
 const { cleanText } = require("./_shared");
+const bookingDiscountName = require("../../booking-discount-names");
 
 const eligibleServices = Object.freeze(["standard", "recurring", "deep", "move", "hourly", "window", "post", "commercial"]);
 const PROMOTIONS = Object.freeze({
   FALL10: Object.freeze({
     code: "FALL10",
-    label: "First-time customer fall discount",
+    label: bookingDiscountName("FALL10"),
     percent: 5,
     startsAt: "2026-09-22T04:00:00.000Z",
     expiresAt: "2026-12-21T04:59:59.999Z",
@@ -13,7 +14,7 @@ const PROMOTIONS = Object.freeze({
   }),
   RETURNING5: Object.freeze({
     code: "RETURNING5",
-    label: "Returning customer discount",
+    label: bookingDiscountName("RETURNING5"),
     percent: 5,
     eligibleServices
   })
@@ -55,21 +56,21 @@ function normalizeAddress(value) {
 function promotionForCode(value, now = new Date()) {
   const code = normalizeCode(value);
   const promotion = PROMOTIONS[code];
-  if (!promotion) throw promoError("That promo code is not valid.", 400, "PROMO_INVALID");
+  if (!promotion) throw promoError("This discount is unavailable.", 400, "PROMO_INVALID");
   const time = now instanceof Date ? now.getTime() : new Date(now).getTime();
-  if (!Number.isFinite(time)) throw promoError("The promo code could not be checked. Please try again.", 500);
+  if (!Number.isFinite(time)) throw promoError("Your discount could not be checked. Please try again.", 500);
   if (promotion.startsAt && time < Date.parse(promotion.startsAt)) {
-    throw promoError("This promo code is not active yet.", 409, "PROMO_NOT_STARTED");
+    throw promoError("This discount is not active yet.", 409, "PROMO_NOT_STARTED");
   }
   if (promotion.expiresAt && time > Date.parse(promotion.expiresAt)) {
-    throw promoError(`This promo code expired on ${promotion.expiresLabel}.`, 410, "PROMO_EXPIRED");
+    throw promoError(`This discount expired on ${promotion.expiresLabel}.`, 410, "PROMO_EXPIRED");
   }
   return promotion;
 }
 
 function assertEligibleService(promotion, serviceKey) {
   if (!promotion.eligibleServices.includes(cleanText(serviceKey, 40).toLowerCase())) {
-    throw promoError("This promo code is valid for all eligible IMAN cleaning services.", 409, "PROMO_INELIGIBLE");
+    throw promoError("This discount is unavailable for the selected service.", 409, "PROMO_INELIGIBLE");
   }
 }
 
@@ -143,7 +144,7 @@ function assertCustomerPromotion(code, eligible) {
   if (requested.code === "RETURNING5") {
     throw promoError("The returning customer discount requires a previous paid booking with your email or phone number.", 409, "PROMO_RETURNING_ONLY");
   }
-  throw promoError("FALL10 is available only to first-time customers.", 409, "PROMO_FIRST_TIME_ONLY");
+  throw promoError("The Fall Cleaning Discount is available only to first-time customers.", 409, "PROMO_FIRST_TIME_ONLY");
 }
 
 function applyQuotedPromotion(pkg, code, bookings, customer) {
@@ -157,10 +158,10 @@ function applyQuotedPromotion(pkg, code, bookings, customer) {
 }
 
 function applyPromotion(pkg, promotion) {
-  if (!pkg) throw promoError("Your quote must be completed before applying a promo code.");
+  if (!pkg) throw promoError("Your quote must be completed before applying a discount.");
   assertEligibleService(promotion, pkg.serviceKey);
   if (pkg.manualDiscount?.amountCents) {
-    throw promoError("This promo code cannot be combined with another discount.", 409, "PROMO_NOT_COMBINABLE");
+    throw promoError("These discounts cannot be combined.", 409, "PROMO_NOT_COMBINABLE");
   }
   const originalSubtotalCents = Math.max(0, Math.round(Number(pkg.subtotalCents) || 0));
   const originalTaxCents = Math.max(0, Math.round(Number(pkg.taxCents) || 0));

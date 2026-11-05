@@ -18,7 +18,7 @@ global.Date = class extends RealDate {
 const promotion = promotionForCode(" fall10 ", activeDate);
 assert.equal(promotion.code, "FALL10");
 assert.equal(promotion.percent, 5);
-assert.equal(promotion.label, "First-time customer fall discount");
+assert.equal(promotion.label, "Fall Cleaning Discount");
 assert.throws(
   () => promotionForCode("FALL10", new Date("2026-12-21T05:00:00.000Z")),
   (error) => error.code === "PROMO_EXPIRED" && /expired on December 20, 2026/.test(error.message)

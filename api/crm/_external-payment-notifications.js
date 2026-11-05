@@ -1,4 +1,5 @@
 const { buildPaymentReceiptPdf } = require('../booking/_payment-receipt-pdf');
+const bookingDiscountName = require('../../booking-discount-names');
 const { buildBookingConfirmationPdf } = require('../booking/_confirmation-pdf');
 const money = cents => new Intl.NumberFormat('en-US',{style:'currency',currency:'USD'}).format(cents/100);
 function content(booking, payment) {
@@ -32,7 +33,7 @@ function paymentRecord(booking, payment) {
     paymentStatus:'paid', balanceCollection:'manual_after_service',
     subtotalBeforeTax:subtotal ? money(subtotal) : '', salesTax:money(Math.round(Number(estimate.tax || 0)*100)),
     discountedSubtotalBeforeTax:subtotal ? money(discountedSubtotal) : '',
-    discountLabel:discount.label || discount.code || 'Discount', discountAmount:discount.amountCents ? '-'+money(discount.amountCents) : '',
+    discountLabel:bookingDiscountName(discount.code || estimate.promoCode, discount.label), discountAmount:discount.amountCents ? '-'+money(discount.amountCents) : '',
     arrivalDiscountLabel:arrival.label || 'Flexible arrival discount', arrivalDiscountAmount:arrival.amountCents ? '-'+money(arrival.amountCents) : '',
     manualDiscountLabel:manual.label || 'Manual discount (after tax)', manualDiscountAmount:manual.amountCents ? '-'+money(manual.amountCents) : ''};
 }

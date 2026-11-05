@@ -1,4 +1,5 @@
 const { staffingOptions } = require("../booking/_staffing-options");
+const bookingDiscountName = require("../../booking-discount-names");
 const {
   centsToDollars,
   cleanText,
@@ -178,7 +179,7 @@ function buildRecord({ session, siteUrl, source = "success_page" }) {
     discountedSubtotalBeforeTax: discountedSubtotalCents ? money(discountedSubtotalCents) : "",
     salesTax: taxCents ? money(taxCents) : "",
     discountApplication,
-    discountLabel: promoDiscountCents ? cleanText(metadata.promo_code || metadata.discount_label || "Discount") : "",
+    discountLabel: promoDiscountCents ? bookingDiscountName(metadata.promo_code, metadata.discount_label) : "",
     discountAmount: promoDiscountCents ? `-${money(promoDiscountCents)}` : "",
     arrivalDiscountLabel: arrivalDiscountCents ? cleanText(metadata.arrival_discount_label || "Flexible arrival discount") : "",
     arrivalDiscountAmount: arrivalDiscountCents ? `-${money(arrivalDiscountCents)}` : "",
@@ -234,7 +235,7 @@ function recordText(record) {
     `Service date: ${record.serviceDate}`,
     `Service start time: ${record.serviceTime}`,
     record.subtotalBeforeTax ? `Service subtotal before tax: ${record.subtotalBeforeTax}` : "",
-    record.discountAmount ? `${record.discountLabel}${record.discountApplication === "before_tax" ? " (before tax)" : ""}: ${record.discountAmount}` : "",
+    record.discountAmount ? `${bookingDiscountName("", record.discountLabel)}${record.discountApplication === "before_tax" ? " (before tax)" : ""}: ${record.discountAmount}` : "",
     record.arrivalDiscountAmount ? `${record.arrivalDiscountLabel} (before tax): ${record.arrivalDiscountAmount}` : "",
     record.discountedSubtotalBeforeTax ? `Discounted subtotal before tax: ${record.discountedSubtotalBeforeTax}` : "",
     record.salesTax ? `NY sales tax (8.875%): ${record.salesTax}` : "",
@@ -429,9 +430,7 @@ function buildCustomerEmail({ record, booking = null, invoicePdf, confirmationPd
       : "");
   const remainingValue = Number(String(record.remainingAmount).replace(/[^0-9.-]/g, ""));
   const hasRemainingBalance = Number.isFinite(remainingValue) && remainingValue > 0;
-  const discountLabel = /^FALL10\b/i.test(record.discountLabel || "")
-    ? "FALL10 discount"
-    : record.discountLabel || "Discount";
+  const discountLabel = bookingDiscountName("", record.discountLabel);
   const appointmentDetails = [
     ["Date", appointment.date],
     ["Estimated arrival time", appointment.time],

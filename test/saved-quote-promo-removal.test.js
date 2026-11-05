@@ -56,7 +56,7 @@ function browser(original) {
     section('  const ARRIVAL_OPTIONS =', '  const setSchedulerStatus ='),
     // Run the real pricing normalization; only the DOM display is omitted.
     section('  const renderPriceBreakdown =', '    const breakdown = document.querySelector("[data-price-breakdown]")') + '\n};',
-    section('  const removePromo =', '  const applyPromo ='),
+    section('  const removePromo =', '  document.querySelector("[data-continue-contact]").addEventListener'),
     section('  const restoreSavedQuote =', '  const savedQuoteToken ='),
     section('  const agreementContextFingerprint =', '  const syncAgreementControls =')
   ].join('\n'), context);

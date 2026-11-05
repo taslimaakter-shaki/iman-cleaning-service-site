@@ -11,6 +11,7 @@ const repeat = {...initial,id:'repeat',schedule:'2030-10-10',address:'123 Exampl
 let deliveries = 0;
 const sandbox = {module:{exports:{}},require(name) {
   if(name === './_shared') return {...shared,listAllBookings:async()=>[initial,repeat],readJsonBody:async request=>request.body,json:(_res,status,data)=>({status,data})};
+  if(name === '../../booking-discount-names') return require('../booking-discount-names');
   if(name === './_promo') return promo;
   if(name === './_manage') return {...management,requestVerificationForBooking:async booking=>{deliveries++;assert.equal(booking.id,'initial');return {challenge:'mock',destination:'your saved phone'};}};
   throw new Error(name);

@@ -1,4 +1,5 @@
 const { staffingOptions } = require("./_staffing-options");
+const bookingDiscountName = require("../../booking-discount-names");
 const crypto = require("crypto");
 const {
   HOLD_MINUTES,
@@ -552,14 +553,12 @@ module.exports = async function handler(request, response) {
     const appliedDiscounts = [pkg.promoDiscount, pkg.manualDiscount, pkg.arrivalDiscount]
       .filter((discount) => Number(discount?.amountCents || 0) > 0);
     const visibleDiscount = appliedDiscounts.length ? {
-      label: appliedDiscounts.map((discount) => [discount.code, discount.label].filter(Boolean).join(" — ")).join(" + "),
+      label: appliedDiscounts.map(discount => bookingDiscountName(discount.code, discount.label)).join(" + "),
       amountCents: appliedDiscounts.reduce((sum, discount) => sum + Number(discount.amountCents || 0), 0)
     } : null;
     const originalTotalCents = Number(pkg.originalTotalCents || 0) ||
       (visibleDiscount ? pkg.priceCents + Number(visibleDiscount.amountCents || 0) : pkg.priceCents);
-    const discountName = visibleDiscount
-      ? [visibleDiscount.code, visibleDiscount.label].filter(Boolean).join(" — ") || "Discount"
-      : "";
+    const discountName = visibleDiscount?.label || "";
     const stripeLineItems = {
       "line_items[0][price_data][currency]": "usd",
       "line_items[0][price_data][unit_amount]": depositAmountCents,
@@ -663,8 +662,8 @@ module.exports = async function handler(request, response) {
     };
     if (visibleDiscount) {
       Object.assign(stripeCheckoutParams, {
-        "invoice_creation[invoice_data][custom_fields][0][name]": "Promotion",
-        "invoice_creation[invoice_data][custom_fields][0][value]": discountName.slice(0, 30),
+        "invoice_creation[invoice_data][custom_fields][0][name]": "Applied discount",
+        "invoice_creation[invoice_data][custom_fields][0][value]": appliedDiscounts.length > 1 ? `${appliedDiscounts.length} discounts applied` : discountName.slice(0, 30),
         "invoice_creation[invoice_data][custom_fields][1][name]": "Original service total",
         "invoice_creation[invoice_data][custom_fields][1][value]": `$${(originalTotalCents / 100).toFixed(2)}`,
         "invoice_creation[invoice_data][custom_fields][2][name]": "Discount",

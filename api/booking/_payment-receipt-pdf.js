@@ -1,4 +1,5 @@
 const PDFDocument = require("pdfkit");
+const bookingDiscountName = require("../../booking-discount-names");
 
 const COLORS = {
   ink: "#16363d",
@@ -135,7 +136,7 @@ function buildPaymentReceiptPdf({ booking = null, record }) {
     const paidAmount = record?.paidAmount || "$0.00";
     const appointment = appointmentParts(booking, record);
     const remainingNumber = Number(String(record?.remainingAmount || "0").replace(/[^0-9.-]/g, ""));
-    const discountLabel = /^FALL10\b/i.test(record?.discountLabel || "") ? "FALL10 discount" : safeText(record?.discountLabel || "Discount");
+    const discountLabel = safeText(bookingDiscountName("", record?.discountLabel));
 
     const drawPageBrand = () => {
       doc.rect(0, 0, doc.page.width, 8).fill(COLORS.teal);

@@ -259,10 +259,11 @@ const record = {
   assert.match(decoded, /https:\/\/www\.imancleaningservice\.com\/move-in-move-out-cleaning\.html/);
   assert.match(decoded, /View Move-In Cleaning Details &amp; Inclusions/);
   assert.match(decoded, /Your Payment Summary/);
-  assert.ok(decoded.indexOf("Service subtotal") < decoded.indexOf("FALL10 discount"));
-  assert.ok(decoded.indexOf("FALL10 discount") < decoded.indexOf("NY sales tax \(8\.875%\)"));
+  assert.ok(decoded.indexOf("Service subtotal") < decoded.indexOf("Fall Cleaning Discount"));
+  assert.ok(decoded.indexOf("Fall Cleaning Discount") < decoded.indexOf("NY sales tax \(8\.875%\)"));
   assert.match(decoded, /Service subtotal: \$514\.58/);
-  assert.match(decoded, /FALL10 discount: -\$51\.46/);
+  assert.doesNotMatch(decoded, /FALL10/);
+  assert.match(decoded, /Fall Cleaning Discount: -\$51\.46/);
   assert.match(decoded, /Discounted subtotal: \$463\.12/);
   assert.match(decoded, /NY sales tax \(8\.875%\): \$41\.10/);
   assert.match(decoded, /Final service price: \$504\.22/);

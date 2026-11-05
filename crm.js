@@ -1054,7 +1054,7 @@
     const label = channel === "email" ? "emails" : "SMS messages";
     const preview = await refreshMarketingCampaign();
     if (!preview || !preview.remaining[channel]) return;
-    if (!window.confirm(`Send the FALL10 campaign to ${preview.remaining[channel]} eligible ${label}? Opt-outs and prior deliveries will be suppressed.`)) return;
+    if (!window.confirm(`Send the Fall Cleaning Discount campaign to ${preview.remaining[channel]} eligible ${label}? Opt-outs and prior deliveries will be suppressed.`)) return;
     const status = $("[data-marketing-campaign-status]");
     $$('[data-send-marketing-channel]').forEach((item) => { item.disabled = true; });
     let totalSent = 0;
@@ -1544,7 +1544,7 @@
       const preview=$('[data-external-payment-preview]',form); preview.hidden=false;
       preview.innerHTML=`<p><strong>${escapeHtml(data.customerName)}</strong><br>${escapeHtml(data.service)}<br>${escapeHtml(data.address)}<br>${escapeHtml(data.scheduleLabel)}</p>
         <p>Total: <strong>${escapeHtml(money(data.totalCents))}</strong> · Required deposit: ${escapeHtml(money(data.depositCents))}<br>Already paid: ${escapeHtml(money(data.paidCents))} · Outstanding: ${escapeHtml(money(data.remainingCents))}</p>
-        ${data.promoDiscount?.amountCents ? `<p>${escapeHtml(data.promoDiscount.label || 'Promotion')}: −${escapeHtml(money(data.promoDiscount.amountCents))}</p>` : ''}
+        ${data.promoDiscount?.amountCents ? `<p>${escapeHtml(window.imanBookingDiscountName(data.promoDiscount.code, data.promoDiscount.label))}: −${escapeHtml(money(data.promoDiscount.amountCents))}</p>` : ''}
         ${data.arrivalDiscount?.amountCents ? `<p>${escapeHtml(data.arrivalDiscount.label)}: −${escapeHtml(money(data.arrivalDiscount.amountCents))}</p>` : ''}
         <p>${escapeHtml(data.terms)}</p>`;
       const fields=$('[data-external-payment-fields]',form); fields.hidden=false; fields.disabled=data.remainingCents<=0;
@@ -1864,7 +1864,7 @@
 
   function appliedDiscountsMarkup(quote, includeManual = true) {
     const discounts = (quote.appliedDiscounts || []).filter(item => includeManual || item.kind !== 'manualDiscount');
-    return discounts.map(item => `<div><span>${escapeHtml(item.label)}${item.code && !item.label.includes(item.code) ? ` (${escapeHtml(item.code)})` : ''}${item.percent ? ` — ${escapeHtml(String(item.percent))}%` : ''} (${item.application === 'after_tax' ? 'after tax' : 'before tax'})</span><strong>−${money(item.amountCents)}</strong></div>`).join('');
+    return discounts.map(item => `<div><span>${escapeHtml(window.imanBookingDiscountName(item.code, item.label))}${item.percent ? ` — ${escapeHtml(String(item.percent))}%` : ''} (${item.application === 'after_tax' ? 'after tax' : 'before tax'})</span><strong>−${money(item.amountCents)}</strong></div>`).join('');
   }
 
   function quoteEditorMarkup(quote) {
@@ -1875,7 +1875,7 @@
     const input = (name, label, type = "text", extra = "") => `<label>${label}<input name="${name}" type="${type}" value="${escapeHtml(f[name] ?? "")}" ${extra}></label>`;
     return `<section class="crm-quote-editor">
       ${(quote.appliedDiscounts || []).length ? `<h3>Applied discounts</h3><div class="crm-payment-totals">${appliedDiscountsMarkup(quote)}<div><span>Current total, including tax</span><strong>${money(quote.amountCents)}</strong></div></div><p>These discounts are already included in the quote total.</p>` : ''}
-      ${quote.savedPromoCode ? `<p>Saved promotion: <strong>${escapeHtml(quote.savedPromoCode)}</strong>. Its final amount and any flexible-arrival discount are confirmed when the customer selects an appointment and checks out.</p>` : ''}
+      ${quote.savedPromoCode ? `<p>Saved discount: <strong>${escapeHtml(window.imanBookingDiscountName(quote.savedPromoCode))}</strong>. Its final amount and any flexible-arrival discount are confirmed when the customer selects an appointment and checks out.</p>` : ''}
       <div class="crm-inline-actions"><button type="button" class="crm-primary" data-toggle-quote-editor${locked}>Edit quote</button><button type="button" class="crm-row-button" data-toggle-quote-discount${locked}>Add / edit discount</button><button type="button" class="crm-row-button crm-danger-button" data-delete-quote="${escapeHtml(quote.id)}">Delete quote</button></div>
       ${quote.editLocked ? '<p>Payment has already been received. This quote is protected. Use the booking’s additional-work, rescheduling or refund controls for changes.</p>' : ""}
       ${!quote.editLocked ? `<form data-quote-discount-form data-quote-id="${escapeHtml(quote.id)}" hidden>
@@ -2149,7 +2149,7 @@
       <section class="crm-detail-section">
         <h3>Payment</h3>
         <div class="crm-payment-summary"><div><span>Total</span><strong>${money(payment.totalCents)}</strong></div><div><span>Paid</span><strong>${money(payment.paidCents)}</strong></div><div><span>Remaining</span><strong>${money(payment.remainingCents)}</strong></div></div>
-        ${booking.estimate?.promoDiscount?.amountCents ? `<p class="crm-complete-note"><strong>${escapeHtml(booking.estimate.promoCode || booking.estimate.promoDiscount.code || "Promo")}</strong> applied: ${escapeHtml(String(booking.estimate.promoDiscount.percent || 0))}% off (${money(booking.estimate.promoDiscount.amountCents)}). Original total: ${money(booking.estimate.originalTotalCents || (payment.totalCents + booking.estimate.promoDiscount.amountCents))}.</p>` : ""}
+        ${booking.estimate?.promoDiscount?.amountCents ? `<p class="crm-complete-note"><strong>${escapeHtml(window.imanBookingDiscountName(booking.estimate.promoCode || booking.estimate.promoDiscount.code, booking.estimate.promoDiscount.label))}</strong> applied: ${escapeHtml(String(booking.estimate.promoDiscount.percent || 0))}% off (${money(booking.estimate.promoDiscount.amountCents)}). Original total: ${money(booking.estimate.originalTotalCents || (payment.totalCents + booking.estimate.promoDiscount.amountCents))}.</p>` : ""}
         <p class="crm-complete-note">${booking.status === "Cancelled"
           ? (booking.estimate?.cancellation?.refundCents
             ? `${escapeHtml(booking.estimate.cancellation.label || "Booking canceled")}. Payment status: ${escapeHtml(String(paymentStatus).replace(/_/g, " "))}. A ${money(booking.estimate.cancellation.refundCents)} refund was submitted and any uncaptured balance authorization was released.`

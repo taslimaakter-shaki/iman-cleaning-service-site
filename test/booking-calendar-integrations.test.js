@@ -103,6 +103,7 @@ async function paidConfirmationTests() {
   const calls=[];let paid=true,booking={id:'BK-PAID',status:'New',estimate:{teamHours:9}};
   const shared={cleanText:x=>String(x||''),centsToDollars:x=>(x/100).toFixed(2),getGoogleClients:()=>{calls.push('notify');throw new Error('Mock notification outage');}};
   const handler=load('api/quote/_payment-record.js',{
+    '../../booking-discount-names':require('../booking-discount-names'),
     './_shared':shared,
     '../booking/_shared':{confirmBooking:async()=>{calls.push('confirm');booking.status='Confirmed';return {booking:clone(booking)};},updateBooking:async(id,patch)=>{calls.push('payment-record');booking={...booking,...clone(patch)};return booking;}},
     '../booking/_confirmation-pdf':{},'../booking/_payment-receipt-pdf':{},'../booking/_notifications':{}

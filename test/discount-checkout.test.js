@@ -42,6 +42,7 @@ function load(file, dependencies, extras = {}) {
     './_deposit-payment': { prepare: async (id,params) => { assert.equal(booking.id,id); assert.equal(booking.estimate.calendarReservation.state,'draft'); assert.equal(params['metadata[payment_amount_cents]'],booking.estimate.payment.depositCents); return {url:'/booking-payment.html#test'}; } },
     './_arrival-preference': require('../api/booking/_arrival-preference'),
     './_promo': require('../api/booking/_promo'),
+    '../../booking-discount-names': require('../booking-discount-names'),
     './_calendar': { newReservation: () => ({ attempt: 'test' }), attachCheckout: async () => {}, cleanupCheckout: async () => {} }
   }, { fetch: async (url, options) => {
     assert.equal(url, 'https://api.stripe.com/v1/checkout/sessions');
@@ -186,6 +187,10 @@ function load(file, dependencies, extras = {}) {
     await handler(request, {});
     assert.equal(result.status, 201, result.error);
     assert.equal(booking.estimate.promoCode, selectedCode ? 'RETURNING5' : '');
+    if (selectedCode) {
+      assert.equal(stripe.get('invoice_creation[invoice_data][custom_fields][0][value]'), 'Returning Customer Discount');
+      assert.doesNotMatch(stripe.get('invoice_creation[invoice_data][description]'), /RETURNING5|FALL10/);
+    }
     assert.equal(stripe.get('metadata[total_amount_cents]'), String(acceptedPrice * 100));
     assert.equal(stripe.get('line_items[0][price_data][unit_amount]'), String(acceptedPrice * 25));
   }

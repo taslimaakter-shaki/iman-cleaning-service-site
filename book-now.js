@@ -343,10 +343,6 @@
   const agreementReviewButtonCopy = document.querySelector("[data-agreement-review-button-copy]");
   const agreementReviewStatus = document.querySelector("[data-agreement-review-status]");
   const payButton = document.querySelector("[data-pay-button]");
-  const promoInput = form.elements.promoCode;
-  const promoStatus = document.querySelector("[data-promo-status]");
-  const applyPromoButton = document.querySelector("[data-apply-promo]");
-  const removePromoButton = document.querySelector("[data-remove-promo]");
   let agreementContentLoaded = false;
   let agreementReturnFocus = null;
   let currentAccount = null;
@@ -3176,12 +3172,12 @@
         : pkg.manualDiscount;
       discountRow.hidden = !displayedDiscount?.amountCents;
       document.querySelector('[data-quote-discount-label]').textContent = promoDiscount
-        ? `${promoDiscount.code} promo discount`
+        ? window.imanBookingDiscountName(promoDiscount.code, promoDiscount.label)
         : `${displayedDiscount?.label || 'Discount'} (after tax)`;
       const discountDescription = document.querySelector('[data-quote-discount-description]');
       if (discountDescription) {
         discountDescription.textContent = promoDiscount
-          ? `${promoDiscount.label || 'Customer discount'} — ${promoDiscount.percent}% off before tax`
+          ? `${promoDiscount.percent}% off ${promoDiscount.application === "after_tax" ? "after tax" : "before tax"}`
           : "Applied after tax";
       }
       document.querySelector('[data-quote-discount]').textContent = `−${money((displayedDiscount?.amountCents || 0) / 100)}`;
@@ -4200,7 +4196,7 @@
       const originalSubtotalCents = Math.round(Number(state.packageBeforePromo?.subtotalCents ?? state.package.subtotalCents) || 0);
       const discountedSubtotalCents = Math.round(Number(state.promo.discountedSubtotalCents ?? state.package.discountedSubtotalCents) || 0);
       document.querySelector("[data-checkout-original-total]").textContent = money(originalSubtotalCents / 100);
-      document.querySelector("[data-checkout-promo-label]").textContent = `${state.promo.label || state.promo.code} — ${state.promo.percent}% off ${state.promo.application === "after_tax" ? "after tax" : "before tax"}`;
+      document.querySelector("[data-checkout-promo-label]").textContent = `${window.imanBookingDiscountName(state.promo.code, state.promo.label)} — ${state.promo.percent}% off ${state.promo.application === "after_tax" ? "after tax" : "before tax"}`;
       document.querySelector("[data-checkout-promo-discount]").textContent = `−${money(state.promo.amountCents / 100)}`;
       document.querySelector("[data-checkout-discounted-subtotal]").textContent = money(discountedSubtotalCents / 100);
       document.querySelector("[data-checkout-tax]").textContent = money(Number(state.package.taxCents || 0) / 100);
@@ -4217,12 +4213,6 @@
       const originalSubtotalCents = Math.round(Number(state.package.originalSubtotalCents ?? state.packageBeforePromo?.subtotalCents ?? state.package.subtotalCents) || 0);
       document.querySelector("[data-checkout-original-total]").textContent = money(originalSubtotalCents / 100);
     }
-    if (promoInput) {
-      promoInput.value = state.promo?.code || promoInput.value;
-      promoInput.disabled = Boolean(state.promo);
-    }
-    if (removePromoButton) removePromoButton.hidden = !state.promo;
-    if (applyPromoButton) applyPromoButton.disabled = Boolean(state.promo);
     const finalLaborHours = document.querySelector("[data-final-labor-hours]");
     if (finalLaborHours) finalLaborHours.textContent = hours(state.package.manHours);
     document.querySelector("[data-pay-button]").textContent = `Pay ${money(deposit)} & confirm booking`;
@@ -4233,31 +4223,24 @@
     }
   };
 
-  const removePromo = ({ announce = true, preserveArrival = true } = {}) => {
+  const removePromo = ({ preserveArrival = true } = {}) => {
     const selectedArrival = preserveArrival ? arrivalOption(state.arrivalPreference) : null;
     clearArrivalDiscount();
     state.package = state.packageBeforePromo || packageWithoutPromo(state.package);
     state.packageBeforePromo = null;
     state.promo = null;
-    if (promoInput) {
-      promoInput.value = "";
-      promoInput.disabled = false;
-    }
-    if (removePromoButton) removePromoButton.hidden = true;
-    if (applyPromoButton) applyPromoButton.disabled = false;
     if (selectedArrival) applyArrivalDiscount(selectedArrival);
     renderQuoteOverview(state.package);
     renderPriceBreakdown(state.package);
     resetAgreementReview();
     syncCheckoutReview();
-    if (announce) setStatus(promoStatus, "Promo code removed.", "info");
     persistBookingDraft();
   };
 
   const applyPromoData = (data) => {
     const selectedArrival = arrivalOption(state.arrivalPreference);
     clearArrivalDiscount();
-    if (state.promo) removePromo({ announce: false, preserveArrival: false });
+    if (state.promo) removePromo({ preserveArrival: false });
     const original = state.package;
     const originalSubtotalCents = Math.round(Number(original.subtotalCents) || 0);
     const originalTotalCents = Math.round(Number(original.priceCents || original.totalCents) || 0);
@@ -4293,60 +4276,12 @@
       total: totalCents / 100
     };
     if (selectedArrival) applyArrivalDiscount(selectedArrival);
-    if (promoInput) {
-      promoInput.value = data.code;
-      promoInput.disabled = true;
-    }
-    if (removePromoButton) removePromoButton.hidden = false;
     renderQuoteOverview(state.package);
     renderPriceBreakdown(state.package);
     resetAgreementReview();
     syncCheckoutReview();
     persistBookingDraft();
   };
-
-  const applyPromo = async () => {
-    const code = String(promoInput?.value || "").replace(/\s+/g, "").toUpperCase();
-    if (!code) {
-      setStatus(promoStatus, "Enter a promo code.");
-      promoInput?.focus();
-      return;
-    }
-    applyPromoButton.disabled = true;
-    applyPromoButton.textContent = "Checking…";
-    setStatus(promoStatus, "Checking promo code…", "info");
-    try {
-      const address = [value("address"), value("address2"), value("city"), value("state"), value("zip")]
-        .filter(Boolean).join(", ");
-      const response = await fetch("/api/booking/promo", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          promoCode: code,
-          serviceKey: state.package?.serviceKey,
-          customer: { email: value("email"), phone: value("phone"), address }
-        })
-      });
-      const data = await response.json().catch(() => ({}));
-      if (!response.ok) throw new Error(data.error || "The promo code could not be applied.");
-      applyPromoData(data);
-      setStatus(promoStatus, `✓ ${data.code} applied — ${data.percent}% off.`, "success");
-    } catch (error) {
-      setStatus(promoStatus, error.message || "The promo code could not be applied.");
-    } finally {
-      applyPromoButton.disabled = Boolean(state.promo);
-      applyPromoButton.textContent = "Apply";
-    }
-  };
-
-  applyPromoButton?.addEventListener("click", applyPromo);
-  promoInput?.addEventListener("keydown", (event) => {
-    if (event.key === "Enter") {
-      event.preventDefault();
-      applyPromo();
-    }
-  });
-  removePromoButton?.addEventListener("click", () => removePromo());
 
   document.querySelector("[data-continue-contact]").addEventListener("click", async () => {
     if (!state.arrivalPreference || !value("schedule")) {

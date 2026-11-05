@@ -40,7 +40,7 @@ module.exports = async function handler(request, response) {
     });
   } catch (error) {
     return json(response, error.statusCode || 500, {
-      error: error.message || "The promo code could not be checked.",
+      error: error.message || "Your discount could not be checked.",
       code: error.code || "PROMO_ERROR"
     });
   }

@@ -17,7 +17,7 @@ const payment = {operationId:'mock-operation-001',method:'zelle',reference:'MOCK
   await send(booking,payment,'email');
   const raw=messages[0];
   for(const expected of ['multipart/alternative','Appointment Details','Your Payment Summary','Before Our Team Arrives',
-    'Payment method: Zelle','FALL10 discount: -$10.52','Anytime that day arrival discount: -$10.52','Deposit paid: -$51.52',
+    'Payment method: Zelle','Fall Cleaning Discount: -$10.52','Anytime that day arrival discount: -$10.52','Deposit paid: -$51.52',
     'Remaining balance: $154.57','Iman-Cleaning-Payment-Receipt.pdf','Iman-Cleaning-Booking-Record-BK-MOCK.pdf',
     'No automatic card hold or charge will be made.']) assert(raw.includes(expected),expected);
   assert(!raw.includes('temporarily authorized approximately 48 hours'),'Zelle must not promise a card hold');

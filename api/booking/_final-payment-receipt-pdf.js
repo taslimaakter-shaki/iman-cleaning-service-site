@@ -1,4 +1,5 @@
 const PDFDocument = require("pdfkit");
+const bookingDiscountName = require("../../booking-discount-names");
 
 const COLORS = {
   ink: "#16363d",
@@ -42,10 +43,9 @@ function formatDate(value, includeTime = false) {
 function discountDetails(estimate = {}) {
   const discount = estimate.promoDiscount || estimate.recurringDiscount || estimate.manualDiscount || {};
   const amountCents = Math.max(0, Math.round(Number(discount.amountCents) || 0));
-  const rawLabel = safeText(discount.label || estimate.promoCode || "Discount");
   return {
     amountCents,
-    label: /^FALL10\b/i.test(rawLabel) ? "FALL10 discount" : rawLabel
+    label: safeText(bookingDiscountName(discount.code || estimate.promoCode, discount.label))
   };
 }
 

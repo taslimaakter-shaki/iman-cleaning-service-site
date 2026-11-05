@@ -1,7 +1,7 @@
 const assert = require("node:assert/strict");
 const { applyRecurringDiscount, completedBookingForOrder, customerFirstName, discountForDays, verifyRecurringDiscount } = require("../api/booking/_recurring-discount");
 
-assert.deepEqual(discountForDays(7), { code: "WEEKLY20", label: "Weekly Cleaning Discount", percent: 20 });
+assert.deepEqual(discountForDays(7), { code: "WEEKLY20", label: "Recurring Client Discount", percent: 20 });
 assert.equal(discountForDays(12).percent, 20);
 assert.equal(discountForDays(13).percent, 15);
 assert.equal(discountForDays(24).percent, 15);

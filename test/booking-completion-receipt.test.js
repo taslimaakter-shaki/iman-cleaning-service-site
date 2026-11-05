@@ -49,7 +49,7 @@ function booking() {
     depositCents: 12606,
     finalPaymentCents: 37816,
     paidCents: 50422,
-    discount: { amountCents: 5146, label: "FALL10 discount" }
+    discount: { amountCents: 5146, label: "Fall Cleaning Discount" }
   });
 
   const pdf = await buildFinalPaymentReceiptPdf({ booking: current });

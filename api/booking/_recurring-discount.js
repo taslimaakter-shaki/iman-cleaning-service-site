@@ -1,5 +1,6 @@
 const { cleanText, json, listAllBookings, readJsonBody } = require("./_shared");
 const { bookingHasSuccessfulPayment, sameCustomerOrAddress } = require("./_promo");
+const bookingDiscountName = require("../../booking-discount-names");
 
 function recurringError(message, statusCode = 400, code = "RECURRING_INVALID") {
   return Object.assign(new Error(message), { statusCode, code });
@@ -33,17 +34,16 @@ function calendarDate(value) {
 }
 
 function discountForDays(days) {
-  if (days >= 7 && days <= 12) return { code: "WEEKLY20", label: "Weekly Cleaning Discount", percent: 20 };
-  if (days >= 13 && days <= 24) return { code: "BIWEEKLY15", label: "Biweekly Cleaning Discount", percent: 15 };
-  if (days >= 25 && days <= 40) return { code: "MONTHLY10", label: "Monthly Cleaning Discount", percent: 10 };
-  if (days >= 41 && days <= 365) return { code: "RETURNING5", label: "Returning Customer Discount", percent: 5 };
+  const plan = Object.values(plans).find(item => days >= item.min && days <= item.max);
+  if (plan) return { code: plan.code, label: plan.label, percent: plan.percent };
+  if (days >= 41 && days <= 365) return { code: "RETURNING5", label: bookingDiscountName("RETURNING5"), percent: 5 };
   return null;
 }
 
 const plans = {
-  weekly: { min: 7, max: 12, percent: 20, code: "WEEKLY20", label: "Weekly Cleaning Discount" },
-  biweekly: { min: 13, max: 24, percent: 15, code: "BIWEEKLY15", label: "Biweekly Cleaning Discount" },
-  monthly: { min: 25, max: 40, percent: 10, code: "MONTHLY10", label: "Monthly Cleaning Discount" }
+  weekly: { min: 7, max: 12, percent: 20, code: "WEEKLY20", label: bookingDiscountName("WEEKLY20") },
+  biweekly: { min: 13, max: 24, percent: 15, code: "BIWEEKLY15", label: bookingDiscountName("BIWEEKLY15") },
+  monthly: { min: 25, max: 40, percent: 10, code: "MONTHLY10", label: bookingDiscountName("MONTHLY10") }
 };
 function recurringContext(bookings, previousOrderNumber, requestedPlan) {
   const initial = completedBookingForOrder(bookings, previousOrderNumber);
