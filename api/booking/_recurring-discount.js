@@ -109,7 +109,7 @@ async function handler(request, response) {
     if (request.method !== "POST") return json(response, 405, { error: "Method not allowed." });
     const body = await readJsonBody(request);
     if (body.action === "request-repeat-code" || body.action === "repeat-details") {
-      const bookings = await listAllBookings();
+      const bookings = await listAllBookings({ complete: true });
       const original = completedBookingForOrder(bookings, body.previousOrderNumber);
       const context = recurringContext(bookings, body.previousOrderNumber);
       const latest = completedBookingForOrder(bookings, context.previousOrderNumber);
@@ -132,11 +132,11 @@ async function handler(request, response) {
         eligibility: { ...estimate.eligibility, requestedService: "recurring" }, priorities: latest.addons || [] });
     }
     if (body.lookupOnly === true) {
-      const bookings = await listAllBookings();
+      const bookings = await listAllBookings({ complete: true });
       const booking = completedBookingForOrder(bookings, body.previousOrderNumber);
       return json(response, 200, { valid: true, firstName: customerFirstName(booking), repeatBooking: Boolean(completedBookingForOrder(bookings, recurringContext(bookings, body.previousOrderNumber, body.recurringPlan).previousOrderNumber).estimate?.recurringDiscount), ...recurringContext(bookings, body.previousOrderNumber, body.recurringPlan) });
     }
-    const discount = verifyRecurringDiscount(await listAllBookings(), body);
+    const discount = verifyRecurringDiscount(await listAllBookings({ complete: true }), body);
     return json(response, 200, { valid: true, ...discount });
   } catch (error) {
     return json(response, error.statusCode || 500, { error: error.message || "The recurring discount could not be verified.", code: error.code || "RECURRING_ERROR" });

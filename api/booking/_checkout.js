@@ -380,7 +380,7 @@ module.exports = async function handler(request, response) {
     let recurringDiscount = null;
     if (pkg.serviceKey === "recurring") {
       const recurring = require("./_recurring-discount");
-      recurringDiscount = recurring.verifyRecurringDiscount(await listAllBookings(), {
+      recurringDiscount = recurring.verifyRecurringDiscount(await listAllBookings({ complete: true }), {
         previousOrderNumber: body.recurringOrderNumber,
         recurringPlan: body.recurringPlan,
         schedule: slot.value,
