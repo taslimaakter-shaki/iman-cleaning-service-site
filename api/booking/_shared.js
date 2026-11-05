@@ -1844,13 +1844,39 @@ function flexibleBooking(record, now = Date.now()) {
     && Date.parse(record.schedule) > now;
 }
 
+function calendarBusyPeriods(records) {
+  const appointments = records.filter(record => record.source !== "google-calendar");
+  const knownIds = new Set(appointments.map(record => record.id));
+  const external = records
+    .filter(record => record.source === "google-calendar" && !knownIds.has(record.id))
+    .map(bookingInterval)
+    .sort((left, right) => left.start - right.start);
+  const periods = [];
+  const gap = APPOINTMENT_GAP_HOURS * 3600000;
+  for (const interval of external) {
+    const previous = periods[periods.length - 1];
+    // There is no room for a cleaning plus travel between these busy events.
+    if (previous && interval.start <= previous.end + gap) {
+      previous.end = Math.max(previous.end, interval.end);
+    } else {
+      periods.push({ ...interval });
+    }
+  }
+  return appointments.concat(periods.map((period, index) => ({
+    id: `google:busy-period-${index}`,
+    source: "google-calendar",
+    status: "Confirmed",
+    schedule: new Date(period.start).toISOString(),
+    estimate: { teamHours: (period.end - period.start) / 3600000 }
+  })));
+}
+
 function planBookingDay(startIso, reservedHours, records, now = Date.now()) {
   const date = localDateString(new Date(startIso));
   const open = Date.parse(toZonedIso(date, OPEN_TIME));
   const close = Date.parse(toZonedIso(date, CLOSE_TIME));
   const gap = APPOINTMENT_GAP_HOURS * 3600000;
-  const knownIds = new Set(records.filter(b => b.source !== 'google-calendar').map(b => b.id));
-  const bookings = records.filter(b => !(b.source === 'google-calendar' && knownIds.has(b.id)));
+  const bookings = calendarBusyPeriods(records);
   const jobs = [];
   for (const booking of bookings) {
     const interval = bookingInterval(booking);
@@ -1920,6 +1946,7 @@ function timeStringForDate(date) {
 }
 
 function availableSlotsForDate(pkg, dateString, bookings = [], minimumStartMs = 0) {
+  bookings = calendarBusyPeriods(bookings);
   const open = new Date(toZonedIso(dateString, OPEN_TIME)).getTime();
   const close = new Date(toZonedIso(dateString, CLOSE_TIME)).getTime();
   const duration = pkg.teamHours * 60 * 60 * 1000;

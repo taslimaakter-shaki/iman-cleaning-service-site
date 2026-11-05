@@ -47,6 +47,13 @@ async function googleTests() {
   slots=await shared.availableSlotsForPackage({teamHours:9},2,new Date('2030-09-10T12:00:00Z'),'booking-own');
   assert(slots.some(s=>s.date==='2030-09-12'&&s.time==='08:00'),'Own Google mirror does not prevent rescheduling');
   events.length=0;
+  events.push(event('early-a', '2030-09-12T08:00:00-04:00', '2030-09-12T09:00:00-04:00'));
+  events.push(event('early-b', '2030-09-12T09:00:00-04:00', '2030-09-12T10:00:00-04:00'));
+  slots = await shared.availableSlotsForPackage({ teamHours: 2 }, 2, new Date('2030-09-10T12:00:00Z'));
+  assert(slots.some(s => s.date === '2030-09-12' && s.time === '14:00' && s.flexibleEligible), 'Back-to-back imported events leave the afternoon bookable');
+  await shared.assertScheduleAvailable('2030-09-12T12:00:00-04:00', 3);
+  await assert.rejects(shared.assertScheduleAvailable('2030-09-12T11:30:00-04:00', 3), /conflicts with another booking/);
+  events.length = 0;
   for (const block of [
     { id: 'vacation', start: { date: '2026-11-07' }, end: { date: '2026-11-16' } },
     event('vacation-across-dst', '2026-10-31T00:00:00-04:00', '2026-11-09T00:00:00-05:00')

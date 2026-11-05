@@ -14,6 +14,32 @@ const vacation = {
   schedule: '2026-11-07T00:00:00-05:00', estimate: { teamHours: 216 }
 };
 const smallCleaning = shared.calculateHourlyCleaningQuote(4);
+const busy = (id, start, hours) => ({
+  id, source: "google-calendar", status: "Confirmed",
+  schedule: `2030-11-20T${start}:00-05:00`, estimate: { teamHours: hours }
+});
+const combined = busy("combined", "08:00", 2);
+const expectedAfternoon = shared.availableSlotsForDate(smallCleaning, "2030-11-20", [combined]);
+assert(expectedAfternoon.some(slot => slot.time === "14:00"));
+for (const events of [
+  [busy("a", "08:00", 1), busy("b", "09:00", 1)],
+  [busy("b", "09:00", 1), busy("a", "08:00", 1)],
+  [busy("a", "08:00", 1.5), busy("b", "09:00", 1)],
+  [combined, busy("inside", "08:30", .5), combined]
+]) {
+  const original = JSON.stringify(events);
+  assert.deepEqual(shared.availableSlotsForDate(smallCleaning, "2030-11-20", events), expectedAfternoon);
+  assert(shared.planBookingDay("2030-11-20T12:00:00-05:00", 3, events));
+  assert.equal(shared.planBookingDay("2030-11-20T11:30:00-05:00", 3, events), null);
+  assert.equal(JSON.stringify(events), original, "Calendar normalization must not rewrite source records");
+}
+assert.deepEqual(
+  shared.availableSlotsForDate(smallCleaning, "2030-11-20", [busy("a", "08:00", 1), busy("b", "10:00", 1)]),
+  shared.availableSlotsForDate(smallCleaning, "2030-11-20", [busy("span", "08:00", 3)]),
+  "An unbookable gap between busy events must not hide the free afternoon"
+);
+const separated = [busy("a", "08:00", 1), busy("b", "16:00", 1)];
+assert(shared.planBookingDay("2030-11-20T11:00:00-05:00", 3, separated), "Keep genuinely bookable gaps");
 assert.equal(shared.bookingDurationHours(vacation), 216);
 for (const day of ['2026-11-06', '2026-11-16', '2026-11-20']) {
   assert.deepEqual(shared.availableSlotsForDate(smallCleaning, day, [vacation]),
