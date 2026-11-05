@@ -1,7 +1,7 @@
 const { cleanText } = require("./_shared");
 const bookingDiscountName = require("../../booking-discount-names");
 
-const eligibleServices = Object.freeze(["standard", "recurring", "deep", "move", "hourly", "window", "post", "commercial"]);
+const eligibleServices = Object.freeze(["standard", "deep", "move", "hourly", "window", "post", "commercial"]);
 const PROMOTIONS = Object.freeze({
   FALL10: Object.freeze({
     code: "FALL10",

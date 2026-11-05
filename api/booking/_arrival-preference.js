@@ -29,6 +29,9 @@ function assertArrivalPreferenceEligible(pkg, preferenceValue) {
   const preference = typeof preferenceValue === "object"
     ? preferenceValue
     : arrivalPreferenceForKey(preferenceValue, pkg.teamHours);
+  if (preference.key === "any_day" && pkg.serviceKey === "recurring") {
+    return { ...preference, label: "Anytime arrival", percent: 0 };
+  }
   return preference;
 }
 

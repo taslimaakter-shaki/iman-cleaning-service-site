@@ -8,20 +8,23 @@ function quote(booking, key, keep = false, slot = null) {
   let preference = arrival.arrivalPreferenceForKey(key, e.teamHours || e.hours);
   if (keep && e.arrivalPreference?.flexible) preference = { ...preference, ...e.arrivalPreference, start: e.arrivalPreference.windowStart || preference.start, end: e.arrivalPreference.windowEnd || preference.end, fixedStart: false };
   if (slot && preference.fixedStart) preference = arrival.preferenceForSlot(preference, slot);
-  arrival.assertArrivalPreferenceEligible(e, preference);
+  const serviceKey = e.recurringDiscount ? 'recurring' : (e.serviceKey || booking.service);
+  preference = arrival.assertArrivalPreferenceEligible({ ...e, serviceKey }, preference);
   const previousTotalCents = Number(payment.cleaningPriceCents ?? payment.totalCents ?? cents(e.total));
   const previousDiscount = e.arrivalDiscount || null;
-  const same = key === (e.arrivalPreference?.key || 'exact') && (keep || !['morning','afternoon'].includes(key) || !e.arrivalDiscount?.amountCents);
+  const keepDiscount = keep || !previousDiscount?.amountCents || preference.percent > 0;
+  const same = keepDiscount && key === (e.arrivalPreference?.key || 'exact') && (keep || !['morning','afternoon'].includes(key) || !e.arrivalDiscount?.amountCents);
   const subtotalCents = cents(e.subtotal);
   const previousTaxCents = cents(e.tax);
   const previousDiscountCents = Number(previousDiscount?.amountCents || 0);
-  if (!same && (!Number.isFinite(Number(e.subtotal)) || !Number.isFinite(Number(e.tax)))) throw error('Please contact IMAN to update the time preference for this booking.');
+  const preservePrice = same || (serviceKey === 'recurring' && previousDiscountCents === 0);
+  if (!preservePrice && (!Number.isFinite(Number(e.subtotal)) || !Number.isFinite(Number(e.tax)))) throw error('Please contact IMAN to update the time preference for this booking.');
   const discountCents = same ? previousDiscountCents : Math.round(subtotalCents * preference.percent / 100);
   const beforeArrivalCents = e.discountedSubtotal != null ? cents(e.discountedSubtotal) + previousDiscountCents : Math.max(0, subtotalCents - (e.promoDiscount?.application === 'before_tax' ? Number(e.promoDiscount.amountCents || 0) : 0));
   const discountedSubtotalCents = Math.max(0, beforeArrivalCents - discountCents);
-  const taxCents = same ? previousTaxCents : Math.round(discountedSubtotalCents * Number(e.taxRate ?? .08875));
+  const taxCents = preservePrice ? previousTaxCents : Math.round(discountedSubtotalCents * Number(e.taxRate ?? .08875));
   // Preserve every other agreed discount, surcharge, and service-price component.
-  const totalCents = same ? previousTotalCents : Math.max(0, previousTotalCents + previousDiscountCents - discountCents + taxCents - previousTaxCents);
+  const totalCents = preservePrice ? previousTotalCents : Math.max(0, previousTotalCents + previousDiscountCents - discountCents + taxCents - previousTaxCents);
   const paidCents = Number(payment.paidCents ?? payment.depositCents ?? 0);
   const refundedCents = (e.rescheduling?.priceRefunds || []).reduce((sum, r) => sum + (['pending','succeeded'].includes(r.status) ? Number(r.amountCents) : 0), 0);
   const creditedCents = Math.max(0, paidCents - refundedCents);

@@ -27,6 +27,7 @@ const {
   arrivalPreferenceForKey,
   preferenceForSlot,
   arrivalWindowLabel,
+  arrivalWindowEnd,
   slotMatchesArrivalPreference
 } = require('./_arrival-preference');
 
@@ -307,7 +308,7 @@ module.exports = async function handler(request, response) {
     }
 
     let arrivalPreference = arrivalPreferenceForKey(body.arrivalPreference || "exact", pkg.teamHours);
-    assertArrivalPreferenceEligible(pkg, arrivalPreference);
+    arrivalPreference = assertArrivalPreferenceEligible(pkg, arrivalPreference);
     const selectedSlot = cleanText(body.schedule, 80);
     const slots = await availableSlotsForPackage(pkg);
     const slot = slots.find((item) => item.value === selectedSlot && slotMatchesArrivalPreference(item, arrivalPreference));
@@ -375,7 +376,7 @@ module.exports = async function handler(request, response) {
       pkg = require('./_promo').applyQuotedPromotion(pkg, quotedPromoCode, await listAllBookings({ complete: true }), { email, phone });
     }
     pkg = applyArrivalDiscount(pkg, arrivalPreference);
-    require("./_minimum-total").assertMinimumTotal(pkg.priceCents);
+    require("./_minimum-total").assertMinimumTotal(pkg.priceCents, pkg.serviceKey);
 
     const agreements = body.agreements || {};
     if (!agreements.laborHours || !agreements.completion || !agreements.condition || !agreements.terms) {
@@ -474,7 +475,7 @@ module.exports = async function handler(request, response) {
           label: arrivalPreference.label,
           flexible: arrivalPreference.flexible,
           windowStart: arrivalPreference.start,
-          windowEnd: pkg.arrivalDiscount?.windowEnd || arrivalPreference.end,
+          windowEnd: arrivalPreference.flexible ? arrivalWindowEnd(arrivalPreference, pkg.teamHours) : arrivalPreference.end,
           windowLabel: arrivalWindowLabel(arrivalPreference, pkg.teamHours),
           provisionalStart: slot.value,
           confirmationStatus: arrivalPreference.flexible ? "pending" : "confirmed"

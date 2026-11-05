@@ -2549,6 +2549,8 @@
             phone: value("phone")
           },
           serviceAddress: sameDayForm.elements.serviceAddress.value,
+          recurringOrderNumber: value("recurringOrderNumber"),
+          recurringPlan: value("recurringPlan"),
           promoCode: state.promo?.code || "",
           preferredTime: sameDayForm.elements.preferredTime.value,
           flexibility: sameDayForm.elements.flexibility.value,
@@ -2659,7 +2661,11 @@
     { key: "morning", title: "Morning", detail: "Available morning arrival", percent: 0, start: "08:00", end: "08:00", flexible: false, fixedStart: true },
     { key: "afternoon", title: "Afternoon", detail: "Arrival before closing", percent: 0, start: "08:00", end: "20:30", flexible: false, fixedStart: true },
   ];
-  const arrivalOption = (key) => ARRIVAL_OPTIONS.find((option) => option.key === key) || null;
+  const arrivalOption = (key) => {
+    const option = ARRIVAL_OPTIONS.find((item) => item.key === key);
+    if (state.serviceKey === "recurring" && option?.percent) return { ...option, percent: 0 };
+    return option || null;
+  };
   const timeMinutes = (time) => {
     const [hour, minute] = String(time || "").split(":").map(Number);
     return Number.isFinite(hour) && Number.isFinite(minute) ? hour * 60 + minute : NaN;
@@ -2674,7 +2680,7 @@
     return value >= timeMinutes(option.start)
       && value <= timeMinutes(arrivalWindowEndTime(option));
   });
-  const visibleArrivalOptions = () => ARRIVAL_OPTIONS.filter(option => option.key !== "any_day" || !state.selectedDate || slotsForDate(state.selectedDate).some(slot => slot.anytimeEligible !== false));
+  const visibleArrivalOptions = () => ARRIVAL_OPTIONS.filter(option => option.key !== "any_day" || !state.selectedDate || slotsForDate(state.selectedDate).some(slot => slot.anytimeEligible !== false)).map(option => arrivalOption(option.key));
   const arrivalWindowEndTime = (option) => {
     const serviceHours = Number(state.package?.teamHours);
     const reservedMinutes = Math.ceil(serviceHours * 60) + 60;
@@ -2776,7 +2782,6 @@
         const optionSlots = slotsForArrivalOption(option);
         const button = document.createElement("button");
         button.type = "button";
-        button.dataset.arrivalOption = option.key;
         button.className = `booking-arrival-option${state.arrivalPreference === option.key ? " is-selected" : ""}`;
         button.disabled = !optionSlots.length;
         button.setAttribute("role", "radio");
@@ -4148,26 +4153,11 @@
   });
 
   const minimumDialog = document.querySelector("[data-minimum-dialog]");
-  const belowBookingMinimum = (pkg = state.package) => !Number.isFinite(Number(pkg?.price)) || Math.round(Number(pkg.price) * 100) < 12000;
+  const belowBookingMinimum = () => {
+    const cents = Math.round(Number(state.package?.price) * 100);
+    return !Number.isSafeInteger(cents) || cents <= 0 || (state.serviceKey !== "recurring" && cents < 12000);
+  };
   const showBookingMinimum = () => {
-    if (state.serviceKey === "recurring" && state.arrivalPreference === "any_day" &&
-        !belowBookingMinimum(state.packageBeforeArrivalDiscount)) {
-      const anytimePrice = money(state.package.price);
-      clearArrivalDiscount();
-      state.arrivalPreference = "";
-      scheduleSelect.value = "";
-      state.highestStageReached = 6;
-      renderQuoteOverview(state.package);
-      renderPriceBreakdown(state.package);
-      goToStep(3);
-      renderCalendar();
-      renderTimeSlots();
-      const fixedArrivalPrice = state.promo ? ` for ${money(state.package.price)} with your recurring discount` : "";
-      setSchedulerStatus(`Anytime brings your total to ${anytimePrice}, below the $120 minimum. Choose an available Morning or Afternoon time${fixedArrivalPrice}.`, "info");
-      const nextOption = arrivalOptions?.querySelector('button:not([data-arrival-option="any_day"]):not(:disabled)');
-      (nextOption || calendarGrid?.querySelector("button.is-available"))?.focus();
-      return;
-    }
     minimumDialog.querySelector("[data-minimum-current-total]").textContent = new Intl.NumberFormat("en-US", { style: "currency", currency: "USD" }).format(Number(state.package?.price) || 0);
     minimumDialog.querySelector("[data-minimum-shortfall]").textContent = new Intl.NumberFormat("en-US", { style: "currency", currency: "USD" }).format(Math.max(0, 12000 - Math.round(Number(state.package?.price || 0) * 100)) / 100);
     const undiscounted = packageWithoutPromo(state.packageBeforeArrivalDiscount || state.package);

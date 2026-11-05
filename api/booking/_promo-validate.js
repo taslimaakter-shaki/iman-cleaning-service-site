@@ -5,6 +5,7 @@ module.exports = async function handler(request, response) {
   try {
     if (request.method !== "POST") return json(response, 405, { error: "Method not allowed." });
     const body = await readJsonBody(request);
+    if (body.automatic === true && body.serviceKey === "recurring") return json(response, 200, { valid: false });
     if (body.precheck === true) {
       const promotion = promotionForCode(body.promoCode);
       assertEligibleService(promotion, body.serviceKey);

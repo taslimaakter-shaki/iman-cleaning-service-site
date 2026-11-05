@@ -7,8 +7,8 @@ assert.equal(discountForDays(13).percent, 15);
 assert.equal(discountForDays(24).percent, 15);
 assert.equal(discountForDays(25).percent, 10);
 assert.equal(discountForDays(40).percent, 10);
-assert.equal(discountForDays(41).percent, 5);
-assert.equal(discountForDays(365).percent, 5);
+assert.equal(discountForDays(41), null);
+assert.equal(discountForDays(365), null);
 assert.equal(discountForDays(6), null);
 assert.equal(discountForDays(366), null);
 

@@ -74,3 +74,18 @@ state.arrivalDiscount = null;
 vm.runInContext('renderPriceBreakdown(state.package); renderPriceBreakdown(state.package);', context);
 assert.equal(state.package.priceCents, recurringPriced.priceCents, 'Rendering must preserve the recurring checkout amount');
 assert.equal(state.promo.application, 'after_tax');
+
+// Restoring a legacy Anytime draft removes its old 5% discount but keeps the slot and plan price.
+state.serviceKey = 'recurring';
+state.packageBeforeArrivalDiscount = recurringPriced;
+state.package = { ...recurringPriced, priceCents: recurringPriced.priceCents - 1000, price: recurringPriced.price - 10 };
+state.arrivalDiscount = {amountCents: 1000};
+assert.equal(vm.runInContext("visibleArrivalOptions().find(option => option.key === 'any_day').percent", context), 0);
+vm.runInContext("applyArrivalDiscount(arrivalOption('any_day'))", context);
+const recurringAnytime = serverArrival(recurringPriced, 'any_day');
+assert.equal(recurringAnytime.arrivalPreference.flexible, true);
+assert.equal(recurringAnytime.arrivalPreference.percent, 0);
+assert.equal(recurringAnytime.arrivalDiscount, null);
+assert.equal(state.arrivalDiscount, null);
+assert.equal(state.package.priceCents, recurringPriced.priceCents);
+assert.equal(recurringAnytime.priceCents, recurringPriced.priceCents);

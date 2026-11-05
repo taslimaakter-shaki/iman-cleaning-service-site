@@ -73,6 +73,7 @@ assert.deepStrictEqual(discounted.appliedDiscounts.map(d=>d.amountCents),[1052,1
 assert.strictEqual(discounted.appliedDiscounts[0].code,'FALL10');
 assert.strictEqual(discounted.editFields.discountCents,0,'Existing discounts must not become a new manual discount');
 assert.strictEqual(discounted.amountCents,20609,'Do not subtract existing discounts a second time');
-const recurring = bookingQuote({id:'BK-RECURRING',estimate:{total:180,recurringDiscount:{label:'Weekly',amountCents:2000},manualDiscount:{label:'Welcome',amountCents:1000},payment:{totalCents:18000}}});
+const weekly = {code:'WEEKLY20',label:'Weekly',amountCents:2000};
+const recurring = bookingQuote({id:'BK-RECURRING',estimate:{total:180,promoDiscount:weekly,recurringDiscount:weekly,manualDiscount:{label:'Welcome',amountCents:1000},payment:{totalCents:18000}}});
 assert.deepStrictEqual(recurring.appliedDiscounts.map(d=>d.kind),['recurringDiscount','manualDiscount']);
 assert.strictEqual(recurring.appliedDiscounts[1].application,'after_tax');

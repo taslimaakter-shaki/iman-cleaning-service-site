@@ -1,5 +1,9 @@
 const MINIMUM_TOTAL_CENTS = 12000;
-function assertMinimumTotal(totalCents) {
+function assertMinimumTotal(totalCents, serviceKey) {
+  if (serviceKey === "recurring") {
+    if (Number.isSafeInteger(totalCents) && totalCents > 0) return;
+    throw Object.assign(new Error("A valid recurring cleaning total is required."), { statusCode: 400 });
+  }
   if (!Number.isSafeInteger(totalCents) || totalCents < MINIMUM_TOTAL_CENTS) {
     throw Object.assign(new Error("The minimum booking total is $120 after discounts and taxes. Please edit your service details and add services to book."), { statusCode: 400, code: "BOOKING_MINIMUM" });
   }

@@ -35,38 +35,18 @@ state.promo=state.package.promoDiscount;
 context.test.showBookingMinimum();
 assert.equal(withoutButton.hidden,true);
 
-// A fixed arrival meets the minimum with the weekly discount still applied.
-dialog.close();
-const weekly = {code: 'WEEKLY20', amountCents: 3000};
-const fixedArrival = {price: 120, promoDiscount: weekly};
-Object.assign(state, {
-  serviceKey: 'recurring', selectedDate: '2030-11-05', arrivalPreference: 'any_day',
-  promo: weekly, packageBeforeArrivalDiscount: fixedArrival,
-  package: {price: 112.50, promoDiscount: weekly}, arrivalDiscount: {percent: 5}
-});
-let guidance;
-Object.assign(context, {
-  scheduleSelect: {value: '2030-11-05T08:00:00-05:00'}, arrivalOptions: null, calendarGrid: null,
-  renderQuoteOverview() {}, renderPriceBreakdown() {}, renderCalendar() {}, renderTimeSlots() {},
-  setSchedulerStatus(message) { guidance = message; }
-});
-vm.runInContext(source.slice(source.indexOf('  const clearArrivalDiscount ='), source.indexOf('  const resetAppointmentSelection =')), context);
-context.test.showBookingMinimum();
-assert.equal(step, 3);
-assert.equal(dialog.open, false);
-assert.equal(state.selectedDate, '2030-11-05');
-assert.equal(state.package, fixedArrival);
-assert.equal(state.promo, weekly);
-assert.equal(state.arrivalDiscount, null);
-assert.equal(state.arrivalPreference, '');
-assert.equal(context.scheduleSelect.value, '');
-assert.match(guidance, /Morning or Afternoon/);
-assert.equal(context.test.belowBookingMinimum(), false);
-
-// A fixed arrival below $120 must still use the ordinary minimum notice.
-state.packageBeforeArrivalDiscount = {price: 119.99, promoDiscount: weekly};
-state.package = {price: 112.49, promoDiscount: weekly};
-state.arrivalPreference = 'any_day';
-context.test.showBookingMinimum();
-assert.equal(dialog.open, true);
-assert.equal(withoutButton.hidden, true);
+// Recurring plan prices can cross the ordinary minimum both before and after discounts.
+state.serviceKey = 'recurring';
+for (const price of [120, 119.99, 96]) {
+  state.package = {price};
+  assert.equal(context.test.belowBookingMinimum(), false);
+  assert.doesNotThrow(() => assertMinimumTotal(Math.round(price * 100), 'recurring'));
+}
+state.package = null;
+assert.equal(context.test.belowBookingMinimum(), true);
+for (const invalid of [NaN, Infinity, 0, -1]) {
+  assert.throws(() => assertMinimumTotal(invalid, 'recurring'));
+}
+state.serviceKey = 'standard';
+state.package = {price: 119.99};
+assert.equal(context.test.belowBookingMinimum(), true);

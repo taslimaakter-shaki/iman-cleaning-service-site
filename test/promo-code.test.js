@@ -24,7 +24,7 @@ assert.throws(
   (error) => error.code === "PROMO_EXPIRED" && /expired on December 20, 2026/.test(error.message)
 );
 assert.throws(() => promotionForCode("NOPE", activeDate), (error) => error.code === "PROMO_INVALID");
-for (const service of ["standard", "recurring", "deep", "move", "hourly", "window", "post", "commercial"]) {
+for (const service of ["standard", "deep", "move", "hourly", "window", "post", "commercial"]) {
   assert.doesNotThrow(() => assertEligibleService(promotion, service));
 }
 assert.throws(() => assertEligibleService(promotion, "unknown"), (error) => error.code === "PROMO_INELIGIBLE");
@@ -147,3 +147,15 @@ assert.equal(oldQuote.promoCode, "FALL10", "Keep the stored snapshot intact");
 assert.equal(PROMOTIONS.FALL10.expiresLabel, "December 20, 2026");
 
 console.log("Promo code tests passed: active/expired states, uncapped 5%, service eligibility, and first-time-customer enforcement.");
+
+// A paid customer's one-time offers cannot be added to a recurring quote.
+const recurringBase = { ...pkg, serviceKey: 'recurring' };
+for (const code of ['RETURNING5', 'FALL10']) {
+  const offer = PROMOTIONS[code];
+  assert.throws(() => applyPromotion(recurringBase, offer), e => e.code === 'PROMO_INELIGIBLE');
+  const legacy = { ...applyPromotion(pkg, offer), serviceKey: 'recurring' };
+  const restored = applySavedQuotePromotion(legacy, {quoteId: 'old'}, contact, [redeemed]);
+  assert.equal(restored.promoDiscount, null);
+  assert.equal(restored.priceCents, legacy.originalTotalCents);
+}
+assert.equal(applySavedQuotePromotion(recurringBase, {}, contact, [redeemed]), recurringBase);

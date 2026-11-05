@@ -34,7 +34,7 @@ async function resolve(body) {
     let pkg;
     if (fields) {
       const { bookingChanges } = quotes;
-      const changes = bookingChanges({ ...fields, address: text(body.address,400) || fields.address, serviceDate: body.serviceDate || fields.serviceDate, serviceTime: body.serviceTime || fields.serviceTime }, null, { source: 'saved', id: found.id, revision: found.state.revision });
+      const changes = bookingChanges({ ...fields, address: text(body.address,400) || fields.address, serviceDate: body.serviceDate || fields.serviceDate, serviceTime: body.serviceTime || fields.serviceTime }, null, { source: 'saved', id: found.id, revision: found.state.revision, serviceKey: found.record.eligibility?.requestedService });
       booking = { id: `BK-EXT-${hash(['saved',found.id]).slice(0,20).toUpperCase()}`, status: 'New', addons: [], ...changes };
     } else {
       pkg = found.record.packageSnapshot || require('../booking/_saved-quote').validateAndPrice(found.record).pkg;
@@ -55,6 +55,7 @@ async function resolve(body) {
           recurringPlan:body.recurringPlan, schedule, customer:{...found.record.customer,address:body.address} }));
       }
       pkg = arrival.applyArrivalDiscount(pkg, preference);
+      preference = pkg.arrivalPreference;
       if (!slots.some(s => Date.parse(s.value) === Date.parse(schedule) && arrival.slotMatchesArrivalPreference(s, preference))) throw fail('That appointment is unavailable for the selected arrival option. Choose another time.', 409);
       const customer = found.record.customer || {};
       const windowLabel = arrival.arrivalWindowLabel(preference, pkg.teamHours);
@@ -66,7 +67,7 @@ async function resolve(body) {
         address: text(body.address,400), notes: '',
         estimate: { ...pkg, total: pkg.price, hours: pkg.teamHours, units: pkg.units || found.record.unitDetails,
           eligibility: found.record.eligibility, savedQuoteId: found.id, communicationConsent: found.record.communicationConsent,
-          arrivalPreference: { ...preference, windowLabel, windowEnd: pkg.arrivalDiscount?.windowEnd || preference.end, provisionalStart: schedule, confirmationStatus: preference.flexible ? 'pending' : 'confirmed' },
+          arrivalPreference: { ...preference, windowLabel, windowEnd: preference.flexible ? arrival.arrivalWindowEnd(preference, pkg.teamHours) : preference.end, provisionalStart: schedule, confirmationStatus: preference.flexible ? 'pending' : 'confirmed' },
           calendarReservationHours: pkg.teamHours + 1,
           payment: { totalCents: pkg.priceCents, depositCents: Math.round(pkg.priceCents*.25), paidCents: 0 }
         }
@@ -78,7 +79,7 @@ async function resolve(body) {
   if (!booking.email || /[\r\n]/.test(booking.email) || !/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(booking.email) || !booking.phone || !booking.client_name) throw fail('Complete the customer name, email and phone before recording payment.');
   if (booking.estimate?.awaitingSchedule || !Number.isFinite(Date.parse(booking.schedule))) throw fail('Complete the appointment date and time in the quote first.');
   if (!paid(booking) && Date.parse(booking.schedule) <= Date.now()) throw fail('Choose a future appointment before confirming this quote.');
-  if (!paid(booking)) require('../booking/_minimum-total').assertMinimumTotal(total(booking));
+  if (!paid(booking)) require('../booking/_minimum-total').assertMinimumTotal(total(booking), booking.service);
   const token = hash({ source:found.source, id:found.id, version:found.version, booking });
   return { found, bookings, booking, token };
 }

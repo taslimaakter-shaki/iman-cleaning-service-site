@@ -102,6 +102,7 @@ function publicFields(fields, found) {
     quoteId: found.id, bookingId: found.state.bookingId || (found.source === "booking" ? found.id : ""),
     customerName: fields.customerName, customerEmail: fields.email, customerPhone: fields.phone,
     serviceLocation: fields.address, service: fields.service, amountCents: fields.amountCents,
+    serviceKey: found.source === "saved" ? found.record.eligibility?.requestedService : (found.source === "booking" ? found.record.service : undefined),
     rushFeeCents: fields.rushFeeCents || 0, serviceDate: fields.serviceDate, serviceTime: fields.serviceTime,
     description: fields.details, serviceDescriptionUrl: fields.serviceDescriptionUrl || "", packageItems: fields.packageItems || "", units: fields.units || [], pricing: fields.pricing || null, laborHours: fields.laborHours, cleanerCount: fields.cleanerCount,
     balanceCollection: found.state.checkoutFlow === "instant_booking" && !fields.rushFeeCents ? "automatic_48h_authorization" : found.record.estimate?.payment?.balanceCollection || "after_service",
@@ -421,7 +422,7 @@ async function ensureManagedBooking(quote) {
   if (paid(booking)) throw fail("This quote has already been paid.", 409);
   // Retrying the same offer must never reset a payment that is being recorded.
   if (booking?.estimate?.managedQuote?.revision !== quote.revision) {
-    const changes = bookingChanges(fields, booking, { source: found.source, id: found.id, revision: quote.revision, balanceCollection: quote.balanceCollection });
+    const changes = bookingChanges(fields, booking, { source: found.source, id: found.id, revision: quote.revision, balanceCollection: quote.balanceCollection, serviceKey: quote.serviceKey });
     if (booking) await bookingStore.updateBooking(id, changes);
     else await bookingStore.createBooking({ id, status: "New", ...changes, addons: [], estimate: { ...changes.estimate, calendarReservation: { state: 'draft' }, orderNumber: id } });
   }
@@ -475,7 +476,7 @@ function bookingChanges(fields, booking, managedQuote) {
   const taxRate = Number(booking?.estimate?.taxRate ?? 0.08875);
   const subtotal = fields.pricing ? (fields.pricing.subtotalCents + fields.rushFeeCents) / 100 : Math.round(total / (1 + taxRate)) / 100;
   return {
-    service: booking?.service || "custom", service_label: fields.service,
+    service: booking?.service || (managedQuote.serviceKey === "recurring" ? "recurring" : "custom"), service_label: fields.service,
     ...bookingRoomLabels(fields, booking), sqft: booking?.sqft ?? 0,
     client_name: fields.customerName, email: fields.email, phone: fields.phone, address: fields.address,
     schedule, schedule_label: awaitingSchedule ? "To be scheduled by IMAN Cleaning Service" : `${fields.serviceDate} at ${fields.serviceTime}`, notes: [fields.packageItems, fields.details].filter(Boolean).join("\n\n"),

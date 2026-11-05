@@ -374,10 +374,12 @@ function validateAndPrice(body) {
 }
 
 function applySavedQuotePromotion(pkg, body, customer, bookings = []) {
-  if (!pkg || pkg.serviceKey === "recurring" || pkg.manualDiscount || body?.crmQuote?.manualDiscount) return pkg;
-  if (!body?.quoteId && body?.promoCode === "") return pkg;
+  if (!pkg || pkg.manualDiscount || body?.crmQuote?.manualDiscount) return pkg;
+  const recurring = pkg.serviceKey === "recurring";
+  if (recurring && !["FALL10", "RETURNING5"].includes(pkg.promoDiscount?.code)) return pkg;
+  if (!recurring && !body?.quoteId && body?.promoCode === "") return pkg;
   const { customerPromotion, applyPromotion } = require("./_promo");
-  const eligible = customerPromotion(bookings, customer);
+  const eligible = recurring ? null : customerPromotion(bookings, customer);
   const previous = pkg.promoDiscount;
   if (previous) {
     if (previous.code === eligible?.code) return pkg;
@@ -389,7 +391,7 @@ function applySavedQuotePromotion(pkg, body, customer, bookings = []) {
         promoDiscount: { ...previous, code: eligible.code, label: eligible.label, expiresAt: eligible.expiresAt, expiresLabel: eligible.expiresLabel }
       };
     }
-    // A first-time offer may have expired while the saved link was open.
+    // Restore the quote before any expired or inapplicable customer offer.
     const subtotalCents = pkg.originalSubtotalCents ?? pkg.subtotalCents;
     const totalCents = pkg.originalTotalCents ?? previous.originalTotalCents;
     const taxCents = pkg.originalTaxCents ?? totalCents - subtotalCents;

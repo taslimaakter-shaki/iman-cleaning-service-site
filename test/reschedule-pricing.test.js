@@ -21,3 +21,11 @@ const long=clone(base);long.estimate.manHours=14;long.estimate.teamHours=7;asser
 const unqualified=slots.map(s=>({...s,flexibleEligible:false}));assert.equal(choices(base,unqualified).length,0);
 const changed=clone(base);changed.estimate.payment.paidCents++;assert.notEqual(quote(changed,'exact').id,exact.id,'Consent fingerprint changes when payments change');
 console.log('Reschedule pricing: discount replacement, exact-time removal, round trip, preserved promos, deposits, refunds, availability and stale consent passed.');
+
+const planBooking = clone(updated);
+planBooking.service = 'recurring';
+const planAnytime = quote(planBooking, 'any_day');
+assert.equal(planAnytime.preference.flexible, true);
+assert.equal(planAnytime.preference.percent, 0);
+assert.equal(planAnytime.arrivalDiscount, null);
+assert.equal(planAnytime.totalCents, exact.totalCents);

@@ -36,7 +36,6 @@ function calendarDate(value) {
 function discountForDays(days) {
   const plan = Object.values(plans).find(item => days >= item.min && days <= item.max);
   if (plan) return { code: plan.code, label: plan.label, percent: plan.percent };
-  if (days >= 41 && days <= 365) return { code: "RETURNING5", label: bookingDiscountName("RETURNING5"), percent: 5 };
   return null;
 }
 

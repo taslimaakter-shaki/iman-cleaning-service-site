@@ -130,6 +130,7 @@ async function updateSameDayRequest(body, request) {
     if (body.updatedAt !== record.updatedAt) throw Object.assign(new Error('This request changed. Refresh before saving the discount.'), { statusCode: 409 });
     const { validateDiscount, flatPricing } = require('./_discount');
     const discount = validateDiscount(body.discountCents, body.discountLabel);
+    if (record.quote.recurringDiscount) throw Object.assign(new Error('This request already has a recurring plan discount.'), { statusCode: 409 });
     const before = record.quote.originalTotalCents ?? (record.quote.priceCents + (record.quote.manualDiscount?.amountCents || 0));
     const pricing = flatPricing(before, 0, discount.amountCents, discount.label, record.quote.originalTaxCents ?? record.quote.taxCents);
     record.discountHistory = [...(record.discountHistory || []), { at: now, previousDiscount: record.quote.manualDiscount || null }];
@@ -150,6 +151,12 @@ async function updateSameDayRequest(body, request) {
   const serviceDate = cleanText(body.serviceDate || newYorkDate(), 20);
   const serviceTime = cleanText(body.serviceTime, 30);
   if (!serviceTime) throw Object.assign(new Error("Enter the confirmed start time."), { statusCode: 400 });
+  const plan = record.quote?.recurringDiscount;
+  if (plan) {
+    require('./_recurring-discount').verifyRecurringDiscount(await listAllBookings({ complete: true }), {
+      previousOrderNumber: plan.previousOrderNumber, recurringPlan: plan.plan, schedule: serviceDate, customer: record.customer
+    });
+  }
   const bookingId = makeBookingId();
   const orderNumber = await makeUniqueOrderNumber();
   const baseCents = Number(record.quote?.priceCents || 0);
@@ -187,6 +194,8 @@ async function updateSameDayRequest(body, request) {
       manualDiscount: record.quote?.manualDiscount || null,
       promoCode: record.quote?.promoCode || "",
       promoDiscount: record.quote?.promoDiscount || null,
+      recurringDiscount: plan || null,
+      units: record.unitDetails,
       customQuotePricing: record.quote?.manualDiscount ? { ...record.quote.manualDiscount, rushFeeCents: RUSH_FEE_CENTS, totalCents: baseCents + RUSH_FEE_CENTS } : null,
       rushFeeCents: RUSH_FEE_CENTS,
       paymentStatus: "deposit_pending",
@@ -211,6 +220,7 @@ async function updateSameDayRequest(body, request) {
     customerPhone: record.customer.phone,
     serviceLocation: record.serviceAddress,
     service: record.quote?.serviceLabel || "Same-day cleaning",
+    serviceKey: record.serviceKey,
     amountCents: baseCents,
     pricing: record.quote?.manualDiscount ? { ...record.quote.manualDiscount, rushFeeCents: RUSH_FEE_CENTS, totalCents: baseCents + RUSH_FEE_CENTS } : undefined,
     rushFeeCents: RUSH_FEE_CENTS,
@@ -246,7 +256,13 @@ async function handler(request, response) {
     const savedQuoteUrl = validSavedQuoteUrl(body.savedQuoteUrl, request);
     const token = new URL(savedQuoteUrl).searchParams.get('quote');
     let pkg = await require('../crm/_quote-admin').applySavedDiscount(token, originalPackage, body.quoteRevision || '');
-    if (body.promoCode && serviceKey !== "recurring") {
+    if (serviceKey === "recurring") {
+      const recurring = require('./_recurring-discount');
+      const plan = recurring.verifyRecurringDiscount(await listAllBookings({ complete: true }), {
+        previousOrderNumber: body.recurringOrderNumber, recurringPlan: body.recurringPlan, schedule: newYorkDate(), customer
+      });
+      pkg = recurring.applyRecurringDiscount(pkg, plan);
+    } else if (body.promoCode) {
       pkg = require('./_promo').applyQuotedPromotion(pkg, body.promoCode, await listAllBookings({ complete: true }), customer);
     }
     const serviceAddress = cleanText(body.serviceAddress, 400);
@@ -273,7 +289,7 @@ async function handler(request, response) {
       rushFeeAccepted: true,
       quote: { serviceLabel: pkg.serviceLabel, priceCents: pkg.priceCents, price: pkg.price, teamHours: pkg.teamHours, manHours: pkg.manHours,
         cleanerCount: pkg.cleanerCount, taxCents: pkg.taxCents, manualDiscount: pkg.manualDiscount || null,
-        promoCode: pkg.promoCode || "", promoDiscount: pkg.promoDiscount || null,
+        promoCode: pkg.promoCode || "", promoDiscount: pkg.promoDiscount || null, recurringDiscount: pkg.recurringDiscount || null,
         originalTotalCents: pkg.originalTotalCents, originalTaxCents: pkg.originalTaxCents }
     });
     const ownerDelivery = await trySendFormSubmissionNotification({

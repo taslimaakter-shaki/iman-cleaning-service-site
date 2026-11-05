@@ -234,13 +234,18 @@ function load(file, dependencies, extras = {}) {
     get: async () => ({ data: clone(record) }),
     update: async ({ media }) => { record = JSON.parse(media.body); return { data: {} }; }
   } };
+  let sameDayBody, sameDayResponse;
+  const sameDayHistory = [];
   const sameDay = load('api/booking/_same-day.js', {
-    './_shared': { ...shared, assertScheduleAvailable: async () => {}, createBooking: async b => { booking = clone(b); }, makeUniqueOrderNumber: async () => 'TEST-ORDER' },
+    './_shared': { ...shared, assertScheduleAvailable: async () => {}, createBooking: async b => { booking = clone(b); }, makeUniqueOrderNumber: async () => 'TEST-ORDER',
+      readJsonBody: async () => sameDayBody, listAllBookings: async () => sameDayHistory, json: (_, status, data) => { sameDayResponse = {status, ...data}; } },
+    '../crm/_quote-admin': { applySavedDiscount: async (_, pkg) => pkg },
+    './_recurring-discount': require('../api/booking/_recurring-discount'),
     './_saved-quote': require('../api/booking/_saved-quote'), './_discount': discount,
     '../quote/_shared': { getGoogleClients: () => ({ drive, config: { parentFolderId: 'test' } }) },
     './_notifications': { sendCustomerSms: async () => { sms++; return { status: 'sent' }; } },
     '../quote/_short-approval': { createShortApproval: async a => { approval = clone(a); return { code: 'testonlycode' }; } },
-    '../_form-notifications': {}
+    '../_form-notifications': {trySendFormSubmissionNotification: async () => ({status:'mocked'})}
   });
   await sameDay.updateSameDayRequest({ id: record.id, action: 'discount', updatedAt: record.updatedAt, discountCents: 5000, discountLabel: 'Welcome' }, request);
   assert.equal(record.quote.priceCents, 27000); assert.equal(sms, 0, 'Saving discount must not send a message');
@@ -251,5 +256,27 @@ function load(file, dependencies, extras = {}) {
   assert.equal(booking.estimate.payment.depositCents, 17375); assert.equal(booking.estimate.payment.remainingCents, 22125);
   assert.equal(approval.amountCents, 29500); assert.equal(approval.rushFeeCents, 10000); assert.equal(approval.pricing.discountCents, 2500);
   await assert.rejects(sameDay.updateSameDayRequest({ id: record.id, action: 'discount', updatedAt: record.updatedAt, discountCents: 1000 }, request), e => e.statusCode === 409);
+  // A same-day request uses the plan for the service date even if an old client submits a returning code.
+  const today = new Intl.DateTimeFormat('en-CA', {timeZone:'America/New_York', year:'numeric', month:'2-digit', day:'2-digit'}).format(new Date());
+  const previous = new Date(today + 'T12:00:00Z');
+  previous.setUTCDate(previous.getUTCDate() - 8);
+  sameDayHistory.push({id:'initial', status:'Completed', schedule:previous.toISOString(), email:body.customer.email,
+    estimate:{orderNumber:'12345678', payment:{paidCents:1000}}});
+  drive.files.create = async ({media}) => { record = JSON.parse(media.body); return {data:{id:'mock'}}; };
+  sameDayBody = {
+    customer:body.customer, eligibility:{serviceIntent:'cleaning', propertyStatus:'occupied', requestedService:'recurring', serviceZip:'11432'},
+    unitDetails:[{bedrooms:0,fullBathrooms:1,halfBathrooms:0,kitchens:1,livingRooms:0,diningRooms:0,additionalRooms:0,refrigerator:'no',oven:'no',cabinets:'no'}],
+    pricingMode:'recurring_formula', promoCode:'RETURNING5', recurringOrderNumber:'12345678', recurringPlan:'weekly',
+    rushFeeAccepted:true, serviceAddress:'Test St, Queens, NY 11432', preferredTime:'16:00', flexibility:'Anytime',
+    savedQuoteUrl:'https://www.imancleaningservice.com/book-now.html?quote=test'
+  };
+  await sameDay(request, {});
+  assert.equal(sameDayResponse.status, 201, sameDayResponse.error);
+  assert.equal(record.quote.priceCents, 8000);
+  assert.equal(record.quote.promoCode, 'WEEKLY20');
+  await sameDay.updateSameDayRequest({id:record.id, action:'approve', serviceDate:today, serviceTime:'16:00'},request);
+  assert.equal(approval.serviceKey, 'recurring');
+  assert.equal(approval.amountCents, 8000);
+  assert.equal(booking.estimate.recurringDiscount.percent, 20);
   console.log('Mocked instant checkout and same-day approval passed: exact Stripe amount, agreement price, unchanged work, no duplicated tax, stale checkout fencing, no discount SMS, rush fee preserved.');
 })().catch(error => { console.error(error); process.exitCode = 1; });

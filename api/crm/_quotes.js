@@ -21,9 +21,11 @@ function appliedDiscounts(estimate = {}, fields) {
   const discounts = [];
   for (const [key, fallback] of [['promoDiscount', 'Promotion'], ['recurringDiscount', 'Recurring cleaning discount'], ['arrivalDiscount', 'Flexible arrival discount']]) {
     const item = estimate[key];
+    if (key === 'promoDiscount' && estimate.recurringDiscount?.code &&
+        estimate.recurringDiscount.code === (item?.code || estimate.promoCode)) continue;
     if (Number(item?.amountCents) > 0) discounts.push({ kind: key, label: item.label || item.code || fallback,
       code: item.code || (key === 'promoDiscount' ? estimate.promoCode : '') || '', amountCents: Number(item.amountCents),
-      percent: Number(item.percent || 0), application: 'before_tax' });
+      percent: Number(item.percent || 0), application: item.application || (key === 'recurringDiscount' ? 'after_tax' : 'before_tax') });
   }
   const amount = fields ? Number(fields.discountCents || 0) : Number(estimate.manualDiscount?.amountCents || 0);
   if (amount > 0) discounts.push({ kind: 'manualDiscount', label: fields?.discountLabel || estimate.manualDiscount?.label || 'Manual discount', amountCents: amount, application: 'after_tax' });
