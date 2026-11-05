@@ -42,5 +42,49 @@ const get=url=>handler({method:'GET',headers:{host:'example.test'},query:{token:
  assert.equal(reopened.unchanged,true);
  assert.equal(reopened.package.promoCode,'RETURNING5');
  assert.equal(reopened.package.priceCents,30400);
+ const recurringBody={...body,eligibility:{requestedService:'recurring',propertyStatus:'occupied',serviceIntent:'cleaning',cleaningCategory:'residential',serviceZip:'11432',buildup:'none',clutter:'low',hazards:'none'},
+   pricingMode:'recurring_formula',recurringOrderNumber:' 12345678 ',recurringPlan:'weekly',
+   unitDetails:[{bedrooms:1,fullBathrooms:1,halfBathrooms:0,kitchens:1,livingRooms:0,diningRooms:0,additionalRooms:0,refrigerator:'no',oven:'no',cabinets:'no'}]};
+ const recurring=await post(recurringBody);
+ assert.equal(recurring.status,201,recurring.error);
+ const fresh=loadHandler();
+ const recurringToken=new URL(recurring.quoteUrl).searchParams.get('quote');
+ const opened=await fresh({method:'GET',headers:{host:'example.test'},query:{token:recurringToken}},{setHeader(){}});
+ assert.equal(opened.recurringOrderNumber,'12345678');
+ assert.equal(opened.recurringPlan,'weekly');
+ const source=fs.readFileSync('book-now.js','utf8');
+ const controls=Object.fromEntries(['recurringOrderNumber','recurringPlan','firstName','lastName','email','phone','houseFloorSelection'].map(name=>[name,{value:''}]));
+ const state={};let lookup;
+ const noop=()=>{};
+ const browser=vm.createContext({state,form:{elements:controls},quoteContactForm:null,zipStatus:null,URL,
+   window:{location:{href:recurring.quoteUrl}},value:name=>controls[name]?.value||'',serviceArea:{normalize:x=>x},canUseInstantQuoteZip:()=>false,
+   allMobileQuestions:[],fetch:async(url,args)=>{
+     if(!args)return{ok:true,json:async()=>opened};
+     if(url==='/api/booking/recurring-discount'){lookup=JSON.parse(args.body);return{ok:true,json:async()=>({plan:'weekly',windowStart:'2030-11-08'})};}
+     return{ok:true,json:async()=>({slots:[]})};
+   },showQuoteLoadError:message=>{throw Error(message)},
+   ...Object.fromEntries(['syncAnswerChoices','showQuoteLoading','syncServiceChoice','syncPropertyTypeChoice','syncUnitCount','renderQuoteOverview','syncQuotedServiceCopy',
+     'renderPriceBreakdown','showSavedQuoteDelivery','hideQuoteLoading','closeZipGate','openWizard','goToStep'].map(name=>[name,noop]))});
+ vm.runInContext(source.slice(source.indexOf('  const restoreSavedQuote ='),source.indexOf('  const savedQuoteToken ='))+
+   source.slice(source.indexOf('  const availabilityRequest ='),source.indexOf('  const showSavedQuoteDelivery =')),browser);
+ await vm.runInContext("restoreSavedQuote('test')",browser);
+ await vm.runInContext('availabilityRequest()',browser);
+ assert.equal(lookup.previousOrderNumber,'12345678');
+ assert.equal(lookup.recurringPlan,'weekly');
+ delete opened.recurringOrderNumber;
+ delete opened.recurringPlan;
+ let recovery=false,restoredStep;
+ Object.assign(browser,{enterRecurringDetails:()=>{recovery=true},goToStep:step=>{restoredStep=step},
+   recurringInitialButtons:[{dataset:{recurringInitial:'yes'},click:noop}],setStatus:noop,document:{querySelector:()=>({})}});
+ await vm.runInContext("restoreSavedQuote('legacy')",browser);
+ assert.equal(recovery,true,'Older links offer a way to re-enter missing recurring details');
+ assert.equal(restoredStep,1);
+
+ const samePlan=await post({...recurringBody,previousQuoteToken:recurringToken});
+ assert.equal(samePlan.unchanged,true);
+ const changedPlan=await post({...recurringBody,previousQuoteToken:recurringToken,recurringPlan:'monthly'});
+ assert.notEqual(changedPlan.quoteUrl,recurring.quoteUrl);
+ const changedOrder=await post({...recurringBody,previousQuoteToken:recurringToken,recurringOrderNumber:'87654321'});
+ assert.notEqual(changedOrder.quoteUrl,recurring.quoteUrl);
  console.log('Saved quote versions: immutable details/prices/contacts, changed-content delivery, concurrent deduplication, consent and partial-delivery retry passed. Providers mocked.');
 })().catch(e=>{console.error(e);process.exitCode=1});

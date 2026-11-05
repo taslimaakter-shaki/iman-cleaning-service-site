@@ -390,7 +390,7 @@
     recurringReference.hidden = recurringInitialAnswer !== "yes";
     recurringPlanPanel.hidden = recurringInitialAnswer !== "yes" || !recurringVerifiedOrder || Boolean(recurringPlanContext?.locked);
     recurringPlanSummary.hidden = recurringInitialAnswer !== "yes" || !recurringPlanContext?.plan;
-    setStatus(status, "");
+    setStatus(document.querySelector("[data-eligibility-status]"), "");
     if (recurringInitialAnswer === "no") showRecurringInitialDialog();
     else recurringOrderNumberInput?.focus();
   }));
@@ -405,7 +405,7 @@
   });
   recurringInitialDialog?.querySelector("[data-recurring-change-service]").addEventListener("click", () => {
     recurringInitialDialog.close();
-    setStatus(status, "");
+    setStatus(document.querySelector("[data-eligibility-status]"), "");
     enterServiceChoice();
   });
   const serviceChoiceButtons = Array.from(form.querySelectorAll("[data-booking-service]"));
@@ -2440,6 +2440,8 @@
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           previousQuoteToken: previousQuoteUrl ? new URL(previousQuoteUrl, window.location.origin).searchParams.get("quote") || "" : "",
+          recurringOrderNumber: value("recurringOrderNumber"),
+          recurringPlan: value("recurringPlan"),
           pricingMode: state.pricingMode,
           eligibility: state.eligibility,
           unitDetails: state.unitDetails,
@@ -4570,6 +4572,10 @@
       state.savedQuoteUrl = window.location.href;
       state.quoteRevision = data.quoteRevision || '';
       state.initialSlots = [];
+      if (state.serviceKey === "recurring") {
+        form.elements.recurringOrderNumber.value = data.recurringOrderNumber || "";
+        form.elements.recurringPlan.value = data.recurringPlan || "";
+      }
       if (state.serviceKey === "hourly") {
         organizationHoursInput.value = String(state.unitDetails[0]?.hours || 4);
       }
@@ -4597,6 +4603,12 @@
       closeZipGate();
       openWizard();
       goToStep(2);
+      if (state.serviceKey === "recurring" && (!value("recurringOrderNumber") || !value("recurringPlan"))) {
+        goToStep(1);
+        enterRecurringDetails();
+        recurringInitialButtons.find(button => button.dataset.recurringInitial === "yes")?.click();
+        setStatus(document.querySelector("[data-eligibility-status]"), "This older quote needs your previous order number and recurring plan. Verify them to continue.");
+      }
     } catch (error) {
       if (error.code === "QUOTE_ALREADY_BOOKED") {
         showBookedQuoteConfirmation();

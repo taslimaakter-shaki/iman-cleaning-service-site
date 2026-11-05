@@ -424,12 +424,20 @@ function cleanCustomer(input = {}) {
 }
 
 // Compare submitted details independently of object key order and form whitespace.
+function recurringQuoteDetails(input) {
+  if (input.eligibility?.requestedService !== "recurring") return {};
+  return {
+    recurringOrderNumber: cleanText(input.recurringOrderNumber, 100).toUpperCase(),
+    recurringPlan: ["weekly", "biweekly", "monthly"].includes(input.recurringPlan) ? input.recurringPlan : ""
+  };
+}
+
 function quoteDetailsKey(input) {
   const canonical = value => Array.isArray(value) ? value.map(canonical)
     : value && typeof value === "object" ? Object.fromEntries(Object.keys(value).sort().map(key => [key, canonical(value[key])]))
     : typeof value === "string" ? value.trim() : value;
   return JSON.stringify(canonical({ eligibility: input.eligibility, unitDetails: input.unitDetails,
-    pricingMode: input.pricingMode, customer: cleanCustomer(input.customer) }));
+    pricingMode: input.pricingMode, customer: cleanCustomer(input.customer), ...recurringQuoteDetails(input) }));
 }
 
 function deliveryKey(request, customer, consent = {}, quote = {}) {
@@ -503,6 +511,7 @@ module.exports = async function handler(request, response) {
         eligibility: payload.eligibility,
         unitDetails: payload.unitDetails,
         customer: payload.customer,
+        ...recurringQuoteDetails(payload),
         package: packageForClient(require('./_discount').applyPackageDiscount(pkg, payload.crmQuote?.manualDiscount)),
         quoteRevision: payload.crmQuote?.revision || '',
         expiresAt: payload.expiresAt
@@ -519,12 +528,13 @@ module.exports = async function handler(request, response) {
     }
     const customer = cleanCustomer(body.customer);
     const { eligibility, unitDetails, pkg: calculatedPackage } = validateAndPrice(body);
+    const recurringDetails = recurringQuoteDetails(body);
     const bookings = await listAllBookings({ complete: true });
     if (body.previousQuoteToken) {
       const previous = decodeSavedQuote(body.previousQuoteToken);
       const record = await loadQuoteRecord(previous.quoteId);
       await assertQuoteUnused(previous.quoteId, bookings);
-      if (!record.crmQuote?.fields && quoteDetailsKey(record) === quoteDetailsKey({ eligibility, unitDetails, pricingMode: calculatedPackage.pricingMode, customer })) {
+      if (!record.crmQuote?.fields && quoteDetailsKey(record) === quoteDetailsKey({ eligibility, unitDetails, pricingMode: calculatedPackage.pricingMode, customer, ...recurringDetails })) {
         return json(response, 200, { saved: true, unchanged: true,
           quoteUrl: `${getSiteUrl(request)}/book-now.html?quote=${encodeURIComponent(body.previousQuoteToken)}`,
           quoteRevision: record.crmQuote?.revision || '',
@@ -536,7 +546,7 @@ module.exports = async function handler(request, response) {
     const pkg = applySavedQuotePromotion(calculatedPackage, body, customer, bookings);
     const now = Date.now();
     const communicationConsent = consentEvidence(request, body, new Date(now));
-    const key = deliveryKey(request, customer, communicationConsent, { previousQuoteToken: body.previousQuoteToken || "", eligibility, unitDetails, pricingMode: pkg.pricingMode, package: packageForClient(pkg) });
+    const key = deliveryKey(request, customer, communicationConsent, { previousQuoteToken: body.previousQuoteToken || "", eligibility, unitDetails, pricingMode: pkg.pricingMode, package: packageForClient(pkg), ...recurringDetails });
     if (pendingDeliveries.has(key)) {
       const result = await pendingDeliveries.get(key);
       return json(response, 200, result);
@@ -559,6 +569,7 @@ module.exports = async function handler(request, response) {
         eligibility,
         unitDetails,
         pricingMode: pkg.pricingMode,
+        ...recurringDetails,
         customer,
         promoCode: pkg.promoCode || "",
         packageSnapshot: packageForClient(pkg),
