@@ -84,7 +84,15 @@ const get=url=>handler({method:'GET',headers:{host:'example.test'},query:{token:
  assert.equal(samePlan.unchanged,true);
  const changedPlan=await post({...recurringBody,previousQuoteToken:recurringToken,recurringPlan:'monthly'});
  assert.notEqual(changedPlan.quoteUrl,recurring.quoteUrl);
+ assert.equal((await get(changedPlan.quoteUrl)).recurringPlan,'monthly');
+ const biweekly=await post({...recurringBody,previousQuoteToken:recurringToken,recurringPlan:'biweekly'});
+ assert.equal((await get(biweekly.quoteUrl)).recurringPlan,'biweekly');
+ assert.equal((await get(biweekly.quoteUrl)).recurringOrderNumber,'12345678');
+
  const changedOrder=await post({...recurringBody,previousQuoteToken:recurringToken,recurringOrderNumber:'87654321'});
  assert.notEqual(changedOrder.quoteUrl,recurring.quoteUrl);
+ assert.equal((await get(changedOrder.quoteUrl)).recurringOrderNumber,'87654321');
+ assert.equal((await get(recurring.quoteUrl)).recurringOrderNumber,'12345678','Editing a reference preserves the original saved quote');
+
  console.log('Saved quote versions: immutable details/prices/contacts, changed-content delivery, concurrent deduplication, consent and partial-delivery retry passed. Providers mocked.');
 })().catch(e=>{console.error(e);process.exitCode=1});
