@@ -47,6 +47,16 @@ async function googleTests() {
   slots=await shared.availableSlotsForPackage({teamHours:9},2,new Date('2030-09-10T12:00:00Z'),'booking-own');
   assert(slots.some(s=>s.date==='2030-09-12'&&s.time==='08:00'),'Own Google mirror does not prevent rescheduling');
   events.length=0;
+  for (const block of [
+    { id: 'vacation', start: { date: '2026-11-07' }, end: { date: '2026-11-16' } },
+    event('vacation-across-dst', '2026-10-31T00:00:00-04:00', '2026-11-09T00:00:00-05:00')
+  ]) {
+    events.push(block);
+    slots = await shared.availableSlotsForPackage({ teamHours: 2 }, 20, new Date('2026-10-31T12:00:00Z'));
+    assert(slots.some(s => s.date === '2026-11-20' && s.time === '08:00'), 'A long imported event must not stop unrelated quotes');
+    assert(!slots.some(s => s.date === '2026-11-07'), 'The imported event still blocks overlapping dates');
+    events.length = 0;
+  }
   stored=[{id:'long',status:'Confirmed',schedule:'2030-09-12T08:00:00-04:00',estimate:{manHours:6,teamHours:3,calendarReservationHours:4,arrivalPreference:{key:'any_day',flexible:true,windowStart:'08:00',windowEnd:'16:30'}}}];
   slots=await shared.availableSlotsForPackage({teamHours:1},2,new Date('2030-09-10T12:00:00Z'));
   assert(slots.some(s=>s.date==='2030-09-12'&&s.arrivalOptions.includes('morning')));

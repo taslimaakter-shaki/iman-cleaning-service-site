@@ -1797,7 +1797,9 @@ function activeBooking(record, now = Date.now()) {
 
 function bookingDurationHours(record) {
   const hours = Number(record.estimate?.calendarReservationHours ?? record.estimate?.teamHours ?? record.estimate?.hours ?? 2);
-  if (!Number.isFinite(hours) || hours <= 0 || hours > 200) throw Object.assign(new Error("Enter a valid appointment duration."), { statusCode: 400 });
+  // External busy events can span holidays or vacations lasting many days.
+  // The cleaning-duration cap applies only to our appointment records.
+  if (!Number.isFinite(hours) || hours <= 0 || (record.source !== "google-calendar" && hours > 200)) throw Object.assign(new Error("Enter a valid appointment duration."), { statusCode: 400 });
   return hours;
 }
 

@@ -9,6 +9,26 @@ const capacityMigration = fs.readFileSync(path.join(root, 'supabase/migrations/2
 const table = fs.readFileSync(path.join(root, 'supabase-schema.sql'), 'utf8').match(/create table if not exists public.bookings \([\s\S]*?\n\);/)[0];
 const shared = require('../api/booking/_shared');
 
+const vacation = {
+  id: 'google:nine-day-block', source: 'google-calendar', status: 'Confirmed',
+  schedule: '2026-11-07T00:00:00-05:00', estimate: { teamHours: 216 }
+};
+const smallCleaning = shared.calculateHourlyCleaningQuote(4);
+assert.equal(shared.bookingDurationHours(vacation), 216);
+for (const day of ['2026-11-06', '2026-11-16', '2026-11-20']) {
+  assert.deepEqual(shared.availableSlotsForDate(smallCleaning, day, [vacation]),
+    shared.availableSlotsForDate(smallCleaning, day, []), day + ': unrelated dates stay available');
+}
+assert.equal(shared.availableSlotsForDate(smallCleaning, '2026-11-10', [vacation]).length, 0);
+assert.throws(() => shared.bookingDurationHours({ ...vacation, source: undefined }), /valid appointment duration/);
+for (const hours of [0, -1, Infinity, NaN]) {
+  assert.throws(() => shared.bookingDurationHours({ ...vacation, estimate: { teamHours: hours } }), /valid appointment duration/);
+}
+const partial = { ...vacation, schedule: '2026-11-06T08:00:00-05:00', estimate: { teamHours: 216 } };
+const afterBlock = shared.availableSlotsForDate(smallCleaning, '2026-11-15', [partial]);
+assert(afterBlock.some(slot => slot.time === '12:00'), 'The event ending at 8 AM allows service after its travel buffer');
+assert(!afterBlock.some(slot => slot.time === '08:00'), 'The travel buffer still applies');
+
 async function database() {
   const db = new PGlite();
   await db.exec('create role anon; create role authenticated; create role service_role;');
