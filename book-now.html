@@ -347,6 +347,10 @@
                     <input name="recurringOrderNumber" type="text" autocomplete="off" autocapitalize="characters" spellcheck="false" maxlength="100" placeholder="Order number or BK-… booking reference">
                   </label>
                 </div>
+                <label class="booking-quote-sms-consent">
+                  <input type="checkbox" name="recurringManualEntry">
+                  <span>My email and phone have changed. I’ll enter my cleaning details and verify my service address.</span>
+                </label>
               </div>
                 <div data-recurring-plan-panel hidden>
                   <h3>Choose your recurring cleaning plan</h3>
@@ -594,6 +598,11 @@
               <span>Additional priorities or access notes (optional)</span>
               <textarea name="notes" rows="4" placeholder="Tell us what matters most, parking instructions, building access, or pet information."></textarea>
             </label>
+            <details class="booking-final-card" data-recurring-address hidden>
+              <summary>Changed your email and phone? Verify with your service address</summary>
+              <p>Enter the service address from your previous order, including the apartment or unit if applicable.</p>
+              <p class="booking-scheduler-status" data-address-match-status aria-live="polite" hidden></p>
+            </details>
             <div class="booking-actions">
               <button class="booking-secondary" type="button" data-back="2">Back</button>
               <button class="booking-primary" type="button" data-continue-contact>Secure my booking →</button>
@@ -608,7 +617,7 @@
             <input type="hidden" name="accountMode" value="guest">
             <div class="booking-final-layout">
               <div class="booking-final-left">
-                <section class="booking-final-card" aria-labelledby="booking-address-title">
+                <section class="booking-final-card" data-service-address aria-labelledby="booking-address-title">
                   <h3 id="booking-address-title">Where are we cleaning?</h3>
                   <div class="booking-final-address-grid">
                     <label class="booking-final-field-wide"><span>Street address</span><input name="address" autocomplete="street-address" required></label>
@@ -957,7 +966,7 @@
   <script src="./booking-service-area.js?v=20261006-pause-bronx-staten-island"></script>
   <script src="./booking-discount-names.js?v=20261105"></script>
   <script src="./booking-day.js?v=20261105"></script>
-  <script src="./book-now.js?v=20261105-residential-day-limit"></script>
+  <script src="./book-now.js?v=20261105-recurring-address"></script>
 <script defer src="./site-reviews.js?v=20260911-trusted-title"></script>
 </body>
 </html>

@@ -132,6 +132,17 @@ function cleanText(value, maxLength = 500) {
   return String(value || "").replace(/[\r\n]+/g, " ").replace(/\s+/g, " ").trim().slice(0, maxLength);
 }
 
+function normalizeServiceAddress(customer) {
+  const address = cleanText(customer.address, 240);
+  const address2 = cleanText(customer.address2, 80);
+  const city = cleanText(customer.city, 80);
+  const state = cleanText(customer.state, 30);
+  const zip = cleanText(customer.zip, 15);
+  const fullAddress = address && city && state && zip
+    ? cleanText([address, address2, city, state, zip].filter(Boolean).join(", "), 400) : "";
+  return { address, address2, city, state, zip, fullAddress };
+}
+
 function normalizeServiceZip(value) {
   return String(value || "").replace(/\D/g, "").slice(0, 5);
 }
@@ -2381,6 +2392,7 @@ module.exports = {
   googleCalendarConnectionStatus,
   catalogForClient,
   cleanText,
+  normalizeServiceAddress,
   calculateResidentialQuoteBundle,
   calculateResidentialUnitPrice,
   calculateOrganizationQuote,

@@ -367,6 +367,13 @@
   let repeatExtrasDirty = false;
   let recurringRepeatChallenge = "";
   const repeatVerification = form.querySelector("[data-recurring-repeat-verification]");
+  const recurringManualEntry = form.elements.recurringManualEntry;
+  recurringManualEntry.addEventListener("change", () => {
+    recurringRepeatChallenge = "";
+    form.elements.recurringRepeatCode.value = "";
+    repeatVerification.hidden = true;
+    setStatus(document.querySelector("[data-eligibility-status]"), "");
+  });
   const recurringPlanPanel = form.querySelector("[data-recurring-plan-panel]");
   const recurringPlanSummary = form.querySelector("[data-recurring-plan-summary]");
   recurringOrderNumberInput?.addEventListener("input", () => {
@@ -554,6 +561,14 @@
   }
 
   const value = (name) => form.elements[name]?.value || "";
+  const serviceAddress = () => ({
+    address: value("address"), address2: value("address2"), city: value("city"),
+    state: value("state"), zip: value("zip")
+  });
+  const addressCard = form.querySelector("[data-service-address]");
+  const addressFields = addressCard.querySelector(".booking-final-address-grid");
+  const recurringAddress = form.querySelector("[data-recurring-address]");
+  const addressMatchStatus = recurringAddress.querySelector("[data-address-match-status]");
   const selectedVisitPair = () => {
     const slot = state.availableSlots.find(item => item.value === value("schedule"));
     const secondSchedule = state.arrivalPreference === "any_day" ? slot?.anytimeSecondStart : slot?.fixedSecondStart;
@@ -1029,6 +1044,16 @@
   };
   const goToStep = (step) => {
     state.step = step;
+    const canVerifyAddress = step === 3 && state.serviceKey === "recurring" && !repeatBookingMode;
+    const addressContainer = canVerifyAddress ? recurringAddress : addressCard;
+    if (addressFields.parentElement !== addressContainer) addressContainer.append(addressFields);
+    recurringAddress.hidden = !canVerifyAddress;
+    if (canVerifyAddress && recurringManualEntry.checked) recurringAddress.open = true;
+    if (!canVerifyAddress) {
+      recurringAddress.open = false;
+      setStatus(addressMatchStatus, "");
+    }
+    addressCard.hidden = repeatBookingMode;
     if (wizardDialog) wizardDialog.dataset.currentStep = String(step);
     bookingWizard?.classList.toggle("is-quote-page", step === 2);
     document.querySelectorAll("[data-step]").forEach((section) => {
@@ -1043,7 +1068,6 @@
     if (repeatBookingMode) {
       if (step === 3) renderRepeatExtras();
       form.querySelectorAll('[data-cleaning-schedule-details], [data-stage-target], [data-back="2"]').forEach(element => { element.hidden = true; });
-      form.elements.address.closest("section").hidden = true;
     }
     wizardDialog?.scrollTo({ top: 0, behavior: "smooth" });
     persistBookingDraft();
@@ -3813,9 +3837,10 @@
         recurringOrderNumberInput?.focus();
         return;
       }
-      if (recurringRepeatChallenge) {
+      if (recurringRepeatChallenge && !recurringManualEntry.checked) {
         const button = document.querySelector("[data-check-eligibility]");
         button.disabled = true;
+        recurringManualEntry.disabled = true;
         try {
           const verified = await fetch("/api/booking/manage", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ action: "verify-code", challenge: recurringRepeatChallenge, code: value("recurringRepeatCode") }) });
           const verification = await verified.json();
@@ -3851,7 +3876,10 @@
           recurringRepeatChallenge = "";
           repeatVerification.hidden = true;
           setStatus(status, error.message || "Please try again.", "error");
-        } finally { button.disabled = false; }
+        } finally {
+          button.disabled = false;
+          recurringManualEntry.disabled = false;
+        }
         return;
       }
       if (recurringVerifiedOrder === previousOrderNumber && !form.elements.recurringPlan.value) {
@@ -3861,6 +3889,7 @@
       }
       const continueButton = document.querySelector("[data-check-eligibility]");
       continueButton.disabled = true;
+      recurringManualEntry.disabled = true;
       setStatus(status, "Verifying your previous completed cleaning…", "info");
       try {
         const response = await fetch("/api/booking/recurring-discount", {
@@ -3882,7 +3911,7 @@
         form.elements.recurringPlan.value = data.plan;
         recurringPlanSummary.hidden = false;
         recurringPlanSummary.textContent = `Your plan: ${data.plan === "biweekly" ? "Every two weeks" : data.plan === "weekly" ? "Weekly" : "Monthly"} · ${data.percent}% off. Next cleaning window: ${data.windowStart} to ${data.windowEnd}. Contact us to change plans.`;
-        if (data.repeatBooking && data.locked) {
+        if (data.repeatBooking && data.locked && !recurringManualEntry.checked) {
           const sent = await fetch("/api/booking/recurring-discount", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ action: "request-repeat-code", previousOrderNumber }) });
           const challenge = await sent.json();
           if (!sent.ok) throw new Error(challenge.error || "We could not send your verification code.");
@@ -3910,6 +3939,7 @@
         recurringOrderNumberInput?.focus();
       } finally {
         continueButton.disabled = false;
+        recurringManualEntry.disabled = false;
       }
       return;
     }
@@ -4437,29 +4467,45 @@
     }
     if (state.serviceKey === "recurring") {
       const continueButton = document.querySelector("[data-continue-contact]");
+      const verificationBody = () => JSON.stringify({
+        previousOrderNumber: value("recurringOrderNumber"), recurringPlan: value("recurringPlan"),
+        schedule: value("schedule"), customer: { email: value("email"), phone: value("phone") },
+        serviceAddress: serviceAddress()
+      });
+      const body = verificationBody();
       continueButton.disabled = true;
+      setStatus(addressMatchStatus, "");
       setSchedulerStatus("Verifying your recurring-cleaning discount…", "info");
       try {
         const response = await fetch("/api/booking/recurring-discount", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({
-            previousOrderNumber: value("recurringOrderNumber"),
-            recurringPlan: value("recurringPlan"),
-            schedule: value("schedule"),
-            customer: { email: value("email"), phone: value("phone"), address: "" }
-          })
+          body
         });
         const data = await response.json().catch(() => ({}));
+        if (state.step !== 3 || state.serviceKey !== "recurring") return;
+        if (body !== verificationBody()) {
+          setSchedulerStatus("Your details changed. Select Secure my booking to verify them.", "info");
+          return;
+        }
+        if (!response.ok && data.code === "RECURRING_CUSTOMER_MISMATCH" && !recurringAddress.hidden) {
+          recurringAddress.open = true;
+          setSchedulerStatus("");
+          setStatus(addressMatchStatus, value("address").trim() && value("city").trim()
+            ? "That address doesn’t match the previous order. Check the street, apartment or unit, city, and ZIP code, then try again."
+            : "We couldn’t match your contact details. Enter your previous service address, then select Secure my booking.");
+          form.elements.address.focus();
+          return;
+        }
         if (!response.ok) throw new Error(data.error || "The recurring discount could not be verified.");
         applyPromoData(data);
         setSchedulerStatus(`✓ ${data.label} applied — ${data.percent}% off.`, "success");
       } catch (error) {
         setSchedulerStatus(error.message || "The recurring discount could not be verified.", "error");
-        continueButton.disabled = false;
         return;
+      } finally {
+        continueButton.disabled = false;
       }
-      continueButton.disabled = false;
     }
     if (belowBookingMinimum()) { showBookingMinimum(); return; }
     syncCheckoutReview();
@@ -4558,11 +4604,7 @@
         lastName: value("lastName"),
         email: value("email"),
         phone: value("phone"),
-        address: value("address"),
-        address2: value("address2"),
-        city: value("city"),
-        state: value("state"),
-        zip: value("zip")
+        ...serviceAddress()
       },
       agreements: {
         laborHours: true,

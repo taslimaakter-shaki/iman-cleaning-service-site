@@ -19,10 +19,63 @@ const sandbox = {module:{exports:{}},require(name) {
 vm.runInNewContext(fs.readFileSync(path.join(__dirname,'../api/booking/_recurring-discount.js'),'utf8'),sandbox);
 const handler=sandbox.module.exports;
 const call=body=>handler({method:'POST',body},{});
+
+async function checkCalendarRetry() {
+  const source = fs.readFileSync(path.join(__dirname, "../book-now.js"), "utf8");
+  const browserCode = (start, end) => source.slice(source.indexOf(start), source.indexOf(end));
+  const state = {step:3, serviceKey:"recurring", arrivalPreference:"morning"};
+  const fields = {recurringOrderNumber:"22222222", recurringPlan:"weekly", schedule:"2030-10-18",
+    email:"changed@example.test", phone:"2125550199", state:"NY", zip:"11367"};
+  const addressPanel = {hidden:false, open:false};
+  let proceed, discount;
+  const button = {addEventListener(type, listener) { proceed = listener; }};
+  vm.runInNewContext(
+    browserCode("  const serviceAddress =", "  const addressCard =") +
+    browserCode('  document.querySelector("[data-continue-contact]").addEventListener', '  document.querySelectorAll("[data-back]")'),
+    { state, document:{querySelector:()=>button}, form:{elements:{address:{focus() {}}}}, value:key=>fields[key] || "",
+      repeatBookingMode:false, recurringAddress:addressPanel, addressMatchStatus:{}, setStatus() {}, setSchedulerStatus() {},
+      async fetch(url, options) {
+        assert.equal(url, "/api/booking/recurring-discount");
+        const result = await call(JSON.parse(options.body));
+        return {ok:result.status === 200, json:async()=>result.data};
+      },
+      applyPromoData(data) { discount = data; }, belowBookingMinimum:()=>false, syncCheckoutReview() {},
+      goToStep(step) { state.step = step; } }
+  );
+  await proceed();
+  assert.equal(addressPanel.open,true);
+  assert.equal(state.step,3);
+  Object.assign(fields,{address:"123 Example Street", address2:"Unit 3", city:"Queens"});
+  await proceed();
+  assert.equal(state.step,3);
+  assert.equal(discount,undefined);
+  fields.address2 = "Unit 2";
+  await proceed();
+  assert.equal(state.step,4);
+  assert.equal(discount.percent,20);
+}
+
 (async()=>{
+  await checkCalendarRetry();
   const lookup=await call({lookupOnly:true,previousOrderNumber:'11111111'});
   assert.equal(lookup.data.repeatBooking,true);
   assert.equal(lookup.data.customer,undefined);
+  const verification = {
+    previousOrderNumber:"22222222", recurringPlan:"weekly", schedule:"2030-10-18",
+    customer:{email:"changed@example.test",phone:"2125550199"},
+    serviceAddress:{address:"123 Example Street",address2:"Unit 2",city:"Queens",state:"NY",zip:"11367"}
+  };
+  const matched = await call(verification);
+  assert.equal(matched.status,200);
+  assert.equal(matched.data.percent,20);
+  assert.equal(matched.data.customer,undefined);
+  assert.equal(matched.data.unitDetails,undefined);
+  for (const change of [{address2:"Unit 3"},{city:""},{zip:"11368"}]) {
+    const rejected = await call({...verification,serviceAddress:{...verification.serviceAddress,...change}});
+    assert.equal(rejected.data.code,"RECURRING_CUSTOMER_MISMATCH");
+  }
+  assert.equal((await call({...verification,schedule:"2030-11-20"})).data.code,"RECURRING_INTERVAL_INELIGIBLE");
+  assert.equal((await call({...verification,serviceAddress:undefined,customer:{email:repeat.email}})).status,200);
   assert.equal((await call({action:'repeat-details',previousOrderNumber:'11111111'})).status,401);
   const wrong=management.createBookingManagementToken({bookingId:'someone-else',email:initial.email});
   assert.equal((await call({action:'repeat-details',previousOrderNumber:'11111111',token:wrong})).status,401);

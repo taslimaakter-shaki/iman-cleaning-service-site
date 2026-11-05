@@ -1,4 +1,4 @@
-const { cleanText, json, listAllBookings, readJsonBody } = require("./_shared");
+const { cleanText, normalizeServiceAddress, json, listAllBookings, readJsonBody } = require("./_shared");
 const { bookingHasSuccessfulPayment, sameCustomerOrAddress } = require("./_promo");
 const bookingDiscountName = require("../../booking-discount-names");
 
@@ -136,7 +136,11 @@ async function handler(request, response) {
       const booking = completedBookingForOrder(bookings, body.previousOrderNumber);
       return json(response, 200, { valid: true, firstName: customerFirstName(booking), repeatBooking: Boolean(completedBookingForOrder(bookings, recurringContext(bookings, body.previousOrderNumber, body.recurringPlan).previousOrderNumber).estimate?.recurringDiscount), ...recurringContext(bookings, body.previousOrderNumber, body.recurringPlan) });
     }
-    const discount = verifyRecurringDiscount(await listAllBookings({ complete: true }), body);
+    const { email, phone, address } = body.customer || {};
+    const serviceAddress = body.serviceAddress ? normalizeServiceAddress(body.serviceAddress).fullAddress : address;
+    const discount = verifyRecurringDiscount(await listAllBookings({ complete: true }), {
+      ...body, customer: { email, phone, address: serviceAddress }
+    });
     return json(response, 200, { valid: true, ...discount });
   } catch (error) {
     return json(response, error.statusCode || 500, { error: error.message || "The recurring discount could not be verified.", code: error.code || "RECURRING_ERROR" });
