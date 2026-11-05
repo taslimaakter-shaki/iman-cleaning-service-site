@@ -14,10 +14,13 @@ final class DeskUITests: XCTestCase {
         }
         XCTFail("The "+name+" view did not open")
     }
-    func enter(_ text:String, in field:XCUIElement) {
+    func focus(_ field:XCUIElement) {
         XCTAssertTrue(field.waitForExistence(timeout:12))
         field.tap()
         if !app.keyboards.firstMatch.waitForExistence(timeout:3) { field.coordinate(withNormalizedOffset:CGVector(dx:0.4,dy:0.5)).tap() }
+    }
+    func enter(_ text:String, in field:XCUIElement) {
+        focus(field)
         app.typeText(text)
     }
     func shot(_ title:String) {
@@ -37,7 +40,7 @@ final class DeskUITests: XCTestCase {
         }
         requireLocked()
         let field = app.secureTextFields["staffKey"]
-        field.tap()
+        focus(field)
         field.typeText(key.trimmingCharacters(in:.whitespacesAndNewlines)+"\n")
         XCTAssertTrue(app.buttons["visit-sample-visit-0/1"].waitForExistence(timeout:26))
     }
@@ -111,7 +114,7 @@ final class DeskUITests: XCTestCase {
         let field=app.secureTextFields["staffKey"]
         for key in ["desk-review-invalid", "invalid-staff-test-only"] {
             app.terminate(); app.launch()
-            field.tap(); field.typeText(key+"\n")
+            focus(field); field.typeText(key+"\n")
             XCTAssertTrue(app.staticTexts["That access key was not accepted. Check it and try again."].waitForExistence(timeout:26))
             requireLocked()
         }
