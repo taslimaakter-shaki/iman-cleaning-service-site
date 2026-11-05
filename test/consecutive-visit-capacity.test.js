@@ -37,6 +37,19 @@ const iso = (day,time='08:00') => shared.toZonedIso('2030-11-'+day,time);
     await insert({...anytime,estimate:{...anytime.estimate,secondVisitSchedule:iso(21,'09:00')}});
     assert.equal((await db.query("select count(*)::int n from booking_calendar_slots where booking_id='flex'")).rows[0].n,2);
     await assert.rejects(insert({...pair,id:'different-times',schedule:iso(23),estimate:{...pair.estimate,secondVisitSchedule:iso(24,'09:00')}}),/iman_consecutive_visits/);
+    const morningPair=booking('shared-days',iso(25),{teamHours:398/60,calendarReservationHours:458/60,
+      secondVisitSchedule:iso(26),arrivalPreference:{key:'morning',flexible:false}});
+    await insert(morningPair);
+    for(const day of [25,26]) {
+      const existing=[{...morningPair,schedule:iso(day)}];
+      assert(shared.planBookingDay(iso(day,'17:38'),2.5,existing),'A later 90-minute cleaning plus its buffer fits');
+      assert.equal(shared.planBookingDay(iso(day,'17:37'),2.5,existing),null,'Travel gap is required');
+      assert.equal(shared.planBookingDay(iso(day,'17:38'),3,existing),null,'Cleaning and buffer must finish before closing');
+      await assert.rejects(insert(booking('too-early-'+day,iso(day,'17:37'),{calendarReservationHours:2.5})),/cannot fit|No daily schedule/);
+      await assert.rejects(insert(booking('too-long-'+day,iso(day,'17:38'),{calendarReservationHours:3})),/within 8 AM to 8:30 PM|cannot fit|No daily schedule/);
+      await insert(booking('later-'+day,iso(day,'17:38'),{teamHours:1.5,calendarReservationHours:2.5}));
+    }
+    assert.equal((await db.query("select count(*)::int n from booking_calendar_slots where booking_id in ('shared-days','later-25','later-26')")).rows[0].n,4);
     console.log('Consecutive visit capacity: both dates reserved, conflict rolls back both, cancel and expiry release both.');
   } finally {await db.close();}
 })().catch(e=>{console.error(e);process.exitCode=1});
