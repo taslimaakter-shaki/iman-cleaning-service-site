@@ -54,6 +54,22 @@ async function googleTests() {
   await shared.assertScheduleAvailable('2030-09-12T12:00:00-04:00', 3);
   await assert.rejects(shared.assertScheduleAvailable('2030-09-12T11:30:00-04:00', 3), /conflicts with another booking/);
   events.length = 0;
+  const onDay = time => `2030-09-12T${time}:00-04:00`;
+  const protectedStarts = async () => (await shared.availableSlotsForPackage({ teamHours: 2 }, 2, new Date('2030-09-10T12:00:00Z')))
+    .filter(slot => slot.date === '2030-09-12' && slot.flexibleEligible).map(slot => slot.time);
+  events.push(event('one-block', onDay('08:00'), onDay('11:00')));
+  const afterMorning = await protectedStarts();
+  assert.equal(afterMorning.length, 10);
+  assert(afterMorning.includes('14:00'));
+  stored = [{ id: 'confirmed', status: 'Confirmed', schedule: onDay('08:00'), estimate: { teamHours: 1, calendarReservationHours: 2 } }];
+  for (const start of ['10:00', '09:30']) {
+    events.splice(0, events.length, event('separate', onDay(start), onDay('11:00')));
+    assert.deepEqual(await protectedStarts(), afterMorning, 'Fixed booking and adjacent or overlapping event occupy the same morning');
+    await shared.assertScheduleAvailable(onDay('13:00'), 3);
+    await assert.rejects(shared.assertScheduleAvailable(onDay('12:59'), 3), /conflicts with another booking/);
+  }
+  stored = [];
+  events.length = 0;
   for (const block of [
     { id: 'vacation', start: { date: '2026-11-07' }, end: { date: '2026-11-16' } },
     event('vacation-across-dst', '2026-10-31T00:00:00-04:00', '2026-11-09T00:00:00-05:00')

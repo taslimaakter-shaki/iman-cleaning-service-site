@@ -1844,58 +1844,61 @@ function flexibleBooking(record, now = Date.now()) {
     && Date.parse(record.schedule) > now;
 }
 
-function calendarBusyPeriods(records) {
-  const appointments = records.filter(record => record.source !== "google-calendar");
-  const knownIds = new Set(appointments.map(record => record.id));
-  const external = records
-    .filter(record => record.source === "google-calendar" && !knownIds.has(record.id))
-    .map(bookingInterval)
-    .sort((left, right) => left.start - right.start);
-  const periods = [];
-  const gap = APPOINTMENT_GAP_HOURS * 3600000;
-  for (const interval of external) {
-    const previous = periods[periods.length - 1];
-    // There is no room for a cleaning plus travel between these busy events.
-    if (previous && interval.start <= previous.end + gap) {
-      previous.end = Math.max(previous.end, interval.end);
-    } else {
-      periods.push({ ...interval });
-    }
-  }
-  return appointments.concat(periods.map((period, index) => ({
-    id: `google:busy-period-${index}`,
-    source: "google-calendar",
-    status: "Confirmed",
-    schedule: new Date(period.start).toISOString(),
-    estimate: { teamHours: (period.end - period.start) / 3600000 }
-  })));
-}
-
-function planBookingDay(startIso, reservedHours, records, now = Date.now()) {
-  const date = localDateString(new Date(startIso));
+function prepareBookingDay(date, records, now = Date.now()) {
   const open = Date.parse(toZonedIso(date, OPEN_TIME));
   const close = Date.parse(toZonedIso(date, CLOSE_TIME));
   const gap = APPOINTMENT_GAP_HOURS * 3600000;
-  const bookings = calendarBusyPeriods(records);
+  const appointmentIds = new Set(records.filter(record => record.source !== "google-calendar").map(record => record.id));
+  const fixed = [];
   const jobs = [];
-  for (const booking of bookings) {
-    const interval = bookingInterval(booking);
-    if (interval.end + gap <= open || interval.start - gap >= close) continue;
-    const movable = flexibleBooking(booking, now) && localDateString(new Date(booking.schedule)) === date;
-    const preference = booking.estimate?.arrivalPreference;
-    const duration = interval.end - interval.start;
-    let earliest = interval.start, latest = interval.start;
-    if (movable) {
-      if (!/^\d{2}:\d{2}$/.test(preference.windowStart || '') || !/^\d{2}:\d{2}$/.test(preference.windowEnd || '')) {
-        throw Object.assign(new Error('A flexible booking has an invalid arrival window. Please contact our team.'), { statusCode: 503 });
-      }
-      earliest = Math.max(open, now, Date.parse(toZonedIso(date, preference.windowStart)));
-      latest = Math.min(close - duration, Date.parse(toZonedIso(date, preference.windowEnd)));
+
+  for (const record of records) {
+    if (record.source === "google-calendar" && appointmentIds.has(record.id)) continue;
+    const { start, end } = bookingInterval(record);
+    if (end + gap <= open || start - gap >= close) continue;
+    if (!flexibleBooking(record, now) || localDateString(new Date(start)) !== date) {
+      fixed.push({ id: record.id, start, end });
+      continue;
     }
-    jobs.push({ id: booking.id, earliest, latest, duration });
+    const preference = record.estimate.arrivalPreference;
+    if (!/^\d{2}:\d{2}$/.test(preference.windowStart || '') || !/^\d{2}:\d{2}$/.test(preference.windowEnd || '')) {
+      throw Object.assign(new Error('A flexible booking has an invalid arrival window. Please contact our team.'), { statusCode: 503 });
+    }
+    const duration = end - start;
+    const earliest = Math.max(open, now, Date.parse(toZonedIso(date, preference.windowStart)));
+    const latest = Math.min(close - duration, Date.parse(toZonedIso(date, preference.windowEnd)));
+    jobs.push({ id: record.id, start, end, duration, earliest, latest, preference });
   }
-  const start = Date.parse(startIso), duration = reservedHours * 3600000;
-  if (!Number.isFinite(start) || !Number.isFinite(duration) || duration <= 0 || start < open || start + duration > close) return null;
+
+  // Existing fixed commitments occupy time regardless of how they were recorded.
+  // A gap this short cannot fit a new appointment plus travel. Keep the members
+  // so the returned plan still identifies each booking at its actual time.
+  let period;
+  for (const interval of fixed.sort((a, b) => a.start - b.start)) {
+    if (period && interval.start <= period.end + gap) {
+      period.end = Math.max(period.end, interval.end);
+      period.duration = period.end - period.start;
+      period.members.push(interval);
+    } else {
+      period = { ...interval, earliest: interval.start, latest: interval.start,
+        duration: interval.end - interval.start, members: [interval] };
+      jobs.push(period);
+    }
+  }
+  return { open, close, jobs };
+}
+
+function planBookingDay(startIso, reservedHours, records, now = Date.now()) {
+  const start = Date.parse(startIso);
+  const day = prepareBookingDay(localDateString(new Date(start)), records, now);
+  return planStartOnDay(start, reservedHours, day);
+}
+
+function planStartOnDay(start, reservedHours, day) {
+  const gap = APPOINTMENT_GAP_HOURS * 3600000;
+  const duration = reservedHours * 3600000;
+  if (!Number.isFinite(start) || !Number.isFinite(duration) || duration <= 0 || start < day.open || start + duration > day.close) return null;
+  const jobs = day.jobs.slice();
   jobs.push({ id: '__candidate__', earliest: start, latest: start, duration });
   // Earliest-deadline ordering is a search heuristic, not a greedy acceptance rule.
   jobs.sort((a, b) => a.latest - b.latest || a.id.localeCompare(b.id));
@@ -1911,12 +1914,17 @@ function planBookingDay(startIso, reservedHours, records, now = Date.now()) {
       const job = remaining[index], begins = Math.max(cursor, job.earliest);
       if (begins > job.latest) continue;
       const tail = search(remaining.filter((_, i) => i !== index), begins + job.duration + gap);
-      if (tail) return [{ id: job.id, start: new Date(begins).toISOString(), end: new Date(begins + job.duration).toISOString() }, ...tail];
+      if (tail) {
+        const intervals = job.members || [{ id: job.id, start: begins, end: begins + job.duration }];
+        return intervals.map(({ id, start, end }) => ({
+          id, start: new Date(start).toISOString(), end: new Date(end).toISOString()
+        })).concat(tail);
+      }
     }
     failed.add(key);
     return null;
   }
-  return search(jobs, Math.min(open, ...jobs.map(job => job.earliest)));
+  return search(jobs, Math.min(day.open, ...jobs.map(job => job.earliest)));
 }
 
 function slotAvailable(startIso, teamHours, bookings) {
@@ -1946,9 +1954,12 @@ function timeStringForDate(date) {
 }
 
 function availableSlotsForDate(pkg, dateString, bookings = [], minimumStartMs = 0) {
-  bookings = calendarBusyPeriods(bookings);
-  const open = new Date(toZonedIso(dateString, OPEN_TIME)).getTime();
-  const close = new Date(toZonedIso(dateString, CLOSE_TIME)).getTime();
+  const day = prepareBookingDay(dateString, bookings);
+  return slotsForPreparedDay(pkg, dateString, day, minimumStartMs);
+}
+
+function slotsForPreparedDay(pkg, dateString, day, minimumStartMs) {
+  const { open, close } = day;
   const duration = pkg.teamHours * 60 * 60 * 1000;
   const interval = SLOT_INTERVAL_MINUTES * 60 * 1000;
   const earliestStart = Number.isFinite(Number(minimumStartMs)) ? Number(minimumStartMs) : 0;
@@ -1962,19 +1973,14 @@ function availableSlotsForDate(pkg, dateString, bookings = [], minimumStartMs = 
   // Include boundaries after chains of movable jobs, including off-grid times.
   const protectedDuration = (Math.ceil(pkg.teamHours * 60) + 60) * 60000;
   const travel = APPOINTMENT_GAP_HOURS * 3600000;
-  const relevant = bookings.filter(booking => {
-    const interval = bookingInterval(booking);
-    return interval.end + travel > open && interval.start - travel < close;
-  });
   const anchors = new Set([open, close - protectedDuration]);
   let offsets = new Set([0]);
-  for (const booking of relevant) {
-    const { start, end } = bookingInterval(booking);
-    const length = end - start;
-    anchors.add(start - travel - protectedDuration);
-    anchors.add(end + travel);
-    if (flexibleBooking(booking)) {
-      const pref = booking.estimate.arrivalPreference;
+  for (const job of day.jobs) {
+    const length = job.duration;
+    anchors.add(job.start - travel - protectedDuration);
+    anchors.add(job.end + travel);
+    if (job.preference) {
+      const pref = job.preference;
       anchors.add(Date.parse(toZonedIso(dateString, pref.windowStart)) + length + travel);
       anchors.add(Date.parse(toZonedIso(dateString, pref.windowEnd)) - travel - protectedDuration);
       for (const offset of [...offsets]) {
@@ -1993,7 +1999,7 @@ function availableSlotsForDate(pkg, dateString, bookings = [], minimumStartMs = 
     const startDate = new Date(candidateStart);
     const time = timeStringForDate(startDate);
     const value = toZonedIso(dateString, time);
-    if (!slotAvailable(value, pkg.teamHours, bookings)) continue;
+    if (!planStartOnDay(Date.parse(value), pkg.teamHours, day)) continue;
     slots.push({
       value,
       label: formatSlotLabel(dateString, time),
@@ -2227,11 +2233,10 @@ async function availableSlotsForPackage(pkg, days = MAX_ADVANCE_BOOKING_DAYS, no
   for (let dayIndex = 1; dayIndex <= bookingDays; dayIndex += 1) {
     const date = new Date(base.getTime() + dayIndex * 24 * 60 * 60 * 1000);
     const dateString = localDateString(date);
-    availableSlotsForDate(pkg, dateString, bookings, minimumStartMs).forEach((slot) => {
+    const day = prepareBookingDay(dateString, bookings);
+    slotsForPreparedDay(pkg, dateString, day, minimumStartMs).forEach((slot) => {
       const extendedHours = Number(pkg.teamHours) + 1;
-      const extendedEnd = new Date(slot.value).getTime() + extendedHours * 60 * 60 * 1000;
-      const closesAt = new Date(toZonedIso(dateString, CLOSE_TIME)).getTime();
-      const flexibleEligible = extendedEnd <= closesAt && slotAvailable(slot.value, extendedHours, bookings);
+      const flexibleEligible = planStartOnDay(Date.parse(slot.value), extendedHours, day) !== null;
       slots.push({ ...slot, anytimeEligible: !datesWithoutAnytime.has(dateString), flexibleEligible, flexibleTeamHours: extendedHours, calendarChecked: calendarAvailability.connected });
     });
   }

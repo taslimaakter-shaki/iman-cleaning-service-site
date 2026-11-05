@@ -36,6 +36,17 @@ const joinedExternal = [
   { ...external, id: 'google:second', schedule: iso('09:00'), estimate: { teamHours: 1 } }
 ];
 const joinedAsOne = [{ ...joinedExternal[0], estimate: { teamHours: 2 } }];
+// The flexible reservation can move away from the fixed morning commitments.
+const fixedMorning = make('fixed-morning', '08:00', 2, false);
+const tenToEleven = { ...external, schedule: iso('10:00'), estimate: { teamHours: 1 } };
+const movable = make('movable', '09:00', 2);
+const mixed = [movable, tenToEleven, fixedMorning];
+const afternoonPlan = shared.planBookingDay(iso('17:00'), 3, mixed);
+assert(afternoonPlan);
+for (const [id, expected] of [['fixed-morning','08:00'], [tenToEleven.id,'10:00'], ['movable','13:00']]) {
+  assert.equal(Date.parse(afternoonPlan.find(job => job.id === id).start), Date.parse(iso(expected)));
+}
+assert.equal(shared.planBookingDay(iso('16:59'), 3, mixed), null, 'Travel also separates the moved booking from the new one');
 for (const cleaning of [late, pinned]) {
   for (const time of ['10:00', '11:30', '12:00', '14:00', '17:00']) {
     assert.equal(
