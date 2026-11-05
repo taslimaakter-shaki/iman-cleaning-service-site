@@ -557,6 +557,7 @@
     if (payButton) payButton.disabled = !accepted;
   };
   const resetAgreementReview = () => {
+    if (agreementReviewOverlay && !agreementReviewOverlay.hidden) closeAgreementReview();
     state.agreementReview = {
       version: AGREEMENT_VERSION,
       openedAt: "",
@@ -574,8 +575,11 @@
     if (agreementAcceptButton) agreementAcceptButton.disabled = true;
     syncAgreementControls();
   };
-  const markAgreementScrollComplete = () => {
-    if (state.agreementReview.scrolledToEndAt) return;
+  const checkAgreementScroll = () => {
+    if (!agreementContentLoaded || agreementReviewOverlay.hidden || !agreementScroll.clientHeight ||
+        !state.agreementReview.openedAt || state.agreementReview.scrolledToEndAt) return;
+    const remaining = agreementScroll.scrollHeight - agreementScroll.scrollTop - agreementScroll.clientHeight;
+    if (remaining > 8) return;
     state.agreementReview.scrolledToEndAt = new Date().toISOString();
     if (agreementAccept) agreementAccept.disabled = false;
   };
@@ -585,24 +589,28 @@
       const response = await fetch("./agreement.html", { cache: "no-store" });
       if (!response.ok) throw new Error("Agreement unavailable");
       const documentCopy = new DOMParser().parseFromString(await response.text(), "text/html");
+      if (agreementContentLoaded) return;
       const agreement = documentCopy.querySelector("article.agreement");
       if (!agreement) throw new Error("Agreement unavailable");
       agreementScroll.replaceChildren(...Array.from(agreement.childNodes).map((node) => document.importNode(node, true)));
       agreementContentLoaded = true;
-      agreementScroll.scrollTop = 0;
-      if (agreementScroll.scrollHeight <= agreementScroll.clientHeight + 4) markAgreementScrollComplete();
     } catch {
-      agreementScroll.innerHTML = '<p>The agreement could not be loaded. Please close this window, check your connection, and try again. You can also <a href="./agreement.html" target="_blank" rel="noopener">open the Service Agreement separately</a>.</p>';
+      if (!agreementContentLoaded) agreementScroll.innerHTML = '<p>The agreement could not be loaded. Please close this window, check your connection, and try again. You can also <a href="./agreement.html" target="_blank" rel="noopener">open the Service Agreement separately</a>.</p>';
     }
   };
   const openAgreementReview = async () => {
-    if (!agreementReviewOverlay) return;
+    if (!agreementReviewOverlay || !agreementScroll) return;
     agreementReturnFocus = document.activeElement;
     agreementReviewOverlay.hidden = false;
     document.body.classList.add("booking-agreement-open");
-    if (!state.agreementReview.openedAt) state.agreementReview.openedAt = new Date().toISOString();
+    if (!state.agreementReview.openedAt) {
+      state.agreementReview.openedAt = new Date().toISOString();
+      agreementScroll.scrollTop = 0;
+    }
     await loadAgreementContent();
-    agreementScroll?.focus();
+    if (agreementReviewOverlay.hidden) return;
+    checkAgreementScroll();
+    agreementScroll.focus();
   };
   closeAgreementReview = () => {
     if (!agreementReviewOverlay) return;
@@ -614,10 +622,7 @@
   document.querySelectorAll("[data-close-agreement-review]").forEach((control) => {
     control.addEventListener("click", closeAgreementReview);
   });
-  agreementScroll?.addEventListener("scroll", () => {
-    const remaining = agreementScroll.scrollHeight - agreementScroll.scrollTop - agreementScroll.clientHeight;
-    if (remaining <= 8) markAgreementScrollComplete();
-  });
+  agreementScroll?.addEventListener("scroll", checkAgreementScroll);
   const validAgreementSignedName = () => {
     const parts = String(agreementSignedName?.value || "").trim().split(/\s+/).filter(Boolean);
     return parts.length >= 2 && parts.join(" ").length >= 3;
