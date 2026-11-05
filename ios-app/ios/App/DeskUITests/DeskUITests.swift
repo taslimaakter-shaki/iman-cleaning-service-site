@@ -24,57 +24,88 @@ final class DeskUITests: XCTestCase {
         let capture = XCTAttachment(screenshot:XCUIScreen.main.screenshot())
         capture.name=title; capture.lifetime = .keepAlways; add(capture)
     }
-    func openSampleVisit() {
-        app.buttons["Explore sample workspace"].tap()
-        let row=app.buttons["visit-sample-visit-0/1"]
-        XCTAssertTrue(row.waitForExistence(timeout:10)); row.tap()
+    func requireLocked() {
+        XCTAssertTrue(app.secureTextFields["staffKey"].waitForExistence(timeout:12))
+        for label in ["Explore sample workspace", "Open personal planner", "My visit planner", "Open full CRM"] {
+            XCTAssertFalse(app.buttons[label].exists, label)
+        }
+        XCTAssertFalse(app.tabBars.buttons["Visits"].exists)
     }
-    func testSampleVisitChecklistAndWalkthrough() {
-        app.buttons["Explore sample workspace"].tap()
-        let row=app.buttons["visit-sample-visit-0/1"]
-        XCTAssertTrue(row.waitForExistence(timeout:10))
+    func signInToReview() throws {
+        guard let key = ProcessInfo.processInfo.environment["DESK_REVIEW_KEY"], !key.isEmpty else {
+            throw XCTSkip("Set DESK_REVIEW_KEY in the test runner to test the isolated review workspace.")
+        }
+        requireLocked()
+        let field = app.secureTextFields["staffKey"]
+        field.tap()
+        field.typeText(key.trimmingCharacters(in:.whitespacesAndNewlines)+"\n")
+        XCTAssertTrue(app.buttons["visit-sample-visit-0/1"].waitForExistence(timeout:26))
+    }
+    func openPlanner() {
+        let planner = app.buttons["My visit planner"]
+        selectTab("Workspace", until:planner)
+        planner.tap()
+        XCTAssertTrue(app.buttons["addVisit"].waitForExistence(timeout:10))
+    }
+    func testLockedAtLaunch() { requireLocked() }
+
+    func testAuthenticatedVisitsAndWalkthroughs() throws {
+        try signInToReview()
+        let visit = app.buttons["visit-sample-visit-0/1"]
         shot("01-Visits")
-        row.tap()
-        let item=app.buttons["Check supplies and equipment"]
-        XCTAssertTrue(item.waitForExistence(timeout:6))
-        if item.value as? String != "Completed" { item.tap() }
-        XCTAssertEqual(item.value as? String,"Completed")
+        visit.tap()
+        let supplies = app.buttons["Check supplies and equipment"]
+        XCTAssertTrue(supplies.waitForExistence(timeout:10))
+        if supplies.value as? String != "Completed" { supplies.tap() }
+        XCTAssertEqual(supplies.value as? String, "Completed")
         shot("02-Visit-preparation")
-        app.terminate(); app.launch(); openSampleVisit()
-        XCTAssertEqual(item.value as? String,"Completed")
-        let studio=app.buttons.containing(.staticText,identifier:"Willow Studio").firstMatch
-        selectTab("Walkthroughs",until:studio)
-        XCTAssertTrue(studio.waitForExistence(timeout:8)); studio.tap()
+        app.terminate(); app.launch()
+        try signInToReview()
+        visit.tap()
+        XCTAssertTrue(supplies.waitForExistence(timeout:10))
+        XCTAssertEqual(supplies.value as? String, "Completed")
+        let studio = app.buttons.containing(.staticText,identifier:"Willow Studio").firstMatch
+        selectTab("Walkthroughs",until:studio); studio.tap()
         XCTAssertTrue(app.buttons["Directions"].waitForExistence(timeout:10))
         shot("03-Walkthrough")
-        selectTab("Workspace",until:app.buttons["Leave sample workspace"])
+        selectTab("Workspace",until:app.buttons["Sign out"])
+        XCTAssertTrue(app.staticTexts["Review workspace"].exists)
         XCTAssertFalse(app.buttons["Open full CRM"].exists)
-        app.buttons["Leave sample workspace"].tap()
-        XCTAssertTrue(app.secureTextFields["staffKey"].waitForExistence(timeout:12))
+        app.buttons["Sign out"].tap()
+        requireLocked()
     }
-    func testPersonalCreateEditPersistDelete() {
-        app.buttons["Open personal planner"].tap()
+    func testPlannerRequiresSignInAndPersistsChanges() throws {
+        try signInToReview(); openPlanner()
+        XCTAssertFalse(app.staticTexts["Guest data protection fixture"].exists)
         app.buttons["addVisit"].tap()
-        let name=app.textFields["Customer or visit name"]
-        let example="Private visit "+UUID().uuidString.prefix(4)
-        enter(example,in:name)
+        let example = "Cedar Lane Studio"
+        enter(example, in:app.textFields["Customer or visit name"])
+        enter("Weekly cleaning", in:app.textFields["Service"])
+        enter("18 Example Lane, Brooklyn", in:app.textFields["Service address"])
+        enter("Bring supplies for the entryway.", in:app.textFields["Visit notes"])
         app.buttons["Save"].tap()
-        let row=app.buttons.containing(.staticText,identifier:String(example)).firstMatch
-        XCTAssertTrue(row.waitForExistence(timeout:8)); row.tap()
-        app.buttons["Edit visit"].tap()
-        let service=app.textFields["Service"]; enter("Weekly cleaning",in:service)
-        app.buttons["Save"].tap()
-        XCTAssertTrue(app.staticTexts["Weekly cleaning"].waitForExistence(timeout:6))
+        let row = app.buttons.containing(.staticText, identifier:example).firstMatch
+        XCTAssertTrue(row.waitForExistence(timeout:10)); row.tap()
         let supplies = app.buttons["Check supplies and equipment"]
-        supplies.tap()
-        XCTAssertEqual(supplies.value as? String, "Completed")
-        app.terminate(); app.launch(); app.buttons["Open personal planner"].tap()
-        XCTAssertTrue(row.waitForExistence(timeout:8)); row.tap()
-        XCTAssertEqual(supplies.value as? String, "Completed")
+        XCTAssertTrue(supplies.waitForExistence(timeout:10)); supplies.tap()
+        app.buttons["Edit visit"].tap()
+        XCTAssertTrue(app.navigationBars["Edit visit"].waitForExistence(timeout:10))
+        shot("04-Personal-planner")
+        enter(" Deep clean", in:app.textFields["Service"])
+        app.buttons["Save"].tap()
+        XCTAssertTrue(app.staticTexts["Weekly cleaning Deep clean"].waitForExistence(timeout:10))
+        app.terminate(); app.launch()
+        try signInToReview(); openPlanner()
+        XCTAssertTrue(row.waitForExistence(timeout:10)); row.tap()
+        XCTAssertTrue(supplies.waitForExistence(timeout:10))
+        XCTAssertEqual(supplies.value as? String,"Completed")
         app.buttons["Delete visit"].tap(); app.alerts.buttons["Delete"].tap()
-        XCTAssertTrue(app.buttons["addVisit"].waitForExistence(timeout:6))
-        app.terminate(); app.launch(); app.buttons["Open personal planner"].tap()
-        XCTAssertTrue(app.buttons["addVisit"].waitForExistence(timeout:6)); XCTAssertFalse(row.exists)
+        XCTAssertTrue(app.buttons["addVisit"].waitForExistence(timeout:10))
+        XCTAssertFalse(row.exists)
+        app.buttons["Done"].tap()
+        let out = app.buttons["Sign out"]
+        XCTAssertTrue(out.waitForExistence(timeout:10)); out.tap()
+        requireLocked()
     }
     func testRejectedCredentials() {
         let field=app.secureTextFields["staffKey"]
@@ -82,16 +113,7 @@ final class DeskUITests: XCTestCase {
             app.terminate(); app.launch()
             field.tap(); field.typeText(key+"\n")
             XCTAssertTrue(app.staticTexts["That access key was not accepted. Check it and try again."].waitForExistence(timeout:26))
-            XCTAssertFalse(app.tabBars.buttons["Visits"].exists)
+            requireLocked()
         }
-    }
-    private func XCTSkipIfMissing(_ value:String?,_ reason:String) throws -> String { guard let value else { throw XCTSkip(reason) }; return value }
-    func testAuthenticatedReview() throws {
-        let key=try XCTSkipIfMissing(Bundle(for:type(of:self)).url(forResource:"review-key",withExtension:"txt").flatMap { try? String(contentsOf:$0) } ?? ProcessInfo.processInfo.environment["DESK_REVIEW_KEY"].map { $0 }, "This release smoke test requires the synthetic reviewer credential in the test runner, never in the app.")
-        let field=app.secureTextFields["staffKey"]; field.tap(); field.typeText(key.trimmingCharacters(in:.whitespacesAndNewlines)+"\n")
-        XCTAssertTrue(app.buttons["visit-sample-visit-0/1"].waitForExistence(timeout:26))
-        selectTab("Workspace",until:app.buttons["Sign out"])
-        XCTAssertTrue(app.staticTexts["Sample workspace"].exists); XCTAssertFalse(app.buttons["Open full CRM"].exists)
-        app.buttons["Sign out"].tap(); XCTAssertTrue(field.waitForExistence(timeout:12))
     }
 }

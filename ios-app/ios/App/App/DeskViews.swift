@@ -13,7 +13,7 @@ struct DeskRoot: View {
             else {
                 TabView {
                     DeskVisits().tabItem { Label("Visits",systemImage:"calendar") }
-                    if workspace.access != .personal { DeskWalkthroughs().tabItem { Label("Walkthroughs",systemImage:"building.2") } }
+                    DeskWalkthroughs().tabItem { Label("Walkthroughs",systemImage:"building.2") }
                     DeskSettings().tabItem { Label("Workspace",systemImage:"person.crop.circle") }
                 }
             }
@@ -30,7 +30,7 @@ private struct DeskSignIn: View {
             VStack(alignment:.leading, spacing:22) {
                 Image(systemName:"calendar.badge.clock").font(.system(size:48,weight:.medium)).foregroundColor(brand)
                 Text("IMAN Staff Desk").font(.largeTitle.bold()).accessibilityAddTraits(.isHeader)
-                Text("Plan cleaning visits, review walkthrough requests, and prepare for each appointment.")
+                Text("Sign in with your IMAN staff access key to see cleaning visits and walkthrough requests.")
                     .foregroundColor(.secondary)
                 VStack(alignment:.leading,spacing:8) {
                     Text("Staff access key").font(.headline)
@@ -45,14 +45,6 @@ private struct DeskSignIn: View {
                     Text(desk.busy ? "Signing in…" : "Sign in").frame(maxWidth:.infinity)
                 }.buttonStyle(.borderedProminent).controlSize(.large).disabled(desk.busy || key.isEmpty)
                 Divider()
-                Button { focus = false; desk.personal() } label: {
-                    Label("Open personal planner",systemImage:"calendar.badge.plus")
-                }.buttonStyle(.bordered).controlSize(.large)
-                Text("Create and prepare for your own visits. They stay on this device. No account required.").font(.footnote).foregroundColor(.secondary)
-                Button { focus = false; desk.sample() } label: {
-                    Label("Explore sample workspace",systemImage:"rectangle.stack.person.crop")
-                }.buttonStyle(.bordered).controlSize(.large)
-                Text("Try the visit planner using fictional bookings.").font(.footnote).foregroundColor(.secondary)
                 Link("Privacy policy",destination:DeskPrivacy.url).font(.footnote)
             }.padding(28).frame(maxWidth:520).frame(maxWidth:.infinity)
         }
@@ -65,6 +57,7 @@ private struct DeskVisits: View {
     @State private var query = ""
     @State private var upcoming = true
     @State private var addVisit = false
+    @Environment(\.dismiss) private var dismiss
     var visits: [DeskVisit] {
         let midnight = DeskDates.calendar.startOfDay(for:Date())
         return desk.bookings.flatMap(\.visits).filter {
@@ -81,7 +74,7 @@ private struct DeskVisits: View {
                 }.pickerStyle(.segmented)
                 if !desk.message.isEmpty { Text(desk.message).foregroundColor(.red) }
                 if visits.isEmpty {
-                    if desk.access == .personal && desk.bookings.isEmpty {
+                    if desk.access == .planner && desk.bookings.isEmpty {
                         Text("Add your first visit to start planning.").foregroundColor(.secondary)
                     } else { Text("No scheduled visits match this view.").foregroundColor(.secondary) }
                 }
@@ -97,8 +90,12 @@ private struct DeskVisits: View {
                         }.accessibilityIdentifier("visit-"+visit.id)
                     }
                 }
-            }.navigationTitle(desk.access == .personal ? "My visits" : "Visits")
-                .toolbar { ToolbarItem(placement:.navigationBarTrailing) { if desk.access == .personal {
+            }.navigationTitle(desk.access == .planner ? "My visits" : "Visits")
+                .toolbar {
+                    ToolbarItem(placement: .cancellationAction) {
+                        if desk.access == .planner { Button("Done") { dismiss() } }
+                    }
+                    ToolbarItem(placement:.navigationBarTrailing) { if desk.access == .planner {
                     Button { addVisit=true } label: { Label("Add visit",systemImage:"plus") }.accessibilityIdentifier("addVisit")
                 } } }
                 .sheet(isPresented:$addVisit) { PersonalVisitForm(existing:nil) }
@@ -161,7 +158,7 @@ private struct DeskVisitDetail: View {
                 }
                 if !desk.message.isEmpty { Text(desk.message).foregroundColor(.red).font(.footnote) }
             } header: {Text("Visit preparation")} footer:{Text("Your checklist is saved on this device.")}
-            if desk.access == .personal {
+            if desk.access == .planner {
                 Section {
                     Button("Edit visit") { editing=true }
                     Button("Delete visit",role:.destructive) { deleting=true }
@@ -210,14 +207,24 @@ private struct DeskWalkthroughs: View {
 private struct DeskSettings: View {
     @EnvironmentObject var desk: DeskWorkspace
     @State private var crmError = false
+    @State private var planner: DeskWorkspace?
+    @State private var plannerError = ""
     var body: some View {
         NavigationView {
             List {
                 Section("Signed in to") {
-                    Text(desk.access == .staff ? "IMAN staff workspace" : desk.access == .personal ? "Personal planner" : "Sample workspace")
-                    if desk.access == .personal { Text("Visits and checklists stay on this device. They do not create a booking with IMAN.").foregroundColor(.secondary) }
-                    else if desk.access != .staff { Text("Fictional records are separate from the staff CRM.").foregroundColor(.secondary) }
+                    Text(desk.access == .staff ? "IMAN staff workspace" : "Review workspace")
+                    if desk.access == .reviewer { Text("This workspace contains fictional visits.").foregroundColor(.secondary) }
                 }
+                Section {
+                    Button {
+                        do {
+                            planner = try desk.makePlanner()
+                            plannerError = ""
+                        } catch { plannerError = error.localizedDescription }
+                    } label: { Label("My visit planner", systemImage: "calendar.badge.plus") }
+                    if !plannerError.isEmpty { Text(plannerError).foregroundColor(.red) }
+                } footer: { Text("Plan visits on this device. These entries are separate from scheduled CRM bookings.") }
                 if desk.access == .staff {
                     Section("Staff tools") {
                         Button { crmError = !presentStaffCRM() } label: { Label("Open full CRM",systemImage:"person.2.crop.square.stack") }
@@ -227,8 +234,9 @@ private struct DeskSettings: View {
                     Link("Contact IMAN",destination:URL(string:"https://www.imancleaningservice.com/contact.html")!)
                     Link("Privacy policy",destination:DeskPrivacy.url)
                 }
-                Button(desk.access == .sample ? "Leave sample workspace" : "Sign out") { desk.signOut() }
+                Button("Sign out") { desk.signOut() }
             }.navigationTitle("Workspace")
+                .sheet(item: $planner) { local in DeskVisits().environmentObject(local) }
                 .alert("Could not open the staff CRM",isPresented:$crmError) {
                     Button("OK",role:.cancel) {}
                 } message: { Text("Please try again.") }
