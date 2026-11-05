@@ -940,15 +940,16 @@
   <dialog class="booking-minimum-dialog" data-minimum-dialog aria-labelledby="minimum-booking-title" aria-describedby="minimum-booking-description">
     <h2 id="minimum-booking-title">A $120 minimum is required to book</h2>
     <p id="minimum-booking-description">Your total after discounts and taxes is <strong data-minimum-current-total></strong>—just <strong data-minimum-shortfall></strong> below the minimum.</p>
-    <p>Add cleaning services or extras to bring your final total to <strong>$120 or more</strong>, then choose your appointment.</p>
+    <p>If your service qualifies without discounts, you can continue at that price. You can also edit your services to bring the total to <strong>$120 or more</strong>.</p>
     <div class="booking-minimum-actions">
+      <button class="booking-primary" type="button" data-minimum-without-discounts hidden>Continue without discounts</button>
       <button class="booking-primary" type="button" data-minimum-edit>Edit service details</button>
       <button class="booking-secondary" type="button" data-minimum-cancel>Cancel</button>
     </div>
   </dialog>
   <script src="./booking-service-area.js?v=20261006-pause-bronx-staten-island"></script>
   <script src="./booking-discount-names.js?v=20261105"></script>
-  <script src="./book-now.js?v=20261105-quote-checkout"></script>
+  <script src="./book-now.js?v=20261105-minimum-discount-choice"></script>
 <script defer src="./site-reviews.js?v=20260911-trusted-title"></script>
 </body>
 </html>

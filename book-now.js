@@ -4149,6 +4149,12 @@
   const showBookingMinimum = () => {
     minimumDialog.querySelector("[data-minimum-current-total]").textContent = new Intl.NumberFormat("en-US", { style: "currency", currency: "USD" }).format(Number(state.package?.price) || 0);
     minimumDialog.querySelector("[data-minimum-shortfall]").textContent = new Intl.NumberFormat("en-US", { style: "currency", currency: "USD" }).format(Math.max(0, 12000 - Math.round(Number(state.package?.price || 0) * 100)) / 100);
+    const undiscounted = packageWithoutPromo(state.packageBeforeArrivalDiscount || state.package);
+    const continueWithoutDiscounts = minimumDialog.querySelector("[data-minimum-without-discounts]");
+    if (continueWithoutDiscounts) {
+      continueWithoutDiscounts.hidden = state.serviceKey === "recurring" || (!state.promo && !state.arrivalDiscount) || !Number.isFinite(undiscounted?.price) || Math.round(undiscounted.price * 100) < 12000;
+      continueWithoutDiscounts.textContent = `Continue at ${money(undiscounted?.price || 0)} without discounts`;
+    }
     if (!minimumDialog.open) minimumDialog.showModal();
   };
   const closeBookingMinimum = () => {
@@ -4161,6 +4167,18 @@
   minimumDialog.querySelector("[data-minimum-edit]").addEventListener("click", () => {
     minimumDialog.close();
     document.querySelector('[data-back="1"]')?.click();
+  });
+
+  minimumDialog.querySelector("[data-minimum-without-discounts]")?.addEventListener("click", () => {
+    const undiscounted = packageWithoutPromo(state.packageBeforeArrivalDiscount || state.package);
+    if (state.serviceKey === "recurring" || !Number.isFinite(undiscounted?.price) || Math.round(undiscounted.price * 100) < 12000) return;
+    state.pendingQuoteSave = null;
+    removePromo({ preserveArrival: false });
+    resetAppointmentSelection();
+    minimumDialog.close();
+    goToStep(2);
+    showSavedQuoteDelivery("Discounts removed. Choose a Morning or Afternoon appointment to keep this price.", "info");
+    document.querySelector("[data-load-availability]")?.focus();
   });
 
   const availabilityButtons = Array.from(document.querySelectorAll("[data-load-availability]"));
