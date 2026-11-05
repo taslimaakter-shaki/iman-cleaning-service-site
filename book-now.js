@@ -4122,10 +4122,10 @@
   });
 
   const minimumDialog = document.querySelector("[data-minimum-dialog]");
-  const belowBookingMinimum = () => !Number.isFinite(Number(state.package?.price)) || Math.round(Number(state.package.price) * 100) < 16000;
+  const belowBookingMinimum = () => !Number.isFinite(Number(state.package?.price)) || Math.round(Number(state.package.price) * 100) < 12000;
   const showBookingMinimum = () => {
     minimumDialog.querySelector("[data-minimum-current-total]").textContent = new Intl.NumberFormat("en-US", { style: "currency", currency: "USD" }).format(Number(state.package?.price) || 0);
-    minimumDialog.querySelector("[data-minimum-shortfall]").textContent = new Intl.NumberFormat("en-US", { style: "currency", currency: "USD" }).format(Math.max(0, 16000 - Math.round(Number(state.package?.price || 0) * 100)) / 100);
+    minimumDialog.querySelector("[data-minimum-shortfall]").textContent = new Intl.NumberFormat("en-US", { style: "currency", currency: "USD" }).format(Math.max(0, 12000 - Math.round(Number(state.package?.price || 0) * 100)) / 100);
     if (!minimumDialog.open) minimumDialog.showModal();
   };
   const closeBookingMinimum = () => {
