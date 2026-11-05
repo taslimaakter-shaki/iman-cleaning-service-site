@@ -1,12 +1,12 @@
 const assert=require('node:assert/strict'),fs=require('node:fs'),vm=require('node:vm'),crypto=require('node:crypto');
 const actual=require('../api/booking/_shared');
-const records=new Map(),emails=[],texts=[];let smsFails=false,priceChanged=false;
+const records=new Map(),emails=[],texts=[],bookings=[];let smsFails=false,priceChanged=false;
 const drive={files:{create:async args=>{const r=JSON.parse(args.media.body);records.set(r.quoteId,r);return{data:{id:r.quoteId}};},list:async args=>{const id=args.q.match(/saved_quote_id' and value='([^']+)'/)[1];return{data:{files:records.has(id)?[{id}]:[]}};},get:async args=>({data:structuredClone(records.get(args.fileId))}),update:async args=>{records.set(args.fileId,JSON.parse(args.media.body));}}};
 function loadHandler() {
 const moduleObject={exports:{}};
 vm.runInNewContext(fs.readFileSync('api/booking/_saved-quote.js','utf8'),{module:moduleObject,Buffer,URLSearchParams,console,process:{env:{QUOTE_APPROVAL_SECRET:'test',TWILIO_ACCOUNT_SID:'test',TWILIO_AUTH_TOKEN:'test',TWILIO_FROM_NUMBER:'+12125550100'}},require:name=>{
  if(name==='crypto')return crypto;
- if(name==='./_shared')return{...actual,calculateHourlyCleaningQuote:h=>{const p=actual.calculateHourlyCleaningQuote(h);return priceChanged?{...p,price:p.price+100}:p;},listAllBookings:async()=>[],readJsonBody:async req=>req.body,json:(res,status,body)=>({status,...body})};
+ if(name==='./_shared')return{...actual,calculateHourlyCleaningQuote:h=>{const p=actual.calculateHourlyCleaningQuote(h);return priceChanged?{...p,price:p.price+100}:p;},listAllBookings:async()=>bookings,readJsonBody:async req=>req.body,json:(res,status,body)=>({status,...body})};
  if(name==='../quote/_shared')return{getGoogleClients:()=>({drive,config:{parentFolderId:'test'},gmail:{users:{messages:{send:async args=>{emails.push(Buffer.from(args.requestBody.raw,'base64url').toString());return{data:{id:'email'}};}}}}})};
  if(name==='./_promo')return require('../api/booking/_promo');
  if(name==='./_discount')return require('../api/booking/_discount');
@@ -34,5 +34,13 @@ const get=url=>handler({method:'GET',headers:{host:'example.test'},query:{token:
  const changedContact=await post({...body,previousQuoteToken,customer:{...body.customer,email:'new@example.invalid',phone:'2125550102'}});assert.notEqual(changedContact.quoteUrl,first.quoteUrl);assert.match(emails.at(-1),/To: new@example.invalid/);assert.equal(texts.at(-1).get('To'),'+12125550102');assert.equal((await get(first.quoteUrl)).customer.email,body.customer.email);
  smsFails=true;const failing={...body,unitDetails:[{hours:5}]};const failed=await post(failing);assert.equal(failed.delivery.sms,'failed');const emailCount=emails.length;const recordCount=records.size;smsFails=false;const retry=await post(failing);assert.equal(retry.quoteUrl,failed.quoteUrl);assert.equal(retry.delivery.sms,'sent');assert.equal(emails.length,emailCount,'Retry sends only failed channel');assert.equal(records.size,recordCount);
  const denied=await post({...body,smsConsent:false});assert.equal(denied.status,400);
+ bookings.push({status:'Confirmed',phone:'(212) 555-0101',estimate:{payment:{status:'deposit_paid',paidCents:8000}}});
+ const returning=await get(first.quoteUrl);
+ assert.equal(returning.package.promoCode,'RETURNING5');
+ assert.equal(returning.package.priceCents,30400);
+ const reopened=await post({...body,previousQuoteToken});
+ assert.equal(reopened.unchanged,true);
+ assert.equal(reopened.package.promoCode,'RETURNING5');
+ assert.equal(reopened.package.priceCents,30400);
  console.log('Saved quote versions: immutable details/prices/contacts, changed-content delivery, concurrent deduplication, consent and partial-delivery retry passed. Providers mocked.');
 })().catch(e=>{console.error(e);process.exitCode=1});

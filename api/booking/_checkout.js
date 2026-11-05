@@ -369,25 +369,9 @@ module.exports = async function handler(request, response) {
       });
       pkg = recurring.applyRecurringDiscount(pkg, recurringDiscount);
       submittedPromoCode = "";
-    } else if (!submittedPromoCode) {
-      try {
-        require('./_promo').promotionForCode('FALL10');
-        submittedPromoCode = 'FALL10';
-      } catch {
-        // The automatic seasonal offer quietly stops after its expiration date.
-      }
     }
     if (submittedPromoCode) {
-      const promo = require('./_promo');
-      const promotion = promo.promotionForCode(submittedPromoCode);
-      promo.assertEligibleService(promotion, pkg.serviceKey);
-      promo.assertNotRedeemed(await listAllBookings(), {
-        email,
-        phone,
-        address: fullAddress,
-        accountUserId: cleanText(accountSession?.user?.id, 120)
-      }, promotion);
-      pkg = promo.applyPromotion(pkg, promotion);
+      pkg = require('./_promo').applyQuotedPromotion(pkg, submittedPromoCode, await listAllBookings({ complete: true }), { email, phone });
     }
     pkg = applyArrivalDiscount(pkg, arrivalPreference);
     require("./_minimum-total").assertMinimumTotal(pkg.priceCents);

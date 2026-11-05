@@ -374,19 +374,33 @@ function validateAndPrice(body) {
 }
 
 function applySavedQuotePromotion(pkg, body, customer, bookings = []) {
-  if (!pkg || pkg.serviceKey === "recurring") return pkg;
-  const promo = require("./_promo");
-  const code = cleanText(body?.promoCode || "FALL10", 40).replace(/\s+/g, "").toUpperCase();
-  if (!code) return pkg;
-  try {
-    const promotion = promo.promotionForCode(code);
-    promo.assertEligibleService(promotion, pkg.serviceKey);
-    promo.assertNotRedeemed(bookings, customer || {}, promotion);
-    return promo.applyPromotion(pkg, promotion);
-  } catch {
-    // Automatic promotions must not prevent a customer from receiving a quote.
-    return pkg;
+  if (!pkg || pkg.serviceKey === "recurring" || pkg.manualDiscount || body?.crmQuote?.manualDiscount) return pkg;
+  if (!body?.quoteId && body?.promoCode === "") return pkg;
+  const { customerPromotion, applyPromotion } = require("./_promo");
+  const eligible = customerPromotion(bookings, customer);
+  const previous = pkg.promoDiscount;
+  if (previous) {
+    if (previous.code === eligible?.code) return pkg;
+    if (eligible && previous.percent === eligible.percent) {
+      // Update the offer on a saved quote without repricing its purchased work.
+      return {
+        ...pkg,
+        promoCode: eligible.code,
+        promoDiscount: { ...previous, code: eligible.code, label: eligible.label, expiresAt: eligible.expiresAt, expiresLabel: eligible.expiresLabel }
+      };
+    }
+    // A first-time offer may have expired while the saved link was open.
+    const subtotalCents = pkg.originalSubtotalCents ?? pkg.subtotalCents;
+    const totalCents = pkg.originalTotalCents ?? previous.originalTotalCents;
+    const taxCents = pkg.originalTaxCents ?? totalCents - subtotalCents;
+    pkg = {
+      ...pkg, promoCode: "", promoDiscount: null, subtotalCents, subtotal: subtotalCents / 100,
+      discountedSubtotalCents: subtotalCents, discountedSubtotal: subtotalCents / 100,
+      taxCents, tax: taxCents / 100, priceCents: totalCents, price: totalCents / 100, totalCents, total: totalCents / 100
+    };
   }
+  if (body?.packageSnapshot && !previous && eligible?.code !== "RETURNING5") return pkg;
+  return eligible ? applyPromotion(pkg, eligible) : pkg;
 }
 
 function cleanCustomer(input = {}) {
@@ -476,15 +490,15 @@ module.exports = async function handler(request, response) {
       response.setHeader("Cache-Control", "private, no-store");
       const link = decodeSavedQuote(request.query?.token);
       const payload = await loadQuoteRecord(link.quoteId);
-      await assertQuoteUnused(link.quoteId);
+      const bookings = await listAllBookings({ complete: true });
+      await assertQuoteUnused(link.quoteId, bookings);
       try { await markQuoteOpened(link.quoteId); } catch { /* Opening the quote must not fail if analytics recording is unavailable. */ }
       if (payload.crmQuote?.fields) {
         const code = payload.crmQuote.approvalCode;
         if (!code || !require("../crm/_quote-admin").ready(payload.crmQuote.fields)) return json(response, 409, { error: "Our team is finalizing your updated quote. Please contact IMAN Cleaning Service." });
         return json(response, 200, { redirectUrl: `/q/${encodeURIComponent(code)}` });
       }
-      const pkg = payload.packageSnapshot || applySavedQuotePromotion(
-        validateAndPrice(payload).pkg, payload, payload.customer, await listAllBookings());
+      const pkg = applySavedQuotePromotion(payload.packageSnapshot || validateAndPrice(payload).pkg, payload, payload.customer, bookings);
       return json(response, 200, {
         eligibility: payload.eligibility,
         unitDetails: payload.unitDetails,
@@ -505,19 +519,21 @@ module.exports = async function handler(request, response) {
     }
     const customer = cleanCustomer(body.customer);
     const { eligibility, unitDetails, pkg: calculatedPackage } = validateAndPrice(body);
+    const bookings = await listAllBookings({ complete: true });
     if (body.previousQuoteToken) {
       const previous = decodeSavedQuote(body.previousQuoteToken);
       const record = await loadQuoteRecord(previous.quoteId);
-      await assertQuoteUnused(previous.quoteId);
+      await assertQuoteUnused(previous.quoteId, bookings);
       if (!record.crmQuote?.fields && quoteDetailsKey(record) === quoteDetailsKey({ eligibility, unitDetails, pricingMode: calculatedPackage.pricingMode, customer })) {
         return json(response, 200, { saved: true, unchanged: true,
           quoteUrl: `${getSiteUrl(request)}/book-now.html?quote=${encodeURIComponent(body.previousQuoteToken)}`,
           quoteRevision: record.crmQuote?.revision || '',
-          package: record.packageSnapshot ? packageForClient(require('./_discount').applyPackageDiscount(record.packageSnapshot, record.crmQuote?.manualDiscount)) : undefined,
+          package: record.packageSnapshot ? packageForClient(require('./_discount').applyPackageDiscount(
+            applySavedQuotePromotion(record.packageSnapshot, record, customer, bookings), record.crmQuote?.manualDiscount)) : undefined,
           delivery: { email: "not_resent", sms: "not_resent" } });
       }
     }
-    const pkg = applySavedQuotePromotion(calculatedPackage, body, customer, await listAllBookings());
+    const pkg = applySavedQuotePromotion(calculatedPackage, body, customer, bookings);
     const now = Date.now();
     const communicationConsent = consentEvidence(request, body, new Date(now));
     const key = deliveryKey(request, customer, communicationConsent, { previousQuoteToken: body.previousQuoteToken || "", eligibility, unitDetails, pricingMode: pkg.pricingMode, package: packageForClient(pkg) });

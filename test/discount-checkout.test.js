@@ -33,13 +33,15 @@ function load(file, dependencies, extras = {}) {
   const pkg = await f.api.applySavedDiscount('VALID', shared.calculateHourlyCleaningQuote(4), revision);
   const slot = { value: '2030-09-15T13:00:00Z', label: 'Test appointment', date: '2030-09-15', time: '09:00', flexibleEligible: true };
   let body, result, stripe, booking, afterStripe;
+  let priorBookings = [];
   const handler = load('api/booking/_checkout.js', {
-    './_shared': { ...shared, readJsonBody: async () => body, json: (_, status, value) => { result = { status, ...value }; },
+    './_shared': { ...shared, listAllBookings: async () => priorBookings, readJsonBody: async () => body, json: (_, status, value) => { result = { status, ...value }; },
       availableSlotsForPackage: async p => { assert.equal(p.manHours, 4); assert.equal(p.teamHours, 2); return [slot]; },
       createBooking: async b => { booking = clone(b); }, deletePendingBooking: async () => {}, makeUniqueOrderNumber: async () => 'TEST-ORDER' },
     '../crm/_quote-admin': f.api, '../account/_shared': { authenticatedUser: async () => null },
     './_deposit-payment': { prepare: async (id,params) => { assert.equal(booking.id,id); assert.equal(booking.estimate.calendarReservation.state,'draft'); assert.equal(params['metadata[payment_amount_cents]'],booking.estimate.payment.depositCents); return {url:'/booking-payment.html#test'}; } },
     './_arrival-preference': require('../api/booking/_arrival-preference'),
+    './_promo': require('../api/booking/_promo'),
     './_calendar': { newReservation: () => ({ attempt: 'test' }), attachCheckout: async () => {}, cleanupCheckout: async () => {} }
   }, { fetch: async (url, options) => {
     assert.equal(url, 'https://api.stripe.com/v1/checkout/sessions');
@@ -166,6 +168,33 @@ function load(file, dependencies, extras = {}) {
   };
   await handler(request, {}); assert.equal(result.status, 409, result.error);
   assert(f.sessions.every(s => s.status === 'expired'), 'A concurrent discount invalidates the old checkout');
+
+  afterStripe = null;
+  delete body.savedQuoteToken;
+  priorBookings = [{ email: body.customer.email.toUpperCase(), status: 'Confirmed', estimate: { payment: { paidCents: 8000 } } }];
+  const promoLookup = load('api/booking/_promo-validate.js', {
+    './_shared': { ...shared, readJsonBody: async req => req.body, listAllBookings: async () => priorBookings,
+      json: (_, status, value) => ({ status, ...value }) },
+    './_promo': require('../api/booking/_promo')
+  });
+  const offer = await promoLookup({ method: 'POST', body: { automatic: true, serviceKey: 'hourly', customer: body.customer } }, {});
+  assert.equal(offer.code, 'RETURNING5');
+  for (const selectedCode of [offer.code, 'FALL10', '']) {
+    body.promoCode = selectedCode;
+    const acceptedPrice = selectedCode ? 304 : 320;
+    body.agreementReview.contextFingerprint = JSON.stringify({ packageId: pkg.id, total: acceptedPrice, laborHours: 4, schedule: slot.value });
+    await handler(request, {});
+    assert.equal(result.status, 201, result.error);
+    assert.equal(booking.estimate.promoCode, selectedCode ? 'RETURNING5' : '');
+    assert.equal(stripe.get('metadata[total_amount_cents]'), String(acceptedPrice * 100));
+    assert.equal(stripe.get('line_items[0][price_data][unit_amount]'), String(acceptedPrice * 25));
+  }
+  priorBookings = [];
+  body.promoCode = 'RETURNING5';
+  stripe = null;
+  await handler(request, {});
+  assert.equal(result.status, 409);
+  assert.equal(stripe, null, 'A first-time customer cannot claim the returning discount');
 
   let record = { id: 'SD-TEST', status: 'New request', updatedAt: 'original', quote: { priceCents: 32000, price: 320, manHours: 4, teamHours: 2, taxCents: 2608 },
     customer: body.customer, serviceAddress: 'Test', serviceKey: 'hourly', eligibility: {}, pricingMode: 'hourly_formula' };

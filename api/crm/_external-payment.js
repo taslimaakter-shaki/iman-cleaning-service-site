@@ -23,7 +23,7 @@ async function resolve(body) {
   if (!['saved', 'booking'].includes(body.source)) throw fail('External payments are available for instant quotes.');
   const found = await quotes.load(body.source, body.id);
   if (found.state.deletedAt || found.state.updating) throw fail('Restore or refresh this quote before recording a payment.', 409);
-  const bookings = await shared.listAllBookings();
+  const bookings = await shared.listAllBookings({ complete: found.source === 'saved' });
   const matches = bookings.filter(b => b.id === found.state.bookingId || b.estimate?.savedQuoteId === found.id);
   let booking = found.source === 'booking' ? found.record : matches.find(b => b.estimate?.payment?.provider === 'external') || matches.find(b => paid(b)) || matches.filter(b => b.status === 'New').sort((a,b) => String(b.created_at).localeCompare(String(a.created_at)))[0];
   if (booking && ['Cancelled'].includes(booking.status)) throw fail('This booking was cancelled. Resolve it before recording another payment.', 409);
@@ -37,7 +37,7 @@ async function resolve(body) {
       const changes = bookingChanges({ ...fields, address: text(body.address,400) || fields.address, serviceDate: body.serviceDate || fields.serviceDate, serviceTime: body.serviceTime || fields.serviceTime }, null, { source: 'saved', id: found.id, revision: found.state.revision });
       booking = { id: `BK-EXT-${hash(['saved',found.id]).slice(0,20).toUpperCase()}`, status: 'New', addons: [], ...changes };
     } else {
-      pkg = require('../booking/_saved-quote').validateAndPrice(found.record).pkg;
+      pkg = found.record.packageSnapshot || require('../booking/_saved-quote').validateAndPrice(found.record).pkg;
       pkg = require('../booking/_saved-quote').applySavedQuotePromotion(pkg, found.record, found.record.customer, bookings);
       pkg = require('../booking/_discount').applyPackageDiscount(pkg, found.state.manualDiscount);
       let preference = arrival.arrivalPreferenceForKey(body.arrivalPreference || 'any_day', pkg.teamHours);

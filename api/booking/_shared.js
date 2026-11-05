@@ -1470,29 +1470,43 @@ function driveBookingRecord(data) {
   return data;
 }
 
-async function getDriveBookingFiles(extraQuery = "") {
+async function getDriveBookingFiles(extraQuery = "", complete = false) {
   const { drive } = require("../quote/_shared").getGoogleClients();
-  const listed = await drive.files.list({
-    q: bookingDriveQuery(extraQuery),
-    fields: "files(id,name,createdTime,appProperties)",
-    orderBy: "createdTime desc",
-    pageSize: 500
-  });
-  return { drive, files: listed.data.files || [] };
+  const files = [];
+  let pageToken;
+  do {
+    const listed = await drive.files.list({
+      q: bookingDriveQuery(extraQuery),
+      fields: "nextPageToken,files(id,name,createdTime,appProperties)",
+      orderBy: "createdTime desc",
+      pageSize: 500,
+      pageToken
+    });
+    files.push(...(listed.data.files || []));
+    pageToken = listed.data.nextPageToken;
+  } while (complete && pageToken);
+  return { drive, files };
 }
 
-async function listDriveBookings() {
-  const { drive, files } = await getDriveBookingFiles();
+async function listDriveBookings(complete = false) {
+  const { drive, files } = await getDriveBookingFiles("", complete);
   return Promise.all(files.map(async (file) => {
     const downloaded = await drive.files.get({ fileId: file.id, alt: "media" });
     return driveBookingRecord(downloaded.data);
   }));
 }
 
-async function listAllBookings() {
-  const records = hasSupabaseConfig()
-    ? await supabaseRequest("?select=*&order=created_at.desc&limit=500")
-    : await listDriveBookings();
+async function listAllBookings({ complete = false } = {}) {
+  const records = [];
+  if (hasSupabaseConfig()) {
+    for (let offset = 0; ; offset += 500) {
+      const page = await supabaseRequest(`?select=*&order=created_at.desc,id.asc&limit=500&offset=${offset}`);
+      records.push(...page);
+      if (!complete || page.length < 500) break;
+    }
+  } else {
+    records.push(...await listDriveBookings(complete));
+  }
   return (records || []).sort((a, b) => String(b.created_at || "").localeCompare(String(a.created_at || "")));
 }
 

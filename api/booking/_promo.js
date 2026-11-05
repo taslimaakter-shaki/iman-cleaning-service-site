@@ -1,5 +1,6 @@
 const { cleanText } = require("./_shared");
 
+const eligibleServices = Object.freeze(["standard", "recurring", "deep", "move", "hourly", "window", "post", "commercial"]);
 const PROMOTIONS = Object.freeze({
   FALL10: Object.freeze({
     code: "FALL10",
@@ -8,7 +9,13 @@ const PROMOTIONS = Object.freeze({
     startsAt: "2026-09-22T04:00:00.000Z",
     expiresAt: "2026-12-21T04:59:59.999Z",
     expiresLabel: "December 20, 2026",
-    eligibleServices: Object.freeze(["standard", "recurring", "deep", "move", "hourly", "window", "post", "commercial"])
+    eligibleServices
+  }),
+  RETURNING5: Object.freeze({
+    code: "RETURNING5",
+    label: "Returning customer discount",
+    percent: 5,
+    eligibleServices
   })
 });
 
@@ -51,10 +58,10 @@ function promotionForCode(value, now = new Date()) {
   if (!promotion) throw promoError("That promo code is not valid.", 400, "PROMO_INVALID");
   const time = now instanceof Date ? now.getTime() : new Date(now).getTime();
   if (!Number.isFinite(time)) throw promoError("The promo code could not be checked. Please try again.", 500);
-  if (time < Date.parse(promotion.startsAt)) {
+  if (promotion.startsAt && time < Date.parse(promotion.startsAt)) {
     throw promoError("This promo code is not active yet.", 409, "PROMO_NOT_STARTED");
   }
-  if (time > Date.parse(promotion.expiresAt)) {
+  if (promotion.expiresAt && time > Date.parse(promotion.expiresAt)) {
     throw promoError(`This promo code expired on ${promotion.expiresLabel}.`, 410, "PROMO_EXPIRED");
   }
   return promotion;
@@ -108,20 +115,45 @@ function sameCustomerOrAddress(booking, customer) {
 function bookingHasSuccessfulPayment(booking) {
   const status = cleanText(booking?.status, 80).toLowerCase();
   const payment = booking?.estimate?.payment || {};
-  const paymentStatus = cleanText(payment.status || booking?.estimate?.paymentStatus, 80).toLowerCase();
+  const paymentStatus = cleanText(payment.status || booking?.estimate?.paymentStatus || booking?.payment_status, 80).toLowerCase();
   if (/cancel|refund|failed|expired/.test(`${status} ${paymentStatus}`)) return false;
   if (Number(payment.paidCents || 0) > 0) return true;
-  return /^(deposit_paid|paid|captured|succeeded|complete)$/.test(paymentStatus);
+  return /^(deposit_paid|paid|fully_paid|captured|succeeded|complete|completed)$/.test(paymentStatus);
 }
 
-function assertNotRedeemed(bookings, customer, promotion) {
-  const previousCustomer = (bookings || []).some((booking) => {
-    if (!sameCustomerOrAddress(booking, customer)) return false;
-    return bookingHasSuccessfulPayment(booking);
-  });
-  if (previousCustomer) {
-    throw promoError("FALL10 is available only to first-time customers.", 409, "PROMO_FIRST_TIME_ONLY");
+function customerPromotion(bookings, customer, now = new Date()) {
+  // These two contact fields are available both at quote time and at checkout.
+  const email = normalizeEmail(customer?.email);
+  const phone = normalizePhone(customer?.phone);
+  const contact = { email, phone: /^\d{10,15}$/.test(phone) ? phone : "" };
+  if ((bookings || []).some(booking => bookingHasSuccessfulPayment(booking) && sameCustomerOrAddress(booking, contact))) {
+    return PROMOTIONS.RETURNING5;
   }
+  try {
+    return promotionForCode("FALL10", now);
+  } catch (error) {
+    if (["PROMO_NOT_STARTED", "PROMO_EXPIRED"].includes(error.code)) return null;
+    throw error;
+  }
+}
+
+function assertCustomerPromotion(code, eligible) {
+  const requested = promotionForCode(code);
+  if (requested.code === eligible?.code) return requested;
+  if (requested.code === "RETURNING5") {
+    throw promoError("The returning customer discount requires a previous paid booking with your email or phone number.", 409, "PROMO_RETURNING_ONLY");
+  }
+  throw promoError("FALL10 is available only to first-time customers.", 409, "PROMO_FIRST_TIME_ONLY");
+}
+
+function applyQuotedPromotion(pkg, code, bookings, customer) {
+  const eligible = customerPromotion(bookings, customer);
+  // A customer can pay for another booking between receiving a fall quote and
+  // using it. Both offers use the same percentage and the same pretax subtotal.
+  const promotion = normalizeCode(code) === "FALL10" && eligible?.code === "RETURNING5"
+    ? eligible
+    : assertCustomerPromotion(code, eligible);
+  return applyPromotion(pkg, promotion);
 }
 
 function applyPromotion(pkg, promotion) {
@@ -171,8 +203,10 @@ function applyPromotion(pkg, promotion) {
 module.exports = {
   PROMOTIONS,
   applyPromotion,
+  applyQuotedPromotion,
   assertEligibleService,
-  assertNotRedeemed,
+  assertCustomerPromotion,
+  customerPromotion,
   bookingHasSuccessfulPayment,
   normalizeAddress,
   normalizeCode,

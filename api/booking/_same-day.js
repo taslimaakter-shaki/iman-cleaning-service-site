@@ -2,6 +2,7 @@ const crypto = require("crypto");
 const {
   cleanText,
   createBooking,
+  listAllBookings,
   json,
   makeBookingId,
   makeUniqueOrderNumber,
@@ -129,10 +130,10 @@ async function updateSameDayRequest(body, request) {
     if (body.updatedAt !== record.updatedAt) throw Object.assign(new Error('This request changed. Refresh before saving the discount.'), { statusCode: 409 });
     const { validateDiscount, flatPricing } = require('./_discount');
     const discount = validateDiscount(body.discountCents, body.discountLabel);
-    const before = record.quote.priceCents + (record.quote.manualDiscount?.amountCents || 0);
-    const pricing = flatPricing(before, 0, discount.amountCents, discount.label, record.quote.taxCents);
+    const before = record.quote.originalTotalCents ?? (record.quote.priceCents + (record.quote.manualDiscount?.amountCents || 0));
+    const pricing = flatPricing(before, 0, discount.amountCents, discount.label, record.quote.originalTaxCents ?? record.quote.taxCents);
     record.discountHistory = [...(record.discountHistory || []), { at: now, previousDiscount: record.quote.manualDiscount || null }];
-    record.quote = { ...record.quote, priceCents: pricing.totalCents, price: pricing.totalCents / 100, manualDiscount: { ...pricing, ...discount } };
+    record.quote = { ...record.quote, priceCents: pricing.totalCents, price: pricing.totalCents / 100, promoCode: "", promoDiscount: null, manualDiscount: { ...pricing, ...discount } };
     record.updatedAt = now;
     return saveRecord(found.drive, found.file, record);
   }
@@ -184,6 +185,8 @@ async function updateSameDayRequest(body, request) {
       eligibility: record.eligibility,
       sameDayRequestId: record.id,
       manualDiscount: record.quote?.manualDiscount || null,
+      promoCode: record.quote?.promoCode || "",
+      promoDiscount: record.quote?.promoDiscount || null,
       customQuotePricing: record.quote?.manualDiscount ? { ...record.quote.manualDiscount, rushFeeCents: RUSH_FEE_CENTS, totalCents: baseCents + RUSH_FEE_CENTS } : null,
       rushFeeCents: RUSH_FEE_CENTS,
       paymentStatus: "deposit_pending",
@@ -242,7 +245,10 @@ async function handler(request, response) {
     const { eligibility, serviceKey, unitDetails, pkg: originalPackage } = validateAndPrice(body);
     const savedQuoteUrl = validSavedQuoteUrl(body.savedQuoteUrl, request);
     const token = new URL(savedQuoteUrl).searchParams.get('quote');
-    const pkg = await require('../crm/_quote-admin').applySavedDiscount(token, originalPackage, body.quoteRevision || '');
+    let pkg = await require('../crm/_quote-admin').applySavedDiscount(token, originalPackage, body.quoteRevision || '');
+    if (body.promoCode && serviceKey !== "recurring") {
+      pkg = require('./_promo').applyQuotedPromotion(pkg, body.promoCode, await listAllBookings({ complete: true }), customer);
+    }
     const serviceAddress = cleanText(body.serviceAddress, 400);
     const preferredTime = cleanText(body.preferredTime, 20);
     const flexibility = cleanText(body.flexibility, 80);
@@ -266,7 +272,9 @@ async function handler(request, response) {
       rushFeeCents: RUSH_FEE_CENTS,
       rushFeeAccepted: true,
       quote: { serviceLabel: pkg.serviceLabel, priceCents: pkg.priceCents, price: pkg.price, teamHours: pkg.teamHours, manHours: pkg.manHours,
-        cleanerCount: pkg.cleanerCount, taxCents: pkg.taxCents, manualDiscount: pkg.manualDiscount || null }
+        cleanerCount: pkg.cleanerCount, taxCents: pkg.taxCents, manualDiscount: pkg.manualDiscount || null,
+        promoCode: pkg.promoCode || "", promoDiscount: pkg.promoDiscount || null,
+        originalTotalCents: pkg.originalTotalCents, originalTaxCents: pkg.originalTaxCents }
     });
     const ownerDelivery = await trySendFormSubmissionNotification({
       source: "Same-day appointment request",

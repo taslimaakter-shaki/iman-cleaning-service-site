@@ -2438,7 +2438,7 @@
           pricingMode: state.pricingMode,
           eligibility: state.eligibility,
           unitDetails: state.unitDetails,
-          promoCode: state.promo?.code || "FALL10",
+          promoCode: state.promo?.code || "",
           customer: {
             firstName: value("firstName"),
             lastName: value("lastName"),
@@ -2536,6 +2536,7 @@
             phone: value("phone")
           },
           serviceAddress: sameDayForm.elements.serviceAddress.value,
+          promoCode: state.promo?.code || "",
           preferredTime: sameDayForm.elements.preferredTime.value,
           flexibility: sameDayForm.elements.flexibility.value,
           notes: sameDayForm.elements.requestNotes.value,
@@ -3058,7 +3059,7 @@
       const totalCents = discountedSubtotalCents + taxCents;
       state.promo = {
         ...state.promo,
-        label: state.promo.label || "First-time customer fall discount",
+        label: state.promo.label || "Customer discount",
         amountCents,
         discountedSubtotalCents,
         originalTotalCents,
@@ -3180,7 +3181,7 @@
       const discountDescription = document.querySelector('[data-quote-discount-description]');
       if (discountDescription) {
         discountDescription.textContent = promoDiscount
-          ? `${promoDiscount.label || 'Seasonal cleaning offer'} — ${promoDiscount.percent}% off before tax`
+          ? `${promoDiscount.label || 'Customer discount'} — ${promoDiscount.percent}% off before tax`
           : "Applied after tax";
       }
       document.querySelector('[data-quote-discount]').textContent = `−${money((displayedDiscount?.amountCents || 0) / 100)}`;
@@ -4083,7 +4084,6 @@
     quoteContactSubmit.textContent = "Preparing your quote…";
     setStatus(quoteContactStatus, "Calculating your price…", "info");
     try {
-      const quotePromoCode = "FALL10";
       let promoData = null;
       try {
         if (state.serviceKey === "recurring") throw new Error("Recurring discounts are calculated from the previous order and new appointment date.");
@@ -4091,7 +4091,7 @@
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({
-            promoCode: quotePromoCode,
+            automatic: true,
             serviceKey: state.serviceKey,
             customer: {
               email: value("email"),
@@ -4101,7 +4101,7 @@
           })
         });
         promoData = await promoResponse.json().catch(() => ({}));
-        if (!promoResponse.ok) promoData = null;
+        if (!promoResponse.ok || !promoData.valid) promoData = null;
       } catch {
         // Promo availability must never prevent a customer from receiving a quote.
         promoData = null;
@@ -4200,7 +4200,7 @@
       const originalSubtotalCents = Math.round(Number(state.packageBeforePromo?.subtotalCents ?? state.package.subtotalCents) || 0);
       const discountedSubtotalCents = Math.round(Number(state.promo.discountedSubtotalCents ?? state.package.discountedSubtotalCents) || 0);
       document.querySelector("[data-checkout-original-total]").textContent = money(originalSubtotalCents / 100);
-      document.querySelector("[data-checkout-promo-label]").textContent = `${state.promo.code} — ${state.promo.percent}% off ${state.promo.application === "after_tax" ? "after tax" : "before tax"}`;
+      document.querySelector("[data-checkout-promo-label]").textContent = `${state.promo.label || state.promo.code} — ${state.promo.percent}% off ${state.promo.application === "after_tax" ? "after tax" : "before tax"}`;
       document.querySelector("[data-checkout-promo-discount]").textContent = `−${money(state.promo.amountCents / 100)}`;
       document.querySelector("[data-checkout-discounted-subtotal]").textContent = money(discountedSubtotalCents / 100);
       document.querySelector("[data-checkout-tax]").textContent = money(Number(state.package.taxCents || 0) / 100);

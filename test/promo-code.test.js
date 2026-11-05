@@ -3,12 +3,18 @@ const {
   PROMOTIONS,
   applyPromotion,
   assertEligibleService,
-  assertNotRedeemed,
+  customerPromotion,
+  assertCustomerPromotion,
   promotionForCode
 } = require("../api/booking/_promo");
 const { applySavedQuotePromotion } = require("../api/booking/_saved-quote");
 
 const activeDate = new Date("2026-10-08T16:00:00.000Z");
+const RealDate = Date;
+global.Date = class extends RealDate {
+  constructor(...args) { super(...(args.length ? args : [activeDate.getTime()])); }
+  static now() { return activeDate.getTime(); }
+};
 const promotion = promotionForCode(" fall10 ", activeDate);
 assert.equal(promotion.code, "FALL10");
 assert.equal(promotion.percent, 5);
@@ -56,8 +62,8 @@ assert.equal(
     email: "customer@example.com",
     estimate: { payment: { status: "paid", paidCents: 10000 } }
   }]).promoCode,
-  undefined,
-  "Returning customers do not receive the first-time FALL10 offer"
+  "RETURNING5",
+  "Returning customers receive their own offer"
 );
 
 const hourlyPackage = {
@@ -115,42 +121,29 @@ const redeemed = {
     }
   }
 };
-assert.throws(
-  () => assertNotRedeemed([redeemed], { email: "customer@example.com" }, promotion),
-  (error) => error.code === "PROMO_FIRST_TIME_ONLY"
-);
-assert.throws(
-  () => assertNotRedeemed([redeemed], { phone: "9295550101" }, promotion),
-  (error) => error.code === "PROMO_FIRST_TIME_ONLY"
-);
-assert.throws(
-  () => assertNotRedeemed([redeemed], { address: "88-56 77th St Apt 2 Woodhaven NY 11421" }, promotion),
-  (error) => error.code === "PROMO_FIRST_TIME_ONLY"
-);
-assert.throws(
-  () => assertNotRedeemed([redeemed], { accountUserId: "usr_abc123" }, promotion),
-  (error) => error.code === "PROMO_FIRST_TIME_ONLY"
-);
-assert.throws(
-  () => assertNotRedeemed([redeemed], { stripeCustomerId: "CUS_123" }, promotion),
-  (error) => error.code === "PROMO_FIRST_TIME_ONLY"
-);
-assert.throws(
-  () => assertNotRedeemed([redeemed], { paymentMethodFingerprint: "FP_SECURE_456" }, promotion),
-  (error) => error.code === "PROMO_FIRST_TIME_ONLY"
-);
-assert.throws(
-  () => assertNotRedeemed([{ ...redeemed, estimate: { ...redeemed.estimate, promoCode: "" } }], { email: "customer@example.com" }, promotion),
-  (error) => error.code === "PROMO_FIRST_TIME_ONLY",
-  "A prior paid booking blocks FALL10 even when that booking used no promotion."
-);
-assert.doesNotThrow(() => assertNotRedeemed([
-  { ...redeemed, status: "Cancelled", estimate: { ...redeemed.estimate, payment: { status: "refunded", paidCents: 0 } } }
-], { email: "customer@example.com" }, promotion));
-assert.doesNotThrow(() => assertNotRedeemed([
-  { ...redeemed, status: "Confirmed", estimate: { ...redeemed.estimate, payment: { status: "deposit_pending", paidCents: 0 } } },
-  { ...redeemed, status: "Quote sent", estimate: { ...redeemed.estimate, payment: {} } }
-], { email: "customer@example.com" }, promotion), "Unpaid bookings and repeated quotes do not make someone a returning customer");
+const returning = customerPromotion([redeemed], { email: " customer@example.com " }, activeDate);
+assert.equal(returning.code, "RETURNING5");
+assert.equal(customerPromotion([redeemed], { phone: "9295550101" }, activeDate), returning);
+assert.equal(customerPromotion([redeemed], { email: "new@example.com", address: redeemed.address }, activeDate), promotion);
+assert.throws(() => assertCustomerPromotion("FALL10", returning), e => e.code === "PROMO_FIRST_TIME_ONLY");
+assert.throws(() => assertCustomerPromotion("RETURNING5", promotion), e => e.code === "PROMO_RETURNING_ONLY");
+const contact = { email: redeemed.email };
+assert.equal(customerPromotion([{ status: "Completed", email: redeemed.email, payment_status: "fully_paid" }], contact, activeDate), returning);
+for (const record of [
+  { ...redeemed, status: "Cancelled" },
+  { ...redeemed, estimate: { payment: { status: "refunded", paidCents: 2500 } } },
+  { ...redeemed, estimate: { payment: { status: "deposit_pending" } } },
+  { ...redeemed, status: "Quote sent", estimate: {} }
+]) assert.equal(customerPromotion([record], contact, activeDate), promotion);
+const afterSeason = new Date("2027-01-01T12:00:00Z");
+assert.equal(customerPromotion([redeemed], contact, afterSeason), returning);
+assert.equal(customerPromotion([], contact, afterSeason), null);
+assert.equal(applySavedQuotePromotion(pkg, { promoCode: "" }, contact, [redeemed]), pkg, "Respect a quote shown without a discount");
+const oldQuote = applyPromotion(pkg, promotion);
+const updated = applySavedQuotePromotion(oldQuote, { quoteId: "saved", packageSnapshot: oldQuote }, contact, [redeemed]);
+assert.equal(updated.promoCode, "RETURNING5");
+assert.equal(updated.priceCents, oldQuote.priceCents, "Reclassify a saved discount without applying 5% twice");
+assert.equal(oldQuote.promoCode, "FALL10", "Keep the stored snapshot intact");
 assert.equal(PROMOTIONS.FALL10.expiresLabel, "December 20, 2026");
 
 console.log("Promo code tests passed: active/expired states, uncapped 5%, service eligibility, and first-time-customer enforcement.");
