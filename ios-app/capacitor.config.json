@@ -1,6 +1,6 @@
 {
   "appId": "com.imancleaningservice.app",
-  "appName": "IMAN CRM",
+  "appName": "IMAN Staff Desk",
   "webDir": "www",
   "server": {
     "url": "https://www.imancleaningservice.com/crm",

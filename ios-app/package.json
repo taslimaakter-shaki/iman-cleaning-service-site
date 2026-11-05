@@ -4,8 +4,8 @@
   "version": "1.0.0",
   "type": "module",
   "scripts": {
-    "sync": "cap sync ios",
-    "open": "cap open ios"
+    "open": "open ios/App/App.xcodeproj",
+    "build": "xcodebuild -project ios/App/App.xcodeproj -scheme App -configuration Release -destination generic/platform=iOS build"
   },
   "dependencies": {
     "@capacitor/core": "8.5.1",
