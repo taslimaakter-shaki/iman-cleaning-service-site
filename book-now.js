@@ -4595,6 +4595,20 @@
       syncPropertyTypeChoice();
       allMobileQuestions.forEach(syncAnswerChoices);
       syncUnitCount();
+      if (state.serviceKey === "hourly" && Number(organizationHoursInput.value) > Number(organizationHoursInput.max)) {
+        resetAppointmentSelection();
+        state.package = null;
+        state.promo = null;
+        state.packageBeforePromo = null;
+        state.highestStageReached = 2;
+        hideQuoteLoading();
+        closeZipGate();
+        openWizard();
+        goToStep(1);
+        enterOrganizationDetails();
+        setStatus(document.querySelector("[data-eligibility-status]"), "This older quote exceeds the 23-work-hour daily limit. Choose 4–23 work-hours to update your quote.");
+        return;
+      }
       renderQuoteOverview(state.package);
       syncQuotedServiceCopy();
       renderPriceBreakdown(state.package);
@@ -4603,11 +4617,6 @@
       closeZipGate();
       openWizard();
       goToStep(2);
-      if (state.serviceKey === "hourly" && Number(organizationHoursInput.value) > Number(organizationHoursInput.max)) {
-        goToStep(1);
-        enterOrganizationDetails();
-        setStatus(document.querySelector("[data-eligibility-status]"), "This older quote exceeds the 23-work-hour daily limit. Choose 4–23 work-hours to update your quote.");
-      }
       if (state.serviceKey === "recurring" && (!value("recurringOrderNumber") || !value("recurringPlan"))) {
         goToStep(1);
         enterRecurringDetails();
@@ -4756,6 +4765,21 @@
       allMobileQuestions.forEach(syncAnswerChoices);
       syncMobileQuestion();
 
+      if (state.serviceKey === "hourly" && Number(organizationHoursInput.value) > Number(organizationHoursInput.max)) {
+        resetAppointmentSelection();
+        state.package = null;
+        state.promo = null;
+        state.packageBeforePromo = null;
+        state.highestStageReached = 2;
+        goToStep(1);
+        enterOrganizationDetails();
+        setStatus(document.querySelector("[data-eligibility-status]"), "Choose 4–23 work-hours so your service fits within one day.");
+        closeZipGate();
+        suspendDraftSaving = false;
+        window.setTimeout(persistBookingDraft, 500);
+        return true;
+      }
+
       if (state.package) {
         restoreDraftAppointment(String(draft.fields.schedule || ""));
         renderQuoteOverview(state.package);
@@ -4769,11 +4793,6 @@
       if (state.package && restoredStep < Number(savedState.step)) state.highestStageReached = restoredStep === 2 ? 5 : 6;
       if (restoredStep === 4) syncCheckoutReview();
       goToStep(restoredStep);
-      if (state.serviceKey === "hourly" && Number(organizationHoursInput.value) > Number(organizationHoursInput.max)) {
-        goToStep(1);
-        enterOrganizationDetails();
-        setStatus(document.querySelector("[data-eligibility-status]"), "Choose 4–23 work-hours so your service fits within one day.");
-      }
       closeZipGate();
       const saveCopy = document.querySelector("[data-booking-save-copy]");
       if (saveCopy) saveCopy.textContent = "Saved progress restored";

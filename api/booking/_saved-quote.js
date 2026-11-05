@@ -506,6 +506,17 @@ module.exports = async function handler(request, response) {
         if (!code || !require("../crm/_quote-admin").ready(payload.crmQuote.fields)) return json(response, 409, { error: "Our team is finalizing your updated quote. Please contact IMAN Cleaning Service." });
         return json(response, 200, { redirectUrl: `/q/${encodeURIComponent(code)}` });
       }
+      if (payload.eligibility?.requestedService === "hourly" && Number(payload.unitDetails?.[0]?.hours) > 23) {
+        return json(response, 200, {
+          eligibility: payload.eligibility,
+          unitDetails: payload.unitDetails,
+          customer: payload.customer,
+          package: null,
+          requiresHourlyUpdate: true,
+          quoteRevision: payload.crmQuote?.revision || "",
+          expiresAt: payload.expiresAt
+        });
+      }
       const pkg = applySavedQuotePromotion(payload.packageSnapshot || validateAndPrice(payload).pkg, payload, payload.customer, bookings);
       return json(response, 200, {
         eligibility: payload.eligibility,

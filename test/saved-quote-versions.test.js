@@ -94,5 +94,33 @@ const get=url=>handler({method:'GET',headers:{host:'example.test'},query:{token:
  assert.equal((await get(changedOrder.quoteUrl)).recurringOrderNumber,'87654321');
  assert.equal((await get(recurring.quoteUrl)).recurringOrderNumber,'12345678','Editing a reference preserves the original saved quote');
 
+ // Old hourly links must open an editable form even without a stored price snapshot.
+ const legacyId='LEGACY24',expiresAt=Date.now()+86400000;
+ const legacy={quoteId:legacyId,...body,unitDetails:[{hours:24}],expiresAt};
+ records.set(legacyId,legacy);
+ const legacyToken=handler.encodeSavedQuote({version:1,quoteId:legacyId,expiresAt});
+ const legacyUrl='https://example.test/book-now?quote='+legacyToken;
+ const legacyOpened=await get(legacyUrl);
+ assert.equal(legacyOpened.status,200,legacyOpened.error);
+ assert.equal(legacyOpened.requiresHourlyUpdate,true);
+ assert.equal(legacyOpened.package,null);
+ records.set(legacyId,{...legacy,packageSnapshot:{...actual.calculateHourlyCleaningQuote(23),manHours:24}});
+ assert.equal((await get(legacyUrl)).requiresHourlyUpdate,true);
+ // Run the actual browser restore function and simulate a stale arrival-discount backup.
+ let hourlyRecovery=false,renderedInvalid=false;
+ Object.assign(browser,{organizationHoursInput:{value:'',max:'23'},
+   fetch:async()=>({ok:true,json:async()=>legacyOpened}),
+   resetAppointmentSelection:()=>{state.package={price:1920};state.selectedDate='';state.initialSlots=[];},
+   enterOrganizationDetails:()=>{hourlyRecovery=true},
+   renderQuoteOverview:()=>{renderedInvalid=true}});
+ state.highestStageReached=6;
+ await vm.runInContext("restoreSavedQuote('old-hourly')",browser);
+ assert.equal(hourlyRecovery,true);
+ assert.equal(restoredStep,1);
+ assert.equal(state.package,null,'Invalid old price is cleared after appointment reset');
+ assert.equal(state.promo,null);
+ assert.equal(state.highestStageReached,2,'Later booking stages remain locked until repriced');
+ assert.equal(renderedInvalid,false,'Invalid package is never rendered');
+ assert.equal(controls.firstName.value,body.customer.firstName);
  console.log('Saved quote versions: immutable details/prices/contacts, changed-content delivery, concurrent deduplication, consent and partial-delivery retry passed. Providers mocked.');
 })().catch(e=>{console.error(e);process.exitCode=1});

@@ -50,3 +50,31 @@ vm.runInNewContext(fs.readFileSync('api/booking/_availability.js','utf8'),{modul
  assert.equal(allowed.slots.length,1);
  assert.equal(allowed.slots[0].time,'08:00');
 })().catch(e=>{console.error(e);process.exitCode=1});
+
+for (let hours=4;hours<=23;hours++) {
+ const pkg=shared.calculateHourlyCleaningQuote(hours);
+ assert(shared.planBookingDay(shared.toZonedIso('2030-11-20','08:00'),pkg.teamHours+1,[]),`${hours} work-hours must fit an empty business day`);
+}
+for (const hours of [0,3,23.5,24,25,NaN,Infinity,null,'']) {
+ assert.throws(()=>shared.calculateHourlyCleaningQuote(hours),/4 to 23 work-hours|whole number/);
+}
+
+// The draft recovery branch must run before rendering an obsolete 24-hour price.
+const draftSource=source.slice(source.indexOf('  const restoreBookingDraft ='));
+const recoveryStart=draftSource.indexOf('      if (state.serviceKey === "hourly"');
+const recoveryEnd=draftSource.indexOf('      if (state.package) {',recoveryStart);
+assert(recoveryStart>=0 && recoveryEnd>recoveryStart);
+const staleState={serviceKey:'hourly',package:{price:1920},promo:{code:'FALL10'},highestStageReached:7};
+let recoveryStep;
+const recoveryResult=vm.runInNewContext('(function(){'+draftSource.slice(recoveryStart,recoveryEnd)+'})()',{
+ state:staleState,organizationHoursInput:{value:'24',max:'23'},
+ resetAppointmentSelection:()=>{staleState.package={price:1920}},
+ goToStep:step=>{recoveryStep=step},enterOrganizationDetails(){},setStatus(){},
+ document:{querySelector:()=>({})},closeZipGate(){},suspendDraftSaving:true,
+ window:{setTimeout(){}},persistBookingDraft(){}
+});
+assert.equal(recoveryResult,true);
+assert.equal(recoveryStep,1);
+assert.equal(staleState.package,null);
+assert.equal(staleState.promo,null);
+assert.equal(staleState.highestStageReached,2);
