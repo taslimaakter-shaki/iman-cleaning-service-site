@@ -70,6 +70,11 @@ enum DeskTask: String, CaseIterable, Identifiable {
     var id: String { rawValue }
 }
 
+private struct PersonalPlannerFile: Codable {
+    var visits: [DeskBooking]
+    var checklists: [String: Set<String>]
+}
+
 @MainActor final class DeskWorkspace: ObservableObject {
     @Published private(set) var access: DeskAccess?
     @Published private(set) var bookings: [DeskBooking] = []
@@ -145,29 +150,52 @@ enum DeskTask: String, CaseIterable, Identifiable {
     func personal() {
         signOut(); scope = "personal"
         do {
-            let url = try storageURL(filename:"personal-visits")
-            if FileManager.default.fileExists(atPath:url.path) {
-                bookings = try JSONDecoder().decode([DeskBooking].self, from:Data(contentsOf:url))
-            }
-            loadChecklist(); access = .personal
+            let planner = try readPersonal()
+            bookings = planner.visits
+            completed = planner.checklists
+            access = .personal
         } catch { signOut(); message = "The personal planner could not be opened. Please try again." }
+    }
+    private func readPersonal() throws -> PersonalPlannerFile {
+        let url = try storageURL(filename: "personal-visits")
+        let files = FileManager.default
+        guard files.fileExists(atPath: url.path) else {
+            return PersonalPlannerFile(visits: [], checklists: [:])
+        }
+        let data = try Data(contentsOf: url)
+        let decoder = JSONDecoder()
+        if let planner = try? decoder.decode(PersonalPlannerFile.self, from: data) { return planner }
+
+        // Build 3 stored visits as an array and checklist progress in a separate file.
+        let rows = try decoder.decode([DeskBooking].self, from: data)
+        let legacyURL = try storageURL()
+        let checklists = files.fileExists(atPath: legacyURL.path)
+            ? try decoder.decode([String: Set<String>].self, from: Data(contentsOf: legacyURL))
+            : [:]
+        let ids = Set(rows.flatMap(\.visits).map(\.id))
+        let planner = PersonalPlannerFile(visits: rows, checklists: checklists.filter { ids.contains($0.key) })
+        try persistPersonal(planner)
+        if files.fileExists(atPath: legacyURL.path) { try? files.removeItem(at: legacyURL) }
+        return planner
     }
     func savePersonal(_ visit: DeskBooking) throws {
         guard access == .personal else { throw DeskError.denied }
         var next = bookings.filter { $0.id != visit.id }
         next.append(visit)
-        try writePersonal(next)
+        try persistPersonal(PersonalPlannerFile(visits: next, checklists: completed))
     }
     func deletePersonal(_ id: String) throws {
         guard access == .personal else { throw DeskError.denied }
-        try writePersonal(bookings.filter { $0.id != id })
-        // Checklists contain no names or addresses; remove the deleted item's anonymous entry as well.
-        completed.removeValue(forKey:id+"/1")
-        try JSONEncoder().encode(completed).write(to:storageURL(), options:[.atomic,.completeFileProtection])
+        var next = completed
+        for visit in bookings.first(where: { $0.id == id })?.visits ?? [] {
+            next.removeValue(forKey: visit.id)
+        }
+        try persistPersonal(PersonalPlannerFile(visits: bookings.filter { $0.id != id }, checklists: next))
     }
-    private func writePersonal(_ rows:[DeskBooking]) throws {
-        try JSONEncoder().encode(rows).write(to:storageURL(filename:"personal-visits"), options:[.atomic,.completeFileProtection])
-        bookings = rows
+    private func persistPersonal(_ planner: PersonalPlannerFile) throws {
+        try JSONEncoder().encode(planner).write(to: storageURL(filename: "personal-visits"), options: [.atomic, .completeFileProtection])
+        bookings = planner.visits
+        completed = planner.checklists
     }
     private func storageURL(filename: String? = nil) throws -> URL {
         let dir = try FileManager.default.url(for:.applicationSupportDirectory,in:.userDomainMask,appropriateFor:nil,create:true)
@@ -189,9 +217,14 @@ enum DeskTask: String, CaseIterable, Identifiable {
         if next[id,default:[]].contains(task.rawValue) { next[id]?.remove(task.rawValue) }
         else { next[id,default:[]].insert(task.rawValue) }
         do {
-            let data = try JSONEncoder().encode(next)
-            try data.write(to:storageURL(),options:[.atomic,.completeFileProtection])
-            completed = next; message = ""
+            if access == .personal {
+                try persistPersonal(PersonalPlannerFile(visits: bookings, checklists: next))
+            } else {
+                let data = try JSONEncoder().encode(next)
+                try data.write(to:storageURL(),options:[.atomic,.completeFileProtection])
+                completed = next
+            }
+            message = ""
         } catch { message = "The checklist could not be saved on this device. Please try again." }
     }
 }

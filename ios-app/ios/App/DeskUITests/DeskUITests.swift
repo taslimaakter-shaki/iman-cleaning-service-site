@@ -45,7 +45,7 @@ final class DeskUITests: XCTestCase {
         let studio=app.buttons.containing(.staticText,identifier:"Willow Studio").firstMatch
         selectTab("Walkthroughs",until:studio)
         XCTAssertTrue(studio.waitForExistence(timeout:8)); studio.tap()
-        XCTAssertTrue(app.buttons["Directions"].exists)
+        XCTAssertTrue(app.buttons["Directions"].waitForExistence(timeout:10))
         shot("03-Walkthrough")
         selectTab("Workspace",until:app.buttons["Leave sample workspace"])
         XCTAssertFalse(app.buttons["Open full CRM"].exists)
@@ -65,9 +65,15 @@ final class DeskUITests: XCTestCase {
         let service=app.textFields["Service"]; enter("Weekly cleaning",in:service)
         app.buttons["Save"].tap()
         XCTAssertTrue(app.staticTexts["Weekly cleaning"].waitForExistence(timeout:6))
+        let supplies = app.buttons["Check supplies and equipment"]
+        supplies.tap()
+        XCTAssertEqual(supplies.value as? String, "Completed")
         app.terminate(); app.launch(); app.buttons["Open personal planner"].tap()
         XCTAssertTrue(row.waitForExistence(timeout:8)); row.tap()
+        XCTAssertEqual(supplies.value as? String, "Completed")
         app.buttons["Delete visit"].tap(); app.alerts.buttons["Delete"].tap()
+        XCTAssertTrue(app.buttons["addVisit"].waitForExistence(timeout:6))
+        app.terminate(); app.launch(); app.buttons["Open personal planner"].tap()
         XCTAssertTrue(app.buttons["addVisit"].waitForExistence(timeout:6)); XCTAssertFalse(row.exists)
     }
     func testRejectedCredentials() {
