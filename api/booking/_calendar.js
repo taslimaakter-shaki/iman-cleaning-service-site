@@ -49,7 +49,7 @@ async function reserveBooking(bookingId, existingSession) {
   let booking = await store().getBooking(bookingId);
   if (booking) booking = await reconcileReservation(booking);
   if (!booking || booking.status !== 'New') throw fail('This booking is no longer awaiting payment.');
-  if (process.env.BOOKING_PAYMENT_FLOW === 'hosted_unreserved') {
+  if (process.env.BOOKING_PAYMENT_FLOW === 'hosted_unreserved' && !booking.estimate?.secondVisitSchedule) {
     if (existingSession) {
       existingSession = await stripeSession(existingSession.id);
       if (existingSession.status !== 'open') throw fail('This checkout expired. Please reopen your quote to start a new payment.');
@@ -63,6 +63,7 @@ async function reserveBooking(bookingId, existingSession) {
     throw fail('A payment is already being prepared for this quote. Please reopen the link in a moment.');
   }
   await store().assertScheduleAvailable(booking.schedule, store().bookingDurationHours(booking), booking.id);
+  if (booking.estimate?.secondVisitSchedule) await store().assertScheduleAvailable(booking.estimate.secondVisitSchedule, store().bookingDurationHours(booking), booking.id);
   if (existingSession) {
     existingSession = await stripeSession(existingSession.id);
     if (existingSession.status !== 'open') throw fail('This checkout expired. Please reopen your quote to start a new payment.');
@@ -78,7 +79,7 @@ async function attachCheckout(bookingId, attempt, session) {
     await stripeSession(session.id, 'POST');
     throw fail('Your reservation changed. Please reopen the payment link.');
   }
-  const unreserved = process.env.BOOKING_PAYMENT_FLOW === 'hosted_unreserved';
+  const unreserved = process.env.BOOKING_PAYMENT_FLOW === 'hosted_unreserved' && !booking.estimate?.secondVisitSchedule;
   await changeReservation(booking, { ...booking.estimate.calendarReservation, state: unreserved ? 'draft' : 'open', sessionId: session.id, expiresAt: unreserved ? new Date(session.expires_at * 1000).toISOString() : hostedDeadline(session) });
 }
 

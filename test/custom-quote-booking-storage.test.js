@@ -79,7 +79,7 @@ function fixture(units) {
     attachCheckout: async (id, attempt, session) => { assert.equal(attempt, 'test-attempt'); assert.equal(session.id, 'cs_mock'); },
     cleanupCheckout: async () => {}
   };
-  const bookingStore = load("api/booking/_shared.js", { "./_calendar": calendar });
+  const bookingStore = load("api/booking/_shared.js", { "./_calendar": calendar, "../../booking-day": require("../booking-day") });
   const admin = load("api/crm/_quote-admin.js", {
     "../booking/_shared": bookingStore, "../quote/_shared": { getGoogleClients: () => ({ drive, config: { parentFolderId: "mock-parent" } }) }
   });

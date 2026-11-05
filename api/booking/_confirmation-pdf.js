@@ -188,10 +188,12 @@ function formatAppointmentParts(booking, record) {
   const schedule = booking?.schedule ? new Date(booking.schedule) : null;
   if (schedule && Number.isFinite(schedule.getTime())) {
     const arrival = booking?.estimate?.arrivalPreference || {};
+    const visits = [schedule];
+    if (booking.estimate?.secondVisitSchedule) visits.push(new Date(booking.estimate.secondVisitSchedule));
     return {
-      date: new Intl.DateTimeFormat("en-US", {
+      date: visits.map(date => new Intl.DateTimeFormat("en-US", {
         timeZone: "America/New_York", weekday: "long", year: "numeric", month: "long", day: "numeric"
-      }).format(schedule),
+      }).format(date)).join(" and "),
       time: arrival.flexible && arrival.windowLabel
         ? `${arrival.windowLabel} estimated arrival window`
         : new Intl.DateTimeFormat("en-US", {

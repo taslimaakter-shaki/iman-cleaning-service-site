@@ -1,6 +1,7 @@
 const crypto = require("crypto");
 const {
   cleanText,
+  assertResidentialDayFits,
   createBooking,
   listAllBookings,
   json,
@@ -253,6 +254,7 @@ async function handler(request, response) {
     if (body.rushFeeAccepted !== true) return json(response, 400, { error: "Please acknowledge the $100 same-day rush fee." });
     const customer = cleanCustomer(body.customer);
     const { eligibility, serviceKey, unitDetails, pkg: originalPackage } = validateAndPrice(body);
+    assertResidentialDayFits(originalPackage, eligibility.serviceZip);
     const savedQuoteUrl = validSavedQuoteUrl(body.savedQuoteUrl, request);
     const token = new URL(savedQuoteUrl).searchParams.get('quote');
     let pkg = await require('../crm/_quote-admin').applySavedDiscount(token, originalPackage, body.quoteRevision || '');
@@ -313,7 +315,7 @@ async function handler(request, response) {
     });
     return json(response, 201, { ok: true, id: record.id, ownerAlert: ownerDelivery.status });
   } catch (error) {
-    return json(response, error.statusCode || 500, { error: error.message || "Same-day request could not be submitted." });
+    return json(response, error.statusCode || 500, { error: error.message || "Same-day request could not be submitted.", code: error.code, reviewUrl: error.reviewUrl });
   }
 }
 

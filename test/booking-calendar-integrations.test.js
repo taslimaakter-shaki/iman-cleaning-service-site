@@ -28,6 +28,7 @@ async function googleTests() {
   }};
   let stored=[];
   const shared=load('api/booking/_shared.js',{
+    '../../booking-day': require('../booking-day'),
     'googleapis/build/src/apis/calendar':{calendar:()=>google},
     '../quote/_shared':{getGoogleClients:()=>({auth:{getAccessToken:async()=>({token:'test-token-never-returned'}),getTokenInfo:async()=>({scopes:['https://www.googleapis.com/auth/calendar.events']})}})},
     '../google-calendar/_connection':{calendarAuth:async()=>({getAccessToken:async()=>({token:'test-token-never-returned'}),getTokenInfo:async()=>({scopes:['https://www.googleapis.com/auth/calendar.events']})})},
@@ -113,6 +114,15 @@ async function googleTests() {
   assert.equal(silent.sendUpdates,'none');assert.equal(silent.requestBody.attendees.length,0);
   assert.equal(silent.requestBody.start.dateTime,'2030-09-12T12:00:00.000Z');
   assert.equal(silent.requestBody.end.dateTime,'2030-09-12T21:00:00.000Z');
+  calls.length=0;
+  const split={...booking,estimate:{teamHours:3,calendarReservationHours:4,secondVisitSchedule:'2030-09-13T08:00:00-04:00'}};
+  await shared.syncBookingToGoogleCalendar(split,{notifyCustomer:false});
+  const mirrors=calls.filter(call=>call.action==='insert').map(call=>call.requestBody);
+  assert.deepEqual(mirrors.map(event=>event.start.dateTime),['2030-09-12T12:00:00.000Z','2030-09-13T12:00:00.000Z']);
+  assert.notEqual(mirrors[0].id,mirrors[1].id);
+  stored=[{...split,status:'Confirmed'}];
+  await assert.rejects(shared.assertScheduleAvailable(split.estimate.secondVisitSchedule,2),/conflicts/);
+  await shared.assertScheduleAvailable(split.estimate.secondVisitSchedule,2,split.id);
 }
 async function rescheduleTests() {
   const original={id:'BK-1',status:'Confirmed',email:'test@example.test',phone:'',schedule:'2030-09-12T08:00:00-04:00',estimate:{teamHours:9,subtotal:661.31,tax:58.69,total:720,payment:{paidCents:18000}}};

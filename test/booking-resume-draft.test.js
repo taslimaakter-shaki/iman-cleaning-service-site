@@ -39,12 +39,12 @@ function resume(preference, savedSlots) {
   };
   const select = { value: "", replaceChildren() { this.value = ""; }, add() {} };
   const noop = () => {};
-  const context = vm.createContext({ state, scheduleSelect: select, savedSchedule: slot.value, Option: class {},
+  const context = vm.createContext({ state, scheduleSelect: select, savedSchedule: slot.value, visitPlanControl:null, Option: class {},
     monthKeyForDate: date => date.slice(0, 7), displayTime: time => time,
     setSchedulerStatus: noop, renderCalendar: noop, renderTimeSlots: noop, persistBookingDraft: noop });
   vm.runInContext([
     section("  const slotsForDate =", "  const setSchedulerStatus ="),
-    section("  const loadSchedulerSlots =", "  const repeatExtrasPanel ="),
+    section("  const pairedSlot =", "  visitPlanControl?.addEventListener"),
     section("  const restoreDraftAppointment =", "  const restoreBookingDraft ="),
     "restoreDraftAppointment(savedSchedule)"
   ].join("\n"), context);

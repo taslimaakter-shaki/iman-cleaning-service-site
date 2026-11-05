@@ -270,6 +270,9 @@ async function captureRemainingBalance({
 }) {
   let booking = await getBookingRecord(bookingId);
   if (!booking) throw Object.assign(new Error("Booking could not be found."), { statusCode: 404 });
+  if (Date.parse(booking.estimate?.secondVisitSchedule) > now.getTime()) {
+    throw Object.assign(new Error("Complete the second visit before capturing the balance."), {statusCode:409});
+  }
   if (!automaticBalanceCollection(booking)) return { status: "not_applicable" };
   let remaining = currentRemainingState(booking);
   if (remaining.status === "captured") {

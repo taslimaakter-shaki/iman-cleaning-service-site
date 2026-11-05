@@ -182,6 +182,11 @@ function localScheduleParts(schedule) {
   return { date: `${parts.year}-${parts.month}-${parts.day}`, time: `${parts.hour}:${parts.minute}` };
 }
 
+function consecutiveSecondStart(firstStart) {
+  const { date, time } = localScheduleParts(firstStart);
+  return toZonedIso(require("../../booking-day").nextDate(date), time);
+}
+
 function arrivalConfirmationSchedule(booking, arrivalTime) {
   const preference = booking?.estimate?.arrivalPreference;
   if (!preference?.flexible) {
@@ -265,8 +270,10 @@ async function updateBookingDetails(body, response) {
   const priorServiceHours = Number(estimate.teamHours ?? estimate.hours ?? bookingDurationHours(booking));
   const calendarReservationHours = teamHours + (estimate.arrivalPreference?.key ? 1 : 0);
   const durationChanged = Math.abs(teamHours - priorServiceHours) > 0.001;
+  const secondStart = estimate.secondVisitSchedule && (scheduleChanged ? consecutiveSecondStart(schedule) : estimate.secondVisitSchedule);
   if ((scheduleChanged || durationChanged) && !["Completed", "Cancelled"].includes(booking.status)) {
     await assertScheduleAvailable(schedule, calendarReservationHours, id);
+    if (secondStart) await assertScheduleAvailable(secondStart, calendarReservationHours, id);
   }
 
   const remainingCents = Math.max(0, totalCents - paidCents);
@@ -287,6 +294,7 @@ async function updateBookingDetails(body, response) {
   const rescheduleRequestedAt = new Date().toISOString();
   const updatedEstimate = {
     ...estimate,
+    ...(secondStart ? { secondVisitSchedule: secondStart } : {}),
     subtotal: subtotalCents / 100,
     tax: (totalCents - subtotalCents) / 100,
     total: totalCents / 100,
@@ -321,7 +329,7 @@ async function updateBookingDetails(body, response) {
     address,
     service_label: serviceLabel,
     schedule,
-    schedule_label: bookingScheduleLabel(schedule),
+    schedule_label: secondStart ? (scheduleChanged ? bookingScheduleLabel(schedule) + " and " + bookingScheduleLabel(secondStart) : booking.schedule_label) : bookingScheduleLabel(schedule),
     bedrooms_label: text(body.bedroomsLabel, 200),
     bathrooms_label: text(body.bathroomsLabel, 200),
     sqft,
@@ -378,7 +386,7 @@ async function updateBookingDetails(body, response) {
   let scheduleNotification = { status: "not_needed" };
   if (scheduleChanged) {
     const message = [
-      `IMAN Cleaning Service: Your cleaning appointment has been rescheduled to ${bookingScheduleLabel(schedule)} (New York time).`,
+      `IMAN Cleaning Service: Your cleaning appointment has been rescheduled to ${[schedule, secondStart].filter(Boolean).map(bookingScheduleLabel).join(" and ")} (New York time).`,
       `Service: ${serviceLabel}.`,
       address ? `Address: ${address}.` : "",
       "Questions or changes? Call (929) 232-1930. Reply STOP to opt out."
@@ -419,9 +427,14 @@ async function confirmFlexibleArrival(body, response) {
   const estimate = booking.estimate && typeof booking.estimate === "object" ? booking.estimate : {};
   const calendarReservationHours = Number(estimate.calendarReservationHours || bookingDurationHours(booking));
   await assertScheduleAvailable(schedule, calendarReservationHours, id);
+  const secondStart = estimate.secondVisitSchedule && arrivalConfirmationSchedule(
+    { ...booking, schedule: estimate.secondVisitSchedule }, body.secondArrivalTime);
+  if (secondStart) await assertScheduleAvailable(secondStart, calendarReservationHours, id);
+  const scheduleLabel = secondStart ? [schedule,secondStart].map(bookingScheduleLabel).join(" and ") : bookingScheduleLabel(schedule);
   const confirmedAt = new Date().toISOString();
   const updatedEstimate = {
     ...estimate,
+    ...(secondStart ? { secondVisitSchedule: secondStart } : {}),
     arrivalPreference: {
       ...estimate.arrivalPreference,
       confirmationStatus: "confirmed",
@@ -432,13 +445,13 @@ async function confirmFlexibleArrival(body, response) {
   };
   await updateBooking(id, {
     schedule,
-    schedule_label: bookingScheduleLabel(schedule),
+    schedule_label: scheduleLabel,
     estimate: updatedEstimate
   });
 
   let scheduleNotification = { status: "not_sent" };
   const message = [
-    `IMAN Cleaning Service: Your cleaning appointment arrival time is confirmed for ${bookingScheduleLabel(schedule)} (New York time).`,
+    `IMAN Cleaning Service: Your cleaning appointment arrival time is confirmed for ${scheduleLabel} (New York time).`,
     `Service: ${booking.service_label || booking.service || "Cleaning service"}.`,
     booking.address ? `Address: ${booking.address}.` : "",
     "Questions or changes? Call (929) 232-1930. Reply STOP to opt out."
@@ -524,6 +537,7 @@ async function updateStatus(body, request, response) {
   let additionalWork = { status: "not_requested" };
   let reviewRequest = { status: "not_requested" };
   if (status === "Completed") {
+    if (Date.parse(booking.estimate?.secondVisitSchedule) > Date.now()) return json(response, 409, {error:"Complete the second visit before closing this booking."});
     try {
       payment = await captureRemainingBalance({ bookingId: id });
     } catch (error) {

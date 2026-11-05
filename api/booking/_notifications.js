@@ -65,11 +65,17 @@ function formatAppointment(schedule) {
   }).format(date);
 }
 
+function reminderAppointment(booking) {
+  return booking.estimate?.secondVisitSchedule
+    ? booking.schedule_label || [booking.schedule, booking.estimate.secondVisitSchedule].map(formatAppointment).join(" and ")
+    : formatAppointment(booking.schedule);
+}
+
 function buildReminderEmail(booking, stage) {
   if (!booking?.email) return null;
   const copy = reminderCopy(stage);
   const from = process.env.QUOTE_EMAIL_FROM || "Info@imancleaningservice.com";
-  const appointment = formatAppointment(booking.schedule);
+  const appointment = reminderAppointment(booking);
   const subject = `${copy.subjectLead} — Iman Cleaning Service`;
   const customerName = booking.client_name || "there";
   const details = [
@@ -237,7 +243,7 @@ function buildReminderSms(booking, stage) {
   const copy = reminderCopy(stage);
   return [
     `IMAN Cleaning Service: ${copy.subjectLead}.`,
-    `${booking.service_label || booking.service || "Service"}: ${formatAppointment(booking.schedule)}.`,
+    `${booking.service_label || booking.service || "Service"}: ${reminderAppointment(booking)}.`,
     booking.address ? `Address: ${booking.address}.` : "",
     `Order: ${booking.estimate?.orderNumber || booking.id}.`,
     "Questions? Call 929-232-1930. Reply STOP to opt out."

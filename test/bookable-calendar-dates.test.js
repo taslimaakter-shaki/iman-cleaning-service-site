@@ -2,9 +2,9 @@ const assert = require('node:assert/strict');
 const fs = require('node:fs');
 const vm = require('node:vm');
 const source = fs.readFileSync('book-now.js', 'utf8');
-const code = source.slice(source.indexOf('  const loadSchedulerSlots ='), source.indexOf('  const repeatExtrasPanel ='));
+const code = source.slice(source.indexOf('  const pairedSlot ='), source.indexOf('  visitPlanControl?.addEventListener'));
 const state = { serviceKey: 'standard' };
-const context = vm.createContext({ state, scheduleSelect: null,
+const context = vm.createContext({ state, visitPlanControl: null, scheduleSelect: null,
   monthKeyForDate: date => date.slice(0, 7), clearArrivalDiscount() {},
   setSchedulerStatus() {}, renderCalendar() {}, renderTimeSlots() {}, persistBookingDraft() {},
   longDate: date => date, recurringPlanContext: { windowStart: '2030-12-01', windowEnd: '2030-12-31', percent: 10 }

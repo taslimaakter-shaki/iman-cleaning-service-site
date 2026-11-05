@@ -9,8 +9,7 @@ const HOURLY_CLEANING_RATE = 80;
 const HOURLY_CLEANING_MIN_HOURS = 4;
 const HOLD_MINUTES = 30;
 const TIME_ZONE = "America/New_York";
-const OPEN_TIME = "08:00";
-const CLOSE_TIME = "20:30";
+const { OPEN_TIME, CLOSE_TIME, EXTENSION_HOURS, residentialDayReview, splitVisitHours, nextDate } = require("../../booking-day");
 // Every customer-facing arrival option reserves the expected on-site duration
 // plus one protected extension hour in calendarReservationHours. Keep another
 // two hours after that protected block for travel to the next appointment.
@@ -691,6 +690,12 @@ function moldAdjustmentsFor(units, serviceKey, hazards = "", moldCleaningRequest
     total: (adjustment.amountCents + taxCents) / 100,
     totalCents: adjustment.amountCents + taxCents
   };
+}
+
+function assertResidentialDayFits(pkg, zip, allowSplit = false) {
+  if (allowSplit && splitVisitHours(pkg)) return;
+  const review = residentialDayReview(pkg, zip);
+  if (review) throw Object.assign(new Error(review.error), review, { statusCode: 409 });
 }
 
 function calculateResidentialQuoteBundle(unitDetails = [], serviceKey = "standard", eligibility = {}, legacyPetPricing = false) {
@@ -1809,6 +1814,13 @@ function bookingInterval(record) {
   return { start, end: start + bookingDurationHours(record) * 60 * 60 * 1000 };
 }
 
+function bookingVisits(record) {
+  if (!record.estimate?.secondVisitSchedule) return [record];
+  const estimate = { ...record.estimate };
+  delete estimate.secondVisitSchedule;
+  return [{ ...record, estimate }, { ...record, id: record.id + ":visit2", schedule: record.estimate.secondVisitSchedule, estimate }];
+}
+
 async function listActiveBookings() {
   const records = [];
   if (hasSupabaseConfig()) {
@@ -1824,14 +1836,14 @@ async function listActiveBookings() {
       records.splice(index, reconciled.length, ...reconciled);
     }
   } else records.push(...await listDriveBookings());
-  return (records || []).filter((record) => activeBooking(record));
+  return records.flatMap(bookingVisits).filter(record => activeBooking(record));
 }
 
 async function assertScheduleAvailable(startIso, hours, excludeBookingId = '') {
   const start = new Date(startIso).getTime();
   if (!Number.isFinite(start) || start <= Date.now() || !Number.isFinite(hours) || hours <= 0 || hours > 200) throw Object.assign(new Error("Choose a future start time and valid on-site duration."), { statusCode: 400 });
   const [bookings, calendar] = await Promise.all([listActiveBookings(), googleCalendarBusyRecords(toZonedIso(localDateString(new Date(start)), '00:00'), toZonedIso(localDateString(new Date(start)), '23:59'))]);
-  if (!slotAvailable(startIso, hours, bookings.concat(calendar.records).filter(b => b.id !== excludeBookingId))) throw Object.assign(new Error("That appointment conflicts with another booking's reserved service capacity or two-hour travel window. Choose another time."), { statusCode: 409 });
+  if (!slotAvailable(startIso, hours, bookings.concat(calendar.records).filter(b => b.id !== excludeBookingId && b.id !== excludeBookingId + ":visit2"))) throw Object.assign(new Error("That appointment conflicts with another booking's reserved service capacity or two-hour travel window. Choose another time."), { statusCode: 409 });
 }
 
 // A flexible booking's schedule is provisional until an arrival time is confirmed.
@@ -1967,11 +1979,11 @@ function slotsForPreparedDay(pkg, dateString, day, minimumStartMs) {
 
   const starts = [];
   for (let time = open; time + duration <= close; time += interval) starts.push(time);
-  const latestProtectedStart = close - (Math.ceil(pkg.teamHours * 60) + 60) * 60000;
+  const protectedDuration = (Math.ceil(pkg.teamHours * 60) + EXTENSION_HOURS * 60) * 60000;
+  const latestProtectedStart = close - protectedDuration;
   if (latestProtectedStart >= open && !starts.includes(latestProtectedStart)) starts.push(latestProtectedStart);
   // A feasible interval ends at closing or a neighboring job/window boundary.
   // Include boundaries after chains of movable jobs, including off-grid times.
-  const protectedDuration = (Math.ceil(pkg.teamHours * 60) + 60) * 60000;
   const travel = APPOINTMENT_GAP_HOURS * 3600000;
   const anchors = new Set([open, close - protectedDuration]);
   let offsets = new Set([0]);
@@ -2103,6 +2115,10 @@ async function googleCalendarBusyRecords(timeMin, timeMax) {
 
 async function syncBookingToGoogleCalendar(booking, { notifyCustomer = true } = {}) {
   if (!googleCalendarConfigured()) return { status: "not_configured" };
+  if (booking.estimate?.secondVisitSchedule) {
+    for (const visit of bookingVisits(booking)) await syncBookingToGoogleCalendar(visit, { notifyCustomer });
+    return { status: "synchronized" };
+  }
   const calendar = await getGoogleCalendarClient();
   const calendarId = bookingCalendarId();
   const privateKey = `iman_booking_id=${booking.id}`;
@@ -2153,6 +2169,10 @@ async function syncBookingToGoogleCalendar(booking, { notifyCustomer = true } = 
 
 async function updateBookingGoogleCalendar(booking, action = "reschedule", { notifyCustomer = true } = {}) {
   if (!googleCalendarConfigured()) return { status: "not_configured" };
+  if (booking.estimate?.secondVisitSchedule) {
+    for (const visit of bookingVisits(booking)) await updateBookingGoogleCalendar(visit, action, { notifyCustomer });
+    return { status: action === "cancel" ? "cancelled" : "synchronized" };
+  }
   const calendar = await getGoogleCalendarClient();
   const calendarId = bookingCalendarId();
   const existing = await calendar.events.list({
@@ -2202,6 +2222,12 @@ function advanceBookingDays(now) {
 }
 
 async function availableSlotsForPackage(pkg, days = MAX_ADVANCE_BOOKING_DAYS, now = new Date(), excludeBookingId = '') {
+  const [slots] = await availableSlotSets([pkg], days, now, excludeBookingId);
+  return slots;
+}
+
+// Evaluate both visit lengths against the same calendar snapshot.
+async function availableSlotSets(packages, days = MAX_ADVANCE_BOOKING_DAYS, now = new Date(), excludeBookingId = '') {
   const currentTime = now instanceof Date ? now : new Date(now);
   if (!Number.isFinite(currentTime.getTime())) {
     throw Object.assign(new Error("The current booking time is invalid."), { statusCode: 400 });
@@ -2210,7 +2236,7 @@ async function availableSlotsForPackage(pkg, days = MAX_ADVANCE_BOOKING_DAYS, no
   const requestedDays = Number(days);
   const bookingDays = Math.min(maximumDays, Math.max(1, Number.isFinite(requestedDays) ? Math.floor(requestedDays) : maximumDays));
   const minimumStartMs = currentTime.getTime() + MIN_BOOKING_NOTICE_HOURS * 60 * 60 * 1000;
-  const slots = [];
+  const slotSets = packages.map(() => []);
   const today = localDateString(currentTime);
   const base = new Date(`${today}T12:00:00Z`);
   const firstDate = localDateString(new Date(base.getTime() + 24 * 60 * 60 * 1000));
@@ -2224,23 +2250,88 @@ async function availableSlotsForPackage(pkg, days = MAX_ADVANCE_BOOKING_DAYS, no
   ]);
   // Checking identical intervals twice does not add another buffer. Exclude
   // both representations of the current booking when offering reschedule times.
-  const bookings = storedBookings.concat(calendarAvailability.records).filter(b => b.id !== excludeBookingId);
+  const bookings = storedBookings.concat(calendarAvailability.records).filter(b => b.id !== excludeBookingId && b.id !== excludeBookingId + ":visit2");
   const { laborHours } = require('./_anytime-policy');
   const datesWithoutAnytime = new Set(storedBookings
-    .filter(booking => booking.id !== excludeBookingId && laborHours(booking.estimate) >= 6)
+    .filter(booking => booking.id !== excludeBookingId && booking.id !== excludeBookingId + ":visit2" && laborHours(booking.estimate) >= 6)
     .map(booking => localDateString(new Date(booking.schedule))));
 
   for (let dayIndex = 1; dayIndex <= bookingDays; dayIndex += 1) {
     const date = new Date(base.getTime() + dayIndex * 24 * 60 * 60 * 1000);
     const dateString = localDateString(date);
     const day = prepareBookingDay(dateString, bookings);
-    slotsForPreparedDay(pkg, dateString, day, minimumStartMs).forEach((slot) => {
-      const extendedHours = Number(pkg.teamHours) + 1;
-      const flexibleEligible = planStartOnDay(Date.parse(slot.value), extendedHours, day) !== null;
-      slots.push({ ...slot, anytimeEligible: !datesWithoutAnytime.has(dateString), flexibleEligible, flexibleTeamHours: extendedHours, calendarChecked: calendarAvailability.connected });
+    packages.forEach((pkg, index) => {
+      const extendedHours = Number(pkg.teamHours) + EXTENSION_HOURS;
+      for (const slot of slotsForPreparedDay(pkg, dateString, day, minimumStartMs)) {
+        const flexibleEligible = planStartOnDay(Date.parse(slot.value), extendedHours, day) !== null;
+        slotSets[index].push({ ...slot, anytimeEligible: !datesWithoutAnytime.has(dateString), flexibleEligible, flexibleTeamHours: extendedHours, calendarChecked: calendarAvailability.connected });
+      }
     });
   }
-  return require("./_arrival-preference").markArrivalOptions(slots);
+  return slotSets.map(require("./_arrival-preference").markArrivalOptions);
+}
+
+function consecutiveArrivalSlots(slots) {
+  const byDate = new Map();
+  for (const slot of slots) {
+    if (!slot.flexibleEligible) continue;
+    if (!byDate.has(slot.date)) byDate.set(slot.date, new Map());
+    byDate.get(slot.date).set(slot.time, slot);
+  }
+  const pairs = [];
+  for (const [date, firstDay] of byDate) {
+    const secondDay = byDate.get(nextDate(date));
+    if (!secondDay) continue;
+    const fixed = require("./_arrival-preference").markArrivalOptions(
+      [...firstDay.values()].filter(slot => secondDay.has(slot.time))
+    );
+    const periods = new Map(fixed.map(slot => [slot.time, slot.arrivalOptions]));
+    const flexibleSecond = [...secondDay.values()].find(slot => slot.anytimeEligible);
+    for (const slot of firstDay.values()) {
+      const arrivalOptions = periods.get(slot.time) || [];
+      const anytimeEligible = Boolean(slot.anytimeEligible && flexibleSecond);
+      if (!arrivalOptions.length && !anytimeEligible) continue;
+      pairs.push({ ...slot, arrivalOptions, anytimeEligible,
+        fixedSecondStart: arrivalOptions.length ? secondDay.get(slot.time).value : "",
+        anytimeSecondStart: anytimeEligible ? flexibleSecond.value : "" });
+    }
+  }
+  return pairs;
+}
+
+async function residentialAvailability(pkg, zip, pairsOnly = false) {
+  const visitHours = splitVisitHours(pkg);
+  if (!visitHours) {
+    assertResidentialDayFits(pkg, zip);
+    return availableSlotsForPackage(pkg);
+  }
+  // Only offer pairs when the database can reserve both days in one write.
+  let supported = false;
+  if (hasSupabaseConfig()) {
+    const config = getSupabaseConfig();
+    try {
+      const response = await fetch(new URL("rpc/iman_consecutive_visit_version", config.endpoint), {
+        method: "POST", headers: config.headers, body: "{}", signal: AbortSignal.timeout(10000)
+      });
+      if (!response.ok && response.status !== 404) throw new Error("Two-day calendar unavailable");
+      supported = response.ok && await response.json() === 1;
+    } catch (error) {
+      // A feature probe must not block an otherwise bookable single visit.
+      // The normal calendar lookup still has to succeed before a slot is shown.
+      if (pairsOnly || residentialDayReview(pkg)) {
+        throw Object.assign(new Error("Two-day availability could not be checked. Please try again."), {statusCode:503, cause:error});
+      }
+    }
+  }
+  if (!supported) {
+    assertResidentialDayFits(pkg, zip);
+    return pairsOnly ? [] : availableSlotsForPackage(pkg);
+  }
+  const offerSingle = !pairsOnly && !residentialDayReview(pkg);
+  const [halves, single = []] = await availableSlotSets([{ ...pkg, teamHours: visitHours }, ...(offerSingle ? [pkg] : [])]);
+  const pairs = consecutiveArrivalSlots(halves);
+  if (!pairs.length) assertResidentialDayFits(pkg, zip);
+  return [...single, ...pairs];
 }
 
 function makeBookingId() {
@@ -2261,6 +2352,12 @@ async function makeUniqueOrderNumber() {
 module.exports = {
   APPOINTMENT_GAP_HOURS,
   CLOSE_TIME,
+  EXTENSION_HOURS,
+  assertResidentialDayFits,
+  residentialDayReview,
+  residentialAvailability,
+  consecutiveArrivalSlots,
+  splitVisitHours,
   HOLD_MINUTES,
   MAN_HOUR_RATE,
   ORGANIZATION_HOURLY_RATE,

@@ -76,6 +76,7 @@ async function pay(order, confirmationToken) {
  if (!booking || booking.status!=='New') throw fail('Payment has already been received or this booking is no longer available.');
  if (!['creating','ready','processing','requires_action'].includes(order.state)) {
   await shared().assertScheduleAvailable(booking.schedule,shared().bookingDurationHours(booking),booking.id);
+  if (booking.estimate?.secondVisitSchedule) await shared().assertScheduleAvailable(booking.estimate.secondVisitSchedule,shared().bookingDurationHours(booking),booking.id);
  }
  order=await rpc('acquire',order.id,{attempt:crypto.randomUUID(),confirmationToken});
  if (order.state==='paid') return order;

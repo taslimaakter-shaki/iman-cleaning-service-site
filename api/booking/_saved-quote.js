@@ -3,6 +3,7 @@ const {
   calculateHourlyCleaningQuote,
   calculateWindowQuote,
   calculateResidentialQuoteBundle,
+  assertResidentialDayFits,
   cleanText,
   isNYCServiceZip,
   temporarilyPausedServiceBorough,
@@ -370,6 +371,7 @@ function validateAndPrice(body) {
     error.statusCode = 409;
     throw error;
   }
+  assertResidentialDayFits(pkg, eligibility.serviceZip, true);
   return { eligibility, serviceKey, unitDetails, pkg };
 }
 
@@ -495,6 +497,7 @@ function recentDelivery(key) {
 }
 
 module.exports = async function handler(request, response) {
+  let savedCustomer;
   try {
     if (request.method === "GET") {
       response.setHeader("Cache-Control", "private, no-store");
@@ -519,6 +522,8 @@ module.exports = async function handler(request, response) {
           expiresAt: payload.expiresAt
         });
       }
+      savedCustomer = payload.customer;
+      if (payload.packageSnapshot) assertResidentialDayFits(payload.packageSnapshot, payload.eligibility?.serviceZip, true);
       const pkg = applySavedQuotePromotion(payload.packageSnapshot || validateAndPrice(payload).pkg, payload, payload.customer, bookings);
       return json(response, 200, {
         eligibility: payload.eligibility,
@@ -618,7 +623,8 @@ module.exports = async function handler(request, response) {
   } catch (error) {
     return json(response, error.statusCode || 500, {
       error: error.message || "Your saved quote link could not be created.",
-      code: error.code || ""
+      code: error.code || "", reviewRequired: error.reviewRequired, reviewUrl: error.reviewUrl,
+      customer: error.code === "RESIDENTIAL_DAY_LIMIT" ? savedCustomer : undefined
     });
   }
 };

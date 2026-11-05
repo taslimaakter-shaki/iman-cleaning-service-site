@@ -12,6 +12,9 @@ function duration(hours) {
   return [whole ? `${whole} ${whole === 1 ? 'hour' : 'hours'}` : '', rest ? `${rest} ${rest === 1 ? 'minute' : 'minutes'}` : ''].filter(Boolean).join(' ');
 }
 function staffingOptions(estimate) {
+  if (estimate?.secondVisitSchedule && estimate.teamHours > 0) {
+    return `${estimate.cleanerCount || 2} team members for up to ${duration(estimate.teamHours)} per visit across two consecutive days`;
+  }
   const hours = workHours(estimate);
   if (hours >= 7) return `2 team members for up to ${duration(hours / 2)}`;
   return hours > 0 && hours < 7 ? `1 team member for up to ${duration(hours)}, or 2 team members for up to ${duration(hours / 2)}` : '';

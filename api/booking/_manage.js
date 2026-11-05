@@ -236,6 +236,7 @@ function safeBooking(booking) {
     status: booking.status,
     service: booking.service_label || booking.service,
     schedule: booking.schedule,
+    secondVisitSchedule: booking.estimate?.secondVisitSchedule,
     scheduleLabel: booking.schedule_label || formatAppointment(booking.schedule),
     cancellationReceiptAvailable: Boolean(booking.status === "Cancelled" && booking.estimate?.cancellation?.receipt),
     arrivalPreference: booking.estimate?.arrivalPreference || null,
@@ -400,7 +401,7 @@ async function handler(request, response) {
     }
     if (request.method === "GET") {
       const pkg = { teamHours: Number(booking.estimate?.teamHours || booking.estimate?.hours || 2) };
-      const slots = ["Confirmed", "Cleaner assigned"].includes(booking.status)
+      const slots = !booking.estimate?.secondVisitSchedule && ["Confirmed", "Cleaner assigned"].includes(booking.status)
         ? await availableSlotsForPackage(pkg, undefined, new Date(), booking.id)
         : [];
       return json(response, 200, { booking: safeBooking(booking), slots: customerRescheduleSlots(booking, slots), appointmentChoices: require("./_reschedule-pricing").choices(booking, slots) });
@@ -411,6 +412,7 @@ async function handler(request, response) {
       return json(response, 409, { error: "This booking was paid outside the website. Please call 929-232-1930 so we can handle your appointment change and any fee or refund using your original payment method." });
     }
     if (action === "reschedule") {
+      if (booking.estimate?.secondVisitSchedule) return json(response, 409, {error:"Contact our team to move both visits together."});
       if (!["Confirmed", "Cleaner assigned"].includes(booking.status)) {
         return json(response, 409, { error: "This booking can no longer be rescheduled online." });
       }

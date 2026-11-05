@@ -3,6 +3,11 @@ const bookingDiscountName = require("../../booking-discount-names");
 const crypto = require("crypto");
 const {
   HOLD_MINUTES,
+  EXTENSION_HOURS,
+  assertResidentialDayFits,
+  splitVisitHours,
+  residentialDayReview,
+  residentialAvailability,
   availableSlotsForPackage,
   calculateHourlyCleaningQuote,
   calculateWindowQuote,
@@ -76,7 +81,8 @@ function buildAgreementAcceptance({ review, request, secretKey, pkg, slot }) {
     packageId: pkg.id || "",
     total: Number(pkg.price || 0),
     laborHours: Number(pkg.manHours || 0),
-    schedule: slot.value
+    schedule: slot.value,
+    ...(slot.secondStart ? { secondSchedule: slot.secondStart, arrivalPreference: pkg.arrivalPreference.key } : {})
   });
   if (cleanText(review.contextFingerprint, 800) !== expectedFingerprint) {
     throw agreementError("Your booking details changed. Please review and accept the Service Agreement again.");
@@ -100,6 +106,7 @@ function buildAgreementAcceptance({ review, request, secretKey, pkg, slot }) {
       packageId: pkg.id,
       service: pkg.serviceLabel,
       scheduledFor: slot.value,
+      ...(slot.secondStart ? { secondScheduledFor: slot.secondStart, arrivalPreference: pkg.arrivalPreference.key } : {}),
       totalCents: pkg.priceCents,
       depositCents: depositCents(pkg.priceCents),
       remainingCents: Math.max(0, pkg.priceCents - depositCents(pkg.priceCents)),
@@ -201,6 +208,8 @@ module.exports = async function handler(request, response) {
       : getPackageBundle(requestedPackageIds);
     if (!pkg) return json(response, 400, { error: "Please select a valid cleaning package." });
     if (body.savedQuoteToken) pkg = await quoteAdmin.applySavedDiscount(body.savedQuoteToken, pkg, body.quoteRevision || '');
+
+    assertResidentialDayFits(pkg, eligibilityZip, true);
 
     const unitDetails = formulaMode
       ? pkg.units.map((unit, index) => ({
@@ -307,15 +316,28 @@ module.exports = async function handler(request, response) {
       }
     }
 
-    let arrivalPreference = arrivalPreferenceForKey(body.arrivalPreference || "exact", pkg.teamHours);
+    // The second date is a customer selection. Recompute eligibility from the
+    // full quote; never accept a shorter reservation just because it was posted.
+    const halfHours = body.secondSchedule ? splitVisitHours(pkg) : 0;
+    if (body.secondSchedule && !halfHours) return json(response, 409, { error: "This quote does not qualify for two visits. Choose a new appointment." });
+    if (!halfHours && splitVisitHours(pkg) && residentialDayReview(pkg)) {
+      return json(response, 409, { error: "This cleaning requires two visits. Choose a pair of consecutive dates." });
+    }
+    const visitHours = halfHours || pkg.teamHours;
+    let arrivalPreference = arrivalPreferenceForKey(body.arrivalPreference || "exact", visitHours);
+    if (halfHours && arrivalPreference.key === "exact") return json(response, 400, { error: "Choose an arrival option for both visits." });
     arrivalPreference = assertArrivalPreferenceEligible(pkg, arrivalPreference);
     const selectedSlot = cleanText(body.schedule, 80);
-    const slots = await availableSlotsForPackage(pkg);
+    const slots = halfHours ? await residentialAvailability(pkg, eligibilityZip, true) : await availableSlotsForPackage(pkg);
     const slot = slots.find((item) => item.value === selectedSlot && slotMatchesArrivalPreference(item, arrivalPreference));
     if (!slot) {
       return json(response, 409, { error: "That arrival option is no longer available. Please choose another time." });
     }
 
+    const secondStart = halfHours ? (arrivalPreference.flexible ? slot.anytimeSecondStart : slot.fixedSecondStart) : "";
+    if (halfHours && (!secondStart || secondStart !== body.secondSchedule)) {
+      return json(response, 409, { error: "The second visit has changed. Choose an available pair of dates again." });
+    }
     arrivalPreference = preferenceForSlot(arrivalPreference, slot);
 
     const customer = body.customer || {};
@@ -375,7 +397,7 @@ module.exports = async function handler(request, response) {
       // even when a seasonal offer is available.
       pkg = require('./_promo').applyQuotedPromotion(pkg, quotedPromoCode, await listAllBookings({ complete: true }), { email, phone });
     }
-    pkg = applyArrivalDiscount(pkg, arrivalPreference);
+    pkg = applyArrivalDiscount(halfHours ? { ...pkg, teamHours: visitHours } : pkg, arrivalPreference);
     require("./_minimum-total").assertMinimumTotal(pkg.priceCents, pkg.serviceKey);
 
     const agreements = body.agreements || {};
@@ -387,7 +409,7 @@ module.exports = async function handler(request, response) {
       request,
       secretKey,
       pkg,
-      slot
+      slot: secondStart ? { ...slot, secondStart } : slot
     });
 
     bookingId = makeBookingId();
@@ -429,9 +451,14 @@ module.exports = async function handler(request, response) {
     const customerScheduleDate = new Intl.DateTimeFormat("en-US", {
       timeZone: "America/New_York", weekday: "long", year: "numeric", month: "long", day: "numeric"
     }).format(new Date(slot.value));
-    const customerScheduleLabel = arrivalPreference.flexible
+    let customerScheduleLabel = arrivalPreference.flexible
       ? `${customerScheduleDate} · Estimated arrival ${arrivalWindowLabel(arrivalPreference, pkg.teamHours)}`
       : slot.label;
+    if (secondStart) {
+      const dateFormat = new Intl.DateTimeFormat("en-US", {timeZone:"America/New_York", month:"short", day:"numeric", year:"numeric"});
+      customerScheduleLabel = [slot.value, secondStart].map(start => dateFormat.format(new Date(start))).join(" and ")
+        + " · " + arrivalPreference.label + " " + arrivalWindowLabel(arrivalPreference, visitHours) + " both days (New York)";
+    }
     const booking = {
       id: bookingId,
       status: "New",
@@ -464,8 +491,9 @@ module.exports = async function handler(request, response) {
         notes ? `Customer notes: ${notes}` : "",
       ].filter(Boolean).join(" "),
       estimate: {
-        calendarReservation: (reservation = ['server', 'hosted_unreserved'].includes(process.env.BOOKING_PAYMENT_FLOW) ? { ...calendar.newReservation(), state: 'draft' } : calendar.newReservation()),
-        acceptPaidConflict: process.env.BOOKING_PAYMENT_FLOW === 'hosted_unreserved',
+        calendarReservation: (reservation = (process.env.BOOKING_PAYMENT_FLOW === 'server' || (!halfHours && process.env.BOOKING_PAYMENT_FLOW === 'hosted_unreserved')) ? { ...calendar.newReservation(), state: 'draft' } : calendar.newReservation()),
+        acceptPaidConflict: !halfHours && process.env.BOOKING_PAYMENT_FLOW === 'hosted_unreserved',
+        ...(secondStart ? { secondVisitSchedule: secondStart } : {}),
         savedQuoteId,
         manualDiscount: pkg.manualDiscount || null,
         promoCode: pkg.promoCode || "",
@@ -481,7 +509,7 @@ module.exports = async function handler(request, response) {
           confirmationStatus: arrivalPreference.flexible ? "pending" : "confirmed"
         },
         arrivalDiscount: pkg.arrivalDiscount || null,
-        calendarReservationHours: pkg.teamHours + 1,
+        calendarReservationHours: visitHours + EXTENSION_HOURS,
         recurringDiscount: pkg.recurringDiscount || null,
         repeatCustomer: pkg.serviceKey === "recurring" ? { firstName: cleanText(customer.firstName, 100), lastName: cleanText(customer.lastName, 100), email, phone, address, address2, city, state, zip } : null,
         previousOrderNumber: recurringDiscount?.previousOrderNumber || "",
@@ -698,6 +726,7 @@ module.exports = async function handler(request, response) {
     }
     return json(response, error.statusCode || 500, {
       error: error.message || "Booking checkout could not be started.",
+      code: error.code,
       reviewRequired: Boolean(error.reviewRequired),
       reviewUrl: error.reviewUrl,
       setup: error.setup,

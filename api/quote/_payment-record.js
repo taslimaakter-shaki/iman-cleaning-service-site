@@ -170,6 +170,7 @@ function buildRecord({ session, siteUrl, source = "success_page" }) {
     service: cleanText(metadata.service, "Cleaning Service Quote"),
     serviceDescriptionUrl: cleanText(metadata.service_description_url),
     serviceDate: cleanText(metadata.service_date),
+    scheduleLabel: cleanText(metadata.schedule_label),
     serviceTime: cleanText(metadata.service_time),
     arrivalPreference: cleanText(metadata.arrival_preference),
     arrivalWindow: cleanText(metadata.arrival_window),
@@ -327,14 +328,16 @@ function formatAppointmentParts(booking, record) {
   const scheduled = booking?.schedule ? new Date(booking.schedule) : null;
   if (scheduled && Number.isFinite(scheduled.getTime())) {
     const arrival = booking?.estimate?.arrivalPreference || {};
+    const visits = [scheduled];
+    if (booking.estimate?.secondVisitSchedule) visits.push(new Date(booking.estimate.secondVisitSchedule));
     return {
-      date: new Intl.DateTimeFormat("en-US", {
+      date: visits.map(date => new Intl.DateTimeFormat("en-US", {
         timeZone: "America/New_York",
         weekday: "long",
         year: "numeric",
         month: "long",
         day: "numeric"
-      }).format(scheduled),
+      }).format(date)).join(" and "),
       time: arrival.flexible && arrival.windowLabel
         ? `${arrival.windowLabel} estimated arrival window`
         : new Intl.DateTimeFormat("en-US", {
@@ -624,7 +627,7 @@ function buildCustomerConfirmationSms(record, managementUrl) {
   const awaitingSchedule = !record.serviceDate || !record.serviceTime;
   return [
     `IMAN Cleaning Service: ${automaticBalance ? "25% deposit received" : "Payment received"}. Order ${record.orderNumber || record.quoteId}${awaitingSchedule ? " is awaiting scheduling" : " is confirmed"}.`,
-    awaitingSchedule ? `${record.service}: we will contact you to schedule the date and time.` : `${record.service}: ${record.serviceDate} at ${record.serviceTime}.`,
+    awaitingSchedule ? `${record.service}: we will contact you to schedule the date and time.` : `${record.service}: ${record.scheduleLabel || (record.serviceDate + " at " + record.serviceTime)}.`,
     `Paid: ${record.paidAmount}.`,
     automaticBalance ? `Remaining ${record.remainingAmount}: temporary authorization hold about 48 hours before service; charged after completion.` : "",
     invoiceUrl ? `Invoice PDF: ${invoiceUrl}` : "",
@@ -636,7 +639,7 @@ function buildCustomerConfirmationSms(record, managementUrl) {
 function buildOwnerSmsMessage(record) {
   return [
     `IMAN Cleaning Service LLC: New paid booking: ${record.service}`,
-    record.serviceDate && record.serviceTime ? `Date/time: ${record.serviceDate} at ${record.serviceTime}` : "Date/time: scheduling required",
+    record.serviceDate && record.serviceTime ? `Date/time: ${record.scheduleLabel || (record.serviceDate + " at " + record.serviceTime)}` : "Date/time: scheduling required",
     `Customer: ${record.customerName}`,
     record.serviceLocation ? `Location: ${record.serviceLocation}` : "",
     `Paid: ${record.paidAmount}`,

@@ -69,12 +69,12 @@ console.log("Saved plan, latest completed cleaning, old-reference protection and
 const fs = require("node:fs");
 const vm = require("node:vm");
 const source = fs.readFileSync(require.resolve("../book-now.js"), "utf8");
-const start = source.indexOf("  const loadSchedulerSlots = (slots = []) => {");
-const end = source.indexOf("  const repeatExtrasPanel", start);
+const start = source.indexOf("  const pairedSlot =");
+const end = source.indexOf("  visitPlanControl?.addEventListener", start);
 const browser = {
   state: {serviceKey: "recurring"}, recurringPlanContext: context,
   monthKeyForDate: date => date.slice(0,7), clearArrivalDiscount() {},
-  setSchedulerStatus() {}, scheduleSelect: null, renderCalendar() {}, renderTimeSlots() {},
+  setSchedulerStatus() {}, visitPlanControl: null, scheduleSelect: null, renderCalendar() {}, renderTimeSlots() {},
   persistBookingDraft() {}, longDate: value => value
 };
 vm.createContext(browser);

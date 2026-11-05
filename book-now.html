@@ -25,7 +25,7 @@
   <script>window.dataLayer=window.dataLayer||[];function gtag(){dataLayer.push(arguments)}gtag('js',new Date());gtag('config','G-6MEJH73E0H');</script>
   <link rel="stylesheet" href="./design-system.css">
   <link rel="stylesheet" href="./site.css?v=20260929-restored-menu-size">
-  <link rel="stylesheet" href="./booking.css?v=20261102-form-navigation">
+  <link rel="stylesheet" href="./booking.css?v=20261105-consecutive-visits">
   <script type="application/ld+json">
   {
     "@context": "https://schema.org",
@@ -437,6 +437,7 @@
             <header class="booking-quote-head">
               <span class="booking-quote-next">Quote ready <i aria-hidden="true">·</i> Next: Choose appointment</span>
               <h2 data-recommendation-title></h2>
+              <p data-two-visit-quote hidden><span data-two-visit-copy></span> <a data-two-visit-custom hidden>Request a custom quote instead.</a></p>
             </header>
 
             <div class="booking-quote-layout">
@@ -532,9 +533,15 @@
                   <span class="booking-scheduler-step">1</span>
                   <div>
                     <h3 id="booking-calendar-title">Choose a date</h3>
-                    <p>Available dates are highlighted.</p>
+                    <p data-calendar-instructions>Available dates are highlighted.</p>
                   </div>
                 </div>
+                <label class="booking-arrival-time-field" data-visit-plan hidden>How would you like to schedule your cleaning?
+                  <select data-visit-plan-select>
+                    <option value="one">One visit</option>
+                    <option value="two">Two visits on consecutive days</option>
+                  </select>
+                </label>
                 <div class="booking-calendar-toolbar">
                   <button type="button" data-calendar-prev aria-label="Show previous month">←</button>
                   <strong data-calendar-month aria-live="polite"></strong>
@@ -949,7 +956,8 @@
   </dialog>
   <script src="./booking-service-area.js?v=20261006-pause-bronx-staten-island"></script>
   <script src="./booking-discount-names.js?v=20261105"></script>
-  <script src="./book-now.js?v=20261105-recurring-plan-only"></script>
+  <script src="./booking-day.js?v=20261105"></script>
+  <script src="./book-now.js?v=20261105-residential-day-limit"></script>
 <script defer src="./site-reviews.js?v=20260911-trusted-title"></script>
 </body>
 </html>

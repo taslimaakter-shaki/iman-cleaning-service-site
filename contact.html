@@ -111,7 +111,7 @@
 
       <section class="section-tight">
         <div class="ds-shell contact-grid">
-          <div class="contact-callback-card" aria-labelledby="static-callback-title">
+          <div class="contact-callback-card" id="custom-quote" aria-labelledby="static-callback-title">
             <div class="contact-callback-heading"><h2 id="static-callback-title">Request a phone call</h2></div>
             <form class="contact-callback-form" data-static-contact-form>
               <div class="contact-callback-fields">
@@ -162,6 +162,41 @@
 <script src="./_ds_bundle.js?v=20261001-nav-syntax-fix"></script>
 <script src="./data.js?v=20261001-remove-queens-page"></script>
 <script type="text/babel" src="./chrome.jsx?v=20260929-instant-quote-cta"></script>
+<script>
+const residentialQuoteRequest = (() => {
+  const params = new URLSearchParams(window.location.search);
+  if (params.get("request") !== "residential-custom") return null;
+  const services = { standard: "Standard Cleaning", recurring: "Recurring Cleaning", deep: "Deep Cleaning", move: "Moving Cleaning", post: "Post-Construction Cleaning" };
+  const service = services[params.get("service")];
+  if (typeof service !== "string") return null;
+  const unitCount = Number(params.get("units"));
+  const scope = Number.isInteger(unitCount) && unitCount > 0 && unitCount <= 10 ? ` for ${unitCount} unit${unitCount === 1 ? "" : "s"}` : "";
+  const hours = Number(params.get("hours"));
+  const duration = Number.isFinite(hours) && hours > 0 ? ` Estimated time on site: ${hours} hours.` : "";
+  const zip = /^\d{5}$/.test(params.get("zip") || "") ? params.get("zip") : "";
+  let contact = {};
+  try {
+    const key = "imanResidentialQuoteContact";
+    const saved = JSON.parse(sessionStorage.getItem(key));
+    if (saved?.search === location.search) contact = saved.contact || {};
+    sessionStorage.removeItem(key);
+  } catch { /* Contact details can also be entered manually. */ }
+  const fields = { ...contact, zip, message: `I'd like a custom quote for ${service}${scope}.${duration}` };
+  const title = "Request a custom cleaning quote";
+  const reason = "This cleaning needs more time than we can reserve in one day. Send your request and we’ll call you to plan the work.";
+  const form = document.querySelector("[data-static-contact-form]");
+  for (const name of ["firstName", "lastName", "email", "phone", "zip", "message"]) {
+    form.elements[name].value = fields[name] || "";
+  }
+  const heading = document.getElementById("static-callback-title");
+  heading.textContent = title;
+  const description = document.createElement("p");
+  description.textContent = reason;
+  heading.after(description);
+  form.querySelector("button[type=submit]").textContent = "Request a Custom Quote →";
+  return { fields, title, reason };
+})();
+</script>
 <script type="text/babel">
 const mount = () => {
   if (!window.ImanChrome) return setTimeout(mount, 30);
@@ -207,7 +242,7 @@ const mount = () => {
             event: "submitted",
             fields,
             pageUrl: window.location.href,
-            summaryLines: ["Customer requested a phone call."]
+            summaryLines: [residentialQuoteRequest ? "Customer requested a custom quote for a cleaning that exceeds one day." : "Customer requested a phone call."]
           })
         });
         const result = await response.json().catch(() => ({}));
@@ -235,36 +270,37 @@ const mount = () => {
 
       <section className="section-tight">
         <div className="ds-shell contact-grid">
-          <div className="contact-callback-card" aria-labelledby="callback-title">
+          <div className="contact-callback-card" id="custom-quote" aria-labelledby="callback-title">
             {!submitted ? (<>
               <div className="contact-callback-heading">
-                <h2 id="callback-title">Request a phone call</h2>
+                <h2 id="callback-title">{residentialQuoteRequest?.title || "Request a phone call"}</h2>
+                {residentialQuoteRequest && <p>{residentialQuoteRequest.reason}</p>}
               </div>
               <form className="contact-callback-form" onSubmit={submitCallbackRequest} noValidate>
                 <div className="contact-callback-fields">
                   <label>
                     <span>First name</span>
-                    <input name="firstName" type="text" autoComplete="given-name" maxLength="80" required />
+                    <input name="firstName" defaultValue={residentialQuoteRequest?.fields.firstName || ""} type="text" autoComplete="given-name" maxLength="80" required />
                   </label>
                   <label>
                     <span>Last name</span>
-                    <input name="lastName" type="text" autoComplete="family-name" maxLength="80" required />
+                    <input name="lastName" defaultValue={residentialQuoteRequest?.fields.lastName || ""} type="text" autoComplete="family-name" maxLength="80" required />
                   </label>
                   <label className="contact-callback-wide">
                     <span>Email address</span>
-                    <input name="email" type="email" autoComplete="email" inputMode="email" maxLength="160" required />
+                    <input name="email" defaultValue={residentialQuoteRequest?.fields.email || ""} type="email" autoComplete="email" inputMode="email" maxLength="160" required />
                   </label>
                   <label>
                     <span>Phone number</span>
-                    <input name="phone" type="tel" autoComplete="tel" inputMode="tel" placeholder="(000) 000-0000" pattern="[0-9()+.\\- ]{10,20}" maxLength="20" required />
+                    <input name="phone" defaultValue={residentialQuoteRequest?.fields.phone || ""} type="tel" autoComplete="tel" inputMode="tel" placeholder="(000) 000-0000" pattern="[0-9()+.\\- ]{10,20}" maxLength="20" required />
                   </label>
                   <label>
                     <span>ZIP code</span>
-                    <input name="zip" type="text" autoComplete="postal-code" inputMode="numeric" pattern="[0-9]{5}" maxLength="5" placeholder="00000" required />
+                    <input name="zip" defaultValue={residentialQuoteRequest?.fields.zip || ""} type="text" autoComplete="postal-code" inputMode="numeric" pattern="[0-9]{5}" maxLength="5" placeholder="00000" required />
                   </label>
                   <label className="contact-callback-wide">
                     <span>How can we help? (optional)</span>
-                    <textarea name="message" rows="4" maxLength="1200" placeholder="Tell us about your cleaning needs, questions, or preferred time to call." />
+                    <textarea name="message" defaultValue={residentialQuoteRequest?.fields.message || ""} rows="4" maxLength="1200" placeholder="Tell us about your cleaning needs, questions, or preferred time to call." />
                   </label>
                 </div>
                 <label className="contact-callback-honeypot" aria-hidden="true">
@@ -273,7 +309,7 @@ const mount = () => {
                 </label>
                 {status && <p className="contact-callback-error" role="alert">{status}</p>}
                 <button className="contact-callback-submit" type="submit" disabled={submitting}>
-                  {submitting ? "Sending request…" : "Request a Phone Call"}
+                  {submitting ? "Sending request…" : residentialQuoteRequest ? "Request a Custom Quote" : "Request a Phone Call"}
                   {!submitting && <Icon name="arrow" size={18} />}
                 </button>
                 <p className="contact-callback-consent">By submitting, you are asking Iman Cleaning Service LLC to contact you about your request.</p>
@@ -343,7 +379,7 @@ document.addEventListener("submit", async (event) => {
           "How can we help?": formData.get("message") || "Not provided"
         },
         pageUrl: window.location.href,
-        summaryLines: ["Customer requested a phone call."]
+        summaryLines: [residentialQuoteRequest ? "Customer requested a custom quote for a cleaning that exceeds one day." : "Customer requested a phone call."]
       })
     });
     const result = await response.json().catch(() => ({}));

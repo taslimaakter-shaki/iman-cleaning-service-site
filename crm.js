@@ -89,6 +89,7 @@
   }
 
   function appointmentDate(booking, mode = "full") {
+    if (booking.estimate?.secondVisitSchedule && booking.scheduleLabel) return booking.scheduleLabel;
     if (booking.estimate?.awaitingSchedule || booking.estimate?.managedQuote?.awaitingSchedule) return booking.scheduleLabel || "To be scheduled";
     const date = dateObject(booking.schedule);
     if (!date) return booking.scheduleLabel || "Not scheduled";
@@ -132,7 +133,7 @@
     const toTime = (value) => `${String(Math.floor(value / 60)).padStart(2, "0")}:${String(value % 60).padStart(2, "0")}`;
     const startMinutes = toMinutes(preference.windowStart);
     const storedEndMinutes = toMinutes(preference.windowEnd);
-    const latestOperationalStart = toMinutes("20:30") - (bookingHours(booking).teamHours + 1) * 60;
+    const latestOperationalStart = toMinutes("20:30") - Math.ceil(bookingHours(booking).teamHours * 60) - 60;
     const endMinutes = Math.min(storedEndMinutes, latestOperationalStart);
     return {
       start: Number.isFinite(startMinutes) ? toTime(startMinutes) : "08:00",
@@ -2053,10 +2054,12 @@
     const arrivalPreference = booking.estimate?.arrivalPreference || {};
     const arrivalBounds = arrivalPreference.flexible ? flexibleArrivalBounds(booking) : null;
     const currentArrivalTime = appointmentInputValue(booking).split("T")[1] || "";
+    const secondVisit = booking.estimate?.secondVisitSchedule;
     const arrivalConfirmationMarkup = arrivalPreference.flexible ? `<section class="crm-detail-section crm-arrival-confirmation-section">
       <div class="crm-section-heading"><div><h3>${arrivalPreference.confirmationStatus === "confirmed" ? "Confirmed arrival time" : "Confirm exact arrival time"}</h3><p>The customer selected ${escapeHtml(arrivalPreference.windowLabel || "a flexible arrival window")}. Choose the final arrival time within that window.</p></div><span class="crm-arrival-state${arrivalPreference.confirmationStatus === "confirmed" ? " is-confirmed" : ""}">${arrivalPreference.confirmationStatus === "confirmed" ? "Customer notified" : "Needs confirmation"}</span></div>
       <form class="crm-arrival-confirmation-form" data-arrival-confirmation-form>
-        <label>Appointment arrival time<input name="arrivalTime" type="time" required step="900" min="${escapeHtml(arrivalBounds.start)}" max="${escapeHtml(arrivalBounds.end)}" value="${escapeHtml(currentArrivalTime)}"><small>Allowed window: ${escapeHtml(arrivalPreference.windowLabel || `${arrivalBounds.start}–${arrivalBounds.end}`)}. The extra reserved hour remains unchanged.</small></label>
+        <label>${secondVisit ? "First visit arrival time" : "Appointment arrival time"}<input name="arrivalTime" type="time" required step="${secondVisit ? "60" : "900"}" min="${escapeHtml(arrivalBounds.start)}" max="${escapeHtml(arrivalBounds.end)}" value="${escapeHtml(currentArrivalTime)}"><small>Allowed window: ${escapeHtml(arrivalPreference.windowLabel || `${arrivalBounds.start}–${arrivalBounds.end}`)}. The extra reserved hour remains unchanged.</small></label>
+        ${secondVisit ? `<label>Second visit arrival time<input name="secondArrivalTime" type="time" required step="60" min="${escapeHtml(arrivalBounds.start)}" max="${escapeHtml(arrivalBounds.end)}" value="${escapeHtml(appointmentInputValue({schedule:secondVisit}).slice(11))}"></label>` : ""}
         <button class="crm-primary" type="submit">${arrivalPreference.confirmationStatus === "confirmed" ? "Update time & text customer" : "Confirm time & text customer"}</button>
       </form>
       <p class="crm-arrival-warning">Saving updates the booking calendar and sends the customer a text message with the confirmed appointment time.</p>
@@ -2092,7 +2095,7 @@
             <label>Service date and time<input name="scheduleLocal" type="datetime-local" required value="${escapeHtml(appointmentInputValue(booking))}"></label>
             <label>Total price, including tax<input name="total" type="number" required min="0" max="1000000" step="0.01" value="${(payment.totalCents / 100).toFixed(2)}"></label>
             <label>Included labor-hours<input name="laborHours" type="number" required min="0.25" max="1000" step="0.25" value="${hours.laborHours}"></label>
-            <label>On-site duration in hours<input name="teamHours" type="number" required min="0.25" max="200" step="0.25" value="${hours.teamHours}"><small>Used to reserve time on the booking calendar.</small></label>
+            <label>${booking.estimate?.secondVisitSchedule ? "On-site hours per visit" : "On-site duration in hours"}<input name="teamHours" type="number" required min="0.25" max="200" step="${booking.estimate?.secondVisitSchedule ? "any" : "0.25"}" value="${hours.teamHours}"><small>Used to reserve time on the booking calendar.</small></label>
             <label>Number of cleaners<input name="cleanerCount" type="number" required min="1" max="50" step="1" value="${hours.cleaners}"></label>
             <label>Square footage<input name="sqft" type="number" min="0" max="10000000" step="1" value="${Math.max(0, Number(booking.sqft || 0))}"></label>
             <label>Bedrooms / rooms label<input name="bedroomsLabel" maxlength="200" value="${escapeHtml(booking.bedroomsLabel || "")}"></label>
@@ -2317,7 +2320,8 @@
   async function confirmFlexibleArrivalTime(booking, form) {
     if (!form.reportValidity()) return;
     const arrivalTime = form.elements.arrivalTime.value;
-    const displayTime = new Date(`2000-01-01T${arrivalTime}:00`).toLocaleTimeString("en-US", { hour: "numeric", minute: "2-digit" });
+    const secondArrivalTime = form.elements.secondArrivalTime?.value;
+    const displayTime = [arrivalTime, secondArrivalTime].filter(Boolean).map(time => new Date(`2000-01-01T${time}:00`).toLocaleTimeString("en-US", { hour: "numeric", minute: "2-digit" })).join(" and ");
     if (!window.confirm(`Confirm ${displayTime} as this customer's arrival time? The booking calendar will be updated and the customer will receive the confirmed time by text.`)) return;
     const button = $("button[type='submit']", form);
     const status = $("[data-arrival-confirmation-status]", form.closest(".crm-arrival-confirmation-section"));
@@ -2330,7 +2334,7 @@
         body: JSON.stringify({
           id: booking.id,
           bookingAction: "confirm_arrival",
-          arrivalTime
+          secondArrivalTime, arrivalTime
         })
       });
       await loadBookings({ quiet: true });

@@ -192,6 +192,7 @@
         <section class="section hidden" data-action-choice>
           <h2 tabindex="-1" data-choice-heading>Would you like to reschedule or cancel?</h2>
           <p>Choose what you would like to do with your appointment.</p>
+          <p class="hidden" data-two-visit-help>To reschedule both visits, <a href="tel:+19292321930">call (929) 232-1930</a>. Cancelling this booking cancels both days.</p>
           <div class="action-choices">
             <button type="button" class="action-choice" data-choose-action="reschedule"><strong>Reschedule appointment</strong><span>Request a different date or arrival time.</span></button>
             <button type="button" class="action-choice" data-choose-action="cancel"><strong>Cancel appointment</strong><span>Review the cancellation fee and refund before confirming.</span></button>
@@ -471,6 +472,8 @@
       };
       const render = (data) => {
         booking = data.booking;
+        document.querySelector("[data-two-visit-help]").classList.toggle("hidden", !booking.secondVisitSchedule);
+        document.querySelector('[data-choose-action="reschedule"]').classList.toggle("hidden", Boolean(booking.secondVisitSchedule));
         document.querySelector("[data-booking-id]").textContent = booking.id;
         document.querySelector("[data-booking-status]").textContent = booking.status;
         document.querySelector("[data-service]").textContent = booking.service;

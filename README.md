@@ -789,6 +789,20 @@ explicit calendar reservation durations remain authoritative. Confirm the actual
 arrival time before dispatch; using fewer cleaners requires reserving sufficient
 additional on-site time and rechecking capacity.
 
+Residential cleanings with **more than 20 total work-hours** may be divided
+across two consecutive New York dates when both half visits and their separate
+one-hour buffers fit. At exactly 20 work-hours, only one visit is offered.
+When a longer job still fits in one day, that option remains available. Jobs
+that cannot fit in one day and have no bookable pair go to custom review.
+Customers choose one arrival preference for both dates. Fixed arrivals start
+at the same local time; an eligible Anytime discount applies once to the full
+price. Both visits share one booking, agreement, deposit, and balance.
+
+Install `supabase/migrations/20261105_consecutive_visits.sql` on top of the
+version-4 calendar migrations before releasing the two-visit flow. The
+migration keeps existing single visits and reserves or releases both dates
+atomically. Without it, the site only offers single visits or custom review.
+
 
 Scheduling offers three choices for new customer appointments: Anytime (5% arrival
 discount), Morning at 8:00 AM (no arrival discount), and Afternoon at closing minus

@@ -122,5 +122,21 @@ const get=url=>handler({method:'GET',headers:{host:'example.test'},query:{token:
  assert.equal(state.highestStageReached,2,'Later booking stages remain locked until repriced');
  assert.equal(renderedInvalid,false,'Invalid package is never rendered');
  assert.equal(controls.firstName.value,body.customer.firstName);
+ // Previously issued residential links use the stored duration, or recalculate if no snapshot exists.
+ const legacyUnit = {bedrooms:3,fullBathrooms:2,halfBathrooms:1,kitchens:1,livingRooms:1,diningRooms:1,
+   livingDining:'separate',additionalRooms:0,refrigerator:'no',oven:'no',cabinets:'no'};
+ const oversized = {...legacy, eligibility:{...recurringBody.eligibility, requestedService:'deep', unitCount:3},
+   pricingMode:'deep_formula', unitDetails:Array(6).fill(legacyUnit)};
+ const snapshot = actual.calculateResidentialQuoteBundle(oversized.unitDetails,'deep',oversized.eligibility);
+ for (const packageSnapshot of [snapshot, undefined]) {
+   records.set(legacyId,{...oversized,packageSnapshot});
+   const result = await get(legacyUrl);
+   assert.equal(result.status,409);
+   assert.equal(result.code,'RESIDENTIAL_DAY_LIMIT');
+   assert.match(result.reviewUrl,/^\/contact\.html\?/);
+   assert.equal(result.customer.email,oversized.customer.email);
+   assert.equal(result.package,undefined);
+ }
+
  console.log('Saved quote versions: immutable details/prices/contacts, changed-content delivery, concurrent deduplication, consent and partial-delivery retry passed. Providers mocked.');
 })().catch(e=>{console.error(e);process.exitCode=1});

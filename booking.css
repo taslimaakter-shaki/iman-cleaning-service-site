@@ -6339,6 +6339,7 @@ body.booking-agreement-open {
   color: #164b51;
   font-weight: 650;
 }
+.booking-arrival-time-field[hidden] { display: none; }
 .booking-arrival-time-field select {
   width: 100%;
   min-height: 48px;

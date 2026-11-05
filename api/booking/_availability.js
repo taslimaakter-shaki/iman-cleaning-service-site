@@ -1,5 +1,7 @@
 const {
   availableSlotsForPackage,
+  residentialAvailability,
+  EXTENSION_HOURS,
   calculateHourlyCleaningQuote,
   calculateWindowQuote,
   calculateResidentialQuoteBundle,
@@ -20,7 +22,7 @@ module.exports = async function handler(request, response) {
     }
     if (request.method === "GET" && request.query?.calendarStatus === "1") {
       await require('./_calendar').assertCalendarReady();
-      return json(response, 200, { ready: true, gapHours: 2, protectedExtensionHours: 1, paymentFlow: process.env.BOOKING_PAYMENT_FLOW === "server" ? "server" : "hosted", prepaymentHold: process.env.BOOKING_PAYMENT_FLOW !== "hosted_unreserved" });
+      return json(response, 200, { ready: true, gapHours: 2, protectedExtensionHours: EXTENSION_HOURS, paymentFlow: process.env.BOOKING_PAYMENT_FLOW === "server" ? "server" : "hosted", prepaymentHold: process.env.BOOKING_PAYMENT_FLOW !== "hosted_unreserved" });
     }
     if (request.method === "GET" && request.query?.googleCalendarStatus === "1") {
       try {
@@ -58,7 +60,7 @@ module.exports = async function handler(request, response) {
         return json(response, 400, { error: "This pricing request is not supported." });
       }
       const pkg = calculateResidentialQuoteBundle(body.unitDetails, serviceKey, body.eligibility);
-      const slots = await availableSlotsForPackage(pkg);
+      const slots = await residentialAvailability(pkg, body.serviceZip);
       return json(response, 200, { package: packageForClient(pkg), slots });
     }
 
@@ -77,11 +79,12 @@ module.exports = async function handler(request, response) {
     const pkg = packageIds.length ? getPackageBundle(packageIds) : getPackageBundle([packageId]);
     if (!pkg) return json(response, 404, { error: "Cleaning package not found." });
 
-    const slots = await availableSlotsForPackage(pkg);
+    const slots = await residentialAvailability(pkg);
     return json(response, 200, { package: packageForClient(pkg), slots });
   } catch (error) {
     return json(response, error.statusCode || 500, {
       error: error.message || "Availability could not be loaded.",
+      code: error.code, reviewRequired: error.reviewRequired, reviewUrl: error.reviewUrl,
       setup: error.setup,
       details: error.details
     });

@@ -271,6 +271,7 @@
     currentDetailQuestionIndex: 0,
     pricingMode: "",
     availableSlots: [],
+    offeredVisitSlots: [],
     availableDates: [],
     availableMonths: [],
     calendarMonthIndex: 0,
@@ -435,6 +436,7 @@
   const selectedDateLabel = form.querySelector("[data-selected-date-label]");
   const timeSlots = form.querySelector("[data-time-slots]");
   const arrivalOptions = form.querySelector("[data-arrival-options]");
+  const visitPlanControl = form.querySelector("[data-visit-plan-select]");
   const arrivalNote = form.querySelector("[data-arrival-note]");
   const schedulerStatus = form.querySelector("[data-scheduler-status]");
   const sameDayDialog = document.querySelector("[data-same-day-dialog]");
@@ -552,11 +554,16 @@
   }
 
   const value = (name) => form.elements[name]?.value || "";
+  const selectedVisitPair = () => {
+    const slot = state.availableSlots.find(item => item.value === value("schedule"));
+    const secondSchedule = state.arrivalPreference === "any_day" ? slot?.anytimeSecondStart : slot?.fixedSecondStart;
+    return secondSchedule ? { secondSchedule, arrivalPreference: state.arrivalPreference } : {};
+  };
   const agreementContextFingerprint = () => JSON.stringify({
     packageId: state.package?.id || "",
     total: Number(state.package?.price || 0),
     laborHours: Number(state.package?.manHours || 0),
-    schedule: value("schedule")
+    schedule: value("schedule"), ...selectedVisitPair()
   });
   const syncAgreementControls = () => {
     const accepted = Boolean(state.agreementReview.accepted && state.agreementReview.acceptedAt);
@@ -755,7 +762,8 @@
           pricingMode: state.pricingMode,
           savedQuoteUrl: state.savedQuoteUrl,
           quoteRevision: state.quoteRevision,
-          availableSlots: state.availableSlots,
+          availableSlots: state.offeredVisitSlots.length ? state.offeredVisitSlots : state.availableSlots,
+          visitPlan: state.visitPlan,
           calendarMonthIndex: state.calendarMonthIndex,
           selectedDate: state.selectedDate,
           highestStageReached: state.highestStageReached,
@@ -2385,6 +2393,19 @@
     }
     return fetch(`/api/booking/availability?packageIds=${encodeURIComponent(state.packageIds.join(","))}`);
   };
+  const routeToResidentialReview = (review) => {
+    if (review?.code !== "RESIDENTIAL_DAY_LIMIT") return false;
+    const url = new URL(review.reviewUrl, window.location.href);
+    if (url.origin !== window.location.origin || url.pathname !== "/contact.html") return false;
+    const contact = review.customer || Object.fromEntries(
+      ["firstName", "lastName", "email", "phone"].map(name => [name, value(name)])
+    );
+    try {
+      window.sessionStorage.setItem("imanResidentialQuoteContact", JSON.stringify({ search: url.search, contact }));
+    } catch { /* The custom quote form also works without browser storage. */ }
+    window.location.assign(url.href);
+    return true;
+  };
   const showSavedQuoteDelivery = (message, type = "info", quoteUrl = "") => {
     if (!savedQuoteStatus) return;
     savedQuoteStatus.hidden = false;
@@ -2459,6 +2480,7 @@
       });
       const data = await response.json().catch(() => ({}));
       if (state.pendingQuoteSave !== saveRequest) return "";
+      if (!response.ok && routeToResidentialReview(data)) return;
       if (!response.ok) throw new Error(data.error || "Your secure quote link could not be sent.");
       state.savedQuoteUrl = data.quoteUrl || state.savedQuoteUrl;
       state.quoteRevision = data.quoteRevision || '';
@@ -2561,6 +2583,7 @@
         })
       });
       const data = await response.json().catch(() => ({}));
+      if (!response.ok && routeToResidentialReview(data)) return;
       if (!response.ok) throw new Error(data.error || "Your same-day request could not be sent.");
       sameDayForm.reset();
       setStatus(sameDayStatus, "Request received. Our team has been notified and will contact you as soon as possible.", "success");
@@ -2589,6 +2612,20 @@
     });
   };
   const renderQuoteOverview = (pkg) => {
+    const splitNotice = document.querySelector("[data-two-visit-quote]");
+    if (splitNotice) {
+      const review = window.imanBookingDay.residentialDayReview(pkg, value("zip"));
+      splitNotice.hidden = !window.imanBookingDay.splitVisitHours(pkg) ||
+        (state.initialSlots?.length > 0 && !state.initialSlots.some(pairedSlot));
+      if (!splitNotice.hidden) {
+        splitNotice.querySelector("[data-two-visit-copy]").textContent = review
+          ? "This cleaning needs two visits on consecutive days. Choose one arrival option for both visits."
+          : "You can split this cleaning across two consecutive days if both days are available. You’ll choose one arrival option for both visits.";
+        const link = splitNotice.querySelector("a");
+        link.hidden = !review;
+        if (review) link.href = review.reviewUrl;
+      }
+    }
     const serviceLabel = serviceNames[state.serviceKey] || pkg.serviceLabel;
     const deposit = bookingDeposit(pkg.price);
     const balance = Math.round((Number(pkg.price || 0) - deposit) * 100) / 100;
@@ -2612,6 +2649,7 @@
     setStatus(status, "Calculating your itemized price…", "info");
     const response = await availabilityRequest();
     const data = await response.json().catch(() => ({}));
+    if (!response.ok && routeToResidentialReview(data)) return null;
     if (!response.ok) throw new Error(data.error || "The package could not be loaded.");
     state.pendingQuoteSave = null;
     resetAppointmentSelection();
@@ -2682,7 +2720,7 @@
   });
   const visibleArrivalOptions = () => ARRIVAL_OPTIONS.filter(option => option.key !== "any_day" || !state.selectedDate || slotsForDate(state.selectedDate).some(slot => slot.anytimeEligible !== false)).map(option => arrivalOption(option.key));
   const arrivalWindowEndTime = (option) => {
-    const serviceHours = Number(state.package?.teamHours);
+    const serviceHours = state.availableSlots?.find(slot => slot.fixedSecondStart || slot.anytimeSecondStart)?.teamHours || Number(state.package?.teamHours);
     const reservedMinutes = Math.ceil(serviceHours * 60) + 60;
     const latestStart = Number.isFinite(reservedMinutes) ? timeMinutes("20:30") - reservedMinutes : timeMinutes(option.end);
     const effectiveEnd = Math.min(timeMinutes(option.end), latestStart);
@@ -2703,6 +2741,8 @@
     state.arrivalPreference = "";
     state.selectedDate = "";
     state.availableSlots = [];
+    state.offeredVisitSlots = [];
+    state.visitPlan = "";
     state.availableDates = [];
     state.availableMonths = [];
     scheduleSelect?.replaceChildren(new Option("Select an appointment", ""));
@@ -2766,7 +2806,10 @@
       return;
     }
 
-    selectedDateLabel.textContent = longDate(state.selectedDate);
+    const paired = slotsForDate(state.selectedDate).some(slot => slot.fixedSecondStart || slot.anytimeSecondStart);
+    selectedDateLabel.textContent = paired
+      ? `${longDate(state.selectedDate)} and ${longDate(window.imanBookingDay.nextDate(state.selectedDate))} · Choose one arrival option for both days.`
+      : longDate(state.selectedDate);
     if (arrivalOptions) {
       arrivalOptions.hidden = false;
       arrivalOptions.replaceChildren();
@@ -2846,6 +2889,11 @@
   };
   const renderCalendar = () => {
     if (!calendarGrid || !calendarMonthLabel) return;
+    const paired = state.availableSlots.some(slot => slot.fixedSecondStart || slot.anytimeSecondStart);
+    const instructions = document.querySelector("[data-calendar-instructions]");
+    if (instructions) instructions.textContent = paired ? "Choose the first of two consecutive available days. Your arrival choice applies to both visits." : "Available dates are highlighted.";
+    const sameDayCard = form.querySelector(".booking-same-day-card");
+    if (sameDayCard) sameDayCard.hidden = paired;
     calendarGrid.replaceChildren();
     const monthKey = state.availableMonths[state.calendarMonthIndex];
     if (!monthKey) {
@@ -2912,7 +2960,8 @@
     if (calendarPrevious) calendarPrevious.disabled = state.calendarMonthIndex === 0;
     if (calendarNext) calendarNext.disabled = state.calendarMonthIndex >= state.availableMonths.length - 1;
   };
-  const loadSchedulerSlots = (slots = []) => {
+  const pairedSlot = slot => Boolean(slot.fixedSecondStart || slot.anytimeSecondStart);
+  const loadSchedulerSlots = (slots = [], preferredPlan = "") => {
     // Calendar dates must have an arrival choice that includes the reserved
     // extra hour, not merely enough room for the cleaning itself.
     slots = slots.filter(slot => slot.flexibleEligible === true
@@ -2923,7 +2972,15 @@
       slots = slots.filter(slot => slot.date >= recurringPlanContext.windowStart && slot.date <= recurringPlanContext.windowEnd);
       if (!slots.length) throw new Error(`No appointments are available within your recurring window (${recurringPlanContext.windowStart} to ${recurringPlanContext.windowEnd}). Please contact us to arrange your next cleaning.`);
     }
-    state.availableSlots = slots.slice();
+    state.offeredVisitSlots = slots;
+    const hasPair = slots.some(pairedSlot);
+    const hasSingle = slots.some(slot => !pairedSlot(slot));
+    state.visitPlan = hasPair && (!hasSingle || preferredPlan === "two") ? "two" : "one";
+    if (visitPlanControl) {
+      visitPlanControl.closest("label").hidden = !(hasPair && hasSingle);
+      visitPlanControl.value = state.visitPlan;
+    }
+    state.availableSlots = slots.filter(slot => pairedSlot(slot) === (state.visitPlan === "two"));
     state.availableDates = [...new Set(state.availableSlots.map((slot) => slot.date))].sort();
     state.availableMonths = [...new Set(state.availableDates.map(monthKeyForDate))];
     state.calendarMonthIndex = 0;
@@ -2940,6 +2997,16 @@
     renderTimeSlots();
     persistBookingDraft();
   };
+  visitPlanControl?.addEventListener("change", () => {
+    loadSchedulerSlots(state.offeredVisitSlots, visitPlanControl.value);
+    resetAgreementReview();
+    renderQuoteOverview(state.package);
+    renderPriceBreakdown(state.package);
+  });
+  document.querySelector("[data-two-visit-custom]")?.addEventListener("click", event => {
+    const review = window.imanBookingDay.residentialDayReview(state.package, value("zip"));
+    if (review) { event.preventDefault(); routeToResidentialReview(review); }
+  });
   const repeatExtrasPanel = form.querySelector("[data-repeat-extras]");
   const repeatExtrasFields = form.querySelector("[data-repeat-extras-fields]");
   const repeatExtrasStatus = form.querySelector("[data-repeat-extras-status]");
@@ -3006,6 +3073,7 @@
       state.unitDetails = updated;
       const response = await availabilityRequest();
       const data = await response.json();
+      if (!response.ok && routeToResidentialReview(data)) return;
       if (!response.ok) throw new Error(data.error || "We could not update your extras.");
       if (!(data.slots || []).some(slot => slot.date >= recurringPlanContext.windowStart && slot.date <= recurringPlanContext.windowEnd)) {
         throw new Error("No appointments fit these extras within your recurring window. Please contact us to arrange your cleaning.");
@@ -3770,6 +3838,7 @@
           form.querySelectorAll('input[name="priorities"]').forEach(input => { input.checked = data.priorities.includes(input.value); });
           const available = await availabilityRequest();
           const result = await available.json();
+          if (!available.ok && routeToResidentialReview(result)) return;
           if (!available.ok) throw new Error(result.error || "Appointments could not be loaded.");
           state.package = result.package;
           loadSchedulerSlots(result.slots || []);
@@ -4140,7 +4209,7 @@
       const previousQuoteUrl = state.savedQuoteUrl;
       state.savedQuoteUrl = "";
       state.quoteRevision = "";
-      await calculateAndShowQuote({ sendLink: false });
+      if (!await calculateAndShowQuote({ sendLink: false })) return;
       if (promoData) applyPromoData(promoData);
       await sendSavedQuote({ previousQuoteUrl });
       track("quote_complete", { quote_type: "instant", service: state.serviceKey || "" });
@@ -4203,6 +4272,7 @@
       try {
         const response = await availabilityRequest();
         const data = await response.json().catch(() => ({}));
+        if (!response.ok && routeToResidentialReview(data)) return;
         if (!response.ok) throw new Error(data.error || "Availability could not be loaded.");
         if (!(data.slots || []).length) throw new Error("No online appointments are currently available. Please call or request a quote.");
         loadSchedulerSlots(data.slots);
@@ -4224,7 +4294,9 @@
     document.querySelector("[data-checkout-package]").textContent = state.package.serviceLabel;
     const checkoutTeamDescription = document.querySelector("[data-checkout-team-description]");
     if (checkoutTeamDescription) {
-      checkoutTeamDescription.textContent = staffingSummary(state.package, { compact: true });
+      checkoutTeamDescription.textContent = selectedVisitPair().secondSchedule
+        ? `2 team members for up to ${teamTime(window.imanBookingDay.splitVisitHours(state.package))} per visit`
+        : staffingSummary(state.package, { compact: true });
     }
     const selectedSlot = state.availableSlots.find((slot) => slot.value === value("schedule"));
     const selectedArrivalOption = arrivalOption(state.arrivalPreference);
@@ -4233,6 +4305,11 @@
         ? `${longDate(selectedSlot.date)} · ${arrivalWindowText(selectedArrivalOption)}`
         : `${longDate(selectedSlot.date)} at ${displayTime(selectedSlot.time)}`
       : form.elements.schedule.options[form.elements.schedule.selectedIndex].textContent;
+    const pair = selectedVisitPair();
+    if (pair.secondSchedule) {
+      const dates = [selectedSlot.date, pair.secondSchedule.slice(0, 10)].map(longDate).join(" and ");
+      document.querySelector("[data-checkout-schedule]").textContent = dates + " · " + arrivalWindowText(selectedArrivalOption) + " both days";
+    }
     const deposit = bookingDeposit(state.package.price);
     const balance = Math.round((Number(state.package.price || 0) - deposit) * 100) / 100;
     document.querySelector("[data-total-due]").textContent = money(deposit);
@@ -4469,6 +4546,7 @@
         ...unit
       })),
       schedule: value("schedule"),
+      ...selectedVisitPair(),
       arrivalPreference: state.arrivalPreference || "exact",
       priorities,
       notes: value("notes"),
@@ -4521,6 +4599,7 @@
         body: JSON.stringify(payload)
       });
       const data = await response.json().catch(() => ({}));
+      if (!response.ok && routeToResidentialReview(data)) return;
       if (!response.ok) throw new Error(data.error || "Secure checkout could not be started.");
       track("begin_checkout", {
         currency: "USD",
@@ -4555,6 +4634,7 @@
     try {
       const response = await fetch(`/api/booking/saved-quote?token=${encodeURIComponent(token)}`);
       const data = await response.json().catch(() => ({}));
+      if (!response.ok && routeToResidentialReview(data)) return;
       if (!response.ok) {
         const error = new Error(data.error || "This saved quote could not be opened.");
         error.code = data.code || "";
@@ -4678,7 +4758,7 @@
     const savedSelectedDate = state.selectedDate;
     const savedCalendarMonthIndex = Math.max(0, Number(state.calendarMonthIndex) || 0);
     const savedArrival = arrivalOption(state.arrivalPreference);
-    loadSchedulerSlots(state.availableSlots);
+    loadSchedulerSlots(state.availableSlots, state.visitPlan);
     if (state.availableDates.includes(savedSelectedDate)) state.selectedDate = savedSelectedDate;
     state.calendarMonthIndex = Math.min(savedCalendarMonthIndex, Math.max(0, state.availableMonths.length - 1));
     const offeredSlots = savedArrival ? slotsForArrivalOption(savedArrival) : [];
@@ -4712,6 +4792,7 @@
         "savedQuoteUrl",
         "quoteRevision",
         "availableSlots",
+        "visitPlan",
         "calendarMonthIndex",
         "selectedDate",
         "highestStageReached",
@@ -4789,6 +4870,15 @@
         return true;
       }
 
+      if (!window.imanBookingDay.splitVisitHours(state.package) && routeToResidentialReview(window.imanBookingDay.residentialDayReview(state.package, value("zip")))) {
+        suspendDraftSaving = false;
+        return true;
+      }
+      if (window.imanBookingDay.residentialDayReview(state.package) && window.imanBookingDay.splitVisitHours(state.package) &&
+          !state.availableSlots?.some(slot => slot.fixedSecondStart || slot.anytimeSecondStart)) {
+        resetAppointmentSelection();
+        state.highestStageReached = 5;
+      }
       if (state.package) {
         restoreDraftAppointment(String(draft.fields.schedule || ""));
         renderQuoteOverview(state.package);

@@ -59,7 +59,7 @@ function browser(original) {
     section('  const renderPriceBreakdown =', '    const breakdown = document.querySelector("[data-price-breakdown]")') + '\n};',
     section('  const removePromo =', '  document.querySelector("[data-continue-contact]").addEventListener'),
     section('  const restoreSavedQuote =', '  const savedQuoteToken ='),
-    section('  const agreementContextFingerprint =', '  const syncAgreementControls =')
+    section('  const selectedVisitPair =', '  const syncAgreementControls =')
   ].join('\n'), context);
   return { state, context, discounted, run: code => vm.runInContext(code, context), payload: () => payload };
 }
