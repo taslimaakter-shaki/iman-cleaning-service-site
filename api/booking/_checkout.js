@@ -353,7 +353,7 @@ module.exports = async function handler(request, response) {
       });
     }
 
-    let submittedPromoCode = cleanText(body.promoCode, 40).replace(/\s+/g, "").toUpperCase();
+    const quotedPromoCode = cleanText(body.promoCode, 40).replace(/\s+/g, "").toUpperCase();
     let recurringDiscount = null;
     if (pkg.serviceKey === "recurring") {
       const recurring = require("./_recurring-discount");
@@ -369,10 +369,10 @@ module.exports = async function handler(request, response) {
         }
       });
       pkg = recurring.applyRecurringDiscount(pkg, recurringDiscount);
-      submittedPromoCode = "";
-    }
-    if (submittedPromoCode) {
-      pkg = require('./_promo').applyQuotedPromotion(pkg, submittedPromoCode, await listAllBookings({ complete: true }), { email, phone });
+    } else if (quotedPromoCode) {
+      // A blank code means the accepted quote had no customer discount,
+      // even when a seasonal offer is available.
+      pkg = require('./_promo').applyQuotedPromotion(pkg, quotedPromoCode, await listAllBookings({ complete: true }), { email, phone });
     }
     pkg = applyArrivalDiscount(pkg, arrivalPreference);
     require("./_minimum-total").assertMinimumTotal(pkg.priceCents);

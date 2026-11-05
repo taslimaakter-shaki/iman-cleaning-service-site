@@ -34,6 +34,12 @@ function load(file, dependencies, extras = {}) {
   const slot = { value: '2030-09-15T13:00:00Z', label: 'Test appointment', date: '2030-09-15', time: '09:00', flexibleEligible: true };
   let body, result, stripe, booking, afterStripe;
   let priorBookings = [];
+  // Exercise skipped lookups while the first-time discount is actually available.
+  const promo = load('api/booking/_promo.js', {
+    './_shared': shared, '../../booking-discount-names': require('../booking-discount-names')
+  }, { Date: class extends Date {
+    constructor(...args) { super(...(args.length ? args : ['2026-11-05T12:00:00Z'])); }
+  } });
   const handler = load('api/booking/_checkout.js', {
     './_shared': { ...shared, listAllBookings: async () => priorBookings, readJsonBody: async () => body, json: (_, status, value) => { result = { status, ...value }; },
       availableSlotsForPackage: async p => { assert.equal(p.manHours, 4); assert.equal(p.teamHours, 2); return [slot]; },
@@ -41,7 +47,7 @@ function load(file, dependencies, extras = {}) {
     '../crm/_quote-admin': f.api, '../account/_shared': { authenticatedUser: async () => null },
     './_deposit-payment': { prepare: async (id,params) => { assert.equal(booking.id,id); assert.equal(booking.estimate.calendarReservation.state,'draft'); assert.equal(params['metadata[payment_amount_cents]'],booking.estimate.payment.depositCents); return {url:'/booking-payment.html#test'}; } },
     './_arrival-preference': require('../api/booking/_arrival-preference'),
-    './_promo': require('../api/booking/_promo'),
+    './_promo': promo,
     '../../booking-discount-names': require('../booking-discount-names'),
     './_calendar': { newReservation: () => ({ attempt: 'test' }), attachCheckout: async () => {}, cleanupCheckout: async () => {} }
   }, { fetch: async (url, options) => {
@@ -176,7 +182,7 @@ function load(file, dependencies, extras = {}) {
   const promoLookup = load('api/booking/_promo-validate.js', {
     './_shared': { ...shared, readJsonBody: async req => req.body, listAllBookings: async () => priorBookings,
       json: (_, status, value) => ({ status, ...value }) },
-    './_promo': require('../api/booking/_promo')
+    './_promo': promo
   });
   const offer = await promoLookup({ method: 'POST', body: { automatic: true, serviceKey: 'hourly', customer: body.customer } }, {});
   assert.equal(offer.code, 'RETURNING5');
@@ -195,6 +201,25 @@ function load(file, dependencies, extras = {}) {
     assert.equal(stripe.get('line_items[0][price_data][unit_amount]'), String(acceptedPrice * 25));
   }
   priorBookings = [];
+  const seasonalOffer = await promoLookup({ method: 'POST', body: { automatic: true, serviceKey: 'hourly', customer: body.customer } }, {});
+  assert.equal(seasonalOffer.code, 'FALL10');
+  for (const code of [undefined, '', seasonalOffer.code]) {
+    if (code === undefined) delete body.promoCode;
+    else body.promoCode = code;
+    const signedTotal = code ? 304 : 320;
+    body.agreementReview.contextFingerprint = JSON.stringify({ packageId: pkg.id, total: signedTotal, laborHours: 4, schedule: slot.value });
+    await handler(request, {});
+    assert.equal(result.status, 201, result.error);
+    assert.equal(booking.estimate.agreementAcceptance.context.totalCents, signedTotal * 100);
+    assert.equal(booking.estimate.promoCode, code || '');
+    assert.equal(stripe.get('metadata[total_amount_cents]'), String(signedTotal * 100));
+    assert.equal(stripe.get('line_items[0][price_data][unit_amount]'), String(signedTotal * 25));
+  }
+  delete body.promoCode; // The signed total still includes the $16 discount.
+  stripe = null;
+  await handler(request, {});
+  assert.equal(result.status, 400);
+  assert.equal(stripe, null, 'A genuinely changed total must be accepted before payment');
   body.promoCode = 'RETURNING5';
   stripe = null;
   await handler(request, {});
