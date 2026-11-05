@@ -1142,8 +1142,8 @@ function calculateOrganizationQuote(hoursValue) {
 
 function calculateHourlyCleaningQuote(hoursValue) {
   const selectedHours = Number(hoursValue);
-  if (!Number.isInteger(selectedHours) || selectedHours < HOURLY_CLEANING_MIN_HOURS || selectedHours > 24) {
-    throw Object.assign(new Error("Choose a whole number from 4 to 24 work-hours for hourly cleaning."), {
+  if (!Number.isInteger(selectedHours) || selectedHours < HOURLY_CLEANING_MIN_HOURS || selectedHours > 23) {
+    throw Object.assign(new Error("Choose a whole number from 4 to 23 work-hours for hourly cleaning."), {
       statusCode: 400
     });
   }

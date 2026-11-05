@@ -2110,7 +2110,7 @@
       hourlyDetailsTitle.textContent = "How many work-hours do you need to hire us for?";
     }
     if (hourlyDetailsHelp) {
-      hourlyDetailsHelp.innerHTML = "<strong>4-work-hour minimum.</strong>";
+      hourlyDetailsHelp.innerHTML = "<strong>Choose 4–23 work-hours.</strong>";
     }
     syncMobileQuestion();
     wizardDialog?.scrollTo({ top: 0, behavior: "smooth" });
@@ -3677,8 +3677,8 @@
         organizationHoursInput?.focus();
         return;
       }
-      if (selectedHours > 24) {
-        setStatus(status, "The maximum is 24 hours.");
+      if (selectedHours > Number(organizationHoursInput.max)) {
+        setStatus(status, "The maximum is 23 work-hours so the service and reserved extra hour fit within one day.");
         organizationHoursInput?.focus();
         return;
       }
@@ -4603,6 +4603,11 @@
       closeZipGate();
       openWizard();
       goToStep(2);
+      if (state.serviceKey === "hourly" && Number(organizationHoursInput.value) > Number(organizationHoursInput.max)) {
+        goToStep(1);
+        enterOrganizationDetails();
+        setStatus(document.querySelector("[data-eligibility-status]"), "This older quote exceeds the 23-work-hour daily limit. Choose 4–23 work-hours to update your quote.");
+      }
       if (state.serviceKey === "recurring" && (!value("recurringOrderNumber") || !value("recurringPlan"))) {
         goToStep(1);
         enterRecurringDetails();
@@ -4764,6 +4769,11 @@
       if (state.package && restoredStep < Number(savedState.step)) state.highestStageReached = restoredStep === 2 ? 5 : 6;
       if (restoredStep === 4) syncCheckoutReview();
       goToStep(restoredStep);
+      if (state.serviceKey === "hourly" && Number(organizationHoursInput.value) > Number(organizationHoursInput.max)) {
+        goToStep(1);
+        enterOrganizationDetails();
+        setStatus(document.querySelector("[data-eligibility-status]"), "Choose 4–23 work-hours so your service fits within one day.");
+      }
       closeZipGate();
       const saveCopy = document.querySelector("[data-booking-save-copy]");
       if (saveCopy) saveCopy.textContent = "Saved progress restored";
