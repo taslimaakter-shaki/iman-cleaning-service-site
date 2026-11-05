@@ -23,6 +23,16 @@ final class DeskUITests: XCTestCase {
         focus(field)
         app.typeText(text)
     }
+    func revealInVisit(_ control:XCUIElement) {
+        let bar = app.navigationBars["Visit details"]
+        XCTAssertTrue(bar.waitForExistence(timeout:10))
+        let origin = bar.coordinate(withNormalizedOffset:CGVector(dx:0.5,dy:1))
+        for _ in 0..<3 {
+            if control.exists && control.isHittable { return }
+            origin.withOffset(CGVector(dx:0,dy:275)).press(forDuration:0.1,thenDragTo:origin.withOffset(CGVector(dx:0,dy:60)))
+        }
+        XCTAssertTrue(control.exists && control.isHittable)
+    }
     func shot(_ title:String) {
         let capture = XCTAttachment(screenshot:XCUIScreen.main.screenshot())
         capture.name=title; capture.lifetime = .keepAlways; add(capture)
@@ -90,8 +100,8 @@ final class DeskUITests: XCTestCase {
         let row = app.buttons.containing(.staticText, identifier:example).firstMatch
         XCTAssertTrue(row.waitForExistence(timeout:10)); row.tap()
         let supplies = app.buttons["Check supplies and equipment"]
-        XCTAssertTrue(supplies.waitForExistence(timeout:10)); supplies.tap()
-        app.buttons["Edit visit"].tap()
+        revealInVisit(supplies); supplies.tap()
+        let edit = app.buttons["Edit visit"]; revealInVisit(edit); edit.tap()
         XCTAssertTrue(app.navigationBars["Edit visit"].waitForExistence(timeout:10))
         shot("04-Personal-planner")
         enter(" Deep clean", in:app.textFields["Service"])
@@ -100,9 +110,9 @@ final class DeskUITests: XCTestCase {
         app.terminate(); app.launch()
         try signInToReview(); openPlanner()
         XCTAssertTrue(row.waitForExistence(timeout:10)); row.tap()
-        XCTAssertTrue(supplies.waitForExistence(timeout:10))
+        revealInVisit(supplies)
         XCTAssertEqual(supplies.value as? String,"Completed")
-        app.buttons["Delete visit"].tap(); app.alerts.buttons["Delete"].tap()
+        let remove = app.buttons["Delete visit"]; revealInVisit(remove); remove.tap(); app.alerts.buttons["Delete"].tap()
         XCTAssertTrue(app.buttons["addVisit"].waitForExistence(timeout:10))
         XCTAssertFalse(row.exists)
         app.buttons["Done"].tap()
