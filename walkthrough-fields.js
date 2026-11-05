@@ -7,7 +7,7 @@
   const requestType = "Commercial walkthrough";
   const unsureAnswer = "I’m not sure";
   const spaceTypes = ["Office", "Retail store", "Restaurant / café", "Salon / spa", "School / daycare", "Medical office", "Warehouse", "Building common areas", "Other"];
-  const areas = ["Workspaces", "Restrooms", "Kitchen / break room", "Lobby / reception", "Hallways / stairs", "Dining areas", "Storage areas", "Windows / glass", "Other"];
+  const areas = ["Workspaces", "Restrooms", "Kitchen / break room", "Lobby / reception", "Hallways / stairs", "Dining areas", "Storage areas", "Other"];
   const conditions = ["Construction dust / debris", "Heavy grease", "Significant clutter", "Pest activity", "Suspected mold", "Water / sewage damage", "Bodily fluids / sharps", "None", "Unsure"];
   const editableFields = [
     "Business Name", "Full Name", "Contact Role", "Email", "Phone", "Street Address", "Floor or Suite", "City", "ZIP Code",
@@ -16,6 +16,11 @@
     "Preferred Walkthrough Date", "Preferred Walkthrough Time", "Alternative Walkthrough Date", "Alternative Walkthrough Time",
     "Restaurant Specialty Work", "Restaurant Specialty Details", "Medical Specialty Work", "Medical Specialty Details", "Walkthrough Notes"
   ];
+
+  function editableAreas(previousAreas) {
+    return String(previousAreas || "").split("|").some(area => area.trim() === "Windows / glass")
+      ? [...areas, "Windows / glass"] : areas;
+  }
 
   function newYorkNow(now = new Date()) {
     const parts = new Intl.DateTimeFormat("en-US", {
@@ -30,7 +35,7 @@
     throw Object.assign(new Error(message), { field, statusCode: 400 });
   }
 
-  function validate(raw = {}, now = new Date(), { allowPastDates = false } = {}) {
+  function validate(raw = {}, now = new Date(), { allowPastDates = false, previousAreas = "" } = {}) {
     function value(field, limit, required = true) {
       const text = typeof raw[field] === "string" ? raw[field].trim() : "";
       if (required && !text) fail(field, `Please enter ${field.toLowerCase()}.`);
@@ -77,7 +82,7 @@
     }
     const spaceType = choice("Commercial Space Type", spaceTypes);
     const cleaningPlan = choice("Cleaning Plan", ["One-time cleaning", "Recurring cleaning"]);
-    const selectedAreas = selections("Areas Needing Cleaning", areas, false);
+    const selectedAreas = selections("Areas Needing Cleaning", editableAreas(previousAreas), false);
     const selectedConditions = selections("Conditions to Review", conditions, false);
     const conditionList = selectedConditions.split(" | ");
     if (conditionList.length > 1 && conditionList.some(item => item === "None" || item === "Unsure")) fail("Conditions to Review", "Choose either specific conditions, None, or Unsure.");
@@ -144,5 +149,5 @@
     return result;
   }
   function isWalkthrough(fields) { return fields?.["Request Type"] === requestType; }
-  return { validate, isWalkthrough, requestType, spaceTypes, areas, conditions, editableFields, newYorkNow };
+  return { validate, isWalkthrough, requestType, spaceTypes, areas, editableAreas, conditions, editableFields, newYorkNow };
 });

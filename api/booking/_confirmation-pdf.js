@@ -47,14 +47,7 @@ const LABELS = {
   ovenCleaning: "Inside oven",
   cabinetsDrawers: "Cabinets and drawers",
   additionalCleaning: "Additional cleaning requested",
-  hours: "Organization labor-hours",
-  scope: "Cleaning sides",
-  frequency: "Service frequency",
-  screens: "Removable window screens",
-  tracks: "Detailed sills and tracks",
-  size: "Largest panel size",
-  access: "Highest exterior access",
-  windows: "Selected window types and quantities"
+  hours: "Organization labor-hours"
 };
 
 const OMIT_UNIT_KEYS = new Set([
@@ -240,8 +233,7 @@ function buildSections({ booking, record }) {
     "livingDining", "additionalRooms", "additionalRoomTypes", "squareFootage"
   ]);
   const selectionKeys = new Set([
-    "refrigeratorCleaning", "ovenCleaning", "cabinetsDrawers", "refrigerator", "oven", "cabinets",
-    "windowCleaning", "interiorWindowCleaning", "screens", "tracks", "scope", "frequency", "windows"
+    "refrigeratorCleaning", "ovenCleaning", "cabinetsDrawers", "refrigerator", "oven", "cabinets"
   ]);
 
   (Array.isArray(estimate.units) ? estimate.units : []).forEach((unit, index) => {

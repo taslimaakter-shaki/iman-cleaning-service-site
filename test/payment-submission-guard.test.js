@@ -41,6 +41,7 @@ const shared=require('../api/booking/_shared');
  };
  const module={exports:{}};
  vm.runInNewContext(fs.readFileSync('api/booking/_deposit-payment.js','utf8'),{module,require:name=>{
+  if(name==='./_service-policy') return require('../api/booking/_service-policy');
   if(name==='crypto')return crypto;
   if(name==='./_shared')return{getBooking,bookingDurationHours:shared.bookingDurationHours,assertScheduleAvailable:async()=>{},readJsonBody:async req=>req.body,json:(_res,status,body)=>({status,...body})};
   if(name==='../crm/_quote-admin')return{checkSavedCheckout:async()=>{},resolveManaged:async q=>q};

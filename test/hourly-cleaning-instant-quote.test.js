@@ -35,6 +35,7 @@ assert.throws(()=>saved.validateAndPrice({pricingMode:'hourly_formula',eligibili
 let requestedHours=24,availabilityCalls=0;
 const box={exports:{}};
 vm.runInNewContext(fs.readFileSync('api/booking/_availability.js','utf8'),{module:box,require:name=>{
+  if(name==='./_service-policy') return require('../api/booking/_service-policy');
   assert.equal(name,'./_shared');
   return {...shared,readJsonBody:async()=>({pricingMode:'hourly_formula',serviceKey:'hourly',serviceZip:'11218',unitDetails:[{hours:requestedHours}]}),
     availableSlotsForPackage:async pkg=>{availabilityCalls++;return shared.availableSlotsForDate(pkg,'2030-11-20',[]).filter(slot=>shared.planBookingDay(slot.value,pkg.teamHours+1,[]))},

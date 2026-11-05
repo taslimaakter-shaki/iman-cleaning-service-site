@@ -24,9 +24,10 @@ assert.throws(
   (error) => error.code === "PROMO_EXPIRED" && /expired on December 20, 2026/.test(error.message)
 );
 assert.throws(() => promotionForCode("NOPE", activeDate), (error) => error.code === "PROMO_INVALID");
-for (const service of ["standard", "deep", "move", "hourly", "window", "post", "commercial"]) {
+for (const service of ["standard", "deep", "move", "hourly", "post", "commercial"]) {
   assert.doesNotThrow(() => assertEligibleService(promotion, service));
 }
+assert.throws(() => assertEligibleService(promotion, "window"), (error) => error.code === "PROMO_INELIGIBLE");
 assert.throws(() => assertEligibleService(promotion, "unknown"), (error) => error.code === "PROMO_INELIGIBLE");
 
 const pkg = {

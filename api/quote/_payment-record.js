@@ -386,8 +386,7 @@ function selectedServiceDetailsUrl(record, booking) {
     post: "/post-construction-cleaning.html",
     post_construction: "/post-construction-cleaning.html",
     hourly: "/services-hub.html",
-    organization: "/services-hub.html",
-    window: "/services-hub.html"
+    organization: "/services-hub.html"
   };
   if (pagesByServiceKey[serviceKey]) return `${site}${pagesByServiceKey[serviceKey]}`;
 

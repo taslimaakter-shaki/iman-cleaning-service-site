@@ -2,6 +2,7 @@ const crypto = require('crypto');
 const shared = () => require('./_shared');
 const calendar = () => require('./_calendar');
 const fail = (message, statusCode=409) => Object.assign(new Error(message), { statusCode });
+const { assertServiceAvailable } = require('./_service-policy');
 const ORIGIN = 'https://www.imancleaningservice.com';
 const enabled = () => process.env.BOOKING_PAYMENT_FLOW === 'server';
 const secret = () => process.env.STRIPE_SECRET_KEY || process.env.Stripe_Secret_Key || '';
@@ -39,6 +40,7 @@ async function prepare(bookingId, params, guard={}) {
  if (!/^pk_(live|test)_/.test(process.env.STRIPE_PUBLISHABLE_KEY || '')) throw fail('Secure payment setup is not ready. Please contact IMAN.',503);
  const booking=await shared().getBooking(bookingId);
  if (!booking || booking.status!=='New') throw fail('This booking is no longer awaiting payment.');
+ assertServiceAvailable(booking);
  const amount=Object.entries(params).filter(([k])=>/^line_items\[\d+\]\[price_data\]\[unit_amount\]$/.test(k)).reduce((sum,[,v])=>sum+Number(v),0);
  if (!Number.isSafeInteger(amount) || amount<=0 || amount!==Number(booking.estimate?.payment?.depositCents)) throw fail('The payment amount needs to be refreshed. Reopen your quote.');
  const id=crypto.randomUUID();
@@ -74,6 +76,7 @@ async function pay(order, confirmationToken) {
  await validateDraft(order);
  const booking=await shared().getBooking(order.booking_id);
  if (!booking || booking.status!=='New') throw fail('Payment has already been received or this booking is no longer available.');
+ if (order.state === 'draft') assertServiceAvailable(booking);
  if (!['creating','ready','processing','requires_action'].includes(order.state)) {
   await shared().assertScheduleAvailable(booking.schedule,shared().bookingDurationHours(booking),booking.id);
   if (booking.estimate?.secondVisitSchedule) await shared().assertScheduleAvailable(booking.estimate.secondVisitSchedule,shared().bookingDurationHours(booking),booking.id);

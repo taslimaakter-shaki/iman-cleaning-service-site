@@ -1,3 +1,4 @@
+const { isStandaloneWindowService, unavailableMessage } = require("./service-policy");
 const express = require("express");
 const { VertexAI } = require("@google-cloud/vertexai");
 const { jsonrepair } = require("jsonrepair");
@@ -239,6 +240,7 @@ app.post("/estimate", async (request, response) => {
     }
 
     const input = request.body || {};
+    if (isStandaloneWindowService(input.service)) return response.status(410).json({ error: unavailableMessage });
     const images = Array.isArray(input.images) ? input.images.slice(0, 4).map(cleanDataUrl).filter(Boolean) : [];
     const vertexAI = new VertexAI({ project, location });
     const model = vertexAI.getGenerativeModel({
@@ -252,6 +254,7 @@ app.post("/estimate", async (request, response) => {
 
     const prompt = [
       "You are the AI cleaning estimator for IMAN CLEANING SERVICE LLC.",
+      "Reachable interior windows are included with move-in/move-out cleaning at no extra charge. Do not offer separate window cleaning.",
       "Analyze the provided booking details and cleaning photos.",
       "Estimate cleaning difficulty, clutter level, hours, recommended cleaner count, included work, and excluded work.",
       "Be practical and conservative for NYC cleaning jobs.",

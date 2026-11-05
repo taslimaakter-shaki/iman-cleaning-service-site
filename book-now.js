@@ -103,9 +103,6 @@
     if (state.eligibility) {
       state.eligibility = { ...state.eligibility, serviceZip: zip };
     }
-    if (state.serviceKey === "window" && state.unitDetails[0]) {
-      state.unitDetails[0] = { ...state.unitDetails[0], serviceZip: zip };
-    }
     persistBookingDraft();
   };
   const openZipGate = () => {
@@ -352,8 +349,6 @@
   const organizationHoursInput = form.elements.organizationHours;
   const hourlyDetailsTitle = form.querySelector("[data-hourly-details-title]");
   const hourlyDetailsHelp = form.querySelector("[data-hourly-details-help]");
-  const windowForm = form.querySelector("[data-window-form]");
-  const windowCards = Array.from(form.querySelectorAll("[data-window-card]"));
   const serviceChoiceForm = form.querySelector("[data-service-choice-form]");
   const recurringDetailsForm = form.querySelector("[data-recurring-details-form]");
   const recurringOrderNumberInput = form.elements.recurringOrderNumber;
@@ -449,7 +444,6 @@
   let recurringWelcomeTimer = 0;
   let mobileQuestionIndex = 0;
   let organizationMode = false;
-  let windowMode = false;
   let serviceChoiceMode = false;
   let recurringDetailsMode = false;
   let propertyTypeMode = false;
@@ -458,7 +452,6 @@
   let suspendDraftSaving = false;
   let draftSaveTimer = 0;
   const serviceNames = {
-    window: "Window Cleaning",
     standard: "Standard Cleaning",
     deep: "Deep Cleaning",
     move: "Move-In / Move-Out Cleaning",
@@ -472,24 +465,6 @@
       description: "Commercial cleaning is customized for each business and may require a brief consultation or walkthrough before we confirm the scope and price.",
       buttonLabel: "Request a Walkthrough",
       category: "commercial"
-    },
-    window_service: {
-      title: "Let’s Prepare Your Window Cleaning Quote",
-      description: "Window cleaning is quoted according to the number and type of windows, accessibility, and whether interior or exterior cleaning is needed.",
-      buttonLabel: "Request a Window Cleaning Quote",
-      service: "window-cleaning"
-    },
-    window_manual_review: {
-      title: "Your Window Cleaning Request Needs a Review",
-      description: "Photos and a brief review are required because the window condition, size, access, obstruction, or panel count may affect safe service and accurate pricing.",
-      buttonLabel: "Continue with photos",
-      service: "window-cleaning"
-    },
-    window_addon: {
-      title: "Window Cleaning Needs a Separate Quote",
-      description: "Window pricing depends on the number and type of windows, interior or exterior service, condition, and safe access. Your residential answers will be carried to the window quote form.",
-      buttonLabel: "Continue to Window Cleaning Quote",
-      service: "window-cleaning"
     },
     water_damage: {
       title: "Service Category Currently Unavailable",
@@ -662,52 +637,6 @@
     syncAgreementControls();
     closeAgreementReview();
   });
-  const windowDetailsFromForm = () => ({
-    serviceZip: value("zip"),
-    propertyType: value("windowPropertyType"),
-    scope: value("windowScope"),
-    frequency: value("windowFrequency"),
-    windows: Array.from(form.querySelectorAll('input[name="windowTypes"]:checked')).map((control) => ({
-      type: control.value,
-      quantity: Number(form.querySelector(`[data-window-quantity="${control.value}"]`)?.value || 0)
-    })),
-    screens: Number(value("windowScreens")),
-    tracks: Number(value("windowTracks")),
-    condition: value("windowCondition"),
-    size: value("windowSize"),
-    access: value("windowAccess")
-  });
-  const windowNeedsManualReview = (details) => (
-    ["hard_water", "paint_adhesive", "construction", "damaged"].includes(details.condition) ||
-    details.size === "very_oversized" ||
-    ["third", "leaning_out", "not_sure"].includes(details.access)
-  );
-  const restoreWindowDetails = (details = {}) => {
-    const values = {
-      windowPropertyType: details.propertyType,
-      windowScope: details.scope,
-      windowFrequency: details.frequency,
-      windowScreens: details.screens,
-      windowTracks: details.tracks,
-      windowCondition: details.condition,
-      windowSize: details.size,
-      windowAccess: details.access
-    };
-    Object.entries(values).forEach(([name, fieldValue]) => {
-      if (form.elements[name] && fieldValue !== undefined) form.elements[name].value = String(fieldValue);
-    });
-    const selected = new Map((details.windows || []).map((item) => [item.type, item.quantity]));
-    windowCards.forEach((card) => {
-      const checkbox = card.querySelector('input[type="checkbox"]');
-      const quantity = card.querySelector("[data-window-quantity]");
-      checkbox.checked = selected.has(checkbox.value);
-      card.classList.toggle("is-selected", checkbox.checked);
-      if (quantity) {
-        quantity.value = String(selected.get(checkbox.value) || 1);
-        quantity.disabled = !checkbox.checked;
-      }
-    });
-  };
   const captureFields = (targetForm) => {
     const fields = {};
     const controls = Array.from(targetForm?.elements || []).filter((control) => control.name);
@@ -776,7 +705,6 @@
         view: {
           mobileQuestionIndex,
           organizationMode,
-          windowMode,
           serviceChoiceMode,
           recurringDetailsMode,
           recurringPlanContext,
@@ -1398,14 +1326,12 @@
     { label: "Review & book", start: 93, end: 99 }
   ];
   const isOrganizationPath = () => organizationMode || state.serviceKey === "hourly";
-  const isWindowPath = () => false;
   const currentStageNumber = () => {
     const organizationPath = isOrganizationPath();
     if (quoteContactOverlay && !quoteContactOverlay.hidden) return 5;
     if (state.step === 2) return 5;
     if (state.step === 3) return 6;
     if (state.step === 4) return 7;
-    if (isWindowPath() && windowMode) return 3;
     if (organizationPath) return organizationMode ? 2 : 1;
     if (quoteDetailsMode) {
       const current = state.unitDetails[state.currentUnitIndex] || emptyUnitDetails();
@@ -1764,37 +1690,6 @@
         control.disabled = !recurringDetailsMode;
       });
     }
-    if (windowMode) {
-      allMobileQuestions.forEach((question) => {
-        question.classList.remove("is-mobile-current");
-        questionControls(question).forEach((control) => { control.disabled = true; });
-      });
-      if (organizationForm) organizationForm.hidden = true;
-      if (serviceChoiceForm) serviceChoiceForm.hidden = true;
-      if (recurringDetailsForm) recurringDetailsForm.hidden = true;
-      if (propertyTypeForm) propertyTypeForm.hidden = true;
-      if (unitCountForm) unitCountForm.hidden = true;
-      if (quoteDetailsForm) quoteDetailsForm.hidden = true;
-      if (windowForm) {
-        windowForm.hidden = false;
-        Array.from(windowForm.elements || windowForm.querySelectorAll("input,select,textarea")).forEach((control) => {
-          if (!control.hasAttribute("data-window-quantity")) control.disabled = false;
-        });
-        windowCards.forEach((card) => {
-          const checkbox = card.querySelector('input[type="checkbox"]');
-          const quantity = card.querySelector("[data-window-quantity]");
-          if (quantity) quantity.disabled = !checkbox?.checked;
-        });
-      }
-      if (mobileQuestionNav) mobileQuestionNav.hidden = false;
-      setQuestionMeta("Window details · Next: Your quote", "About 3 min left");
-      if (eligibilityButtonLabel) eligibilityButtonLabel.textContent = "See my instant price";
-      return;
-    }
-    if (windowForm) {
-      windowForm.hidden = true;
-      Array.from(windowForm.querySelectorAll("input,select,textarea")).forEach((control) => { control.disabled = true; });
-    }
     allMobileQuestions.forEach((question) => {
       questionControls(question).forEach((control) => { control.disabled = false; });
     });
@@ -2107,7 +2002,6 @@
     }, 40);
   };
   const enterOrganizationDetails = () => {
-    windowMode = false;
     organizationMode = true;
     serviceChoiceMode = false;
     recurringDetailsMode = false;
@@ -2125,7 +2019,6 @@
     window.setTimeout(() => organizationHoursInput?.focus(), 40);
   };
   const enterServiceChoice = () => {
-    windowMode = false;
     organizationMode = false;
     serviceChoiceMode = true;
     recurringDetailsMode = false;
@@ -2141,7 +2034,6 @@
     }, 40);
   };
   const enterRecurringDetails = () => {
-    windowMode = false;
     organizationMode = false;
     serviceChoiceMode = false;
     recurringDetailsMode = true;
@@ -2153,7 +2045,6 @@
     window.setTimeout(() => (recurringInitialAnswer === "yes" ? recurringOrderNumberInput : recurringInitialButtons[0])?.focus(), 40);
   };
   const enterPropertyTypeChoice = () => {
-    windowMode = false;
     organizationMode = false;
     serviceChoiceMode = false;
     recurringDetailsMode = false;
@@ -2169,7 +2060,6 @@
     }, 40);
   };
   const enterUnitCountChoice = () => {
-    windowMode = false;
     organizationMode = false;
     serviceChoiceMode = false;
     propertyTypeMode = false;
@@ -2209,7 +2099,6 @@
     window.setTimeout(() => unitCountIncrease?.focus(), 40);
   };
   const enterQuoteDetailsAtStage = (homeDetails = true) => {
-    windowMode = false;
     organizationMode = false;
     serviceChoiceMode = false;
     propertyTypeMode = false;
@@ -2232,19 +2121,6 @@
     }, 40);
   };
   const enterQuoteDetails = () => enterQuoteDetailsAtStage(true);
-  const enterWindowDetails = () => {
-    organizationMode = false;
-    serviceChoiceMode = false;
-    propertyTypeMode = false;
-    unitCountMode = false;
-    quoteDetailsMode = false;
-    windowMode = true;
-    form.elements.requestedService.value = "window";
-    form.elements.propertyStatus.value = "window";
-    syncMobileQuestion();
-    wizardDialog?.scrollTo({ top: 0, behavior: "smooth" });
-    window.setTimeout(() => form.elements.windowPropertyType?.focus(), 40);
-  };
   const navigateToStage = (targetStage) => {
     const stageNumber = Number(targetStage);
     if (!stageIsApplicable(stageNumber) || stageNumber > state.highestStageReached) return;
@@ -2268,15 +2144,13 @@
     }
     if (stageNumber === 2) {
       goToStep(1);
-      if (isWindowPath()) enterWindowDetails();
-      else if (isOrganizationPath()) enterOrganizationDetails();
+      if (isOrganizationPath()) enterOrganizationDetails();
       else enterServiceChoice();
       return;
     }
     if (stageNumber === 3 || stageNumber === 4) {
       goToStep(1);
-      if (isWindowPath()) enterWindowDetails();
-      else enterQuoteDetailsAtStage(stageNumber === 3);
+      enterQuoteDetailsAtStage(stageNumber === 3);
       return;
     }
     if (stageNumber === 5) {
@@ -2319,7 +2193,6 @@
     else enterServiceChoice();
   };
   const exitServiceChoice = () => {
-    windowMode = false;
     organizationMode = false;
     serviceChoiceMode = false;
     recurringDetailsMode = false;
@@ -2598,9 +2471,8 @@
   const syncQuotedServiceCopy = () => {
     const isHourly = state.serviceKey === "hourly";
     const isTimeBased = isHourly;
-    const isWindow = state.serviceKey === "window";
     const priceNotice = document.querySelector("[data-price-notice]");
-    if (priceNotice) priceNotice.hidden = isTimeBased || isWindow;
+    if (priceNotice) priceNotice.hidden = isTimeBased;
     const completionCopy = document.querySelector("[data-completion-agreement-copy]");
     if (completionCopy) {
       completionCopy.textContent = isTimeBased
@@ -2608,7 +2480,7 @@
         : "I understand that this estimate provides a maximum number of labor-hours and is based on the information I provided. The service may be completed sooner.";
     }
     document.querySelectorAll("[data-cleaning-schedule-details]").forEach((element) => {
-      element.hidden = isTimeBased || isWindow;
+      element.hidden = isTimeBased;
     });
   };
   const renderQuoteOverview = (pkg) => {
@@ -3307,17 +3179,6 @@
   };
 
   buildAnswerChoices();
-  windowCards.forEach((card) => {
-    const checkbox = card.querySelector('input[type="checkbox"]');
-    const quantity = card.querySelector("[data-window-quantity]");
-    checkbox?.addEventListener("change", () => {
-      card.classList.toggle("is-selected", checkbox.checked);
-      if (quantity) quantity.disabled = !checkbox.checked;
-      invalidateDownstreamAfterEdit();
-      setStatus(document.querySelector("[data-eligibility-status]"), "");
-      persistBookingDraft();
-    });
-  });
   serviceChoiceButtons.forEach((button) => {
     button.addEventListener("click", () => {
       const selectedService = button.dataset.bookingService;
@@ -3543,15 +3404,6 @@
   syncPropertyTypeChoice();
   syncUnitCount();
   form.querySelector("[data-question-back]")?.addEventListener("click", () => {
-    if (windowMode) {
-      windowMode = false;
-      form.elements.requestedService.value = "";
-      form.elements.propertyStatus.value = "occupied";
-      mobileQuestionIndex = 1;
-      syncMobileQuestion();
-      questionFocusTarget(mobileQuestions()[mobileQuestionIndex])?.focus();
-      return;
-    }
     if (organizationMode) {
       organizationMode = false;
       mobileQuestionIndex = 0;
@@ -3673,10 +3525,6 @@
   additionalCleaningNoticeContinue?.addEventListener("click", closeAdditionalCleaningNotice);
   quoteContactBack?.addEventListener("click", () => {
     closeQuoteContact();
-    if (isWindowPath()) {
-      enterWindowDetails();
-      return;
-    }
     if (organizationMode) {
       organizationHoursInput?.focus();
       return;
@@ -3699,46 +3547,6 @@
   document.querySelector("[data-check-eligibility]").addEventListener("click", async () => {
     const status = document.querySelector("[data-eligibility-status]");
     const activeQuestions = mobileQuestions();
-    if (windowMode) {
-      const invalidControl = Array.from(windowForm?.querySelectorAll("input:not(:disabled),select:not(:disabled)") || [])
-        .find((control) => !control.checkValidity());
-      if (invalidControl) {
-        invalidControl.reportValidity();
-        invalidControl.focus();
-        return;
-      }
-      const details = windowDetailsFromForm();
-      if (!details.windows.length) {
-        setStatus(status, "Choose at least one window type and enter its quantity.");
-        windowCards[0]?.querySelector('input[type="checkbox"]')?.focus();
-        return;
-      }
-      if (details.windows.some((item) => !Number.isInteger(item.quantity) || item.quantity < 1)) {
-        setStatus(status, "Enter a valid whole-number quantity for every selected window type.");
-        return;
-      }
-      state.serviceKey = "window";
-      state.pricingMode = "window_formula";
-      state.packageIds = [];
-      state.unitDetails = [details];
-      state.eligibility = {
-        serviceIntent: "cleaning",
-        requestedService: "window",
-        cleaningCategory: "window",
-        propertyStatus: "window",
-        propertyType: details.propertyType,
-        serviceZip: value("zip"),
-        unitCount: 1
-      };
-      if (windowNeedsManualReview(details)) {
-        persistBookingDraft();
-        showQualificationRedirect("window_manual_review");
-        return;
-      }
-      setStatus(status, "");
-      showQuoteContact();
-      return;
-    }
     if (organizationMode) {
       const selectedHours = Number(organizationHoursInput?.value);
       if (!Number.isInteger(selectedHours)) {
@@ -3945,11 +3753,6 @@
           : "Enter a valid square footage above 2,000, or leave this optional field blank.");
         invalidControl.reportValidity();
         questionControlFocusTarget(currentQuestion, invalidControl)?.focus();
-        return;
-      }
-      if (mobileQuestionIndex === 0 && value("cleaningCategory") === "window") {
-        setStatus(status, "");
-        enterWindowDetails();
         return;
       }
       const internalReason = qualificationReasonFromAnswers(eligibilityFromForm());
@@ -4471,11 +4274,6 @@
       const targetStep = Number(button.dataset.back);
       if (repeatBookingMode && targetStep < 3) return;
       if (targetStep === 1) {
-        if (state.serviceKey === "window") {
-          enterWindowDetails();
-          goToStep(targetStep);
-          return;
-        }
         if (state.serviceKey === "hourly") {
           enterOrganizationDetails();
           goToStep(targetStep);
@@ -4668,7 +4466,6 @@
       if (state.serviceKey === "hourly") {
         organizationHoursInput.value = String(state.unitDetails[0]?.hours || 4);
       }
-      if (state.serviceKey === "window") restoreWindowDetails(state.unitDetails[0]);
       ["firstName", "lastName", "email", "phone"].forEach((name) => {
         form.elements[name].value = data.customer?.[name] || "";
       });
@@ -4741,6 +4538,8 @@
     }
     if (
       draft.state?.serviceKey === "organization" ||
+      draft.state?.serviceKey === "window" || draft.state?.pricingMode === "window_formula" ||
+      draft.fields.requestedService === "window" || draft.fields.cleaningCategory === "window" ||
       draft.fields.serviceIntent === "organization" ||
       draft.fields.requestedService === "details"
     ) {
@@ -4807,7 +4606,6 @@
       const savedView = draft.view || {};
       mobileQuestionIndex = Math.max(0, Number(savedView.mobileQuestionIndex) || 0);
       organizationMode = Boolean(savedView.organizationMode);
-      windowMode = Boolean(savedView.windowMode) || state.serviceKey === "window";
       serviceChoiceMode = Boolean(savedView.serviceChoiceMode);
       recurringDetailsMode = Boolean(savedView.recurringDetailsMode);
       recurringPlanContext = savedView.recurringPlanContext || null;

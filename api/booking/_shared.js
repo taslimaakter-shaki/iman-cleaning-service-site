@@ -25,27 +25,6 @@ const NYC_ZIP_PREFIXES = new Set([
   "100", "101", "102", "103", "104", "111", "112", "113", "114", "116"
 ]);
 const NYC_QUEENS_SPLIT_ZIPS = new Set(["11004", "11005"]);
-const WINDOW_TARGET_TEAM_HOURLY = 180;
-const WINDOW_PRICES = {
-  single_hung: { label: "Single-hung window", interior: 18, exterior: 17, both: 28, minutes: 9 },
-  double_hung: { label: "Double-hung window", interior: 22, exterior: 20, both: 34, minutes: 10 },
-  sliding: { label: "Sliding window assembly", interior: 20, exterior: 19, both: 32, minutes: 10 },
-  bathroom_sliding_half: { label: "Bathroom sliding window (half-size)", interior: 13, exterior: 12, both: 20, minutes: 6 },
-  bathroom_hung_half: { label: "Bathroom hung window (half-size)", interior: 14, exterior: 13, both: 22, minutes: 7 },
-  casement: { label: "Casement sash", interior: 18, exterior: 17, both: 29, minutes: 9 },
-  awning: { label: "Awning sash", interior: 16, exterior: 15, both: 25, minutes: 8 },
-  hopper: { label: "Hopper sash", interior: 15, exterior: 14, both: 23, minutes: 8 },
-  picture_fixed: { label: "Picture / fixed panel", interior: 15, exterior: 15, both: 24, minutes: 8 },
-  bay_up_to_3_panels: { label: "Bay assembly (up to 3 panels)", interior: 45, exterior: 42, both: 70, minutes: 22 },
-  bow_up_to_5_panels: { label: "Bow assembly (up to 5 panels)", interior: 65, exterior: 60, both: 100, minutes: 30 },
-  garden: { label: "Garden window assembly", interior: 36, exterior: 35, both: 58, minutes: 18 },
-  transom: { label: "Transom panel", interior: 12, exterior: 12, both: 19, minutes: 6 },
-  french_grid: { label: "French / grid sash", interior: 27, exterior: 25, both: 42, minutes: 13 },
-  jalousie: { label: "Jalousie assembly", interior: 30, exterior: 28, both: 48, minutes: 15 },
-  arched_specialty: { label: "Arched / specialty panel", interior: 25, exterior: 24, both: 40, minutes: 12 },
-  skylight: { label: "Skylight", interior: 28, exterior: 32, both: 48, minutes: 16 },
-  storefront_panel: { label: "Storefront panel", interior: 12, exterior: 12, both: 20, minutes: 3 }
-};
 const SERVICES = {
   standard: {
     label: "Standard Cleaning",
@@ -423,21 +402,8 @@ function calculateResidentialUnitPrice(unit = {}, unitIndex = 0, serviceKey = "s
   const buildupAreas = normalizeConditionAreas(unit.buildupAreas, "buildup");
   const clutterAreas = normalizeConditionAreas(unit.clutterAreas, "clutter");
   const constructionAreas = normalizeConditionAreas(unit.constructionAreas, "construction dust or debris");
-  const windowCleaning = serviceKey === "move"
-    ? "interior_included"
-    : cleanText(unit.windowCleaning || "no", 30);
-  const exteriorWindows = serviceKey === "move"
-    ? yesNo(unit.exteriorWindows || "no", `exterior window cleaning in Unit ${unitNumber}`)
-    : "no";
-  if (serviceKey !== "move" && !["no", "interior", "exterior", "interior_exterior"].includes(windowCleaning)) {
-    throw Object.assign(new Error(`Choose a window-cleaning option for Unit ${unitNumber}.`), { statusCode: 400 });
-  }
-  if ((serviceKey !== "move" && windowCleaning !== "no") || exteriorWindows === "yes") {
-    throw Object.assign(new Error("Window cleaning requires the existing window quote calculator so window type, count, and access can be reviewed."), {
-      statusCode: 409,
-      reviewRequired: true,
-      reviewUrl: "/contact.html"
-    });
+  if (unit.exteriorWindows === "yes" || (serviceKey !== "move" && unit.windowCleaning && unit.windowCleaning !== "no")) {
+    throw Object.assign(new Error("This window add-on is no longer available. Please start a new cleaning quote."), { statusCode: 410 });
   }
 
   let cabinetCount = 0;
@@ -502,7 +468,7 @@ function calculateResidentialUnitPrice(unit = {}, unitIndex = 0, serviceKey = "s
         : (livingRooms + diningRooms) * service.roomRate
     } : null,
     additionalRooms ? { key: "additional_rooms", label: additionalRoomLabel, amount: additionalRooms * service.roomRate } : null,
-    serviceKey === "move" ? { key: "interior_windows", label: "Interior window cleaning", amount: 0, included: true } : null
+    serviceKey === "move" ? { key: "interior_windows", label: "Reachable interior window cleaning", amount: 0, included: true } : null
   ].filter(Boolean);
   const petCleaningAmount = hasPets === "yes"
     ? FIRST_PET_CLEANING_FEE
@@ -580,8 +546,6 @@ function calculateResidentialUnitPrice(unit = {}, unitIndex = 0, serviceKey = "s
     excludeRefrigerator,
     excludeCabinets,
     kitchenDiscount,
-    windowCleaning,
-    exteriorWindows,
     additionalRooms,
     additionalRoomTypes,
     baseItems,
@@ -935,159 +899,6 @@ function calculateStandardQuoteBundle(unitDetails = []) {
   return calculateResidentialQuoteBundle(unitDetails, "standard");
 }
 
-function calculateWindowQuote(details = {}, serviceZip = "") {
-  const scope = cleanText(details.scope, 20);
-  const propertyType = cleanText(details.propertyType, 30);
-  const frequency = cleanText(details.frequency || "one_time", 30);
-  const condition = cleanText(details.condition || "routine", 30);
-  const size = cleanText(details.size || "standard", 30);
-  const access = cleanText(details.access || "ground_safe", 30);
-  if (!["interior", "exterior", "both"].includes(scope)) {
-    throw Object.assign(new Error("Choose interior, exterior, or both sides."), { statusCode: 400 });
-  }
-  if (!["residential", "commercial"].includes(propertyType)) {
-    throw Object.assign(new Error("Choose residential or commercial window cleaning."), { statusCode: 400 });
-  }
-  if (!["one_time", "weekly", "biweekly", "every_four_weeks"].includes(frequency)) {
-    throw Object.assign(new Error("Choose a valid service frequency."), { statusCode: 400 });
-  }
-  const manualReview = condition !== "routine" || size === "very_oversized" ||
-    ["third", "special_equipment", "leaning_out", "not_sure"].includes(access);
-  if (manualReview) {
-    throw Object.assign(new Error("Photos and a brief review are required before we can confirm this window-cleaning price."), {
-      statusCode: 409,
-      reviewRequired: true,
-      reviewUrl: "/contact.html"
-    });
-  }
-  if (!["standard", "oversized"].includes(size)) {
-    throw Object.assign(new Error("Choose a valid window size."), { statusCode: 400 });
-  }
-  const selectedWindows = Array.isArray(details.windows) ? details.windows.slice(0, 18) : [];
-  if (!selectedWindows.length) {
-    throw Object.assign(new Error("Choose at least one window type."), { statusCode: 400 });
-  }
-
-  const baseItems = [];
-  let baseTotal = 0;
-  let teamMinutes = 0;
-  selectedWindows.forEach((selection) => {
-    const type = cleanText(selection?.type, 40);
-    const price = WINDOW_PRICES[type];
-    if (!price) throw Object.assign(new Error("Choose a recognized window type."), { statusCode: 400 });
-    const quantity = wholeNumber(selection.quantity, `${price.label} quantity`, 200);
-    if (quantity < 1) throw Object.assign(new Error(`Enter at least one ${price.label}.`), { statusCode: 400 });
-    const amount = price[scope] * quantity;
-    const scopeMinutes = scope === "both" ? price.minutes : Math.max(2, Math.round(price.minutes * 0.65));
-    baseItems.push({
-      key: type,
-      label: `${quantity} × ${price.label} (${scope === "both" ? "interior & exterior" : scope})`,
-      amount,
-      preTaxAmount: amount,
-      taxAmount: 0
-    });
-    baseTotal += amount;
-    teamMinutes += scopeMinutes * quantity;
-  });
-
-  const addOns = [];
-  let addOnTotal = 0;
-  const add = (key, label, countValue, rate, minutes = 0) => {
-    const count = wholeNumber(countValue || 0, label.toLowerCase(), 500);
-    if (!count) return;
-    const amount = count * rate;
-    addOns.push({ key, label: `${count} × ${label}`, amount, preTaxAmount: amount, taxAmount: 0 });
-    addOnTotal += amount;
-    teamMinutes += count * minutes;
-  };
-  add("screens", "removable screen", details.screens, 5, 2);
-  add("tracks", "detailed track and sill", details.tracks, 7, 3);
-
-  if (size === "oversized") {
-    const amount = Math.round(baseTotal * 0.5 * 100) / 100;
-    addOns.push({ key: "oversized", label: "Oversized glass adjustment (15–30 sq. ft.)", amount, preTaxAmount: amount, taxAmount: 0 });
-    addOnTotal += amount;
-    teamMinutes *= 1.5;
-  }
-
-  const discountRates = { weekly: 0.15, biweekly: 0.10, every_four_weeks: 0.05 };
-  const discountRate = propertyType === "commercial" ? (discountRates[frequency] || 0) : 0;
-  const discount = Math.round(baseTotal * discountRate * 100) / 100;
-  if (discount) {
-    addOns.push({ key: "recurring_discount", label: `${Math.round(discountRate * 100)}% recurring-service discount`, amount: -discount, preTaxAmount: -discount, taxAmount: 0 });
-    addOnTotal -= discount;
-  }
-
-  const zip = normalizeServiceZip(serviceZip || details.serviceZip);
-  if (!isNYCServiceZip(zip)) {
-    throw Object.assign(new Error("Enter a ZIP code within our New York City service area."), { statusCode: 400 });
-  }
-  let minimum = propertyType === "residential" ? 225 : 175;
-  if (propertyType === "commercial" && frequency !== "one_time") {
-    minimum = frequency === "every_four_weeks" ? 150 : 125;
-  }
-  const calculatedSubtotal = Math.round((baseTotal + addOnTotal) * 100) / 100;
-  const subtotal = Math.max(minimum, calculatedSubtotal);
-  const minimumAdjustment = Math.round((subtotal - calculatedSubtotal) * 100) / 100;
-  if (minimumAdjustment > 0) {
-    addOns.push({ key: "service_minimum", label: `${propertyType === "residential" ? "Residential" : "Commercial"} service minimum`, amount: minimumAdjustment, preTaxAmount: minimumAdjustment, taxAmount: 0 });
-    addOnTotal += minimumAdjustment;
-  }
-  const taxRate = NY_SALES_TAX_RATE;
-  const subtotalCents = Math.round(subtotal * 100);
-  const taxCents = Math.round(subtotalCents * taxRate);
-  const totalCents = subtotalCents + taxCents;
-  const tax = taxCents / 100;
-  const total = totalCents / 100;
-  const teamHours = Math.round(Math.max(teamMinutes / 60, subtotal / WINDOW_TARGET_TEAM_HOURLY) * 100) / 100;
-  const manHours = Math.round(teamHours * TEAM_SIZE * 100) / 100;
-  const unit = {
-    unitNumber: 1,
-    ...details,
-    baseItems,
-    addOns,
-    basePrice: baseTotal,
-    baseSubtotal: baseTotal,
-    addOnTotal,
-    addOnSubtotal: addOnTotal,
-    subtotal,
-    subtotalCents,
-    manHours,
-    teamHours,
-    cleanerCount: TEAM_SIZE
-  };
-  return {
-    id: "window__instant_quote",
-    packageIds: ["window__instant_quote"],
-    serviceKey: "window",
-    serviceLabel: "Window Cleaning",
-    tierKey: "instant_quote",
-    tierLabel: "Personalized Window Cleaning",
-    bedroomsLabel: "",
-    bathroomsLabel: "",
-    price: total,
-    priceCents: totalCents,
-    subtotal,
-    subtotalCents,
-    basePrice: baseTotal,
-    baseSubtotal: baseTotal,
-    addOnTotal,
-    addOnSubtotal: addOnTotal,
-    taxRate,
-    tax,
-    taxCents,
-    total,
-    totalCents,
-    manHours,
-    teamHours,
-    cleanerCount: TEAM_SIZE,
-    manHourRate: WINDOW_TARGET_TEAM_HOURLY / TEAM_SIZE,
-    unitCount: 1,
-    pricingMode: "window_formula",
-    units: [unit]
-  };
-}
-
 function calculateOrganizationQuote(hoursValue) {
   const selectedHours = Number(hoursValue);
   if (!Number.isInteger(selectedHours) || selectedHours < ORGANIZATION_MIN_HOURS || selectedHours > 24) {
@@ -1326,12 +1137,8 @@ function recommendResidentialService(eligibility = {}) {
       reviewUrl: "/contact.html"
     };
   }
-  if (cleaningCategory === "window") {
-    return {
-      type: "instant",
-      serviceKey: "window",
-      reason: "Window cleaning is priced from the selected window types, quantities, sides, add-ons, and safe-access details."
-    };
+  if (cleaningCategory && cleaningCategory !== "residential") {
+    return { type: "ineligible", reason: "Please choose an available cleaning service." };
   }
   if (waterDamage === "yes") {
     return {
@@ -2385,7 +2192,6 @@ module.exports = {
   calculateResidentialUnitPrice,
   calculateOrganizationQuote,
   calculateHourlyCleaningQuote,
-  calculateWindowQuote,
   calculateStandardQuoteBundle,
   calculateStandardUnitPrice,
   confirmBooking,

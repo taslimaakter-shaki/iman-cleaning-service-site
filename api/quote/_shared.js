@@ -1,3 +1,4 @@
+const { assertServiceAvailable } = require("../booking/_service-policy");
 const crypto = require("crypto");
 
 const MAX_JSON_BODY = 1024 * 1024;
@@ -79,6 +80,7 @@ function cleanText(value, fallback = "") {
 }
 
 function validateQuoteFormFields(formFields = {}) {
+  assertServiceAvailable({ formFields });
   const serviceType = cleanText(formFields["Service Type"]);
   if (serviceType === "Hourly Cleaning Service") {
     const workHours = Number(formFields["Hourly Cleaning Hours Needed"]);

@@ -862,7 +862,7 @@
           <div>${input('Approximate Square Footage', 'number', 'min="1" max="10000000" step="1"')}${unsure('Square Footage Unknown', 'Approximate Square Footage')}</div>
         </div></section>
         <section><h3>Cleaning needs</h3>${select('Cleaning Plan', ['One-time cleaning', 'Recurring cleaning'])}
-          ${choices('Areas Needing Cleaning', schema.areas)}${choices('Conditions to Review', schema.conditions)}${textarea('Condition Details')}
+          ${choices('Areas Needing Cleaning', schema.editableAreas(fields['Areas Needing Cleaning']))}${choices('Conditions to Review', schema.conditions)}${textarea('Condition Details')}
           <div data-walkthrough-restaurant>${select('Restaurant Specialty Work', ['Yes', 'No', 'Unsure'])}${textarea('Restaurant Specialty Details', 1000)}</div>
           <div data-walkthrough-medical>${select('Medical Specialty Work', ['Yes', 'No', 'Unsure'])}${textarea('Medical Specialty Details', 1000)}</div>
         </section>

@@ -5,6 +5,7 @@ const drive={files:{create:async args=>{const r=JSON.parse(args.media.body);reco
 function loadHandler() {
 const moduleObject={exports:{}};
 vm.runInNewContext(fs.readFileSync('api/booking/_saved-quote.js','utf8'),{module:moduleObject,Buffer,URLSearchParams,console,process:{env:{QUOTE_APPROVAL_SECRET:'test',TWILIO_ACCOUNT_SID:'test',TWILIO_AUTH_TOKEN:'test',TWILIO_FROM_NUMBER:'+12125550100'}},require:name=>{
+ if(name==='./_service-policy') return require('../api/booking/_service-policy');
  if(name==='crypto')return crypto;
  if(name==='./_shared')return{...actual,calculateHourlyCleaningQuote:h=>{const p=actual.calculateHourlyCleaningQuote(h);return priceChanged?{...p,price:p.price+100}:p;},listAllBookings:async()=>bookings,readJsonBody:async req=>req.body,json:(res,status,body)=>({status,...body})};
  if(name==='../quote/_shared')return{getGoogleClients:()=>({drive,config:{parentFolderId:'test'},gmail:{users:{messages:{send:async args=>{emails.push(Buffer.from(args.requestBody.raw,'base64url').toString());return{data:{id:'email'}};}}}}})};
@@ -136,6 +137,15 @@ const get=url=>handler({method:'GET',headers:{host:'example.test'},query:{token:
    assert.match(result.reviewUrl,/^\/contact\.html\?/);
    assert.equal(result.customer.email,oversized.customer.email);
    assert.equal(result.package,undefined);
+ }
+
+ // A cached package or a CRM approval link must not revive a discontinued service.
+ for (const extra of [{}, {crmQuote:{fields:{service:"Window Cleaning"},approvalCode:"old-code"}}]) {
+   records.set(legacyId,{...legacy,...extra,packageSnapshot:{serviceKey:"window",id:"window__instant_quote"}});
+   const retired = await get(legacyUrl);
+   assert.equal(retired.status,410);
+   assert.equal(retired.package,undefined);
+   assert.equal(retired.redirectUrl,undefined);
  }
 
  console.log('Saved quote versions: immutable details/prices/contacts, changed-content delivery, concurrent deduplication, consent and partial-delivery retry passed. Providers mocked.');

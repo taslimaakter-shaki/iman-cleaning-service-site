@@ -134,7 +134,7 @@ async function edit(body = {}) {
   for (const [key, value] of Object.entries(body.fields)) {
     if (!allowed.has(key) || typeof value !== "string") throw fail("Invalid walkthrough field.");
   }
-  const fields = schema.validate({ ...found.record.formFields, ...body.fields }, new Date(), { allowPastDates: true });
+  const fields = schema.validate({ ...found.record.formFields, ...body.fields }, new Date(), { allowPastDates: true, previousAreas: found.record.formFields["Areas Needing Cleaning"] });
   if (!require("../booking/_shared").isNYCServiceZip(fields["ZIP Code"])) throw fail("Enter a ZIP code within our New York City service area.");
   const latest = await load("custom", body.id);
   if (latest.version !== found.version) throw fail("This request changed. Reopen it before saving your edits.", 409);

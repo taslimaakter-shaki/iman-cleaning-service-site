@@ -20,6 +20,7 @@ function fixture(options={}) {
   const quoteAdmin={load:async(source,id)=>({source,id,record:options.saved || get(id),state:{},version:JSON.stringify(options.saved || get(id))}),closeSessions:async()=>{calls.push('expire');if(faults.stripe)throw new Error('Stripe verification unavailable');}};
   const module={exports:{}};
   vm.runInNewContext(fs.readFileSync(require.resolve('../api/crm/_external-payment'),'utf8'),{module,require:name=>{
+    if(name==='../booking/_service-policy') return require('../api/booking/_service-policy');
     if(name==='../booking/_additional-store')return {rpc:async(name,body)=>{
       if(name==='iman_external_payment_version')return 1;
       assert.equal(name,'iman_update_external_payment_booking');

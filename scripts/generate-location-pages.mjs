@@ -144,11 +144,6 @@ function serviceCards() {
       ["Office Cleaning", "Custom quote", "office-cleaning.html"],
       ["Retail Store Cleaning", "Custom quote", "retail-store-cleaning.html"],
       ["Janitorial Cleaning", "Custom quote", "janitorial-recurring-cleaning.html"]
-    ]],
-    ["home-window-cleaning-card.webp", "Professional window cleaning with a squeegee", "Homes & businesses", "Window Cleaning", [
-      ["Interior & Exterior Glass", "Custom quote", "quote.html?service=window-cleaning"],
-      ["Frames, Sills & Tracks", "Custom quote", "quote.html?service=window-cleaning"],
-      ["Homes & Storefronts", "Custom quote", "quote.html?service=window-cleaning"]
     ]]
   ];
   return cards.map(([img, alt, kicker, title, links]) => `<details class="service-category-accordion seo-service-category">

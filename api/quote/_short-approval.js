@@ -1,3 +1,4 @@
+const { assertServiceAvailable } = require("../booking/_service-policy");
 const crypto = require("crypto");
 const { cleanText, getGoogleClients } = require("./_shared");
 
@@ -25,6 +26,7 @@ function driveJson(data) {
 }
 
 async function createShortApproval(payload) {
+  assertServiceAvailable(payload);
   const code = approvalCode();
   const now = Date.now();
   const record = {

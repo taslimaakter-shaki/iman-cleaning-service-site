@@ -16,7 +16,7 @@ assert(sessionMetadataKeys.size <= 50, `Checkout can send ${sessionMetadataKeys.
 function load(file, dependencies, extras = {}) {
   const module = { exports: {} };
   vm.runInNewContext(fs.readFileSync(path.join(__dirname, '..', file), 'utf8'), {
-    module, exports: module.exports, require: name => name.endsWith("/_hosted-cancel") ? require("../api/booking/_hosted-cancel") : name.endsWith("/_minimum-total") ? require("../api/booking/_minimum-total") : dependencies[name] || (name === './_staffing-options' ? require('../api/booking/_staffing-options') : require(name)),
+    module, exports: module.exports, require: name => dependencies[name] || require("node:module").createRequire(path.join(__dirname, "..", file))(name),
     process: { env: testEnv }, Buffer, URL, URLSearchParams, Date, Intl, console, ...extras
   }, { filename: file });
   return module.exports;

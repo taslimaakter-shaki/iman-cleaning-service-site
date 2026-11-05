@@ -1,3 +1,4 @@
+const { assertServiceAvailable } = require("../booking/_service-policy");
 function json(response, statusCode, body) {
   response.statusCode = statusCode;
   response.setHeader("Content-Type", "application/json");
@@ -179,6 +180,7 @@ async function createOpenAIEstimate(input) {
 
   const prompt = [
     "You are the AI cleaning estimator for IMAN CLEANING SERVICE LLC.",
+    "Reachable interior windows are included with move-in/move-out cleaning at no extra charge. Do not offer separate window cleaning.",
     "Estimate cleaning difficulty, clutter level, hours, cleaner count, included work, and excluded work.",
     "Be conservative and practical for NYC residential and commercial cleaning.",
     "Pricing is controlled by IMAN official borough rates, so estimate time only and do not invent prices.",
@@ -266,6 +268,7 @@ module.exports = async function handler(request, response) {
     }
 
     const input = await readBody(request);
+    assertServiceAvailable(input);
     const images = Array.isArray(input.images) ? input.images : [];
 
     if (images.length > 4) {
@@ -276,6 +279,6 @@ module.exports = async function handler(request, response) {
     const estimate = normalizeEstimate({ ...input, images }, cloudRunEstimate || await createOpenAIEstimate({ ...input, images }));
     return json(response, 200, { estimate });
   } catch (error) {
-    return json(response, 500, { error: error.message || "AI estimate failed." });
+    return json(response, error.statusCode || 500, { error: error.message || "AI estimate failed." });
   }
 };

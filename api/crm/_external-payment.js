@@ -1,3 +1,4 @@
+const { assertServiceAvailable } = require("../booking/_service-policy");
 const crypto = require('node:crypto');
 const shared = require('../booking/_shared');
 const quotes = require('./_quote-admin');
@@ -26,6 +27,7 @@ async function resolve(body) {
   const bookings = await shared.listAllBookings({ complete: found.source === 'saved' });
   const matches = bookings.filter(b => b.id === found.state.bookingId || b.estimate?.savedQuoteId === found.id);
   let booking = found.source === 'booking' ? found.record : matches.find(b => b.estimate?.payment?.provider === 'external') || matches.find(b => paid(b)) || matches.filter(b => b.status === 'New').sort((a,b) => String(b.created_at).localeCompare(String(a.created_at)))[0];
+  if (!paid(booking)) assertServiceAvailable(found.record);
   if (booking && ['Cancelled'].includes(booking.status)) throw fail('This booking was cancelled. Resolve it before recording another payment.', 409);
   if (booking && paid(booking) && booking.estimate?.payment?.provider !== 'external') throw fail('This booking has a card payment. Use its existing payment workflow.', 409);
   if (booking?.estimate?.payment?.remaining?.paymentIntentId || booking?.estimate?.payment?.paymentIntentId) throw fail('A card payment is associated with this booking. Resolve it before switching payment methods.', 409);

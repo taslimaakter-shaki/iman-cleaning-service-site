@@ -49,10 +49,10 @@ window.SERVICES_COMMERCIAL = [
     imgAlt: "Spotless NYC retail store interior with gleaming floors and glass",
     price: "Custom quote",
     intro: "Foot traffic is brutal on a storefront: scuffed floors by noon, smudged glass by three. We clean before you open or after you close, so the store always looks like day one of the season.",
-    intro2: "Scope follows your layout — sales floor, fitting rooms, stock room, street glass — and the crew works around displays like they're merchandise, because they are.",
+    intro2: "Scope follows your layout — sales floor, fitting rooms, and stock room — and the crew works around displays like they're merchandise, because they are.",
     includes: [
       { h: "Sales floor & entry", p: "Floor care matched to your surface (polished concrete, wood, tile), entry mats, and the sidewalk-facing first impression." },
-      { h: "Glass & displays", p: "Street windows, display cases, and mirrors polished streak-free; shelving dusted without disturbing merchandising." },
+      { h: "Glass & displays", p: "Display cases and mirrors polished streak-free; shelving dusted without disturbing merchandising." },
       { h: "Fitting rooms & back of house", p: "Fitting rooms reset and disinfected, stock room floors cleared and cleaned, staff areas and restrooms kept customer-grade." }
     ],
     whenH: "Around your trading hours",
@@ -88,7 +88,7 @@ window.SERVICES_COMMERCIAL = [
     intro: "Diners judge the kitchen by the dining room and the restroom — and inspectors judge everything. We clean overnight or pre-service so the front of house sparkles and the kitchen's cleanable surfaces stay degreased between your own line cleanings.",
     intro2: "Scope is drawn clearly around your staff's closing duties: we take the deep, repetitive work; your team keeps its food-safety tasks.",
     includes: [
-      { h: "Front of house", p: "Dining room floors, tables and chairs, banquettes, host stand, and street-facing glass — reset to opening-night standard." },
+      { h: "Front of house", p: "Dining room floors, tables and chairs, banquettes, and the host stand — reset to opening-night standard." },
       { h: "Restrooms, guest-grade", p: "Deep disinfection and restock every visit — the room that decides a review before the food arrives." },
       { h: "Kitchen surfaces (non-hood)", p: "Degreasing walls, doors, floors, drains, and equipment exteriors. Hood and duct work stays with your certified FDNY vendor — we prep everything around it." }
     ],

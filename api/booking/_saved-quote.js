@@ -1,7 +1,7 @@
+const { assertServiceAvailable } = require("./_service-policy");
 const crypto = require("crypto");
 const {
   calculateHourlyCleaningQuote,
-  calculateWindowQuote,
   calculateResidentialQuoteBundle,
   assertResidentialDayFits,
   cleanText,
@@ -147,6 +147,7 @@ async function loadQuoteRecord(quoteId) {
     ? JSON.parse(downloaded.data)
     : downloaded.data;
   if (record.crmQuote?.deletedAt) throw Object.assign(new Error("This quote is no longer available. Please contact IMAN Cleaning Service."), { statusCode: 410 });
+  assertServiceAvailable(record);
   if (record.crmQuote?.updating) throw Object.assign(new Error("Your quote is being updated. Please try again shortly."), { statusCode: 409 });
   if (record.expiresAt && Date.now() > Number(record.expiresAt)) {
     const error = new Error("This saved quote link has expired. Please create a new quote.");
@@ -330,6 +331,7 @@ async function sendSms({ customer, pkg, quoteUrl }) {
 }
 
 function validateAndPrice(body) {
+  assertServiceAvailable(body);
   const eligibility = body.eligibility && typeof body.eligibility === "object"
     ? body.eligibility
     : {};
@@ -353,10 +355,6 @@ function validateAndPrice(body) {
   }
   if (serviceKey === "hourly" && body.pricingMode === "hourly_formula") {
     const pkg = calculateHourlyCleaningQuote(unitDetails[0]?.hours);
-    return { eligibility, serviceKey, unitDetails, pkg };
-  }
-  if (serviceKey === "window" && body.pricingMode === "window_formula") {
-    const pkg = calculateWindowQuote(unitDetails[0], eligibility.serviceZip);
     return { eligibility, serviceKey, unitDetails, pkg };
   }
   if (!["standard", "recurring", "deep", "move", "post"].includes(serviceKey) || body.pricingMode !== `${serviceKey}_formula`) {

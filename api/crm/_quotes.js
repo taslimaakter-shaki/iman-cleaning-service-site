@@ -1,7 +1,7 @@
+const { isRetiredWindowQuote } = require("../booking/_service-policy");
 const {
   calculateHourlyCleaningQuote,
   calculateResidentialQuoteBundle,
-  calculateWindowQuote,
   cleanText,
   listAllBookings
 } = require("../booking/_shared");
@@ -80,7 +80,6 @@ function instantPrice(record) {
     const units = Array.isArray(record.unitDetails) ? record.unitDetails : [];
     if (service === "organization") throw new Error("Organization Service is no longer available.");
     if (service === "hourly") return calculateHourlyCleaningQuote(units[0]?.hours);
-    if (service === "window") return calculateWindowQuote(units[0], record.eligibility?.serviceZip);
     return calculateResidentialQuoteBundle(units, service, record.eligibility);
   } catch {
     return null;
@@ -88,6 +87,7 @@ function instantPrice(record) {
 }
 
 function savedQuote(record, file) {
+  if (isRetiredWindowQuote(record)) return null;
   const basePackage = instantPrice(record);
   const pkg = basePackage ? require('../booking/_discount').applyPackageDiscount(basePackage, record.crmQuote?.fields ? null : record.crmQuote?.manualDiscount) : null;
   const customer = record.customer || {};
@@ -131,6 +131,7 @@ function customizedQuote(record, file) {
   if (record.formFields?.["Request Type"] === "Commercial walkthrough") {
     return require("./_walkthroughs").toClient(record);
   }
+  if (isRetiredWindowQuote(record)) return null;
   const fields = record.formFields || {};
   const createdInCrm = Boolean(record.createdInCrm || record.crmQuote?.createdInCrm);
   const first = field(fields, "First Name", "firstName");
@@ -277,7 +278,7 @@ function legacyFolderQuote(file) {
   }, require("./_quote-admin").legacyRecord(file), "legacy");
 }
 
-async function downloadQuoteFiles(drive, files, converter) {
+async function downloadQuoteFiles(drive, files, converter, retiredIds) {
   const results = [];
   for (let index = 0; index < files.length; index += 10) {
     const batch = files.slice(index, index + 10);
@@ -286,6 +287,10 @@ async function downloadQuoteFiles(drive, files, converter) {
         const downloaded = await drive.files.get({ fileId: file.id, alt: "media" });
         const record = driveJson(downloaded.data);
         const quote = converter(record, file);
+        if (!quote) {
+          retiredIds?.add(record.quoteId || file.appProperties?.quote_id);
+          return null;
+        }
         if (quote.walkthrough) {
           try { return await require("./_walkthroughs").hydrate(drive, record); }
           catch { quote.status = "Status unavailable"; quote.walkthrough.error = "The confirmation status could not be loaded."; quote.walkthrough.canConfirm = false; }
@@ -326,10 +331,16 @@ async function listCrmQuotes() {
     legacyFoldersPromise
   ]);
   const saved = await downloadQuoteFiles(drive, savedFiles, savedQuote);
-  const custom = await downloadQuoteFiles(drive, customFiles, customizedQuote);
-  const customIds = new Set(custom.filter(Boolean).map((quote) => quote.id));
+  // A retired custom quote must not reappear as a generic quote through its old Drive folder.
+  const customIds = new Set();
+  const custom = (await downloadQuoteFiles(drive, customFiles, customizedQuote, customIds)).filter(Boolean);
+  custom.forEach(quote => customIds.add(quote.id));
   const legacy = legacyFolders.map(legacyFolderQuote).filter((quote) => !customIds.has(quote.id));
-  const combined = [...bookings.filter(b => !b.estimate?.managedQuote || b.estimate.managedQuote.source === "booking").map(bookingQuote), ...saved.filter(Boolean), ...custom.filter(Boolean), ...legacy];
+  const bookingQuotes = bookings
+    .filter(b => !isRetiredWindowQuote(b) || require("./_quote-admin").paid(b))
+    .filter(b => !b.estimate?.managedQuote || b.estimate.managedQuote.source === "booking")
+    .map(bookingQuote);
+  const combined = [...bookingQuotes, ...saved.filter(Boolean), ...custom, ...legacy];
   for (const quote of combined) {
     const booking = bookings.find(b => b.id === quote.bookingId || (quote.editSource === 'saved' && b.estimate?.savedQuoteId === quote.id && (require('./_quote-admin').paid(b) || b.estimate?.payment?.provider === 'external')));
     if (booking?.estimate?.payment?.provider === 'external') {

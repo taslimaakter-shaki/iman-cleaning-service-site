@@ -1,3 +1,4 @@
+const { assertServiceAvailable } = require("../booking/_service-policy");
 const crypto = require("crypto");
 const { getGoogleClients } = require("../quote/_shared");
 const bookingStore = require("../booking/_shared");
@@ -121,6 +122,7 @@ function validateFields(input = {}) {
     if (typeof value !== "string" || value.length > max) throw fail(`Check the ${key} field (maximum ${max} characters).`);
     fields[key] = text(value, max);
   }
+  assertServiceAvailable(fields);
   if (!fields.customerName || !fields.service) throw fail("Customer name and service are required.");
   if (fields.serviceDescriptionUrl) {
     let url;
@@ -252,6 +254,7 @@ function ready(fields) {
 
 async function saveEdit(body) {
   let found = await load(body.source, body.id);
+  assertServiceAvailable(found.record);
   if (body.version !== found.version) throw fail("This quote was updated elsewhere. Refresh before saving.", 409);
   if (found.state.deletedAt) throw fail("Restore this quote before editing it.", 409);
   if (found.state.updating) throw fail("A quote update is already in progress. Try again shortly.", 409);
@@ -302,6 +305,7 @@ async function saveDiscount(body) {
   const { validateDiscount, flatPricing, packageFingerprint } = require('../booking/_discount');
   const discount = validateDiscount(body.discountCents, body.discountLabel);
   let found = await load(body.source, body.id);
+  assertServiceAvailable(found.record);
   if (body.version !== found.version) throw fail('This quote was updated elsewhere. Refresh before saving.', 409);
   if (found.state.deletedAt || found.state.updating) throw fail('Restore or refresh this quote before changing the discount.', 409);
   if (paid(await linkedBooking(found))) throw fail('Payment has already been received. Use the refund workflow instead of changing the paid quote.', 409);
@@ -400,8 +404,10 @@ async function findManaged(quote) {
 }
 
 async function resolveManaged(quote) {
+  assertServiceAvailable(quote);
   const found = await findManaged(quote);
   if (!found) return quote;
+  assertServiceAvailable(found.record);
   if (found.state.deletedAt) throw fail("This quote is no longer available. Please contact IMAN Cleaning Service.", 410);
   if (found.state.updating) throw fail("Your quote is being updated. Please try again shortly.", 409);
   if (!found.state.fields) return quote;
@@ -536,6 +542,7 @@ async function checkSavedCheckout(token, session, revision) {
   const decoded = decodeSavedQuote(token);
   await assertQuoteUnused(decoded.quoteId);
   const found = await load("saved", decoded.quoteId);
+  assertServiceAvailable(found.record);
   if (found.state.fields || found.state.deletedAt || found.state.updating || (revision !== undefined && (found.state.revision || '') !== revision)) {
     if (session?.id) await expireStaleCheckout(session);
     throw Object.assign(fail("This quote has changed. Reopen your saved quote link to review the latest details before paying.", 409), { reviewRequired: true, reviewUrl: found.state.approvalCode && !found.state.deletedAt ? `/q/${found.state.approvalCode}` : undefined });

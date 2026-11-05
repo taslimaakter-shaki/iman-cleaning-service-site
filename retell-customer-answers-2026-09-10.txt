@@ -392,7 +392,7 @@ ANSWER: No. Sending the request only asks our team to review availability. After
 5. CLEANING SERVICES
 
 5.01 QUESTION: What cleaning services do you offer?
-ANSWER: We offer residential and commercial cleaning, including standard, deep, moving, Airbnb turnover, hourly, window cleaning, and custom detail or post-construction cleaning. The pricing page helps you choose the right route for your needs.
+ANSWER: We offer residential and commercial cleaning, including standard, deep, moving, Airbnb turnover, hourly, and custom detail or post-construction cleaning. The pricing page helps you choose the right route for your needs.
 
 5.02 QUESTION: What is included in standard cleaning?
 ANSWER: Standard cleaning covers routine care of accessible living areas, kitchens, bathrooms, and floors, including dusting, vacuuming, mopping, surface wiping, and emptying bins. Appliance interiors and other extras are not automatically included.
@@ -471,10 +471,10 @@ ANSWER: Yes. Select the refrigerator-interior option when asked and indicate whe
 ANSWER: Yes. Cabinet and drawer interiors can be included. Follow the form’s questions about quantity and whether they will be empty, and make sure the task appears in your quote.
 
 6.04 QUESTION: Do you clean windows?
-ANSWER: Yes. Window cleaning has its own pricing questions about window type, quantity, sides, condition, and safe access. Some requests require custom review rather than a standard cleaning add-on.
+ANSWER: We do not offer a standalone window cleaning service.
 
 6.05 QUESTION: Do you clean interior window glass?
-ANSWER: Yes. Reachable interior glass can be included in the appropriate scope. The moving-cleaning quote includes interior windows; other window requests should follow the window-pricing questions or be confirmed in writing.
+ANSWER: Reachable interior windows are included with move-in/move-out cleaning at no extra charge.
 
 6.06 QUESTION: Do you wash walls?
 ANSWER: Wall washing is not included in the regular standard, deep, or moving-cleaning rate. Please request it separately so our team can review the surface, condition, and safe method before agreeing to the work.

@@ -1,9 +1,9 @@
+const { assertServiceAvailable } = require("./_service-policy");
 const {
   availableSlotsForPackage,
   residentialAvailability,
   EXTENSION_HOURS,
   calculateHourlyCleaningQuote,
-  calculateWindowQuote,
   calculateResidentialQuoteBundle,
   catalogForClient,
   getPackageBundle,
@@ -35,6 +35,7 @@ module.exports = async function handler(request, response) {
 
     if (request.method === "POST") {
       const body = await readJsonBody(request);
+      assertServiceAvailable(body);
       const pausedBorough = temporarilyPausedServiceBorough(body.serviceZip);
       if (pausedBorough) {
         return json(response, 409, { error: `We’re temporarily not providing service in ${pausedBorough}. We expect to resume service there soon.` });
@@ -51,11 +52,6 @@ module.exports = async function handler(request, response) {
         const slots = await availableSlotsForPackage(pkg);
         return json(response, 200, { package: packageForClient(pkg), slots });
       }
-      if (serviceKey === "window" && body.pricingMode === "window_formula") {
-        const pkg = calculateWindowQuote(body.unitDetails?.[0], body.serviceZip);
-        const slots = await availableSlotsForPackage(pkg);
-        return json(response, 200, { package: packageForClient(pkg), slots });
-      }
       if (!["standard", "recurring", "deep", "move", "post"].includes(serviceKey) || body.pricingMode !== `${serviceKey}_formula`) {
         return json(response, 400, { error: "This pricing request is not supported." });
       }
@@ -69,6 +65,7 @@ module.exports = async function handler(request, response) {
       .split(",")
       .map((value) => value.trim())
       .filter(Boolean);
+    assertServiceAvailable({ packageId, packageIds });
     if (!packageId && !packageIds.length) {
       return json(response, 200, {
         catalog: catalogForClient(),

@@ -5,7 +5,7 @@ WORKDIR /app
 COPY package*.json ./
 RUN npm install --omit=dev
 
-COPY server.js ./
+COPY server.js service-policy.js ./
 
 ENV PORT=8080
 EXPOSE 8080

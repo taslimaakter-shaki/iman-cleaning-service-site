@@ -65,7 +65,7 @@ function fixture({ clock = Date } = {}) {
     "../booking/_saved-quote": {validateAndPrice: require('../api/booking/_saved-quote').validateAndPrice, assertQuoteUnused: async () => {}, decodeSavedQuote: token => {assert.equal(token,"VALID");return {quoteId:"SAVED-1"};}}
   };
   vm.runInNewContext(fs.readFileSync(path.join(__dirname,"../api/crm/_quote-admin.js"),"utf8"), {
-    require: name => dependencies[name] || require(name), module, exports:module.exports,
+    require: name => dependencies[name] || require("node:module").createRequire(require.resolve("../api/crm/_quote-admin"))(name), module, exports:module.exports,
     process:{env:{STRIPE_SECRET_KEY:"sk_test_mock"}}, fetch, Buffer, URLSearchParams, Date: clock, console, AbortSignal
   });
   return { api:module.exports, files, bookings, sessions, add, setFailure:value=>{failedStripe=value;}, get codes(){return codes;}, get cancelled(){return cancelled;} };

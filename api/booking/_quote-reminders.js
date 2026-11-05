@@ -1,3 +1,4 @@
+const { isRetiredWindowQuote } = require("./_service-policy");
 const { cleanText, json, listAllBookings } = require("./_shared");
 const { encodeSavedQuote } = require("./_saved-quote");
 const { sendCustomerSms } = require("./_notifications");
@@ -26,6 +27,7 @@ function secureQuoteUrl(record) {
 }
 
 function reminderStage(record, now = new Date()) {
+  if (record && isRetiredWindowQuote(record)) return "";
   const createdAt = Number(record?.createdAt || 0);
   const age = now.getTime() - createdAt;
   const reminders = record?.quoteReminders || {};

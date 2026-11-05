@@ -1,3 +1,4 @@
+const { assertServiceAvailable } = require("./_service-policy");
 const { staffingOptions } = require("./_staffing-options");
 const bookingDiscountName = require("../../booking-discount-names");
 const crypto = require("crypto");
@@ -10,7 +11,6 @@ const {
   residentialAvailability,
   availableSlotsForPackage,
   calculateHourlyCleaningQuote,
-  calculateWindowQuote,
   calculateResidentialQuoteBundle,
   cleanText,
   createBooking,
@@ -169,6 +169,7 @@ module.exports = async function handler(request, response) {
     }
 
     const body = await readJsonBody(request);
+    assertServiceAvailable(body);
     const quoteAdmin = require("../crm/_quote-admin");
     const savedQuoteId = await quoteAdmin.checkSavedCheckout(body.savedQuoteToken, undefined, body.quoteRevision || '');
     const eligibilityZip = cleanText(body.eligibility?.serviceZip, 15);
@@ -194,15 +195,12 @@ module.exports = async function handler(request, response) {
     const timeBasedMode = hourlyMode;
     const residentialFormulaMode = ["standard", "recurring", "deep", "move", "post"].includes(formulaServiceKey) &&
       pricingMode === `${formulaServiceKey}_formula`;
-    const windowMode = formulaServiceKey === "window" && pricingMode === "window_formula";
-    const formulaMode = timeBasedMode || residentialFormulaMode || windowMode;
+    const formulaMode = timeBasedMode || residentialFormulaMode;
     const requestedPackageIds = Array.isArray(body.packageIds) && body.packageIds.length
       ? body.packageIds
       : [body.packageId];
     let pkg = hourlyMode
       ? calculateHourlyCleaningQuote(submittedUnitDetails[0]?.hours)
-      : windowMode
-      ? calculateWindowQuote(submittedUnitDetails[0], body.eligibility?.serviceZip || body.customer?.zip)
       : residentialFormulaMode
       ? calculateResidentialQuoteBundle(submittedUnitDetails, formulaServiceKey, body.eligibility)
       : getPackageBundle(requestedPackageIds);
@@ -216,7 +214,7 @@ module.exports = async function handler(request, response) {
         ...unit,
         unitNumber: index + 1,
         tierKey: timeBasedMode ? "hourly" : "instant_quote",
-        tierLabel: timeBasedMode || windowMode ? pkg.tierLabel : `Unit ${index + 1} personalized ${pkg.serviceLabel}`,
+        tierLabel: timeBasedMode ? pkg.tierLabel : `Unit ${index + 1} personalized ${pkg.serviceLabel}`,
         squareFootage: 0
       }))
       : submittedUnitDetails.length
@@ -254,12 +252,6 @@ module.exports = async function handler(request, response) {
     const requiredEligibility = timeBasedMode ? [
       "serviceIntent",
       "requestedService"
-    ] : windowMode ? [
-      "serviceIntent",
-      "requestedService",
-      "cleaningCategory",
-      "propertyType",
-      "serviceZip"
     ] : [
       "propertyStatus",
       "cleaningCategory",
@@ -271,26 +263,26 @@ module.exports = async function handler(request, response) {
       "buildup",
       "hazards"
     ];
-    if (!timeBasedMode && !windowMode && submittedUnitDetails.length) {
+    if (!timeBasedMode && submittedUnitDetails.length) {
       requiredEligibility.push("propertyType", "unitCount");
     }
-    if (!timeBasedMode && !windowMode && cleanText(eligibility.propertyStatus, 40) === "occupied") {
+    if (!timeBasedMode && cleanText(eligibility.propertyStatus, 40) === "occupied") {
       requiredEligibility.push("requestedService");
     }
-    if (!timeBasedMode && !windowMode && cleanText(eligibility.propertyStatus, 40) === "renovated") {
+    if (!timeBasedMode && cleanText(eligibility.propertyStatus, 40) === "renovated") {
       requiredEligibility.push("constructionFinished", "contractorItemsRemoved");
     }
-    if (!timeBasedMode && !windowMode && cleanText(eligibility.hazards, 20) === "mold") {
+    if (!timeBasedMode && cleanText(eligibility.hazards, 20) === "mold") {
       requiredEligibility.push("moldCleaningRequested");
     }
     if (requiredEligibility.some((field) => !cleanText(eligibility[field], 40))) {
       return json(response, 400, { error: "Complete every package eligibility question before checkout." });
     }
-    if (!timeBasedMode && !windowMode && submittedUnitDetails.length && Number(eligibility.unitCount) !== unitDetails.length) {
+    if (!timeBasedMode && submittedUnitDetails.length && Number(eligibility.unitCount) !== unitDetails.length) {
       return json(response, 400, { error: "The number of units does not match the submitted home details." });
     }
 
-    if (!timeBasedMode && !windowMode) {
+    if (!timeBasedMode) {
       const recommendation = recommendResidentialService({
         ...eligibility,
         squareFootage: bookingSquareFootage
@@ -422,12 +414,6 @@ module.exports = async function handler(request, response) {
     const remainingAmountCents = Math.max(0, pkg.priceCents - depositAmountCents);
     let unitSummary = timeBasedMode
       ? `${pkg.manHours} total hourly-cleaning work-hours with 2 team members for ${pkg.teamHours} hours, $${pkg.total.toFixed(2)} including tax.`
-      : windowMode
-      ? [
-        `${submittedUnitDetails[0]?.windows?.reduce((sum, item) => sum + Number(item.quantity || 0), 0) || 0} selected windows/panels`,
-        `${cleanText(submittedUnitDetails[0]?.scope, 20).replace("both", "interior and exterior")}`,
-        `$${pkg.subtotal.toFixed(2)} before tax; $${pkg.tax.toFixed(2)} sales tax; $${pkg.total.toFixed(2)} total.`
-      ].join(", ")
       : unitDetails
       .map((unit) => residentialFormulaMode
         ? [
@@ -477,15 +463,11 @@ module.exports = async function handler(request, response) {
       notes: [
         timeBasedMode
           ? "Service type: Hourly Cleaning Service."
-          : windowMode
-          ? `Window cleaning: ${unitSummary}`
           : `Property type: ${cleanText(eligibility.propertyType, 40) || "residential"}.`,
         `Package: ${pkg.tierLabel}.`,
         unitSummary,
         timeBasedMode
           ? `Included service: ${pkg.manHours} total work-hours; ${staffingOptions(pkg) || `2 team members for ${pkg.teamHours} hours`}.`
-          : windowMode
-          ? `Maximum estimated service time: ${staffingOptions(pkg) || `up to ${pkg.teamHours} hours with a two-person team`}. Service may be completed sooner.`
           : `Maximum labor: ${pkg.manHours} labor-hours; ${staffingOptions(pkg) || `two-person team for up to ${pkg.teamHours} hours`}. Service may be completed sooner.`,
         priorities.length ? `Priorities: ${priorities.join(", ")}.` : "",
         notes ? `Customer notes: ${notes}` : "",

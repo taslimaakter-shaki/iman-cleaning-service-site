@@ -1,7 +1,7 @@
 const assert = require('node:assert/strict');
 const fs = require('node:fs');
 const vm = require('node:vm');
-const { calculateHourlyCleaningQuote, calculateResidentialQuoteBundle, calculateWindowQuote, packageForClient } = require('../api/booking/_shared');
+const { calculateHourlyCleaningQuote, calculateResidentialQuoteBundle, packageForClient } = require('../api/booking/_shared');
 const { applyPromotion, PROMOTIONS } = require('../api/booking/_promo');
 const { applyArrivalDiscount: serverArrival } = require('../api/booking/_arrival-preference');
 const { buildAgreementAcceptance, AGREEMENT_VERSION, AGREEMENT_ACCEPTANCE_TEXT } = require('../api/booking/_checkout')._test;
@@ -127,7 +127,6 @@ async function checkPayDuringSave() {
   await checkPayDuringSave();
   const originals = [
     calculateHourlyCleaningQuote(4),
-    calculateWindowQuote({ propertyType: 'residential', scope: 'both', screens: 1, windows: [{ type: 'single_hung', quantity: 10 }] }, '11218'),
     calculateResidentialQuoteBundle([{
       bedrooms: 2, fullBathrooms: 1, halfBathrooms: 0, hasLivingRoom: 'no', hasDiningRoom: 'no',
       hasPets: 'no', refrigerator: 'no', oven: 'no', cabinets: 'no', additionalCleaning: 'no', additionalRooms: 0

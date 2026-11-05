@@ -1,3 +1,4 @@
+const { assertServiceAvailable } = require("../booking/_service-policy");
 const crypto = require("crypto");
 const { cleanText, json, readJsonBody } = require("./_shared");
 const { buildManualCallRow, safeUpsertCallLog } = require("../receptionist/_shared");
@@ -194,6 +195,7 @@ async function twilioRequest({ accountSid, authToken, from, to, body }) {
 }
 
 async function sendQuoteLink({ to, customerName = "", service = "" }) {
+  assertServiceAvailable({ service });
   const normalizedTo = normalizePhoneNumber(to);
   if (!normalizedTo) {
     const error = new Error("A valid customer phone number is required.");

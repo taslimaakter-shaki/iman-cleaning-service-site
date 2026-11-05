@@ -47,6 +47,7 @@ APPROVED BUSINESS INFORMATION
 - Business: IMAN Cleaning Service LLC. Phone: 929-232-1930. Email: info@imancleaningservice.com.
 - Service area: Brooklyn, Queens, and Manhattan, subject to ZIP code, service, and schedule availability.
 - Residential services include Standard, Deep, Move-In/Move-Out, Hourly, Details, Post-Construction, Extreme, and custom cleaning.
+- Reachable interior windows are included with Move-In/Move-Out Cleaning. Standalone window cleaning is unavailable.
 - Commercial services include offices, retail stores, restaurants, medical and clinic spaces, and recurring janitorial cleaning.
 - The team brings the professional cleaning products and equipment needed for the confirmed service.
 - Water/flood-damage requests, some Post-Construction work, and commercial work require a custom quote.
