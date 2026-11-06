@@ -246,7 +246,7 @@ function buildSections({ booking, record }) {
 
   const homeKeys = new Set([
     "bedrooms", "fullBathrooms", "halfBathrooms", "kitchens", "kitchen", "hasLivingRoom", "hasDiningRoom",
-    "livingDining", "additionalRooms", "additionalRoomTypes", "squareFootage"
+    "livingDining", "livingRooms", "diningRooms", "additionalRooms", "additionalRoomTypes", "squareFootage"
   ]);
   const selectionKeys = new Set([
     "refrigeratorCleaning", "ovenCleaning", "cabinetsDrawers", "refrigerator", "oven", "cabinets"
@@ -254,6 +254,13 @@ function buildSections({ booking, record }) {
 
   (Array.isArray(estimate.units) ? estimate.units : []).forEach((unit, index) => {
     const omittedUnitKeys = new Set(OMIT_UNIT_KEYS);
+    // Counts duplicate the room selections already shown in home details.
+    if (unit.livingDining === "combined" || unit.hasLivingRoom === "yes" || unit.hasLivingRoom === true) {
+      omittedUnitKeys.add("livingRooms");
+    }
+    if (unit.livingDining === "combined" || unit.hasDiningRoom === "yes" || unit.hasDiningRoom === true) {
+      omittedUnitKeys.add("diningRooms");
+    }
     if (isMovingCleaning) {
       // Moving Cleaning requires an empty property. These questions are not
       // asked and must not appear as zero/negative answers in the record.

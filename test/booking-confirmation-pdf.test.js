@@ -142,6 +142,23 @@ const record = {
     assert(rows.some(([name, value]) => name === "Inside refrigerator" && value === "Yes (empty)"));
   }
 
+  const roomSections = buildSections({ booking: { ...booking, estimate: {
+    ...booking.estimate,
+    units: [{ bedrooms: 1, kitchens: 1, fullBathrooms: 1, livingDining: "combined",
+      hasLivingRoom: "yes", hasDiningRoom: "yes", livingRooms: 1, diningRooms: 1 }]
+  } }, record });
+  const homeSection = roomSections.find(section => section.title === "Home details and selected rooms");
+  assert(homeSection.rows.some(([label, value]) => label === "Living and dining area" && value === "Combined"));
+  assert(homeSection.rows.some(([label]) => label === "Living room"));
+  assert(homeSection.rows.some(([label]) => label === "Dining room"));
+  assert(!roomSections.some(section => section.title === "Additional service details"));
+  assert(!roomSections.flatMap(section => section.rows).some(([label]) => ["Living Rooms", "Dining Rooms"].includes(label)));
+  const legacyRooms = buildSections({ booking: { ...booking, estimate: {
+    ...booking.estimate, units: [{ livingRooms: 2, diningRooms: 1, hours: 3 }]
+  } }, record });
+  assert(legacyRooms.find(section => section.title === "Home details and selected rooms").rows.some(([label, value]) => label === "Living Rooms" && value === "2"));
+  assert(legacyRooms.find(section => section.title === "Additional service details").rows.some(([label]) => label === "Organization labor-hours"));
+
   const sections = buildSections({ booking, record });
   assert.ok(sections.some((section) => section.title === "Eligibility and prescreening answers"));
   assert.equal(sections.some((section) => /pricing|payment/i.test(section.title)), false,
