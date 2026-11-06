@@ -1,4 +1,4 @@
-const { staffingOptions, displayNotes } = require("./_staffing-options");
+const { staffingOptions } = require("./_staffing-options");
 const PDFDocument = require("pdfkit");
 
 const COLORS = {
@@ -288,10 +288,15 @@ function buildSections({ booking, record }) {
     sections.push({ title: "Selected priorities", rows: [["Priorities and extras", booking.addons.join(", ")]] });
   }
 
-  if (booking?.notes) {
+  // New bookings keep the customer's text separate from generated staff summaries.
+  // Older online bookings appended it after the explicit Customer notes marker.
+  const customerNotes = typeof estimate.customerNotes === "string"
+    ? estimate.customerNotes.trim()
+    : String(booking?.notes || "").match(/(?:^|\s)Customer notes:\s*([\s\S]*)/)?.[1]?.split("\nPAID BOOKING CONFLICT:")[0].trim() || "";
+  if (customerNotes) {
     sections.push({
       title: "Customer notes - review before service",
-      rows: [["Customer instructions", displayNotes(booking.notes, estimate)]],
+      rows: [["Customer instructions", customerNotes]],
       tone: "caution"
     });
   }

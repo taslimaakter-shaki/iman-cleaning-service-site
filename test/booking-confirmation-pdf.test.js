@@ -26,6 +26,7 @@ const booking = {
   addons: ["Inside refrigerator", "Inside oven"],
   notes: "Customer requested special attention in the kitchen. Maximum labor: 5 labor-hours; two-person team for up to 2.5 hours. Service may be completed sooner.",
   estimate: {
+    customerNotes: "Please focus on the kitchen.\nLeave the bedroom door closed.",
     manHours: 5,
     teamHours: 2.5,
     cleanerCount: 2,
@@ -176,7 +177,23 @@ const record = {
   assert.equal(sections.find(section => section.title === "Agreement confirmation").rows.find(row => row[0] === "Agreement version")[1], booking.estimate.agreementVersion);
   const customerNotesSection = sections.find((section) => section.title === "Customer notes - review before service");
   assert.equal(customerNotesSection?.tone, "caution");
-  assert.deepEqual(customerNotesSection?.rows, [["Customer instructions", "Customer requested special attention in the kitchen. Maximum labor: 5 labor-hours; 1 team member for up to 5 hours, or 2 team members for up to 2 hours 30 minutes. Service may be completed sooner."]]);
+  assert.deepEqual(customerNotesSection?.rows, [["Customer instructions", booking.estimate.customerNotes]]);
+
+  for (const [notes, stored, expected] of [
+    ["Property type: apartment. Package: Personalized Standard Cleaning. Maximum labor: 5 labor-hours.", undefined, ""],
+    ["Property type: apartment. Priorities: Kitchen. Customer notes: Please use the side door.\nBring supplies.", undefined, "Please use the side door.\nBring supplies."],
+    ["Property type: apartment. Customer notes: stale text", "", ""],
+    ["Property type: apartment. Customer notes: old", "Customer's exact note.", "Customer's exact note."],
+    ["Internal staff instruction", undefined, ""]
+  ]) {
+    const estimate = { ...booking.estimate };
+    delete estimate.customerNotes;
+    if (stored !== undefined) estimate.customerNotes = stored;
+    const result = buildSections({ booking: { ...booking, notes, estimate }, record });
+    const noteSection = result.find(section => section.title === "Customer notes - review before service");
+    if (expected) assert.deepEqual(noteSection.rows, [["Customer instructions", expected]]);
+    else assert.equal(noteSection, undefined);
+  }
 
   const movingSections = buildSections({
     booking: {

@@ -469,6 +469,7 @@ module.exports = async function handler(request, response) {
         notes ? `Customer notes: ${notes}` : "",
       ].filter(Boolean).join(" "),
       estimate: {
+        customerNotes: notes,
         calendarReservation: (reservation = (process.env.BOOKING_PAYMENT_FLOW === 'server' || (!halfHours && process.env.BOOKING_PAYMENT_FLOW === 'hosted_unreserved')) ? { ...calendar.newReservation(), state: 'draft' } : calendar.newReservation()),
         acceptPaidConflict: !halfHours && process.env.BOOKING_PAYMENT_FLOW === 'hosted_unreserved',
         ...(secondStart ? { secondVisitSchedule: secondStart } : {}),
