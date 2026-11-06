@@ -98,11 +98,62 @@ function harness() {
 }
 
 (async () => {
+  // Notifications and customer chats share a business number. No uncoded
+  // owner text may read, modify or select any customer, even with newer chats.
+  const routing = harness();
+  const older = await routing.communications.sendCustomerMessage({phone: customer, message: "Older customer"});
+  routing.advance(1000);
+  await routing.communications.sendCustomerMessage({phone: other, message: "Newest customer"});
+  const originalHistory = JSON.stringify({sessions: routing.sessions, messages: routing.messages});
+  const queryCount = routing.queries.length;
+  for (const action of ["twilio-webhook", "sms-fallback"]) {
+    for (const body of [
+      '\u200a\u200b👍\u200b to “\u200aPrivate booking alert C12345\u200a”\u200a',
+      '\u200aRemoved \u200c👍\u200c from “\u200aPrivate call alert\u200a”\u200a',
+      'Loved “Private booking alert”', 'Thanks', 'close', 'done', 'end',
+      'C1234 Wrong code', 'Reply to C12345 I can help'
+    ]) {
+      const response = await routing.incoming({from: env.OWNER_SMS_TO, sid: `guard-${action}-${body}`, body, action});
+      assert.match(response.body, /chat code/);
+      assert.equal(JSON.stringify({sessions: routing.sessions, messages: routing.messages}), originalHistory);
+      assert.equal(routing.queries.length, queryCount, "Uncoded owner replies must not even query customer storage");
+      assert.equal(routing.outbound.length, 2);
+      assert.equal(routing.ai.length, 0);
+    }
+  }
+  // A code must select its own chat even when another customer is newer.
+  const olderCode = routing.sessions[0].short_code;
+  await routing.incoming({from: env.OWNER_SMS_TO, sid: "explicit-older", body: `${olderCode} Intended older reply`});
+  assert.equal(routing.messages.at(-1).session_id, older.sessionId);
+  assert.equal(routing.messages.at(-1).body, "Intended older reply");
+  await routing.incoming({from: env.OWNER_SMS_TO, sid: "explicit-close", body: `${olderCode} close`, action: "sms-fallback"});
+  assert.equal(routing.sessions[0].status, "closed");
+  assert.equal(routing.sessions[1].status, "active");
+  const missingCode = ["C00000", "C11111", "C22222"].find(code => !routing.sessions.some(s => s.short_code === code));
+  const beforeMissing = JSON.stringify({sessions: routing.sessions, messages: routing.messages});
+  await routing.incoming({from: env.OWNER_SMS_TO, sid: "missing-code", body: `${missingCode} Never guess a customer`});
+  assert.equal(JSON.stringify({sessions: routing.sessions, messages: routing.messages}), beforeMissing);
+
   const h = harness();
   const sent = await h.communications.sendCustomerMessage({phone: customer, customerName: "Example Customer", message: "Your team member here."});
   assert.equal(h.outbound[0].To, customer);
   assert.equal(h.messages[0].sender, "owner");
   assert.match(h.messages[0].client_message_id, /^crm-out:/);
+  const owner = env.OWNER_SMS_TO;
+  const beforeOwnerMessages = h.messages.length;
+  for (const action of ["twilio-webhook", "sms-fallback"]) {
+    for (const body of ['👍 to “Private booking alert”', 'Removed 👍 from “Private call alert”', 'Liked “Private booking alert”', 'Thanks', 'close']) {
+      const response = await h.incoming({from: owner, sid: `owner-${action}-${body}`, body, action});
+      assert.match(response.body, /chat code/);
+      assert.equal(h.messages.length, beforeOwnerMessages, "Uncoded owner replies must never enter a customer conversation");
+      assert.equal(h.sessions[0].status, "active");
+    }
+  }
+  const code = h.sessions[0].short_code;
+  await h.incoming({from: owner, sid: "coded-owner", body: `${code} Intended reply`});
+  assert.equal(h.messages.at(-1).session_id, sent.sessionId);
+  assert.equal(h.messages.at(-1).body, "Intended reply");
+  assert.equal(h.outbound.length, 1, "Owner webhook writes chat history without sending customer SMS");
   const assertSilent = async options => {
     const before = h.ai.length;
     const response = await h.incoming(options);

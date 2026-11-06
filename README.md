@@ -471,6 +471,8 @@ The live chat uses:
 
 Supabase stores chat sessions and messages. Twilio can forward a website message to the business phone. Replies use the chat code to return the answer to the correct website visitor.
 
+Owner SMS replies and close commands must include an explicit chat code. Uncoded texts, including phone reactions that quote internal alerts, must never be assigned to the latest active customer. Both the primary SMS webhook and its fallback enforce this rule before accessing customer storage; regression coverage is in `test/sms-team-handoff.test.js`.
+
 Text-message consent and opt-out language must remain clear. Customers can reply STOP where required by the Twilio messaging flow.
 
 ## AI Features

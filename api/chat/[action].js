@@ -2,7 +2,6 @@ const {
   cleanText,
   createSession,
   findClientMessage,
-  getLatestActiveSession,
   getLatestActiveSessionByContact,
   getOwnerPhoneNumbers,
   getSession,
@@ -299,9 +298,14 @@ async function handleTwilioWebhook(request, response, { fallback = false } = {})
     return twiml(response, "Reply with the chat code and your message, for example: C12345 I can help.");
   }
 
-  const session = parsed.shortCode
-    ? await getSessionByShortCode(parsed.shortCode)
-    : await getLatestActiveSession();
+  // Owner notifications share this SMS number. Uncoded replies (including
+  // phone reactions quoting private alerts) cannot identify a customer.
+  // Never route them to whichever conversation happened to be active last.
+  if (!parsed.shortCode) {
+    return twiml(response, "Reply with the chat code and your message, for example: C12345 I can help. No customer message was sent.");
+  }
+
+  const session = await getSessionByShortCode(parsed.shortCode);
 
   if (!session) {
     return twiml(response, "No active website chat was found. Ask the customer to send a new chat message first.");
