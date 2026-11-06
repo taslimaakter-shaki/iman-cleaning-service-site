@@ -143,6 +143,19 @@ const record = {
     assert(rows.some(([name, value]) => name === "Inside refrigerator" && value === "Yes (empty)"));
   }
 
+  for (const [buildup, expected] of Object.entries({
+    none: "Light - Regular dust and dirt, with no unusual buildup.",
+    some: "Moderate - Noticeable grease, grime, soap scum, or dirt buildup.",
+    heavy: "Heavy - Thick grease, stubborn grime, or extensive buildup."
+  })) {
+    const result = buildSections({ booking: { ...booking, estimate: {
+      ...booking.estimate, eligibility: { buildup }, units: [{ buildup }]
+    } }, record });
+    const rows = result.flatMap(section => section.rows).filter(([label]) => label === "Buildup level");
+    assert.equal(rows.length, 2);
+    assert(rows.every(([, value]) => value === expected));
+  }
+
   const roomSections = buildSections({ booking: { ...booking, estimate: {
     ...booking.estimate,
     units: [{ bedrooms: 1, kitchens: 1, fullBathrooms: 1, livingDining: "combined",

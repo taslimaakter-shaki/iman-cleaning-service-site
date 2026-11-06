@@ -82,14 +82,21 @@ const CLUTTER_LABELS = {
   heavy: "Heavy clutter - Many belongings cover floors or surfaces, making cleaning difficult."
 };
 
+const BUILDUP_LABELS = {
+  none: "Light - Regular dust and dirt, with no unusual buildup.",
+  some: "Moderate - Noticeable grease, grime, soap scum, or dirt buildup.",
+  heavy: "Heavy - Thick grease, stubborn grime, or extensive buildup."
+};
+
 function friendlyValue(value, key = "") {
   if (["refrigerator", "refrigeratorCleaning"].includes(key) && typeof value === "string") {
     const labels = { no: "No", empty: "Yes (empty)", "not-empty": "Yes (not empty)" };
     const label = labels[value.trim().toLowerCase()];
     if (label) return label;
   }
-  if (key === "clutter" && typeof value === "string") {
-    const label = CLUTTER_LABELS[value.trim().toLowerCase()];
+  if (["clutter", "buildup"].includes(key) && typeof value === "string") {
+    const labels = key === "clutter" ? CLUTTER_LABELS : BUILDUP_LABELS;
+    const label = labels[value.trim().toLowerCase()];
     if (label) return label;
   }
   if (Array.isArray(value)) {
