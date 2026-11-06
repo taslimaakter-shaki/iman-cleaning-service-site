@@ -123,6 +123,25 @@ const record = {
     "A validated custom-quote service-details URL takes priority"
   );
 
+  // Existing records store option codes in eligibility and per-unit details.
+  const optionLabels = {
+    low: "Little or no clutter - Floors and surfaces are mostly clear.",
+    moderate: "Moderate clutter - Some belongings are scattered on floors or surfaces.",
+    several: "Significant clutter - Several areas have scattered items that limit cleaning access.",
+    heavy: "Heavy clutter - Many belongings cover floors or surfaces, making cleaning difficult."
+  };
+  for (const [clutter, label] of Object.entries(optionLabels)) {
+    const details = buildSections({ booking: { ...booking, estimate: {
+      ...booking.estimate,
+      eligibility: { clutter, units: [{ clutter }] },
+      units: [{ clutter, refrigerator: "not-empty", refrigeratorCleaning: "empty" }]
+    } }, record });
+    const rows = details.flatMap(section => section.rows);
+    assert(rows.some(([name, value]) => name === "Clutter level" && value === label));
+    assert(rows.some(([name, value]) => name === "Refrigerator" && value === "Yes (not empty)"));
+    assert(rows.some(([name, value]) => name === "Inside refrigerator" && value === "Yes (empty)"));
+  }
+
   const sections = buildSections({ booking, record });
   assert.ok(sections.some((section) => section.title === "Eligibility and prescreening answers"));
   assert.equal(sections.some((section) => /pricing|payment/i.test(section.title)), false,

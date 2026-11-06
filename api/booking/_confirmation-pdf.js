@@ -75,7 +75,23 @@ function friendlyLabel(key) {
     .replace(/^./, (letter) => letter.toUpperCase());
 }
 
-function friendlyValue(value) {
+const CLUTTER_LABELS = {
+  low: "Little or no clutter - Floors and surfaces are mostly clear.",
+  moderate: "Moderate clutter - Some belongings are scattered on floors or surfaces.",
+  several: "Significant clutter - Several areas have scattered items that limit cleaning access.",
+  heavy: "Heavy clutter - Many belongings cover floors or surfaces, making cleaning difficult."
+};
+
+function friendlyValue(value, key = "") {
+  if (["refrigerator", "refrigeratorCleaning"].includes(key) && typeof value === "string") {
+    const labels = { no: "No", empty: "Yes (empty)", "not-empty": "Yes (not empty)" };
+    const label = labels[value.trim().toLowerCase()];
+    if (label) return label;
+  }
+  if (key === "clutter" && typeof value === "string") {
+    const label = CLUTTER_LABELS[value.trim().toLowerCase()];
+    if (label) return label;
+  }
   if (Array.isArray(value)) {
     return value.map((item) => {
       if (item && typeof item === "object") {
@@ -89,7 +105,7 @@ function friendlyValue(value) {
   if (value && typeof value === "object") {
     return Object.entries(value)
       .filter(([, nested]) => nested !== "" && nested !== null && nested !== undefined)
-      .map(([key, nested]) => `${friendlyLabel(key)}: ${friendlyValue(nested)}`)
+      .map(([key, nested]) => `${friendlyLabel(key)}: ${friendlyValue(nested, key)}`)
       .join("; ");
   }
   if (typeof value === "boolean") return value ? "Yes" : "No";
@@ -127,11 +143,11 @@ function formatAppointment(booking, record) {
 function answerRows(source, omitted = new Set()) {
   return Object.entries(source || {})
     .filter(([key, value]) => !omitted.has(key) && value !== "" && value !== null && value !== undefined)
-    .map(([key, value]) => [friendlyLabel(key), friendlyValue(value)])
+    .map(([key, value]) => [friendlyLabel(key), friendlyValue(value, key)])
     .filter(([, value]) => value);
 }
 
-function compactValue(value) {
+function compactValue(value, key = "") {
   if (Array.isArray(value)) {
     return value.map((item) => compactValue(item)).filter(Boolean).join("; ");
   }
@@ -142,10 +158,10 @@ function compactValue(value) {
         if (typeof nested === "number" && nested <= 0) return false;
         return !["no", "none", "not included"].includes(String(nested).trim().toLowerCase());
       })
-      .map(([key, nested]) => `${friendlyLabel(key)}: ${friendlyValue(nested)}`)
+      .map(([key, nested]) => `${friendlyLabel(key)}: ${friendlyValue(nested, key)}`)
       .join("; ");
   }
-  return friendlyValue(value);
+  return friendlyValue(value, key);
 }
 
 function meaningfulUnitRows(source, omitted = new Set()) {
@@ -159,7 +175,7 @@ function meaningfulUnitRows(source, omitted = new Set()) {
         && ["no", "none", "false", "0"].includes(normalized)) return false;
       return Boolean(compactValue(value));
     })
-    .map(([key, value]) => [key, friendlyLabel(key), compactValue(value)]);
+    .map(([key, value]) => [key, friendlyLabel(key), compactValue(value, key)]);
 }
 
 function formatTeamTime(estimate = {}) {
