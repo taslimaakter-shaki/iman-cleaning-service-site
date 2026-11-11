@@ -2073,9 +2073,9 @@
       <form class="crm-arrival-confirmation-form" data-arrival-confirmation-form>
         <label>${secondVisit ? "First visit arrival time" : "Appointment arrival time"}<input name="arrivalTime" type="time" required step="${secondVisit ? "60" : "900"}" min="${escapeHtml(arrivalBounds.start)}" max="${escapeHtml(arrivalBounds.end)}" value="${escapeHtml(currentArrivalTime)}"><small>Allowed window: ${escapeHtml(arrivalPreference.windowLabel || `${arrivalBounds.start}–${arrivalBounds.end}`)}. The extra reserved hour remains unchanged.</small></label>
         ${secondVisit ? `<label>Second visit arrival time<input name="secondArrivalTime" type="time" required step="60" min="${escapeHtml(arrivalBounds.start)}" max="${escapeHtml(arrivalBounds.end)}" value="${escapeHtml(appointmentInputValue({schedule:secondVisit}).slice(11))}"></label>` : ""}
-        <button class="crm-primary" type="submit">${arrivalPreference.confirmationStatus === "confirmed" ? "Update time & text customer" : "Confirm time & text customer"}</button>
+        <button class="crm-primary" type="submit">${arrivalPreference.confirmationStatus === "confirmed" ? "Update time & notify customer" : "Confirm time & notify customer"}</button>
       </form>
-      <p class="crm-arrival-warning">Saving updates the booking calendar and sends the customer a text message with the confirmed appointment time.</p>
+      <p class="crm-arrival-warning">Saving updates the booking calendar and sends the confirmed appointment time by text and, when an email address is available, email.</p>
       <p class="crm-action-status" data-arrival-confirmation-status role="status"></p>
     </section>` : "";
     return `<div class="crm-dialog-head">
@@ -2430,15 +2430,19 @@
       }
       const refreshedStatus = $("[data-arrival-confirmation-status]", dialog);
       const messageFailed = data.scheduleNotification?.status === "failed";
+      const emailFailed = data.emailNotification?.status === "failed";
       const calendarFailed = data.calendar?.status === "error";
-      refreshedStatus.className = messageFailed || calendarFailed ? "crm-action-status is-error" : "crm-action-status is-success";
+      refreshedStatus.className = messageFailed || emailFailed || calendarFailed ? "crm-action-status is-error" : "crm-action-status is-success";
       refreshedStatus.textContent = [
         "Arrival time saved.",
         data.scheduleNotification?.status === "sent" ? "Customer confirmation text sent." : "",
         messageFailed ? data.scheduleNotification.error : "",
+        data.emailNotification?.status === "sent" ? "Customer confirmation email sent." : "",
+        data.emailNotification?.status === "skipped" ? "Email skipped: no customer email address. Text confirmation is unaffected." : "",
+        emailFailed ? (data.emailNotification?.error || "Confirmation email was not sent. Check the customer email address.") : "",
         calendarFailed ? data.calendar.error : "Google Calendar is up to date."
       ].filter(Boolean).join(" ");
-      toast(messageFailed || calendarFailed ? "Arrival time saved, but follow-up needs attention." : "Arrival time confirmed and customer texted.", messageFailed || calendarFailed ? "error" : undefined);
+      toast(messageFailed || emailFailed || calendarFailed ? "Arrival time saved, but follow-up needs attention." : data.emailNotification?.status === "sent" ? "Arrival time confirmed; customer emailed and texted." : "Arrival time confirmed and customer texted.", messageFailed || emailFailed || calendarFailed ? "error" : undefined);
     } catch (error) {
       status.className = "crm-action-status is-error";
       status.textContent = error.message;

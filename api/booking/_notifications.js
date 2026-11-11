@@ -35,6 +35,13 @@ function reminderStageForBooking(booking, now = new Date()) {
 }
 
 function reminderCopy(stage) {
+  if (stage === "arrival_confirmed") {
+    return {
+      subjectLead: "Your arrival time is confirmed",
+      heading: "Your cleaning arrival time is confirmed.",
+      intro: "We have confirmed the exact arrival time for your cleaning appointment. All times below are New York time."
+    };
+  }
   if (stage === "flexible_two_days") {
     return {
       subjectLead: "Your cleaning is two days away",
@@ -182,6 +189,10 @@ function buildReminderEmail(booking, stage) {
   return { raw: base64Url(raw), subject, text, html };
 }
 
+async function sendArrivalConfirmationEmail(booking) {
+  return sendBookingReminderEmail(booking, "arrival_confirmed");
+}
+
 async function sendBookingReminderEmail(booking, stage) {
   const email = buildReminderEmail(booking, stage);
   if (!email) return { status: "skipped", messageId: "", error: "Customer email is missing." };
@@ -316,6 +327,7 @@ module.exports = {
   reminderStageForBooking,
   sendAdditionalWorkOfferEmail,
   sendAdditionalWorkOfferSms,
+  sendArrivalConfirmationEmail,
   sendBookingReminderEmail,
   sendBookingReminderSms,
   sendCustomerSms

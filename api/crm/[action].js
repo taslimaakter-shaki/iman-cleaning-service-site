@@ -544,13 +544,22 @@ async function confirmFlexibleArrival(body, response) {
     scheduleNotification = { status: "failed", error: "The arrival time was saved, but the confirmation text could not be sent." };
   }
 
+  let emailNotification;
+  try {
+    emailNotification = await require("../booking/_notifications").sendArrivalConfirmationEmail({
+      ...booking, schedule, schedule_label: scheduleLabel, estimate: updatedEstimate
+    });
+  } catch (error) {
+    emailNotification = { status: "failed", error: "The arrival time was saved, but the confirmation email could not be sent." };
+  }
+
   let calendar = { status: "unchanged" };
   try {
     calendar = await updateBookingGoogleCalendar(await getBooking(id), "reschedule", { notifyCustomer: false });
   } catch (error) {
     calendar = { status: "error", error: "Arrival time saved, but Google Calendar could not be updated." };
   }
-  return json(response, 200, { ok: true, calendar, scheduleNotification, booking: toClientBooking(await getBooking(id)) });
+  return json(response, 200, { ok: true, calendar, scheduleNotification, emailNotification, booking: toClientBooking(await getBooking(id)) });
 }
 
 function buildTimeTracking(existing = {}, clockAction, now = new Date()) {

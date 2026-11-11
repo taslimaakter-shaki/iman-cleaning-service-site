@@ -29,7 +29,7 @@ const root = path.join(__dirname, "..");
 const crmSource = fs.readFileSync(path.join(root, "crm.js"), "utf8");
 const apiSource = fs.readFileSync(path.join(root, "api", "crm", "[action].js"), "utf8");
 assert.match(crmSource, /data-arrival-confirmation-form/);
-assert.match(crmSource, /Confirm time & text customer/);
+assert.match(crmSource, /Confirm time & notify customer/);
 assert.match(crmSource, /bookingAction: "confirm_arrival"/);
 assert.match(apiSource, /arrival time is confirmed for/);
 assert.match(apiSource, /updateBookingGoogleCalendar/);
