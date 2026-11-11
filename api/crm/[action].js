@@ -164,15 +164,14 @@ function numberBetween(value, minimum, maximum, label) {
   return parsed;
 }
 
-function bookingScheduleLabel(schedule) {
+function bookingScheduleLabel(schedule, { dateOnly = false } = {}) {
   return new Intl.DateTimeFormat("en-US", {
     timeZone: "America/New_York",
     weekday: "long",
     month: "long",
     day: "numeric",
     year: "numeric",
-    hour: "numeric",
-    minute: "2-digit"
+    ...(dateOnly ? {} : { hour: "numeric", minute: "2-digit" })
   }).format(new Date(schedule));
 }
 
@@ -200,9 +199,14 @@ function smsDurationLabel(value) {
 }
 
 function buildCleanerAssignmentSms(booking, cleanerNames) {
+  const arrival = booking.estimate?.arrivalPreference;
+  const dateOnly = arrival?.flexible === true && arrival.confirmationStatus !== "confirmed";
+  const appointment = !booking.schedule ? "" : dateOnly
+    ? `Service date: ${bookingScheduleLabel(booking.schedule, { dateOnly: true })}.`
+    : `Appointment: ${bookingScheduleLabel(booking.schedule)} (New York time).`;
   return [
     `IMAN Cleaning Service: Your assigned cleaning professional${cleanerNames.length === 1 ? " is" : "s are"} ${cleanerNamesLabel(cleanerNames)}.`,
-    booking.schedule ? `Appointment: ${bookingScheduleLabel(booking.schedule)} (New York time).` : "",
+    appointment,
     "Questions? Call (929) 232-1930. Reply STOP to opt out."
   ].filter(Boolean).join(" ");
 }

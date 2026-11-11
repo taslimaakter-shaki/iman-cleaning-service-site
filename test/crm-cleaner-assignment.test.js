@@ -23,6 +23,21 @@ assert.match(assignmentSms, /professionals are Fatimah and Aisha/i);
 assert.match(assignmentSms, /November 8, 2026/i);
 assert.match(assignmentSms, /Reply STOP/i);
 
+assert.match(assignmentSms, /8:00 AM/, "Fixed appointments include their arrival time");
+for (const confirmationStatus of ["pending", undefined, "confirmed"]) {
+  const sms = buildCleanerAssignmentSms({
+    schedule: "2026-11-09T02:00:00.000Z",
+    estimate: { arrivalPreference: { flexible: true, confirmationStatus } }
+  }, ["Fatimah"]);
+  assert.match(sms, /November 8, 2026/, "Use the New York service date");
+  if (confirmationStatus === "confirmed") {
+    assert.match(sms, /9:00 PM/);
+  } else {
+    assert.match(sms, /Service date:/);
+    assert.doesNotMatch(sms, /\d{1,2}:\d{2}/, "Do not disclose a provisional time");
+  }
+}
+
 const crmSource = fs.readFileSync(path.join(__dirname, "..", "crm.js"), "utf8");
 assert.match(crmSource, /\[0, 1, 2, 3\]\.map/, "the assignment form should render four cleaner fields");
 assert.match(crmSource, /Cleaner \$\{index \+ 1\} <span>\(optional\)<\/span>/, "every cleaner field should be labeled optional");
