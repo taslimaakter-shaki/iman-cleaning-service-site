@@ -86,17 +86,21 @@ function load(file, dependencies, extras = {}) {
   assert.equal(booking.estimate.agreementAcceptance.context.totalCents, 27000);
   assert.equal(booking.estimate.customQuotePricing.discountLabel, 'Welcome');
 
-  body.customer.email = '';
+  const originalPhone = body.customer.phone;
+  body.customer.phone = '';
   await handler(request, {});
   assert.equal(result.status, 201, result.error);
-  assert.equal(booking.email, '');
-  assert.equal(stripe.has('customer_email'), false, 'An empty optional email is not sent to Stripe.');
-  assert.equal(stripe.has('payment_intent_data[receipt_email]'), false, 'Stripe receipt email is omitted when no email was supplied.');
-  body.customer.email = 'not-an-email';
-  await handler(request, {});
-  assert.equal(result.status, 400, 'A malformed nonempty email must still be rejected.');
-  assert.match(result.error, /valid email/i);
+  assert.equal(booking.phone, '');
+  assert.equal(stripe.get('customer_email'), 'jane@example.test');
+  assert.equal(stripe.get('phone_number_collection[enabled]'), 'false');
+  for (const email of ['', 'not-an-email']) {
+    body.customer.email = email;
+    await handler(request, {});
+    assert.equal(result.status, 400);
+    assert.match(result.error, /valid email/i);
+  }
   body.customer.email = 'jane@example.test';
+  body.customer.phone = originalPhone;
 
   const flexiblePkg = require('../api/booking/_arrival-preference').applyArrivalDiscount(pkg, 'any_day');
   body.arrivalPreference = 'any_day';
@@ -198,6 +202,8 @@ function load(file, dependencies, extras = {}) {
   });
   const offer = await promoLookup({ method: 'POST', body: { automatic: true, serviceKey: 'hourly', customer: body.customer } }, {});
   assert.equal(offer.code, 'RETURNING5');
+  const emailOnlyOffer = await promoLookup({ method: 'POST', body: { automatic: true, serviceKey: 'hourly', customer: { ...body.customer, phone: '' } } }, {});
+  assert.equal(emailOnlyOffer.code, 'RETURNING5', 'Email-only customers retain their returning-customer discount');
   for (const selectedCode of [offer.code, 'FALL10', '']) {
     body.promoCode = selectedCode;
     const acceptedPrice = selectedCode ? 304 : 320;

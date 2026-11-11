@@ -2403,7 +2403,7 @@
       const smsSent = ["sent", "already_sent"].includes(data.delivery?.sms);
       if (emailSent && smsSent) {
         showSavedQuoteDelivery("Your secure quote link was sent to your email and phone.", "success");
-      } else if (emailSent && data.delivery?.sms === "not_requested") {
+      } else if (emailSent && ["not_requested", "not_available"].includes(data.delivery?.sms)) {
         showSavedQuoteDelivery("Your secure quote link was sent to your email.", "success");
       } else if (emailSent || smsSent) {
         showSavedQuoteDelivery(

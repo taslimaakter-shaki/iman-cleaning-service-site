@@ -24,8 +24,8 @@ module.exports = async function handler(request, response) {
       email: cleanText(customer.email, 180),
       phone: cleanText(customer.phone, 40)
     };
-    if (!identity.phone) {
-      return json(response, 400, { error: "Enter your phone number to check your customer discount." });
+    if (!identity.email && !identity.phone) {
+      return json(response, 400, { error: "Enter your email address to check your customer discount." });
     }
     const eligible = customerPromotion(await listAllBookings({ complete: true }), identity);
     const promotion = body.automatic === true ? eligible : assertCustomerPromotion(body.promoCode, eligible);

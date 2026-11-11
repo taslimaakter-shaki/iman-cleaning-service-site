@@ -33,13 +33,14 @@ const get=url=>handler({method:'GET',headers:{host:'example.test'},query:{token:
  const reverted=await post({...body,previousQuoteToken:new URL(edited.quoteUrl).searchParams.get('quote')});assert.notEqual(reverted.quoteUrl,first.quoteUrl,'Changing back to older details is still a genuine new edit');assert.notEqual(reverted.quoteUrl,edited.quoteUrl);
 
  const changedContact=await post({...body,previousQuoteToken,customer:{...body.customer,email:'new@example.invalid',phone:'2125550102'}});assert.notEqual(changedContact.quoteUrl,first.quoteUrl);assert.match(emails.at(-1),/To: new@example.invalid/);assert.equal(texts.at(-1).get('To'),'+12125550102');assert.equal((await get(first.quoteUrl)).customer.email,body.customer.email);
- const emailCountBeforePhoneOnly=emails.length,textCountBeforePhoneOnly=texts.length;
- const phoneOnlyBody={...body,unitDetails:[{hours:7}],customer:{...body.customer,email:'',phone:'2125550199'}};
- const phoneOnly=await post(phoneOnlyBody);
- assert.equal(phoneOnly.status,201,phoneOnly.error);assert.equal(phoneOnly.delivery.email,'not_available');assert.equal(phoneOnly.delivery.sms,'sent');
- assert.equal(emails.length,emailCountBeforePhoneOnly,'No email is attempted when the field is empty');assert.equal(texts.length,textCountBeforePhoneOnly+1);
- assert.equal((await get(phoneOnly.quoteUrl)).customer.email,'');
- const phoneOnlyRepeat=await post(phoneOnlyBody);assert.equal(phoneOnlyRepeat.quoteUrl,phoneOnly.quoteUrl);assert.equal(phoneOnlyRepeat.delivery.email,'not_available');assert.equal(phoneOnlyRepeat.delivery.sms,'already_sent');assert.equal(texts.length,textCountBeforePhoneOnly+1,'Phone-only quote delivery is deduplicated');
+ const emailCountBeforeEmailOnly=emails.length,textCountBeforeEmailOnly=texts.length;
+ const emailOnlyBody={...body,unitDetails:[{hours:7}],customer:{...body.customer,email:'email-only@example.invalid',phone:''}};
+ const emailOnly=await post(emailOnlyBody);
+ assert.equal(emailOnly.status,201,emailOnly.error);assert.equal(emailOnly.delivery.email,'sent');assert.equal(emailOnly.delivery.sms,'not_available');
+ assert.equal(emails.length,emailCountBeforeEmailOnly+1);assert.equal(texts.length,textCountBeforeEmailOnly,'No SMS attempted without a phone');
+ assert.equal((await get(emailOnly.quoteUrl)).customer.phone,'');
+ const emailOnlyRepeat=await post(emailOnlyBody);assert.equal(emailOnlyRepeat.quoteUrl,emailOnly.quoteUrl);assert.equal(emailOnlyRepeat.delivery.email,'already_sent');assert.equal(emailOnlyRepeat.delivery.sms,'not_available');assert.equal(emails.length,emailCountBeforeEmailOnly+1,'Email-only quote delivery is deduplicated');
+ const missingEmail=await post({...body,customer:{...body.customer,email:''}});assert.equal(missingEmail.status,400);assert.match(missingEmail.error,/valid email/i);
  smsFails=true;const failing={...body,unitDetails:[{hours:5}]};const failed=await post(failing);assert.equal(failed.delivery.sms,'failed');const emailCount=emails.length;const recordCount=records.size;smsFails=false;const retry=await post(failing);assert.equal(retry.quoteUrl,failed.quoteUrl);assert.equal(retry.delivery.sms,'sent');assert.equal(emails.length,emailCount,'Retry sends only failed channel');assert.equal(records.size,recordCount);
  const denied=await post({...body,smsConsent:false});assert.equal(denied.status,400);
  bookings.push({status:'Confirmed',phone:'(212) 555-0101',estimate:{payment:{status:'deposit_paid',paidCents:8000}}});

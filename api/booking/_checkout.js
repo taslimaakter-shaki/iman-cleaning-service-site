@@ -341,7 +341,7 @@ module.exports = async function handler(request, response) {
     const phone = cleanText(customer.phone, 40);
     const { address, address2, city, state, zip, fullAddress } = normalizeServiceAddress(customer);
 
-    if (!firstName || !lastName || !phone || !address || !city || !state || !zip) {
+    if (!firstName || !lastName || !address || !city || !state || !zip) {
       return json(response, 400, { error: "Complete all customer and service-address fields." });
     }
     const pausedAddressBorough = temporarilyPausedServiceBorough(zip);
@@ -354,7 +354,7 @@ module.exports = async function handler(request, response) {
     if (zip.replace(/\D/g, "").slice(0, 5) !== eligibilityZip.replace(/\D/g, "").slice(0, 5)) {
       return json(response, 400, { error: "The service-address ZIP code must match the ZIP used for this quote." });
     }
-    if (email && !/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(email)) {
+    if (!/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(email)) {
       return json(response, 400, { error: "Enter a valid email address." });
     }
     const accountEmail = cleanText(accountSession?.user?.email, 180).toLowerCase();
@@ -577,7 +577,7 @@ module.exports = async function handler(request, response) {
       mode: "payment",
       "payment_method_types[0]": "card",
       customer_creation: "always",
-      "phone_number_collection[enabled]": "true",
+      "phone_number_collection[enabled]": "false",
       ...stripeLineItems,
       "payment_intent_data[setup_future_usage]": "off_session",
       "payment_intent_data[description]": visibleDiscount
