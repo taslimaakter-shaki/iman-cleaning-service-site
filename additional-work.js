@@ -43,7 +43,7 @@
       $('consent-text').textContent = order.consent || '';
       $('approve').textContent = 'Approve & authorize ' + money(order.amountCents);
       $('edit-button').hidden = order.status !== 'draft';
-      $('card-button').textContent = order.status === 'setting_up' ? 'Continue to Stripe' : (order.card ? 'Use a different card on Stripe' : 'Add a card on Stripe');
+      $('card-button').textContent = order.status === 'setting_up' ? 'Continue to Stripe' : (order.card ? 'Use a different payment method on Stripe' : 'Add a payment method on Stripe');
       return;
     }
     const paid = order.status === 'paid';
