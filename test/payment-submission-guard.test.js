@@ -5,7 +5,7 @@ const shared=require('../api/booking/_shared');
  const db=new PGlite();await db.exec('create role anon; create role authenticated; create role service_role;');
  await db.exec(fs.readFileSync('supabase-schema.sql','utf8').match(/create table if not exists public.bookings \([\s\S]*?\n\);/)[0]);
  for(const file of ['20260910_shared_booking_calendar.sql','20261025_flexible_arrival_reservations.sql','20261031_capacity_based_flexible_booking.sql','20261101_flexible_day_planning.sql','20261101_payment_submission_guard.sql'])await db.exec(fs.readFileSync('supabase/migrations/'+file,'utf8'));
- const calls=[],intents=new Map(),keys=new Map();let behavior='success',notifications=0;
+ const calls=[],stripeRequests=[],intents=new Map(),keys=new Map();let behavior='success',notifications=0;
  const response=(data,status=200)=>({ok:status<400,status,json:async()=>structuredClone(data)});
  const getBooking=async id=>(await db.query('select * from bookings where id=$1',[id])).rows[0];
  const fetch=async(url,options={})=>{
@@ -18,7 +18,7 @@ const shared=require('../api/booking/_shared');
    }catch(e){return response({message:e.message},409);}
   }
   assert.equal(u.hostname,'api.stripe.com');calls.push(u.pathname);
-  const params=new URLSearchParams(options.body),key=options.headers['Idempotency-Key'];
+  const params=new URLSearchParams(options.body),key=options.headers['Idempotency-Key'];stripeRequests.push({path:u.pathname,params});
   if(key&&keys.has(key))return response(keys.get(key));
   let result;
   if(u.pathname==='/v1/customers')result={id:'cus_mock'};
@@ -49,8 +49,8 @@ const shared=require('../api/booking/_shared');
   throw Error(name);
  },process:{env:{SUPABASE_URL:'https://db.test',SUPABASE_SERVICE_ROLE_KEY:'test',STRIPE_SECRET_KEY:'sk_test_mock',STRIPE_PUBLISHABLE_KEY:'pk_test_mock',BOOKING_PAYMENT_FLOW:'server'}},fetch,Buffer,URLSearchParams,AbortSignal,Date,console});
  const api=module.exports;
- const make=async(id,day='2030-11-06')=>{
-  const b={id,service:'standard',schedule_label:'Test appointment',bedrooms_label:'',bathrooms_label:'',sqft:0,addons:[],phone:'',address:'',notes:'',created_at:new Date().toISOString(),status:'New',schedule:shared.toZonedIso(day,'08:00'),client_name:'Test',email:'test@example.invalid',service_label:'Cleaning',estimate:{calendarReservation:{state:'draft'},calendarReservationHours:7,teamHours:6,arrivalPreference:{flexible:true,windowStart:'08:00',windowEnd:'13:30',confirmationStatus:'pending'},payment:{totalCents:40000,depositCents:10000,paidCents:0}}};
+ const make=async(id,day='2030-11-06',email='test@example.invalid')=>{
+  const b={id,service:'standard',schedule_label:'Test appointment',bedrooms_label:'',bathrooms_label:'',sqft:0,addons:[],phone:'',address:'',notes:'',created_at:new Date().toISOString(),status:'New',schedule:shared.toZonedIso(day,'08:00'),client_name:'Test',email,service_label:'Cleaning',estimate:{calendarReservation:{state:'draft'},calendarReservationHours:7,teamHours:6,arrivalPreference:{flexible:true,windowStart:'08:00',windowEnd:'13:30',confirmationStatus:'pending'},payment:{totalCents:40000,depositCents:10000,paidCents:0}}};
   await db.query('insert into bookings select * from jsonb_populate_record(null::bookings,$1)',[b]);
   const session=await api.prepare(id,{'line_items[0][price_data][unit_amount]':10000,'metadata[booking_id]':id,customer_email:b.email});
   const token=session.url.split('#')[1];return{token,order:await api.get(token.split('.')[0])};
@@ -67,6 +67,7 @@ const shared=require('../api/booking/_shared');
  const action=await make('action','2030-11-09');behavior='action';const awaiting=await api._test.pay(action.order,'ctoken_action');assert.equal(awaiting.state,'requires_action');assert((await api._test.publicResult(awaiting)).clientSecret);await api.cancel(awaiting);assert.equal((await getBooking('action')).estimate.calendarReservation.state,'released');
  const pending=await make('pending','2030-11-10');behavior='processing';const processing=await api._test.pay(pending.order,'ctoken_pending');await api.cancel(processing);assert.equal((await getBooking('pending')).estimate.calendarReservation.state,'creating','Uncertain payment never releases capacity');
  const changed=await make('changed','2030-11-11');await db.query("update bookings set schedule=$1 where id='changed'",[shared.toZonedIso('2030-11-12','08:00')]);await assert.rejects(api._test.pay(changed.order,'ctoken_changed'),/quote changed/i);
+ const phoneOnly=await make('phone-only','2030-11-13','');const requestStart=stripeRequests.length;await api._test.pay(phoneOnly.order,'ctoken_phoneonly');const phoneOnlyRequests=stripeRequests.slice(requestStart);const customerRequest=phoneOnlyRequests.find(x=>x.path==='/v1/customers');const intentRequest=phoneOnlyRequests.find(x=>x.path==='/v1/payment_intents');assert(customerRequest);assert(intentRequest);assert.equal(customerRequest.params.has('email'),false,'Phone-only checkout omits an empty Stripe customer email');assert.equal(intentRequest.params.has('receipt_email'),false,'Phone-only checkout omits an empty Stripe receipt email');
  assert.throws(()=>api._test.verify(a.token+'tampered'),/invalid/);assert.equal(api._test.verify(a.token),a.order.id);
  const session=await api.syntheticSession('bp_'+paid.id);assert.equal(session.payment_status,'paid');assert.equal(session.amount_total,10000);assert.equal(session.metadata.booking_id,winner.order.booking_id);
  const beforeDelivery=notifications;await api.handleEvent({type:'payment_intent.succeeded',data:{object:intents.get(paid.intent_id)}});assert.equal(notifications,beforeDelivery+1,'Webhook delivers confirmation after capacity is committed');

@@ -18,7 +18,7 @@ button{display:block;width:100%;font:700 16px/1.4 system-ui;padding:14px 18px;ma
 .fine{font-size:14px}.status{color:#a22d28;font-weight:650;min-height:24px}a{color:#0b6474}input:focus-visible,button:focus-visible,a:focus-visible{outline:3px solid #86bcbf;outline-offset:3px}[hidden]{display:none!important}
 </style>
 <script src="https://js.stripe.com/v3/" defer></script>
-<script src="/additional-work.js?v=20260911-approval-v1" defer></script>
+<script src="/additional-work.js?v=20261107-team-clock" defer></script>
 </head>
 <body>
 <header><img src="/assets/iman-logo-icon.png" alt=""><strong>IMAN Cleaning Service LLC</strong></header>
@@ -29,9 +29,9 @@ button{display:block;width:100%;font:700 16px/1.4 system-ui;padding:14px 18px;ma
 <form data-form hidden>
 <div class="details"><p>Customer: <strong data-customer></strong></p><p>Original booking: <strong data-booking></strong></p><p>Service: <strong data-service></strong></p></div>
 <section data-edit>
-<div class="time-fields"><label>Hours<input data-hours type="number" min="0" step="1" value="0" inputmode="numeric"></label><label>Minutes<input data-minutes type="number" min="0" max="60" step="1" value="0" inputmode="numeric"></label></div>
-<p class="fine">Enter total labor time: 2 cleaners working 30 minutes each equals 1 labor-hour. Choose at least 1 minute. Entering 60 minutes adds 1 hour.</p>
-<div class="total"><span>Additional amount</span><strong data-total aria-live="polite">$0.00</strong></div>
+<label>Team members<input data-team-members type="number" min="1" step="1" value="1" inputmode="numeric"></label><p class="fine">Choose how long each team member will work.</p><div class="time-fields"><label>Hours per team member<input data-hours type="number" min="0" step="1" value="0" inputmode="numeric"></label><label>Minutes per team member<input data-minutes type="number" min="0" max="60" step="1" value="0" inputmode="numeric"></label></div>
+<p class="fine">Rate: $80 per team member per hour. For example, 2 team members working 1 hour each costs $160. Choose at least 1 minute per person.</p>
+<p class="fine" data-breakdown aria-live="polite"></p><div class="total"><span>Additional amount</span><strong data-total aria-live="polite">$0.00</strong></div>
 <button type="submit">Review additional work</button>
 </section>
 <section data-review hidden>
@@ -49,7 +49,7 @@ button{display:block;width:100%;font:700 16px/1.4 system-ui;padding:14px 18px;ma
 <button class="secondary" type="button" data-retry hidden>Update card and approve again</button>
 <button class="secondary" type="button" data-new hidden>Request more additional work</button>
 </section>
-<p class="fine">Your original booking payment is unchanged. Additional work is subject to team availability and is not scheduled until our team confirms it. After approval, we will send an email and text confirming the time, amount and card you authorized. If your bank requests verification, you must complete it before payment can finish.</p>
+<p class="fine">Your original booking payment is unchanged. After approval, we will send an email and text confirming the approved labor, amount and card charged. If your bank requests verification, you must complete it before payment can finish.</p>
 </form>
 <p class="status" data-status role="status"></p>
 <p class="fine">Need help? Call <a href="tel:+19292321930">(929) 232-1930</a>.</p>

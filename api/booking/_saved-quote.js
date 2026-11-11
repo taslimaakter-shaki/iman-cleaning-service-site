@@ -412,12 +412,12 @@ function cleanCustomer(input = {}) {
     email: cleanText(input.email, 180).toLowerCase(),
     phone: normalizePhoneNumber(input.phone)
   };
-  if (!customer.firstName || !customer.lastName || !customer.email || !customer.phone) {
-    const error = new Error("Enter your first name, last name, email, and mobile phone number.");
+  if (!customer.firstName || !customer.lastName || !customer.phone) {
+    const error = new Error("Enter your first name, last name, and mobile phone number.");
     error.statusCode = 400;
     throw error;
   }
-  if (!/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(customer.email)) {
+  if (customer.email && !/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(customer.email)) {
     const error = new Error("Enter a valid email address.");
     error.statusCode = 400;
     throw error;
@@ -568,8 +568,8 @@ module.exports = async function handler(request, response) {
       return json(response, 200, result);
     }
     const recent = recentDelivery(key);
-    if (recent && recent.delivery.email === "sent" && recent.delivery.sms === "sent") {
-      return json(response, 200, { saved: true, quoteUrl: recent.quoteUrl, delivery: { email: "already_sent", sms: "already_sent" } });
+    if (recent && (recent.delivery.email === "sent" || (!customer.email && recent.delivery.email === "not_available")) && recent.delivery.sms === "sent") {
+      return json(response, 200, { saved: true, quoteUrl: recent.quoteUrl, delivery: { email: customer.email ? "already_sent" : "not_available", sms: "already_sent" } });
     }
     const deliver = async () => {
       const quoteId = recent?.quoteId || `SAVED-${now.toString(36).toUpperCase()}-${crypto.randomBytes(4).toString("hex").toUpperCase()}`;
@@ -596,7 +596,9 @@ module.exports = async function handler(request, response) {
       });
       const quoteUrl = recent?.quoteUrl || `${getSiteUrl(request)}/book-now.html?quote=${encodeURIComponent(token)}`;
 
-      const emailPromise = recent?.delivery.email === "sent" ? Promise.resolve() : sendEmail({ customer, pkg, quoteUrl });
+      const emailPromise = !customer.email
+        ? Promise.resolve(null)
+        : recent?.delivery.email === "sent" ? Promise.resolve() : sendEmail({ customer, pkg, quoteUrl });
       const smsPromise = communicationConsent.transactionalSms.granted
         ? (recent?.delivery.sms === "sent" ? Promise.resolve() : sendSms({ customer, pkg, quoteUrl }))
         : Promise.resolve(null);
@@ -605,7 +607,7 @@ module.exports = async function handler(request, response) {
         saved: true,
         quoteUrl,
         delivery: {
-          email: emailResult.status === "fulfilled" ? "sent" : "failed",
+          email: !customer.email ? "not_available" : emailResult.status === "fulfilled" ? "sent" : "failed",
           sms: !communicationConsent.transactionalSms.granted
             ? "not_requested"
             : smsResult.status === "fulfilled" ? "sent" : "failed"

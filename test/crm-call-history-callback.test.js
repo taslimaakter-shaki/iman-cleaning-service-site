@@ -36,7 +36,7 @@ const window = { navigator: {}, matchMedia: () => ({ matches: false }), ImanTwil
   async connect(args) { connections.push(args); return { on(name, fn) { callEvents[name] = fn; }, disconnect() {} }; }
 } } };
 const context = { document, window, navigator: { userAgent: "Test", platform: "Test" },
-  sessionStorage: { getItem: () => "" }, localStorage: { getItem: () => "" }, setTimeout: () => 1, clearTimeout() {}, console,
+  sessionStorage: { getItem: () => "" }, localStorage: { getItem: () => "" }, setTimeout: () => 1, setInterval: () => 1, clearTimeout() {}, console,
   fetch: async (url, options) => {
     requests.push({ url, ...options });
     assert.equal(options.headers["x-admin-token"], "mock-admin");

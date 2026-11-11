@@ -145,7 +145,8 @@
     const tracking = booking.estimate?.timeTracking || {};
     const entries = Array.isArray(tracking.entries) ? tracking.entries : [];
     const activeEntry = entries.find((entry) => entry.clockInAt && !entry.clockOutAt);
-    return { ...tracking, entries, activeEntry };
+    const activeBreak = activeEntry?.breaks?.find((item) => item.breakInAt && !item.breakOutAt);
+    return { ...tracking, entries, activeEntry, activeBreak };
   }
 
   function qualityPhotosFor(booking) {
@@ -2016,6 +2017,15 @@
     }
   }
 
+  function reviewChoiceMessage(reviewResult = {}, requested = false) {
+    if (reviewResult.status === "already_sent") return "Google review request was already sent.";
+    if (requested && ["scheduled", "already_scheduled"].includes(reviewResult.status)) return "Review email and text scheduled for 24 hours after completion.";
+    if (requested) return "Review request scheduling needs attention; try again.";
+    if (reviewResult.status === "failed") return "Review-request choice could not be saved; try again.";
+    if (reviewResult.status === "already_processing") return "A previously requested review message is already being processed.";
+    return "No review request was scheduled.";
+  }
+
   function saveQuoteEdit(form) {
     const quote = quoteFormSnapshots.get(form) || state.quotes.find(item => item.id === form.dataset.quoteId);
     if (!quote) return;
@@ -2040,13 +2050,16 @@
     const paymentStatus = payment.remaining?.status || payment.status || "Pending";
     const tracking = timeTrackingFor(booking);
     const canClockIn = !tracking.activeEntry && !["Completed", "Cancelled"].includes(booking.status);
-    const canClockOut = Boolean(tracking.activeEntry);
+    const canBreakIn = Boolean(tracking.activeEntry && !tracking.activeBreak);
+    const canBreakOut = Boolean(tracking.activeBreak);
+    const canClockOut = Boolean(tracking.activeEntry && !tracking.activeBreak);
     const additionalWork = booking.estimate?.additionalWork || {};
     const offerSentAt = additionalWork.lastOfferSentAt || additionalWork.offerSentAt || "";
     const offerStatus = offerSentAt
       ? `Sent ${clockTime(offerSentAt)}${additionalWork.offerSendCount > 1 ? ` · ${additionalWork.offerSendCount} times` : ""}`
       : additionalWork.pendingUntilBalancePaid ? "Waiting for successful balance payment" : "Not sent";
     const additionalOrders = Array.isArray(additionalWork.orders) ? additionalWork.orders : [];
+    const hasAdditionalWorkFlow = Boolean(additionalOrders.length || offerSentAt || additionalWork.offerRequested || additionalWork.pendingUntilBalancePaid);
     const assignment = cleanerAssignmentFor(booking);
     const qualityPhotos = qualityPhotosFor(booking);
     const qualityTotal = qualityPhotos.before.length + qualityPhotos.after.length;
@@ -2113,22 +2126,30 @@
         <div class="crm-section-heading"><div><h3>Assigned cleaners</h3><p>Add the cleaner or team members scheduled for this customer.</p></div>${assignment.cleanerNames.length ? `<span class="crm-assignment-count">${assignment.cleanerNames.length} assigned</span>` : ""}</div>
         ${assignment.cleanerNames.length ? `<div class="crm-cleaner-chips">${assignment.cleanerNames.map((name) => `<span>${escapeHtml(name)}</span>`).join("")}</div>` : '<p class="crm-additional-copy">No cleaners have been assigned yet.</p>'}
         <form class="crm-assignment-form" data-assignment-form>
-          <label>Cleaner names<textarea name="cleanerNames" rows="2" maxlength="1700" placeholder="Example: Fatimah, Aisha">${escapeHtml(assignment.cleanerNames.join(", "))}</textarea><small>Separate multiple names with commas or put each name on a new line.</small></label>
+          <div class="crm-cleaner-fields">
+            ${[0, 1, 2, 3].map((index) => `<label>Cleaner ${index + 1} <span>(optional)</span><input type="text" maxlength="200" autocomplete="off" data-cleaner-name value="${escapeHtml(assignment.cleanerNames[index] || "")}" placeholder="Enter cleaner ${index + 1} name"></label>`).join("")}
+          </div>
           <button class="crm-primary" type="submit">Save cleaners</button>
         </form>
+        <p class="crm-additional-copy">When the assignment changes, the customer receives a text naming the assigned cleaner or team.</p>
         <p class="crm-action-status" data-assignment-status role="status"></p>
       </section>
       <section class="crm-detail-section crm-time-section">
-        <div class="crm-section-heading"><div><h3>Work time</h3><p>Use the actual arrival and departure times.</p></div><span class="crm-clock-state${tracking.activeEntry ? " is-active" : ""}">${tracking.activeEntry ? "Clocked in" : "Not clocked in"}</span></div>
+        <div class="crm-section-heading"><div><h3>Work time</h3><p>Record work and break times. Each event sends the customer a text update.</p></div><span class="crm-clock-state${tracking.activeEntry ? " is-active" : ""}">${tracking.activeBreak ? "On break" : tracking.activeEntry ? "Clocked in" : "Not clocked in"}</span></div>
         <div class="crm-time-summary">
           <div><span>Last clock in</span><strong>${escapeHtml(clockTime(tracking.lastClockInAt))}</strong></div>
+          <div><span>Last break in</span><strong>${escapeHtml(clockTime(tracking.lastBreakInAt))}</strong></div>
+          <div><span>Last break out</span><strong>${escapeHtml(clockTime(tracking.lastBreakOutAt))}</strong></div>
           <div><span>Last clock out</span><strong>${escapeHtml(clockTime(tracking.lastClockOutAt))}</strong></div>
-          <div><span>Total worked</span><strong>${escapeHtml(durationLabel(tracking.totalMinutes))}</strong></div>
+          <div><span>Total break</span><strong>${escapeHtml(durationLabel(tracking.totalBreakMinutes))}</strong></div>
+          <div><span>Total worked</span><strong>${escapeHtml(durationLabel(tracking.workedMinutes ?? tracking.totalMinutes))}</strong></div>
         </div>
         <div class="crm-clock-actions">
           ${canClockIn ? '<button class="crm-primary" type="button" data-clock-action="clock_in">Clock in</button>' : ""}
+          ${canBreakIn ? '<button class="crm-row-button" type="button" data-clock-action="break_in">Break in</button>' : ""}
+          ${canBreakOut ? '<button class="crm-primary" type="button" data-clock-action="break_out">Break out</button>' : ""}
           ${canClockOut ? '<button class="crm-clock-out" type="button" data-clock-action="clock_out">Clock out</button>' : ""}
-          ${!canClockIn && !canClockOut ? '<span class="crm-clock-closed">Time tracking is closed for this booking.</span>' : ""}
+          ${!canClockIn && !canBreakIn && !canBreakOut && !canClockOut ? '<span class="crm-clock-closed">Time tracking is closed for this booking.</span>' : ""}
         </div>
         <p class="crm-action-status" data-clock-status role="status"></p>
       </section>
@@ -2161,9 +2182,10 @@
       </section>
       <section class="crm-detail-section">
         <h3>Update booking</h3>
-        <form class="crm-status-form" data-status-form>
+        <form class="crm-status-form" data-status-form data-additional-work-active="${hasAdditionalWorkFlow ? "true" : "false"}">
           <label>Status<select name="status">${STATUS_OPTIONS.map((status) => `<option${status === booking.status ? " selected" : ""}>${escapeHtml(status)}</option>`).join("")}</select></label>
           <label class="crm-offer-option" data-completion-offer${booking.status === "Completed" ? "" : " hidden"}><input type="checkbox" name="sendAdditionalWork"><span><strong>Send customer an additional-work order link</strong><small>Email and text after the remaining balance is collected.</small></span></label>
+          <label class="crm-offer-option" data-completion-review${booking.status === "Completed" && !hasAdditionalWorkFlow ? "" : " hidden"}><input type="checkbox" name="sendReviewRequest"><span><strong>Send review request 24 hours after completion</strong><small>Email and text. Leave unchecked to send nothing.</small></span></label>
           <fieldset class="crm-cancellation-options" data-cancellation-options hidden disabled>
             <legend>Who canceled this booking?</legend>
             <label><input type="radio" name="cancellationSource" value="iman" required><span><strong>Canceled by Iman Cleaning</strong><small>Refund the full ${money(payment.paidCents)} paid and release the remaining-balance hold.</small></span></label>
@@ -2175,12 +2197,73 @@
       </section>
       <section class="crm-detail-section crm-additional-work-section">
         <div class="crm-section-heading"><div><h3>Additional-work offer</h3><p>${escapeHtml(offerStatus)}</p></div>${booking.status === "Completed" && (offerSentAt || additionalWork.offerRequested) ? '<button class="crm-row-button" type="button" data-resend-additional-work>Resend link</button>' : ""}</div>
-        <p class="crm-additional-copy">The customer chooses hours and minutes at $80 per cleaner-hour, reviews the amount and authorizes a saved-card charge. Each approval, payment and email/text confirmation remains connected to this booking.</p>
+        <p class="crm-additional-copy">The customer chooses team members and time per person at $80 per team member per hour, reviews the amount and authorizes a saved-card charge. Each approval, payment and email/text confirmation remains connected to this booking.</p>
         ${orderMarkup}
         <div data-additional-approvals data-booking-id="${escapeHtml(booking.id)}">Loading additional-work history…</div>
         <p class="crm-action-status" data-additional-work-status role="status"></p>
       </section>
     </div>`;
+  }
+
+  function additionalClockMarkup(order) {
+    const t = order.timeTracking || { entries: [], elapsedMinutes: 0, laborMinutes: 0, approvedMinutes: 0 };
+    const entries = t.entries || [];
+    const hasClosedEntry = entries.some(entry => entry.clockInAt && entry.clockOutAt);
+    const clockControl = order.status !== 'paid'
+      ? '<p>Clock-in becomes available after payment succeeds.</p>'
+      : order.completedAt
+        ? ''
+        : `<button type="button" class="crm-row-button" data-additional-clock="${t.active ? 'clock_out' : 'clock_in'}" data-order-id="${escapeHtml(order.id)}">${t.active ? 'Clock out additional work' : 'Clock in additional work'}</button>`;
+    const completionControl = !t.active && hasClosedEntry
+      ? order.completionInvoiceStatus === 'sent'
+        ? `<p class="crm-action-status is-success">Additional work completed · Invoice sent ${escapeHtml(clockTime(order.completionInvoiceSentAt))}</p>`
+        : order.completionInvoiceStatus === 'sending'
+          ? '<p class="crm-action-status">Additional work completion is processing…</p>'
+          : order.completedAt
+            ? `<button type="button" class="crm-primary" data-additional-complete data-order-id="${escapeHtml(order.id)}">Retry additional-work invoice</button>`
+            : `<div class="crm-additional-completion-controls"><label class="crm-offer-option"><input type="checkbox" data-additional-review><span><strong>Send review request 24 hours after completion</strong><small>Email and text. Leave unchecked to send nothing.</small></span></label><button type="button" class="crm-primary" data-additional-complete data-order-id="${escapeHtml(order.id)}">Mark additional work completed</button></div>`
+      : '';
+    return `<div class="crm-detail-section"><h4>Additional-work timer</h4><p>Approved per team member: ${escapeHtml(durationLabel(t.approvedMinutes))}. Team members: ${escapeHtml(String(order.teamMembers || 1))}.</p><p data-additional-timer data-started="${Date.now()}" data-elapsed="${Number(t.elapsedMinutes || 0)}" data-team="${Number(order.teamMembers || 1)}" data-approved="${Number(t.approvedMinutes || 0)}" data-running="${t.active ? 'yes' : 'no'}">${additionalClockText(t.elapsedMinutes, order.teamMembers || 1, t.approvedMinutes)}</p>${clockControl}${completionControl}<p class="fine">Tracks this additional order only. Clocking out sends one time summary but does not charge the customer. Marking completed emails the paid additional-work invoice.</p>${entries.map(e => `<p>In: ${escapeHtml(clockTime(e.clockInAt))} · Out: ${e.clockOutAt ? escapeHtml(clockTime(e.clockOutAt)) : 'Running'}</p>`).join('')}</div>`;
+  }
+  function additionalClockText(minutes, team, approved) {
+    return `Worked per team member: ${durationLabel(Math.floor(Number(minutes || 0)))} · Total labor: ${durationLabel(Math.floor(Number(minutes || 0) * Number(team || 1)))} · ${Number(minutes || 0) > Number(approved || 0) ? 'Over approved time' : 'Approved time remaining'}: ${durationLabel(Math.ceil(Math.abs(Number(approved || 0) - Number(minutes || 0))))}`;
+  }
+  setInterval(() => {
+    document.querySelectorAll('[data-additional-timer][data-running="yes"]').forEach(node => {
+      const minutes = Number(node.dataset.elapsed) + Math.max(0, Date.now() - Number(node.dataset.started)) / 60000;
+      node.textContent = additionalClockText(minutes, node.dataset.team, node.dataset.approved);
+    });
+  }, 1000);
+  async function updateAdditionalClock(booking, button) {
+    button.disabled = true;
+    try {
+      const action = button.dataset.additionalClock;
+      const data = await api('/api/crm/additional-work', { method: 'POST', body: JSON.stringify({ bookingId: booking.id, orderId: button.dataset.orderId, clockAction: action }) });
+      await loadAdditionalApprovals(booking);
+      if (action === 'clock_in') toast('Additional-work timer started. No customer text was sent.');
+      else if (data.customerNotification?.status === 'sent') toast('Additional work completed. The customer received one summary text.');
+      else if (data.customerNotification?.status === 'failed') toast('Additional work completed, but the customer summary text failed.', 'error');
+      else toast('Additional-work timer was already stopped. No duplicate text was sent.');
+    } catch (error) { toast(error.message, 'error'); }
+    finally { button.disabled = false; }
+  }
+
+  async function completeAdditionalWork(booking, button) {
+    button.disabled = true;
+    try {
+      const reviewInput = button.closest('.crm-additional-completion-controls')?.querySelector('[data-additional-review]');
+      const body = { bookingId: booking.id, orderId: button.dataset.orderId, completionAction: 'complete' };
+      if (reviewInput) body.sendReviewRequest = reviewInput.checked;
+      const data = await api('/api/crm/additional-work', { method: 'POST', body: JSON.stringify(body) });
+      await loadAdditionalApprovals(booking);
+      const reviewResult = data.reviewRequest || {};
+      const reviewCopy = reviewInput ? ` ${reviewChoiceMessage(reviewResult, reviewInput.checked)}` : '';
+      if (data.invoice?.status === 'sent') toast(`Additional work completed and the paid invoice was emailed.${reviewCopy}`, reviewInput?.checked && reviewResult.status === 'failed' ? 'error' : undefined);
+      else if (data.invoice?.status === 'skipped') toast('Additional work completed, but the customer email is missing.', 'error');
+      else if (data.invoice?.status === 'failed') toast('Additional work completed, but the invoice email failed. Use Retry additional-work invoice.', 'error');
+      else toast('Additional work was already completed. No duplicate invoice was sent.');
+    } catch (error) { toast(error.message, 'error'); }
+    finally { button.disabled = false; }
   }
 
   async function loadAdditionalApprovals(booking) {
@@ -2189,7 +2272,7 @@
     try {
       const data = await api('/api/crm/additional-work?bookingId=' + encodeURIComponent(booking.id));
       if (!target.isConnected || target.dataset.bookingId !== booking.id) return;
-      target.innerHTML = (data.orders || []).map(o => `<div class="crm-detail-section"><h4>${escapeHtml(o.duration)} · ${money(o.amountCents)}</h4><p>${escapeHtml(o.card || 'Card not selected')} · ${escapeHtml(o.status.replace(/_/g, ' '))}</p><p>Approval: ${o.approvedAt ? escapeHtml(clockTime(o.approvedAt)) : 'Not yet approved'}<br>Reference: ${escapeHtml(o.id)}</p>${o.error ? `<p>${escapeHtml(o.error)}</p>` : ''}${(o.confirmations || []).map(n => `<p><strong>${n.channel === 'sms' ? 'Text' : 'Email'} confirmation · approval ${escapeHtml(String(n.revision))}</strong>: ${escapeHtml(n.status)}${n.sentAt ? ' · ' + escapeHtml(clockTime(n.sentAt)) : ''}<br>${escapeHtml(n.approval.time)} · ${money(n.approval.amountCents)} · ${escapeHtml(n.approval.card)}${n.error ? '<br>' + escapeHtml(n.error) : ''}</p>`).join('')}</div>`).join('') || '<p>No additional-work approvals yet.</p>';
+      target.innerHTML = (data.orders || []).map(o => `<div class="crm-detail-section"><h4>${escapeHtml(o.duration)} · ${money(o.amountCents)}</h4><p>${escapeHtml(o.card || 'Card not selected')} · ${escapeHtml(o.status.replace(/_/g, ' '))}</p><p>Approval: ${o.approvedAt ? escapeHtml(clockTime(o.approvedAt)) : 'Not yet approved'}<br>Reference: ${escapeHtml(o.id)}</p>${o.error ? `<p>${escapeHtml(o.error)}</p>` : ''}${additionalClockMarkup(o)}${(o.confirmations || []).map(n => `<p><strong>${n.channel === 'sms' ? 'Text' : 'Email'} confirmation · approval ${escapeHtml(String(n.revision))}</strong>: ${escapeHtml(n.status)}${n.sentAt ? ' · ' + escapeHtml(clockTime(n.sentAt)) : ''}<br>${escapeHtml(n.approval.time)} · ${money(n.approval.amountCents)} · ${escapeHtml(n.approval.card)}${n.error ? '<br>' + escapeHtml(n.error) : ''}</p>`).join('')}</div>`).join('') || '<p>No additional-work approvals yet.</p>';
     } catch {
       if (target.isConnected) target.textContent = 'Additional-work history could not load. Reopen this booking to try again.';
     }
@@ -2207,13 +2290,15 @@
   async function updateBookingStatus(booking, status, form) {
     const actionStatus = $("[data-action-status]", form.closest(".crm-dialog-body"));
     const sendAdditionalWork = status === "Completed" && Boolean(form.elements.sendAdditionalWork?.checked);
+    const sendReviewRequest = status === "Completed" && !sendAdditionalWork && Boolean(form.elements.sendReviewRequest?.checked);
     const cancellationSource = status === "Cancelled"
       ? String(form.elements.cancellationSource?.value || "")
       : "";
     if (status === "Completed") {
       const payment = paymentFor(booking);
       const offerCopy = sendAdditionalWork ? " After successful payment, the additional-work link will be sent by email and text." : " No additional-work link will be sent.";
-      const approved = window.confirm(`Confirm the cleaning is finished? This will attempt to charge the remaining ${money(payment.remainingCents)} to the customer's saved payment method.${offerCopy}`);
+      const reviewCopy = sendReviewRequest ? " A review email and text will be scheduled for 24 hours later." : " No review request will be scheduled.";
+      const approved = window.confirm(`Confirm the cleaning is finished? This will attempt to charge the remaining ${money(payment.remainingCents)} to the customer's saved payment method.${offerCopy}${reviewCopy}`);
       if (!approved) return;
     }
     if (status === "Cancelled") {
@@ -2246,13 +2331,14 @@
     try {
       const data = await api("/api/crm/bookings", {
         method: "PATCH",
-        body: JSON.stringify({ id: booking.id, status, sendAdditionalWork, cancellationSource })
+        body: JSON.stringify({ id: booking.id, status, sendAdditionalWork, sendReviewRequest, cancellationSource })
       });
       booking.status = status;
       const paymentResult = data.payment || {};
       const receiptResult = data.completionReceipt || {};
       const reviewResult = data.reviewRequest || {};
       if (status === "Completed") {
+        const reviewStatusMessage = ` ${reviewChoiceMessage(reviewResult, sendReviewRequest)}`;
         const receiptStatusMessage = receiptResult.status === "sent"
           ? " Final paid receipt emailed."
           : receiptResult.status === "already_sent"
@@ -2267,15 +2353,11 @@
               ? "Booking completed and balance collected, but the additional-work message needs attention. Use Resend link."
               : "Booking completed and the remaining balance was captured. No additional-work link was sent.";
           actionStatus.textContent += receiptStatusMessage;
-          actionStatus.textContent += ["scheduled", "already_scheduled"].includes(reviewResult.status)
-            ? " Review email and text scheduled for 24 hours after completion."
-            : reviewResult.status === "already_sent"
-              ? " Google review request was already sent."
-              : " Review request scheduling needs attention; save Completed again to retry.";
+          actionStatus.textContent += reviewStatusMessage;
           toast(offerResult.status === "sent" ? "Booking completed and additional-work link sent." : "Booking completed and remaining balance collected.");
         } else if (paymentResult.status === "not_applicable") {
           actionStatus.className = "crm-action-status is-success";
-          actionStatus.textContent = `Booking marked completed. Automatic balance collection does not apply to this booking.${receiptStatusMessage}${["scheduled", "already_scheduled"].includes(reviewResult.status) ? " Review email and text scheduled for 24 hours after completion." : reviewResult.status === "already_sent" ? " Google review request was already sent." : " Review request scheduling needs attention; save Completed again to retry."}`;
+          actionStatus.textContent = `Booking marked completed. Automatic balance collection does not apply to this booking.${receiptStatusMessage}${reviewStatusMessage}`;
           toast("Booking marked completed.");
         } else {
           actionStatus.className = "crm-action-status is-error";
@@ -2476,11 +2558,18 @@
 
   async function updateClock(booking, clockAction, button) {
     const actionStatus = $("[data-clock-status]", button.closest(".crm-time-section"));
+    const labels = {
+      clock_in: { progress: "Clocking in…", success: "Clocked in", toast: "Team clocked in." },
+      break_in: { progress: "Starting break…", success: "Break started", toast: "Team break started." },
+      break_out: { progress: "Ending break…", success: "Break ended", toast: "Team break ended." },
+      clock_out: { progress: "Clocking out…", success: "Clocked out", toast: "Team clocked out." }
+    };
+    const label = labels[clockAction] || labels.clock_out;
     button.disabled = true;
     actionStatus.className = "crm-action-status";
-    actionStatus.textContent = clockAction === "clock_in" ? "Clocking in…" : "Clocking out…";
+    actionStatus.textContent = label.progress;
     try {
-      await api("/api/crm/bookings", {
+      const data = await api("/api/crm/bookings", {
         method: "PATCH",
         body: JSON.stringify({ id: booking.id, clockAction })
       });
@@ -2490,12 +2579,13 @@
         $("[data-booking-detail]").innerHTML = detailMarkup(refreshed);
         loadAdditionalApprovals(refreshed);
         const refreshedStatus = $("[data-clock-status]", dialog);
-        refreshedStatus.className = "crm-action-status is-success";
-        refreshedStatus.textContent = clockAction === "clock_in"
-          ? "Clocked in. The booking is now In progress."
-          : "Clocked out. Review the recorded time, then mark Completed when the work is finished.";
+        const textSent = data.customerNotification?.status === "sent";
+        refreshedStatus.className = `crm-action-status ${textSent ? "is-success" : "is-error"}`;
+        refreshedStatus.textContent = textSent
+          ? `${label.success}. The customer was texted.`
+          : `${label.success}, but the customer text failed. The time was still saved.`;
       }
-      toast(clockAction === "clock_in" ? "Team clocked in." : "Team clocked out.");
+      toast(data.customerNotification?.status === "sent" ? label.toast : `${label.success}; customer text failed.`, data.customerNotification?.status === "sent" ? undefined : "error");
     } catch (error) {
       actionStatus.className = "crm-action-status is-error";
       actionStatus.textContent = error.message;
@@ -2516,7 +2606,7 @@
         body: JSON.stringify({
           id: booking.id,
           assignmentAction: "save",
-          cleanerNames: form.elements.cleanerNames.value
+          cleanerNames: Array.from(form.querySelectorAll("[data-cleaner-name]")).map((input) => input.value)
         })
       });
       await loadBookings({ quiet: true });
@@ -2525,12 +2615,17 @@
         $("[data-booking-detail]").innerHTML = detailMarkup(refreshed);
         loadAdditionalApprovals(refreshed);
         const refreshedStatus = $("[data-assignment-status]", dialog);
-        refreshedStatus.className = "crm-action-status is-success";
-        refreshedStatus.textContent = data.cleanerNames.length
-          ? `Cleaner assignment saved. Booking status: ${data.status}.`
-          : "Cleaner assignment removed.";
+        const notificationStatus = data.customerNotification?.status;
+        refreshedStatus.className = `crm-action-status ${notificationStatus === "failed" ? "is-error" : "is-success"}`;
+        refreshedStatus.textContent = !data.cleanerNames.length
+          ? "Cleaner assignment removed."
+          : notificationStatus === "sent"
+            ? `Cleaner assignment saved and the customer was texted. Booking status: ${data.status}.`
+            : notificationStatus === "already_sent"
+              ? `Cleaner assignment unchanged. No duplicate text was sent. Booking status: ${data.status}.`
+              : `Cleaner assignment saved, but the customer text failed. Booking status: ${data.status}.`;
       }
-      toast(data.cleanerNames.length ? "Cleaner assignment saved." : "Cleaner assignment removed.");
+      toast(data.customerNotification?.status === "failed" ? "Assignment saved; customer text failed." : data.cleanerNames.length ? "Cleaner assignment saved." : "Cleaner assignment removed.", data.customerNotification?.status === "failed" ? "error" : undefined);
     } catch (error) {
       status.className = "crm-action-status is-error";
       status.textContent = error.message;
@@ -2961,6 +3056,18 @@
         .then(() => toast("Link copied."))
         .catch(() => toast("The link could not be copied.", "error"));
     }
+    const additionalClock = event.target.closest('[data-additional-clock]');
+    if (additionalClock) {
+      const booking = state.bookings.find(item => item.id === state.selectedId);
+      if (booking) updateAdditionalClock(booking, additionalClock);
+      return;
+    }
+    const additionalComplete = event.target.closest('[data-additional-complete]');
+    if (additionalComplete) {
+      const booking = state.bookings.find(item => item.id === state.selectedId);
+      if (booking) completeAdditionalWork(booking, additionalComplete);
+      return;
+    }
     const clockButton = event.target.closest("[data-clock-action]");
     if (clockButton) {
       const booking = state.bookings.find((item) => item.id === state.selectedId);
@@ -3139,12 +3246,17 @@
       if (booking) uploadQualityPhotos(booking, qualityInput.dataset.qualityInput, qualityInput);
       return;
     }
-    const select = event.target.closest("[data-status-form] select[name='status']");
-    if (!select) return;
-    const option = $("[data-completion-offer]", select.form);
-    option.hidden = select.value !== "Completed";
-    if (option.hidden) select.form.elements.sendAdditionalWork.checked = false;
-    const cancellationOptions = $("[data-cancellation-options]", select.form);
+    const statusForm = event.target.closest("[data-status-form]");
+    if (!statusForm) return;
+    const select = statusForm.elements.status;
+    const isCompleted = select.value === "Completed";
+    const option = $("[data-completion-offer]", statusForm);
+    option.hidden = !isCompleted;
+    if (option.hidden) statusForm.elements.sendAdditionalWork.checked = false;
+    const reviewOption = $("[data-completion-review]", statusForm);
+    reviewOption.hidden = !isCompleted || statusForm.dataset.additionalWorkActive === "true" || statusForm.elements.sendAdditionalWork.checked;
+    if (reviewOption.hidden) statusForm.elements.sendReviewRequest.checked = false;
+    const cancellationOptions = $("[data-cancellation-options]", statusForm);
     const isCancellation = select.value === "Cancelled";
     cancellationOptions.hidden = !isCancellation;
     cancellationOptions.disabled = !isCancellation;

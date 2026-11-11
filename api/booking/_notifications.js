@@ -24,12 +24,31 @@ function reminderStageForBooking(booking, now = new Date()) {
   const appointment = new Date(booking?.schedule);
   if (!Number.isFinite(appointment.getTime())) return "";
   const hoursUntil = (appointment.getTime() - now.getTime()) / 3600000;
+  if (booking?.estimate?.arrivalPreference?.flexible === true) {
+    if (hoursUntil > 47 && hoursUntil <= 48) return "flexible_two_days";
+    if (hoursUntil > 23 && hoursUntil <= 24) return "flexible_one_day";
+    return "";
+  }
   if (hoursUntil > 23 && hoursUntil <= 24) return "twenty_four_hours";
   if (hoursUntil > 5 && hoursUntil <= 6) return "six_hours";
   return "";
 }
 
 function reminderCopy(stage) {
+  if (stage === "flexible_two_days") {
+    return {
+      subjectLead: "Your cleaning is two days away",
+      heading: "Your cleaning is two days away.",
+      intro: "This is a friendly date reminder for your upcoming cleaning. We will contact you when the team is on the way."
+    };
+  }
+  if (stage === "flexible_one_day") {
+    return {
+      subjectLead: "Your cleaning is one day away",
+      heading: "Your cleaning is one day away.",
+      intro: "This is a friendly date reminder for your upcoming cleaning. We will contact you when the team is on the way."
+    };
+  }
   if (stage === "twenty_four_hours") {
     return {
       subjectLead: "Your appointment is in about 24 hours",
@@ -65,7 +84,29 @@ function formatAppointment(schedule) {
   }).format(date);
 }
 
-function reminderAppointment(booking) {
+function formatAppointmentDate(schedule) {
+  const date = new Date(schedule);
+  if (!Number.isFinite(date.getTime())) return "";
+  return new Intl.DateTimeFormat("en-US", {
+    timeZone: TIME_ZONE,
+    weekday: "long",
+    month: "long",
+    day: "numeric",
+    year: "numeric"
+  }).format(date);
+}
+
+function isFlexibleReminder(stage) {
+  return stage === "flexible_two_days" || stage === "flexible_one_day";
+}
+
+function reminderAppointment(booking, stage) {
+  if (isFlexibleReminder(stage)) {
+    const dates = [booking.schedule, booking.estimate?.secondVisitSchedule]
+      .filter(Boolean)
+      .map(formatAppointmentDate);
+    return dates.join(" and ");
+  }
   return booking.estimate?.secondVisitSchedule
     ? booking.schedule_label || [booking.schedule, booking.estimate.secondVisitSchedule].map(formatAppointment).join(" and ")
     : formatAppointment(booking.schedule);
@@ -75,12 +116,12 @@ function buildReminderEmail(booking, stage) {
   if (!booking?.email) return null;
   const copy = reminderCopy(stage);
   const from = process.env.QUOTE_EMAIL_FROM || "Info@imancleaningservice.com";
-  const appointment = reminderAppointment(booking);
+  const appointment = reminderAppointment(booking, stage);
   const subject = `${copy.subjectLead} — Iman Cleaning Service`;
   const customerName = booking.client_name || "there";
   const details = [
     ["Service", booking.service_label || booking.service || "Residential cleaning"],
-    ["Appointment", appointment],
+    [isFlexibleReminder(stage) ? "Service date" : "Appointment", appointment],
     ["Address", booking.address],
     ["Order number", booking.estimate?.orderNumber || booking.id]
   ].filter(([, value]) => value);
@@ -157,20 +198,18 @@ function buildAdditionalWorkOfferEmail(booking, orderUrl) {
   if (!booking?.email) return null;
   const from = process.env.QUOTE_EMAIL_FROM || "Info@imancleaningservice.com";
   const customerName = booking.client_name || "there";
-  const subject = `Need additional cleaning time? — ${booking.id}`;
+  const subject = `Additional cleaning options - Booking ${booking.id}`;
   const text = [
     `Hi ${customerName},`,
     "",
-    "Your cleaning appointment has been completed and your remaining balance was collected.",
-    "If you would like our team to complete additional work, use the secure link below to choose additional hours and minutes, review the total amount and approve a charge to your saved card.",
+    "Your scheduled cleaning is complete.",
+    "If you would like additional work, use the secure link below to select the time, review the price and authorize the separate charge.",
     "",
     orderUrl,
     "",
-    "One labor-hour means one cleaner working for one hour. Additional work is subject to team availability and is not scheduled until Iman Cleaning Service confirms it.",
-    "",
     "Thank you for choosing Iman Cleaning Service LLC."
   ].join("\n");
-  const html = `<!doctype html><html><body style="margin:0;background:#f4f8f7;font-family:Arial,sans-serif;color:#263b40;line-height:1.55;"><div style="max-width:640px;margin:0 auto;padding:28px 18px;"><div style="background:#fff;border:1px solid #d9e6e3;border-radius:18px;padding:30px;"><p style="margin-top:0;">Hi ${escapeHtml(customerName)},</p><h1 style="color:#073f49;font-size:26px;">Would you like additional cleaning time?</h1><p>Your cleaning appointment has been completed and your remaining balance was collected.</p><p>Use the secure link below to choose hours and minutes, review the total amount and approve a charge to your saved card.</p><p><a href="${escapeHtml(orderUrl)}" style="display:inline-block;padding:14px 22px;background:#0b6474;color:#fff;text-decoration:none;border-radius:12px;font-weight:bold;">Order additional work</a></p><p style="font-size:13px;color:#60757a;">One labor-hour means one cleaner working for one hour. Additional work is subject to team availability and is not scheduled until Iman Cleaning Service confirms it.</p><p style="margin-bottom:0;">Thank you for choosing Iman Cleaning Service LLC.</p></div></div></body></html>`;
+  const html = `<!doctype html><html><body style="margin:0;background:#f4f8f7;font-family:Arial,sans-serif;color:#263b40;line-height:1.55;"><div style="max-width:640px;margin:0 auto;padding:28px 18px;"><div style="background:#fff;border:1px solid #d9e6e3;border-radius:18px;padding:30px;"><p style="margin-top:0;">Hi ${escapeHtml(customerName)},</p><h1 style="color:#073f49;font-size:26px;">Additional cleaning options</h1><p>Your scheduled cleaning is complete.</p><p>If you would like additional work, use the secure link below to select the time, review the price and authorize the separate charge.</p><p><a href="${escapeHtml(orderUrl)}" style="display:inline-block;padding:14px 22px;background:#0b6474;color:#fff;text-decoration:none;border-radius:12px;font-weight:bold;">Review additional work</a></p><p style="margin-bottom:0;">Thank you for choosing IMAN Cleaning Service LLC.</p></div></div></body></html>`;
   const boundary = "additional_work_offer";
   const raw = [
     `From: ${encodeMimeWord("IMAN Cleaning Service LLC")} <${from}>`,
@@ -243,7 +282,7 @@ function buildReminderSms(booking, stage) {
   const copy = reminderCopy(stage);
   return [
     `IMAN Cleaning Service: ${copy.subjectLead}.`,
-    `${booking.service_label || booking.service || "Service"}: ${reminderAppointment(booking)}.`,
+    `${booking.service_label || booking.service || "Service"}: ${reminderAppointment(booking, stage)}.`,
     booking.address ? `Address: ${booking.address}.` : "",
     `Order: ${booking.estimate?.orderNumber || booking.id}.`,
     "Questions? Call 929-232-1930. Reply STOP to opt out."
@@ -255,7 +294,7 @@ async function sendBookingReminderSms(booking, stage) {
 }
 
 function buildAdditionalWorkOfferSms(booking, orderUrl) {
-  return `IMAN Cleaning Service: Booking ${booking.id} is complete. Need extra cleaning? Choose extra hours and minutes, review the total and approve a saved-card charge: ${orderUrl} Additional work is subject to availability. Reply STOP to opt out.`;
+  return `IMAN Cleaning Service: Your cleaning is complete. If you would like additional work, select the time, review the price and authorize the separate charge here: ${orderUrl} Reply STOP to opt out.`;
 }
 
 async function sendAdditionalWorkOfferSms(booking, orderUrl) {
@@ -272,6 +311,7 @@ module.exports = {
   buildReminderSms,
   buildReminderEmail,
   formatAppointment,
+  formatAppointmentDate,
   normalizePhoneNumber,
   reminderStageForBooking,
   sendAdditionalWorkOfferEmail,

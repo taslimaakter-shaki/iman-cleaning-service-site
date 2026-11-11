@@ -25,20 +25,20 @@ function buildCompletionReceiptEmail(booking, receiptPdf) {
   if (!booking?.email) return null;
   const from = process.env.QUOTE_EMAIL_FROM || "Info@imancleaningservice.com";
   const customerName = firstName(booking.client_name);
-  const subject = "Your cleaning is complete - final receipt attached";
+  const subject = "Your cleaning is complete - final paid invoice attached";
   const text = [
     `Hi ${customerName},`, "",
     "Your cleaning service is complete, and your final payment has been processed.", "",
-    "Your final paid receipt is attached for your records.", "",
+    "Your final paid invoice is attached for your records.", "",
     "If you have any questions, reply to this email or call us at 929-232-1930.", "",
     "Thank you for choosing us!",
     "IMAN Cleaning Service LLC",
     "www.imancleaningservice.com"
   ].join("\n");
-  const html = `<!doctype html><html><body style="margin:0;background:#f4f7f6;font-family:Arial,sans-serif;color:#243c40;line-height:1.6;"><div style="max-width:640px;margin:0 auto;padding:24px;"><div style="background:#ffffff;border:1px solid #dbe7e2;border-radius:16px;padding:30px;"><p style="margin-top:0;">Hi ${escapeHtml(customerName)},</p><p>Your cleaning service is complete, and your final payment has been processed.</p><p>Your final paid receipt is attached for your records.</p><p>If you have any questions, reply to this email or call us at <a href="tel:+19292321930" style="color:#0b6474;font-weight:bold;">929-232-1930</a>.</p><p style="margin-bottom:0;">Thank you for choosing us!<br><strong>IMAN Cleaning Service LLC</strong><br><a href="https://www.imancleaningservice.com" style="color:#0b6474;">www.imancleaningservice.com</a></p></div></div></body></html>`;
+  const html = `<!doctype html><html><body style="margin:0;background:#f4f7f6;font-family:Arial,sans-serif;color:#243c40;line-height:1.6;"><div style="max-width:640px;margin:0 auto;padding:24px;"><div style="background:#ffffff;border:1px solid #dbe7e2;border-radius:16px;padding:30px;"><p style="margin-top:0;">Hi ${escapeHtml(customerName)},</p><p>Your cleaning service is complete, and your final payment has been processed.</p><p>Your final paid invoice is attached for your records.</p><p>If you have any questions, reply to this email or call us at <a href="tel:+19292321930" style="color:#0b6474;font-weight:bold;">929-232-1930</a>.</p><p style="margin-bottom:0;">Thank you for choosing us!<br><strong>IMAN Cleaning Service LLC</strong><br><a href="https://www.imancleaningservice.com" style="color:#0b6474;">www.imancleaningservice.com</a></p></div></div></body></html>`;
   const boundary = "iman_completion_receipt_mixed";
   const altBoundary = "iman_completion_receipt_alt";
-  const filename = `Iman-Cleaning-Final-Receipt-${safeAttachmentName(booking.id)}.pdf`;
+  const filename = `IMAN-Cleaning-Final-Invoice-${safeAttachmentName(booking.id)}.pdf`;
   const encodedPdf = (Buffer.from(receiptPdf).toString("base64").match(/.{1,76}/g) || [""]).join("\r\n");
   const raw = [
     `From: ${encodeMimeWord("IMAN Cleaning Service LLC")} <${from}>`,

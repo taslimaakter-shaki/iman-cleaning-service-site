@@ -88,9 +88,14 @@ async function pay(order, confirmationToken) {
  let intent;
  if (!order.intent_id) {
   try {
-   const customer=await stripe('customers',{email:booking.email,name:booking.client_name},`booking-customer-${order.id}`);
-   intent=await stripe('payment_intents',{amount:order.draft.amount,currency:'usd',customer:customer.id,'payment_method_types[0]':'card',setup_future_usage:'off_session',description:`Booking deposit ${booking.estimate?.orderNumber || booking.id}`,receipt_email:booking.email,
-    'metadata[booking_id]':booking.id,'metadata[booking_payment_order]':order.id,'metadata[booking_payment_attempt]':order.attempt,'metadata[payment_flow]':'booking_capacity_v1'},`booking-intent-${order.attempt}`);
+   const email=String(booking.email || '').trim();
+   const customerParams={name:booking.client_name};
+   if (email) customerParams.email=email;
+   const customer=await stripe('customers',customerParams,`booking-customer-${order.id}`);
+   const intentParams={amount:order.draft.amount,currency:'usd',customer:customer.id,'payment_method_types[0]':'card',setup_future_usage:'off_session',description:`Booking deposit ${booking.estimate?.orderNumber || booking.id}`,
+    'metadata[booking_id]':booking.id,'metadata[booking_payment_order]':order.id,'metadata[booking_payment_attempt]':order.attempt,'metadata[payment_flow]':'booking_capacity_v1'};
+   if (email) intentParams.receipt_email=email;
+   intent=await stripe('payment_intents',intentParams,`booking-intent-${order.attempt}`);
    order=await rpc('attach',order.id,{attempt:order.attempt,intentId:intent.id,customerId:customer.id});
   } catch(error) {
    // An unattached intent cannot be confirmed. Fence the attempt before freeing it.

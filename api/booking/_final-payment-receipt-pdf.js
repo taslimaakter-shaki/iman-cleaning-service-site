@@ -99,9 +99,9 @@ function buildFinalPaymentReceiptPdf({ booking }) {
       margin: 45,
       bufferPages: true,
       info: {
-        Title: `Final payment receipt ${safeText(booking?.id || "")}`,
+        Title: `Final paid invoice ${safeText(booking?.id || "")}`,
         Author: "Iman Cleaning Service LLC",
-        Subject: "Final paid-in-full service receipt"
+        Subject: "Final paid-in-full service invoice"
       }
     });
     const chunks = [];
@@ -181,7 +181,7 @@ function buildFinalPaymentReceiptPdf({ booking }) {
     };
 
     drawPageBrand();
-    doc.fillColor(COLORS.ink).font("Helvetica-Bold").fontSize(19).text("Final Payment Receipt");
+    doc.fillColor(COLORS.ink).font("Helvetica-Bold").fontSize(19).text("Final Paid Invoice");
     doc.moveDown(0.2);
     const paidBoxY = doc.y;
     doc.rect(left, paidBoxY, width, 50).fillAndStroke(COLORS.paleGreen, COLORS.green);
@@ -195,7 +195,7 @@ function buildFinalPaymentReceiptPdf({ booking }) {
       .text("Paid in full", right - 150, paidBoxY + 29, { width: 136, align: "right", lineBreak: false });
     doc.y = paidBoxY + 54;
 
-    sectionTitle("Receipt Information");
+    sectionTitle("Invoice Information");
     infoGrid([
       ["Customer", booking?.client_name],
       ["Order number", estimate.orderNumber || booking?.id],
@@ -235,7 +235,7 @@ function buildFinalPaymentReceiptPdf({ booking }) {
       doc.moveTo(left, doc.page.height - 33).lineTo(right, doc.page.height - 33)
         .strokeColor(COLORS.line).lineWidth(0.5).stroke();
       doc.fillColor(COLORS.muted).font("Helvetica").fontSize(7)
-        .text("IMAN Cleaning Service LLC - Final Payment Receipt", left, doc.page.height - 25, { lineBreak: false });
+        .text("IMAN Cleaning Service LLC - Final Paid Invoice", left, doc.page.height - 25, { lineBreak: false });
       doc.text("929-232-1930  |  www.imancleaningservice.com", left, doc.page.height - 25, { width, align: "center", lineBreak: false });
       doc.text(`Page ${index + 1} of ${range.count}`, left, doc.page.height - 25, { width, align: "right", lineBreak: false });
       doc.page.margins.bottom = originalBottomMargin;

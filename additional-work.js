@@ -15,13 +15,15 @@
   function values() {
     const h = $('hours').value, m = $('minutes').value;
     if (!/^\d+$/.test(h) || !/^\d+$/.test(m) || Number(m) > 60 || !Number.isSafeInteger(Number(h))) throw new Error('Enter whole hours starting at 0 and minutes from 0 to 60.');
-    const total = Number(h) * 60 + Number(m);
+    const teamMembers = Number($('team-members').value);
+    if (!Number.isSafeInteger(teamMembers) || teamMembers < 1) throw new Error('Choose a whole number of team members, at least 1.');
+    const total = (Number(h) * 60 + Number(m)) * teamMembers;
     if (!Number.isSafeInteger(total) || total > 749999) throw new Error('This amount exceeds the payment limit. Please contact our team.');
-    return { hours:Number(h), minutes:Number(m), total };
+    return { hours:Number(h), minutes:Number(m), teamMembers, total };
   }
   function updateTotal() {
     $('consent').checked = false;
-    try { $('total').textContent = money(Math.round(values().total * 8000 / 60)); } catch { $('total').textContent = '—'; }
+    try { const v=values(); $('total').textContent = money(Math.round(v.total * 8000 / 60)); $('breakdown').textContent = v.teamMembers+' team member'+(v.teamMembers===1?'':'s')+' × '+v.hours+'h '+v.minutes+'m each = '+(v.total/60).toFixed(2)+' total labor-hours × $80'; } catch { $('total').textContent = '—'; $('breakdown').textContent = 'Choose a valid team size and time.'; }
   }
   function render(data) {
     order = data.order;
@@ -33,21 +35,21 @@
     $('result').hidden = !order || !!review;
     if (!order) return;
     if (review) {
-      $('hours').value = order.hours; $('minutes').value = order.minutes; updateTotal();
-      $('summary').textContent = order.duration + ' of additional labor — ' + money(order.amountCents) + ' total.';
+      $('team-members').value = order.teamMembers || 1; $('hours').value = order.hours; $('minutes').value = order.minutes; updateTotal();
+      $('summary').textContent = order.duration + ' — ' + money(order.amountCents) + ' total.';
       $('card').textContent = order.card ? 'Payment method: ' + order.card : 'Add a card securely. Saving a card does not charge it; you will return here to review and approve.';
       const canApprove = order.status === 'draft' && !!order.card;
       $('consent-row').hidden = !canApprove; $('approve').hidden = !canApprove;
       $('consent-text').textContent = order.consent || '';
       $('approve').textContent = 'Approve & authorize ' + money(order.amountCents);
       $('edit-button').hidden = order.status !== 'draft';
-      $('card-button').textContent = order.status === 'setting_up' ? 'Continue secure card setup' : (order.card ? 'Use a different card' : 'Add a card securely');
+      $('card-button').textContent = order.status === 'setting_up' ? 'Continue to Stripe' : (order.card ? 'Use a different card on Stripe' : 'Add a card on Stripe');
       return;
     }
     const paid = order.status === 'paid';
     $('result-title').textContent = paid ? 'Additional payment received' : 'Additional work approved';
     $('result-text').textContent = paid ? money(order.amountCents) + ' was charged successfully to your ' + order.card + '.' : (order.error || 'Your approval is recorded. Payment has not yet been confirmed.');
-    $('result-details').textContent = order.duration + ' of additional labor · ' + money(order.amountCents) + ' · ' + order.card + ' · Reference: ' + order.id;
+    $('result-details').textContent = order.duration + ' · ' + money(order.amountCents) + ' · ' + order.card + ' · Reference: ' + order.id;
     $('check').hidden = paid;
     $('verify').hidden = order.status !== 'requires_action' || !(data.verificationUrl || data.clientSecret);
     $('resume').hidden = order.status !== 'approved';
@@ -71,6 +73,7 @@
     try { render(await call('approve', { accepted:true })); $('status').textContent = ''; }
     catch (error) { try { render(await call('status')); } catch {} throw error; }
   }
+  $('team-members').addEventListener('input', updateTotal);
   $('hours').addEventListener('input', updateTotal); $('minutes').addEventListener('input', updateTotal);
   $('minutes').addEventListener('change', () => {
     try { const v = values(); if (v.minutes === 60) { $('hours').value = v.hours + 1; $('minutes').value = 0; } } catch {}
@@ -78,7 +81,7 @@
   });
   $('form').addEventListener('submit', e => { e.preventDefault(); run(async () => {
     const v = values(); if (!v.total) throw new Error('Choose at least 1 minute of additional work.');
-    render(await call('prepare', { hours:v.hours, minutes:v.minutes, previousId }));
+    render(await call('prepare', { hours:v.hours, minutes:v.minutes, teamMembers:v.teamMembers, previousId }));
   }); });
   $('edit-button').addEventListener('click', () => { $('consent').checked = false; $('review').hidden = true; $('edit').hidden = false; });
   $('approve').addEventListener('click', () => run(async () => {
@@ -90,8 +93,8 @@
   $('card-button').addEventListener('click', () => run(async () => {
     if (order.card && order.status === 'draft') render(await call('change-card'));
     const data = await call('setup'); render(data);
-    if (data.setupUrl) redirect(data.setupUrl);
-    else render(await call('setup-return'));
+    if (data.setupUrl) { $('status').textContent = 'Opening Stripe’s secure payment page…'; redirect(data.setupUrl); }
+    else { $('status').textContent = ''; render(await call('setup-return')); }
   }));
   $('retry').addEventListener('click', () => run(async () => {
     render(await call('change-card'));
@@ -104,7 +107,7 @@
     render(await call('status'));
     if (result.error) throw new Error('Bank verification was not completed. No successful payment has been confirmed.');
   }));
-  $('new').addEventListener('click', () => { previousId = order.id; render({ order:null }); $('hours').value = 0; $('minutes').value = 0; updateTotal(); });
+  $('new').addEventListener('click', () => { previousId = order.id; render({ order:null }); $('team-members').value = 1; $('hours').value = 0; $('minutes').value = 0; updateTotal(); });
   (async () => {
     try {
       const r = await fetch('/api/booking/additional-work?token=' + encodeURIComponent(token));

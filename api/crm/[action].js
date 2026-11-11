@@ -20,7 +20,7 @@ const {
 } = require("../booking/_payments");
 const { sendAdditionalWorkOffer } = require("../booking/_additional-work");
 const { sendCompletionReceipt } = require("../booking/_completion-receipt");
-const { scheduleReviewRequest } = require("../booking/_review-request");
+const { cancelPendingReviewRequest, scheduleReviewRequest } = require("../booking/_review-request");
 const { arrivalWindowEnd } = require("../booking/_arrival-preference");
 const { createStandaloneCustomQuote, listCrmQuotes } = require("./_quotes");
 const { prepareQualityPhoto, recordQualityPhoto } = require("./_quality-photos");
@@ -51,6 +51,15 @@ const allowedStatuses = new Set([
   "Completed",
   "Cancelled"
 ]);
+
+function completionReviewChoice(body, status) {
+  const sendAdditionalWork = status === "Completed" && body.sendAdditionalWork === true;
+  const sendReviewRequest = status === "Completed" && body.sendReviewRequest === true;
+  if (sendAdditionalWork && sendReviewRequest) {
+    throw Object.assign(new Error("Choose either additional work or a review request for this completion, not both."), { statusCode: 400 });
+  }
+  return { sendAdditionalWork, sendReviewRequest };
+}
 
 function isAdmin(request) {
   const configuredToken = String(process.env.ADMIN_TOKEN || "");
@@ -165,6 +174,74 @@ function bookingScheduleLabel(schedule) {
     hour: "numeric",
     minute: "2-digit"
   }).format(new Date(schedule));
+}
+
+function notificationTime(value) {
+  return new Intl.DateTimeFormat("en-US", {
+    timeZone: "America/New_York",
+    hour: "numeric",
+    minute: "2-digit"
+  }).format(new Date(value));
+}
+
+function cleanerNamesLabel(cleanerNames = []) {
+  if (cleanerNames.length < 2) return cleanerNames[0] || "your assigned cleaning professional";
+  if (cleanerNames.length === 2) return `${cleanerNames[0]} and ${cleanerNames[1]}`;
+  return `${cleanerNames.slice(0, -1).join(", ")}, and ${cleanerNames.at(-1)}`;
+}
+
+function smsDurationLabel(value) {
+  const minutes = Math.max(0, Math.round(Number(value || 0)));
+  const hours = Math.floor(minutes / 60);
+  const remainder = minutes % 60;
+  if (!hours) return `${remainder} min`;
+  if (!remainder) return `${hours} hr${hours === 1 ? "" : "s"}`;
+  return `${hours} hr${hours === 1 ? "" : "s"} ${remainder} min`;
+}
+
+function buildCleanerAssignmentSms(booking, cleanerNames) {
+  return [
+    `IMAN Cleaning Service: Your assigned cleaning professional${cleanerNames.length === 1 ? " is" : "s are"} ${cleanerNamesLabel(cleanerNames)}.`,
+    booking.schedule ? `Appointment: ${bookingScheduleLabel(booking.schedule)} (New York time).` : "",
+    "Questions? Call (929) 232-1930. Reply STOP to opt out."
+  ].filter(Boolean).join(" ");
+}
+
+function buildTimeTrackingSms(booking, clockAction, occurredAt, timeTracking = {}) {
+  const at = notificationTime(occurredAt);
+  const totalMinutes = Math.max(0, Number(timeTracking.totalMinutes || 0));
+  const breakMinutes = Math.max(0, Number(timeTracking.totalBreakMinutes || 0));
+  const workedMinutes = Math.max(0, Number(timeTracking.workedMinutes ?? totalMinutes - breakMinutes));
+  const clockOutTotal = clockAction === "clock_out"
+    ? breakMinutes > 0
+      ? ` Total cleaning time: ${smsDurationLabel(workedMinutes)} (${smsDurationLabel(totalMinutes)} on site minus ${smsDurationLabel(breakMinutes)} of breaks).`
+      : ` Total cleaning time: ${smsDurationLabel(workedMinutes)}.`
+    : "";
+  const messages = {
+    clock_in: `Your cleaning team clocked in at ${at} and has started your service.`,
+    break_in: `Your cleaning team started a break at ${at}. Cleaning work is temporarily paused.`,
+    break_out: `Your cleaning team ended their break at ${at} and has resumed cleaning.`,
+    clock_out: `Your cleaning team clocked out at ${at}.${clockOutTotal}`
+  };
+  return [
+    `IMAN Cleaning Service: ${messages[clockAction] || "Your service time was updated."}`,
+    (booking.service_label || booking.service) ? `Service: ${booking.service_label || booking.service}.` : "",
+    "Questions? Call (929) 232-1930. Reply STOP to opt out."
+  ].filter(Boolean).join(" ");
+}
+
+function buildAdditionalWorkCompletionSms(order) {
+  const entries = Array.isArray(order?.timeTracking?.entries) ? order.timeTracking.entries : [];
+  const completed = [...entries].reverse().find((entry) => entry.clockInAt && entry.clockOutAt);
+  if (!completed) throw new Error("The completed additional-work interval is missing.");
+  const minutes = Math.max(0, Number(completed.seconds || 0) / 60);
+  return [
+    "IMAN Cleaning Service: Your additional work is complete.",
+    `Additional work clock in: ${notificationTime(completed.clockInAt)}.`,
+    `Clock out: ${notificationTime(completed.clockOutAt)}.`,
+    `Total time: ${smsDurationLabel(minutes)}.`,
+    "Questions? Call (929) 232-1930. Reply STOP to opt out."
+  ].join(" ");
 }
 
 function localScheduleParts(schedule) {
@@ -479,36 +556,79 @@ async function confirmFlexibleArrival(body, response) {
 function buildTimeTracking(existing = {}, clockAction, now = new Date()) {
   const nowIso = now.toISOString();
   const entries = Array.isArray(existing.entries)
-    ? existing.entries.map((entry) => ({ ...entry }))
+    ? existing.entries.map((entry) => ({
+      ...entry,
+      breaks: Array.isArray(entry.breaks) ? entry.breaks.map((item) => ({ ...item })) : []
+    }))
     : [];
   const activeIndex = entries.findIndex((entry) => entry.clockInAt && !entry.clockOutAt);
+  const activeBreakIndex = activeIndex >= 0
+    ? entries[activeIndex].breaks.findIndex((item) => item.breakInAt && !item.breakOutAt)
+    : -1;
 
   if (clockAction === "clock_in") {
     if (activeIndex >= 0) {
       throw Object.assign(new Error("This team is already clocked in for the booking."), { statusCode: 409 });
     }
-    entries.push({ clockInAt: nowIso, clockOutAt: "", minutes: 0 });
+    entries.push({ clockInAt: nowIso, clockOutAt: "", minutes: 0, breakMinutes: 0, workedMinutes: 0, breaks: [] });
+  } else if (clockAction === "break_in") {
+    if (activeIndex < 0) {
+      throw Object.assign(new Error("Clock in before starting a break."), { statusCode: 409 });
+    }
+    if (activeBreakIndex >= 0) {
+      throw Object.assign(new Error("This team is already on a break."), { statusCode: 409 });
+    }
+    entries[activeIndex].breaks.push({ breakInAt: nowIso, breakOutAt: "", minutes: 0 });
+  } else if (clockAction === "break_out") {
+    if (activeIndex < 0 || activeBreakIndex < 0) {
+      throw Object.assign(new Error("Start a break before ending it."), { statusCode: 409 });
+    }
+    const breakInTime = new Date(entries[activeIndex].breaks[activeBreakIndex].breakInAt).getTime();
+    entries[activeIndex].breaks[activeBreakIndex].breakOutAt = nowIso;
+    entries[activeIndex].breaks[activeBreakIndex].minutes = Number.isFinite(breakInTime)
+      ? Math.max(0, Math.round((now.getTime() - breakInTime) / 60000))
+      : 0;
   } else if (clockAction === "clock_out") {
     if (activeIndex < 0) {
       throw Object.assign(new Error("Clock in before clocking out."), { statusCode: 409 });
+    }
+    if (activeBreakIndex >= 0) {
+      throw Object.assign(new Error("End the active break before clocking out."), { statusCode: 409 });
     }
     const clockInTime = new Date(entries[activeIndex].clockInAt).getTime();
     entries[activeIndex].clockOutAt = nowIso;
     entries[activeIndex].minutes = Number.isFinite(clockInTime)
       ? Math.max(0, Math.round((now.getTime() - clockInTime) / 60000))
       : 0;
+    entries[activeIndex].breakMinutes = entries[activeIndex].breaks.reduce((sum, item) => sum + Math.max(0, Number(item.minutes || 0)), 0);
+    entries[activeIndex].workedMinutes = Math.max(0, entries[activeIndex].minutes - entries[activeIndex].breakMinutes);
   } else {
-    throw Object.assign(new Error("Choose clock in or clock out."), { statusCode: 400 });
+    throw Object.assign(new Error("Choose clock in, break in, break out, or clock out."), { statusCode: 400 });
   }
 
   const activeEntry = entries.find((entry) => entry.clockInAt && !entry.clockOutAt);
+  const activeBreak = activeEntry?.breaks?.find((item) => item.breakInAt && !item.breakOutAt);
   const closedEntries = entries.filter((entry) => entry.clockInAt && entry.clockOutAt);
+  entries.forEach((entry) => {
+    entry.breakMinutes = (entry.breaks || []).reduce((sum, item) => sum + Math.max(0, Number(item.minutes || 0)), 0);
+    entry.workedMinutes = entry.clockOutAt ? Math.max(0, Number(entry.minutes || 0) - entry.breakMinutes) : 0;
+  });
+  const completedBreaks = entries.flatMap((entry) => entry.breaks || []).filter((item) => item.breakOutAt);
+  const totalMinutes = closedEntries.reduce((sum, entry) => sum + Math.max(0, Number(entry.minutes || 0)), 0);
+  const totalBreakMinutes = entries.reduce((sum, entry) => sum + Math.max(0, Number(entry.breakMinutes || 0)), 0);
+  const completedSessionBreakMinutes = closedEntries.reduce((sum, entry) => sum + Math.max(0, Number(entry.breakMinutes || 0)), 0);
   return {
+    ...existing,
     entries,
     clockedIn: Boolean(activeEntry),
+    onBreak: Boolean(activeBreak),
     lastClockInAt: entries.at(-1)?.clockInAt || existing.lastClockInAt || "",
     lastClockOutAt: closedEntries.at(-1)?.clockOutAt || existing.lastClockOutAt || "",
-    totalMinutes: closedEntries.reduce((sum, entry) => sum + Math.max(0, Number(entry.minutes || 0)), 0)
+    lastBreakInAt: activeBreak?.breakInAt || closedEntries.at(-1)?.breaks?.at(-1)?.breakInAt || existing.lastBreakInAt || "",
+    lastBreakOutAt: completedBreaks.at(-1)?.breakOutAt || existing.lastBreakOutAt || "",
+    totalMinutes,
+    totalBreakMinutes,
+    workedMinutes: Math.max(0, totalMinutes - completedSessionBreakMinutes)
   };
 }
 
@@ -523,6 +643,7 @@ async function updateStatus(body, request, response) {
 
   let booking = await getBooking(id);
   if (!booking) return json(response, 404, { error: "Booking not found." });
+  const { sendAdditionalWork, sendReviewRequest } = completionReviewChoice(body, status);
 
   const cancellationSource = String(body.cancellationSource || "").trim().toLowerCase();
   if (status === "Cancelled" && !["iman", "customer"].includes(cancellationSource)) {
@@ -545,7 +666,7 @@ async function updateStatus(body, request, response) {
     }
     const captured = ["captured", "already_captured", "not_applicable"].includes(payment.status);
     if (!captured) {
-      if (body.sendAdditionalWork) {
+      if (sendAdditionalWork) {
         const refreshed = await getBooking(id) || booking;
         const estimate = refreshed.estimate && typeof refreshed.estimate === "object" ? refreshed.estimate : {};
         const prior = estimate.additionalWork || {};
@@ -568,13 +689,16 @@ async function updateStatus(body, request, response) {
       try { completionReceipt = {status:"balance_due",delivery:await require("./_external-payment").notifyBalanceDue(id)}; }
       catch (error) { completionReceipt = {status:"balance_due",error:error.message}; }
     } else try {
+      // The original-service final invoice is mandatory and independent of any
+      // optional additional-work offer. Always deliver it before offer handling.
       completionReceipt = await sendCompletionReceipt({ booking: refreshed });
     } catch (error) {
       completionReceipt = { status: "failed", sent: false, error: error.message || "The final receipt could not be sent." };
     }
     const bookingAfterReceipt = await getBooking(id) || refreshed;
     const priorOffer = bookingAfterReceipt.estimate?.additionalWork || {};
-    const shouldSendOffer = bookingAfterReceipt.estimate?.payment?.provider !== "external" && Boolean(body.sendAdditionalWork || priorOffer.pendingUntilBalancePaid);
+    const hasAdditionalWorkFlow = Boolean(priorOffer.offerRequested || priorOffer.offerSentAt || priorOffer.lastOfferSentAt || priorOffer.pendingUntilBalancePaid || priorOffer.orders?.length);
+    const shouldSendOffer = bookingAfterReceipt.estimate?.payment?.provider !== "external" && Boolean(sendAdditionalWork || priorOffer.pendingUntilBalancePaid);
     if (shouldSendOffer) {
       try {
         const result = await sendAdditionalWorkOffer({ booking: { ...bookingAfterReceipt, status }, baseUrl: getSiteUrl(request) });
@@ -585,9 +709,11 @@ async function updateStatus(body, request, response) {
     }
     try {
       const bookingForReview = shouldSendOffer ? (await getBooking(id) || bookingAfterReceipt) : bookingAfterReceipt;
-      reviewRequest = await scheduleReviewRequest({ booking: bookingForReview });
+      reviewRequest = sendReviewRequest && !shouldSendOffer && !hasAdditionalWorkFlow
+        ? await scheduleReviewRequest({ booking: bookingForReview })
+        : await cancelPendingReviewRequest({ booking: bookingForReview });
     } catch (error) {
-      reviewRequest = { status: "failed", sent: false, error: error.message || "The Google review request could not be scheduled." };
+      reviewRequest = { status: "failed", sent: false, error: error.message || "The review-request choice could not be saved." };
     }
   } else if (status === "Cancelled") {
     try {
@@ -707,16 +833,32 @@ async function updateClock(body, response) {
   }
 
   const estimate = booking.estimate && typeof booking.estimate === "object" ? booking.estimate : {};
-  const timeTracking = buildTimeTracking(estimate.timeTracking || {}, clockAction, new Date());
+  const occurredAt = new Date();
+  const timeTracking = buildTimeTracking(estimate.timeTracking || {}, clockAction, occurredAt);
   await updateBookingEstimate(id, { ...estimate, timeTracking });
   if (clockAction === "clock_in" && booking.status !== "In progress") {
     await updateBooking(id, { status: "In progress" });
   }
 
+  let customerNotification;
+  try {
+    const sent = await sendCustomerMessage({
+      phone: booking.phone,
+      customerName: booking.client_name,
+      message: buildTimeTrackingSms(booking, clockAction, occurredAt, timeTracking)
+    });
+    customerNotification = { status: "sent", action: clockAction, sentAt: new Date().toISOString(), messageId: sent.messageId || "" };
+  } catch (error) {
+    customerNotification = { status: "failed", action: clockAction, attemptedAt: new Date().toISOString(), error: error.message || "Customer text could not be sent." };
+  }
+  timeTracking.notifications = [...(Array.isArray(timeTracking.notifications) ? timeTracking.notifications : []), customerNotification].slice(-100);
+  await updateBookingEstimate(id, { ...estimate, timeTracking });
+
   return json(response, 200, {
     ok: true,
     status: clockAction === "clock_in" ? "In progress" : booking.status,
-    timeTracking
+    timeTracking,
+    customerNotification
   });
 }
 
@@ -734,6 +876,7 @@ async function updateCleanerAssignment(body, response) {
   }
 
   const cleanerNames = parseCleanerNames(body.cleanerNames);
+  if (cleanerNames.length > 4) return json(response, 400, { error: "Assign no more than four cleaners." });
   if (cleanerNames.length > 20) {
     return json(response, 400, { error: "Enter no more than 20 cleaner names." });
   }
@@ -744,11 +887,17 @@ async function updateCleanerAssignment(body, response) {
   const now = new Date().toISOString();
   const estimate = booking.estimate && typeof booking.estimate === "object" ? booking.estimate : {};
   const priorAssignment = estimate.assignment && typeof estimate.assignment === "object" ? estimate.assignment : {};
+  const fingerprint = cleanerNames.map((name) => name.toLowerCase()).join("|");
+  const priorFingerprint = Array.isArray(priorAssignment.cleanerNames)
+    ? priorAssignment.cleanerNames.map((name) => String(name).toLowerCase()).join("|")
+    : "";
+  const assignmentChanged = fingerprint !== priorFingerprint;
   const assignment = {
     ...priorAssignment,
     cleanerNames,
     assignedAt: cleanerNames.length ? (priorAssignment.assignedAt || now) : "",
-    updatedAt: now
+    updatedAt: now,
+    customerNotification: cleanerNames.length ? priorAssignment.customerNotification : { status: "not_applicable" }
   };
   await updateBookingEstimate(id, { ...estimate, assignment });
 
@@ -757,7 +906,30 @@ async function updateCleanerAssignment(body, response) {
   if (!cleanerNames.length && status === "Cleaner assigned") status = "Confirmed";
   if (status !== booking.status) await updateBooking(id, { status });
 
-  return json(response, 200, { ok: true, cleanerNames, status, assignment });
+  let customerNotification = assignment.customerNotification || { status: "not_sent" };
+  const shouldNotifyCustomer = cleanerNames.length && (
+    assignmentChanged ||
+    customerNotification.status !== "sent" ||
+    customerNotification.fingerprint !== fingerprint
+  );
+  if (shouldNotifyCustomer) {
+    try {
+      const sent = await sendCustomerMessage({
+        phone: booking.phone,
+        customerName: booking.client_name,
+        message: buildCleanerAssignmentSms(booking, cleanerNames)
+      });
+      customerNotification = { status: "sent", fingerprint, sentAt: new Date().toISOString(), messageId: sent.messageId || "" };
+    } catch (error) {
+      customerNotification = { status: "failed", fingerprint, attemptedAt: new Date().toISOString(), error: error.message || "Customer text could not be sent." };
+    }
+    assignment.customerNotification = customerNotification;
+    await updateBookingEstimate(id, { ...estimate, assignment });
+  } else if (cleanerNames.length) {
+    customerNotification = { ...customerNotification, status: "already_sent" };
+  }
+
+  return json(response, 200, { ok: true, cleanerNames, status, assignment, customerNotification });
 }
 
 async function handler(request, response) {
@@ -798,6 +970,56 @@ async function handler(request, response) {
 
     if (action === 'additional-work') {
       response.setHeader('Cache-Control', 'no-store');
+      if (request.method === 'POST') {
+        const origin = request.headers.origin;
+        if (origin && origin !== new URL(getSiteUrl(request)).origin) return json(response, 403, { error: 'Origin not allowed.' });
+        const body = await readJsonBody(request);
+        const id = String(body.bookingId || '').trim();
+        const booking = id ? await getBooking(id) : null;
+        if (!booking) return json(response, 404, { error: 'Booking not found.' });
+        const additional = require('../booking/_additional-approval');
+        if (body.completionAction === 'complete') {
+          let completed = await additional.completeOrder(id, body.orderId);
+          let invoice = { status: completed.completion_invoice_status || 'not_sent' };
+          if (completed.completionTransitionApplied === true) {
+            invoice = await require('../booking/_additional-invoice').sendAdditionalWorkInvoice({ booking, order: completed });
+            completed = await additional.finishCompletionInvoice(completed, invoice);
+          }
+          let reviewRequest = { status: 'not_requested' };
+          if (Object.prototype.hasOwnProperty.call(body, 'sendReviewRequest')) {
+            try {
+              const currentBooking = await getBooking(id) || booking;
+              reviewRequest = body.sendReviewRequest
+                ? await scheduleReviewRequest({ booking: currentBooking, restartUnsent: true })
+                : await cancelPendingReviewRequest({ booking: currentBooking });
+            } catch (error) {
+              reviewRequest = { status: 'failed', sent: false, error: error.message || 'The review-request choice could not be saved.' };
+            }
+          }
+          return json(response, 200, {
+            order: { ...additional.customerOrder(completed), timeTracking: additional.trackingFor(completed) },
+            invoice,
+            reviewRequest
+          });
+        }
+        const order = await additional.clockOrder(id, body.orderId, body.clockAction);
+        let customerNotification = { status: 'not_applicable' };
+        if (body.clockAction === 'clock_out' && order.transitionApplied) {
+          try {
+            const sent = await sendCustomerMessage({
+              phone: booking.phone,
+              customerName: booking.client_name,
+              message: buildAdditionalWorkCompletionSms(order)
+            });
+            customerNotification = { status: 'sent', sentAt: new Date().toISOString(), messageId: sent.messageId || '' };
+          } catch (error) {
+            customerNotification = { status: 'failed', attemptedAt: new Date().toISOString(), error: error.message || 'Customer text could not be sent.' };
+          }
+        } else if (body.clockAction === 'clock_out') {
+          customerNotification = { status: 'already_completed' };
+        }
+        return json(response, 200, { order, customerNotification });
+      }
       if (request.method !== 'GET') return json(response, 405, { error: 'Method not allowed.' });
       const id = String(request.query?.bookingId || '').trim();
       if (!id || !await getBooking(id)) return json(response, 404, { error: 'Booking not found.' });
@@ -1004,7 +1226,11 @@ async function handler(request, response) {
 
 module.exports = handler;
 module.exports._test = {
+  buildAdditionalWorkCompletionSms,
+  buildCleanerAssignmentSms,
+  buildTimeTrackingSms,
   buildTimeTracking,
+  completionReviewChoice,
   cancellationAmountsForSource,
   hasPaidDeposit,
   parseCleanerNames,

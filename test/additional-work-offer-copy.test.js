@@ -1,0 +1,16 @@
+const assert=require('node:assert/strict');
+const {buildAdditionalWorkOfferEmail,buildAdditionalWorkOfferSms}=require('../api/booking/_notifications');
+const booking={id:'BK-EXAMPLE',client_name:'Benjamin Arnold',email:'benjamin@example.com'};
+const url='https://www.imancleaningservice.com/additional-work.html?token=example';
+const sms=buildAdditionalWorkOfferSms(booking,url);
+assert.match(sms,/Your cleaning is complete/i);
+assert.match(sms,/select the time, review the price and authorize the separate charge/i);
+assert.doesNotMatch(sms,/availability/i);
+assert.match(sms,/Reply STOP/i);
+assert(sms.length<320,'offer text should stay concise');
+const email=buildAdditionalWorkOfferEmail(booking,url);
+assert.equal(email.subject,'Additional cleaning options - Booking BK-EXAMPLE');
+assert.match(email.text,/Your scheduled cleaning is complete/i);
+assert.match(email.text,/review the price and authorize the separate charge/i);
+assert.doesNotMatch(email.text,/remaining balance was collected|One labor-hour/i);
+console.log('Additional-work offer copy tests passed.');

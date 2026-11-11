@@ -73,12 +73,12 @@ async function saveReviewRequest(booking, reviewRequest) {
   booking.estimate = nextEstimate;
 }
 
-async function scheduleReviewRequest({ booking, now = new Date(), save = saveReviewRequest }) {
+async function scheduleReviewRequest({ booking, now = new Date(), save = saveReviewRequest, restartUnsent = false }) {
   if (!booking?.id) throw Object.assign(new Error("Booking could not be found."), { statusCode: 404 });
   if (booking.status !== "Completed") throw Object.assign(new Error("A review request can be scheduled only after the booking is completed."), { statusCode: 409 });
   const previous = booking.estimate?.reviewRequest || {};
   if (previous.sentAt || previous.status === "sent") return { ...previous, status: "already_sent", sent: true };
-  if (previous.dueAt && ["scheduled", "sending", "failed"].includes(previous.status)) {
+  if (previous.dueAt && ["scheduled", "sending", "failed"].includes(previous.status) && (!restartUnsent || previous.status === "sending")) {
     return { ...previous, status: "already_scheduled", sent: false };
   }
   const completedAt = now.toISOString();
@@ -89,6 +89,25 @@ async function scheduleReviewRequest({ booking, now = new Date(), save = saveRev
     dueAt: new Date(now.getTime() + REVIEW_DELAY_MS).toISOString(),
     scheduledAt: completedAt,
     reviewUrl: GOOGLE_REVIEW_URL
+  };
+  await save(booking, reviewRequest);
+  return { ...reviewRequest, sent: false };
+}
+
+async function cancelPendingReviewRequest({ booking, now = new Date(), save = saveReviewRequest }) {
+  if (!booking?.id) throw Object.assign(new Error("Booking could not be found."), { statusCode: 404 });
+  const previous = booking.estimate?.reviewRequest || {};
+  if (previous.sentAt || previous.status === "sent") return { ...previous, status: "already_sent", sent: true };
+  if (previous.status === "sending") return { ...previous, status: "already_processing", sent: false };
+  if (!previous.dueAt && !["scheduled", "failed"].includes(previous.status)) return { ...previous, status: "not_requested", sent: false };
+  const reviewRequest = {
+    ...previous,
+    status: "not_requested",
+    dueAt: "",
+    scheduledAt: "",
+    claimedAt: "",
+    canceledAt: now.toISOString(),
+    error: ""
   };
   await save(booking, reviewRequest);
   return { ...reviewRequest, sent: false };
@@ -175,6 +194,7 @@ module.exports = {
   REVIEW_REQUEST_MESSAGE,
   buildReviewRequestEmail,
   buildReviewRequestSms,
+  cancelPendingReviewRequest,
   processDueReviewRequests,
   scheduleReviewRequest,
   sendReviewRequest,

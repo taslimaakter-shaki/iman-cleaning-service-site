@@ -341,7 +341,7 @@ module.exports = async function handler(request, response) {
     const phone = cleanText(customer.phone, 40);
     const { address, address2, city, state, zip, fullAddress } = normalizeServiceAddress(customer);
 
-    if (!firstName || !lastName || !email || !phone || !address || !city || !state || !zip) {
+    if (!firstName || !lastName || !phone || !address || !city || !state || !zip) {
       return json(response, 400, { error: "Complete all customer and service-address fields." });
     }
     const pausedAddressBorough = temporarilyPausedServiceBorough(zip);
@@ -354,11 +354,11 @@ module.exports = async function handler(request, response) {
     if (zip.replace(/\D/g, "").slice(0, 5) !== eligibilityZip.replace(/\D/g, "").slice(0, 5)) {
       return json(response, 400, { error: "The service-address ZIP code must match the ZIP used for this quote." });
     }
-    if (!/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(email)) {
+    if (email && !/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(email)) {
       return json(response, 400, { error: "Enter a valid email address." });
     }
     const accountEmail = cleanText(accountSession?.user?.email, 180).toLowerCase();
-    if (accountEmail && accountEmail !== email.toLowerCase()) {
+    if (accountEmail && email && accountEmail !== email.toLowerCase()) {
       return json(response, 409, {
         error: `You are logged in as ${accountEmail}. Use that email for this booking or continue as a guest after logging out.`
       });
@@ -576,7 +576,6 @@ module.exports = async function handler(request, response) {
     const stripeCheckoutParams = {
       mode: "payment",
       "payment_method_types[0]": "card",
-      customer_email: email,
       customer_creation: "always",
       "phone_number_collection[enabled]": "true",
       ...stripeLineItems,
@@ -584,7 +583,6 @@ module.exports = async function handler(request, response) {
       "payment_intent_data[description]": visibleDiscount
         ? `${pkg.serviceLabel} for ${customerName} — ${discountName} applied; 25% deposit $${(depositAmountCents / 100).toFixed(2)}`
         : `${pkg.serviceLabel} for ${customerName}`,
-      "payment_intent_data[receipt_email]": email,
       "payment_intent_data[metadata][booking_id]": bookingId,
       "payment_intent_data[metadata][order_number]": orderNumber,
       "payment_intent_data[metadata][customer_name]": customerName,
@@ -668,6 +666,10 @@ module.exports = async function handler(request, response) {
         ? `${siteUrl}/book-now.html?payment=cancelled`
         : require('./_hosted-cancel').cancelUrl(siteUrl, bookingId, reservation.attempt)
     };
+    if (email) {
+      stripeCheckoutParams.customer_email = email;
+      stripeCheckoutParams["payment_intent_data[receipt_email]"] = email;
+    }
     if (visibleDiscount) {
       Object.assign(stripeCheckoutParams, {
         "invoice_creation[invoice_data][custom_fields][0][name]": "Applied discount",

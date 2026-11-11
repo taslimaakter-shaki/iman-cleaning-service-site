@@ -86,6 +86,18 @@ function load(file, dependencies, extras = {}) {
   assert.equal(booking.estimate.agreementAcceptance.context.totalCents, 27000);
   assert.equal(booking.estimate.customQuotePricing.discountLabel, 'Welcome');
 
+  body.customer.email = '';
+  await handler(request, {});
+  assert.equal(result.status, 201, result.error);
+  assert.equal(booking.email, '');
+  assert.equal(stripe.has('customer_email'), false, 'An empty optional email is not sent to Stripe.');
+  assert.equal(stripe.has('payment_intent_data[receipt_email]'), false, 'Stripe receipt email is omitted when no email was supplied.');
+  body.customer.email = 'not-an-email';
+  await handler(request, {});
+  assert.equal(result.status, 400, 'A malformed nonempty email must still be rejected.');
+  assert.match(result.error, /valid email/i);
+  body.customer.email = 'jane@example.test';
+
   const flexiblePkg = require('../api/booking/_arrival-preference').applyArrivalDiscount(pkg, 'any_day');
   body.arrivalPreference = 'any_day';
   body.agreementReview.contextFingerprint = JSON.stringify({

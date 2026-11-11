@@ -29,6 +29,20 @@ function saveChanges(saved) {
   assert.match(email.text, /freshly cleaned space/);
   assert.match(email.html, /Leave a Google Review/);
 
+  const { completionReviewChoice } = require("../api/crm/[action]")._test;
+  assert.throws(() => completionReviewChoice({ sendAdditionalWork: true, sendReviewRequest: true }, "Completed"), /not both/);
+  assert.deepEqual(completionReviewChoice({ sendReviewRequest: true }, "Completed"), { sendAdditionalWork: false, sendReviewRequest: true });
+  const pending = booking();
+  await review.scheduleReviewRequest({ booking: pending, now: new Date("2026-09-08T18:00:00Z"), save: saveChanges([]) });
+  const canceled = await review.cancelPendingReviewRequest({ booking: pending, save: saveChanges([]) });
+  assert.equal(canceled.status, "not_requested");
+  assert.equal(canceled.dueAt, "");
+  await review.scheduleReviewRequest({ booking: pending, now: new Date("2026-09-09T18:00:00Z"), save: saveChanges([]) });
+  const restarted = await review.scheduleReviewRequest({ booking: pending, restartUnsent: true, now: new Date("2026-09-10T18:00:00Z"), save: saveChanges([]) });
+  assert.equal(restarted.dueAt, "2026-09-11T18:00:00.000Z", "Additional-work completion starts a fresh 24-hour review delay");
+  pending.estimate.reviewRequest.status = "sending";
+  assert.equal((await review.cancelPendingReviewRequest({ booking: pending, save: async () => { throw new Error("Do not overwrite an in-flight review"); } })).status, "already_processing");
+
   const current = booking();
   const saved = [];
   const scheduled = await review.scheduleReviewRequest({

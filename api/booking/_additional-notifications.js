@@ -1,5 +1,5 @@
 const { sendCustomerSms } = require('./_notifications');
-const { duration, money, cardLabel } = require('./_additional-approval');
+const { duration, money, cardLabel, teamDescription } = require('./_additional-approval');
 const escape = value => String(value || '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 function statusCopy(status) {
   if (status === 'paid') return 'Payment was charged successfully.';
@@ -8,12 +8,12 @@ function statusCopy(status) {
   return 'Approval received. Payment has not yet been confirmed.';
 }
 function content(snapshot, status) {
-  const time = duration(snapshot.total_minutes), amount = money(snapshot.amount_cents), card = cardLabel(snapshot);
-  const statement = `You approved ${time} of additional cleaning labor for ${amount} and authorized IMAN Cleaning Service LLC to charge this amount to your ${card}.`;
+  const time = teamDescription(snapshot), amount = money(snapshot.amount_cents), card = cardLabel(snapshot);
+  const statement = `Thank you for approving ${time} of additional cleaning for ${amount} and authorizing IMAN Cleaning Service LLC to charge this amount to your ${card}.`;
   const subject = `Additional work approved — Booking ${snapshot.booking_id}`;
-  const text = `Hi ${snapshot.customer_name || 'there'},\n\n${statement}\n\nAdditional labor approved: ${time}\nAmount authorized: ${amount}\nPayment method: ${card}\nBooking reference: ${snapshot.booking_id}\nApproval reference: ${snapshot.id}\n\n${statusCopy(status)}\n\nYour original booking payment is unchanged. Additional work remains subject to team availability.\nQuestions? Call (929) 232-1930.\n\nThank you,\nIMAN Cleaning Service LLC`;
-  const sms = `IMAN Cleaning Service: You approved ${time} of additional cleaning labor for ${amount} and authorized a charge to ${card}. Booking: ${snapshot.booking_id}. ${statusCopy(status)} Questions? (929) 232-1930. Reply STOP to opt out.`;
-  const html = `<html><body style="margin:0;background:#f4f8f7;font-family:Arial,sans-serif;color:#263b40;line-height:1.6"><main style="max-width:620px;margin:auto;padding:28px"><h1 style="color:#073f49;font-size:26px">Additional work approved</h1><p>Hi ${escape(snapshot.customer_name || 'there')},</p><p>${escape(statement)}</p><table><tr><th align="left">Additional labor</th><td>${escape(time)}</td></tr><tr><th align="left">Amount authorized</th><td>${escape(amount)}</td></tr><tr><th align="left">Payment method</th><td>${escape(card)}</td></tr><tr><th align="left">Booking reference</th><td>${escape(snapshot.booking_id)}</td></tr></table><p><strong>${escape(statusCopy(status))}</strong></p><p>Your original booking payment is unchanged. Additional work remains subject to team availability.</p><p>Questions? Call <a href="tel:+19292321930">(929) 232-1930</a>.</p><p>IMAN Cleaning Service LLC</p></main></body></html>`;
+  const text = `Hi ${snapshot.customer_name || 'there'},\n\n${statement}\n\nAdditional labor approved: ${time}\nAmount authorized: ${amount}\nPayment method: ${card}\nBooking reference: ${snapshot.booking_id}\nApproval reference: ${snapshot.id}\n\n${statusCopy(status)}\n\nYour original booking payment is unchanged.\nQuestions? Call (929) 232-1930.\n\nThank you,\nIMAN Cleaning Service LLC`;
+  const sms = `IMAN Cleaning Service: Thank you for approving ${time} of additional cleaning for ${amount} and authorizing a charge to ${card}. Booking: ${snapshot.booking_id}. ${statusCopy(status)} Questions? (929) 232-1930. Reply STOP to opt out.`;
+  const html = `<html><body style="margin:0;background:#f4f8f7;font-family:Arial,sans-serif;color:#263b40;line-height:1.6"><main style="max-width:620px;margin:auto;padding:28px"><h1 style="color:#073f49;font-size:26px">Additional work approved</h1><p>Hi ${escape(snapshot.customer_name || 'there')},</p><p>${escape(statement)}</p><table><tr><th align="left">Additional labor</th><td>${escape(time)}</td></tr><tr><th align="left">Amount authorized</th><td>${escape(amount)}</td></tr><tr><th align="left">Payment method</th><td>${escape(card)}</td></tr><tr><th align="left">Booking reference</th><td>${escape(snapshot.booking_id)}</td></tr></table><p><strong>${escape(statusCopy(status))}</strong></p><p>Your original booking payment is unchanged.</p><p>Questions? Call <a href="tel:+19292321930">(929) 232-1930</a>.</p><p>IMAN Cleaning Service LLC</p></main></body></html>`;
   return { subject, text, html, sms };
 }
 async function send(notice, status) {

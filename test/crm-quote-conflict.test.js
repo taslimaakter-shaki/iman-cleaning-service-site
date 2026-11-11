@@ -21,7 +21,7 @@ function fixture() {
   let source = fs.readFileSync(path.join(__dirname, "../crm.js"), "utf8");
   source = source.replace(/\}\)\(\);\s*$/, "window.test={state,submitQuoteChange,quoteMutation,quoteEditFingerprint,openQuote,quoteFormSnapshots};})();");
   vm.runInNewContext(source, {document, window, navigator:{userAgent:"Test",platform:"Test"},
-    sessionStorage:{getItem:()=>""},localStorage:{getItem:()=>""},setTimeout:()=>1,clearTimeout(){},console,
+    sessionStorage:{getItem:()=>""},localStorage:{getItem:()=>""},setTimeout:()=>1, setInterval: () => 1,clearTimeout(){},console,
     fetch:async (url, options) => {
       assert.equal(url, "/api/crm/quotes", "Never send messages, create a payment or access other endpoints");
       requests.push({method:options.method || "GET",body:options.body && JSON.parse(options.body)});

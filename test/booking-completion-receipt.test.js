@@ -1,4 +1,6 @@
 const assert = require("assert");
+const fs = require("node:fs");
+const path = require("node:path");
 const { buildCompletionReceiptEmail, sendCompletionReceipt } = require("../api/booking/_completion-receipt");
 const { buildFinalPaymentReceiptPdf, receiptAmounts } = require("../api/booking/_final-payment-receipt-pdf");
 
@@ -56,12 +58,12 @@ function booking() {
   assert.ok(pdf.length > 2000);
   assert.equal(pdf.subarray(0, 4).toString(), "%PDF");
   const email = buildCompletionReceiptEmail(current, pdf);
-  assert.equal(email.subject, "Your cleaning is complete - final receipt attached");
-  assert.match(email.text, /final paid receipt is attached/i);
+  assert.equal(email.subject, "Your cleaning is complete - final paid invoice attached");
+  assert.match(email.text, /final paid invoice is attached/i);
   assert.doesNotMatch(email.text, /\$|booking reference|service subtotal|sales tax|remaining balance/i);
   const decoded = Buffer.from(email.raw.replace(/-/g, "+").replace(/_/g, "/"), "base64").toString("utf8");
   assert.match(decoded, /Content-Type: application\/pdf/);
-  assert.match(decoded, /Iman-Cleaning-Final-Receipt-BK-FINAL-1\.pdf/);
+  assert.match(decoded, /IMAN-Cleaning-Final-Invoice-BK-FINAL-1\.pdf/);
 
   const saves = [];
   const sends = [];
@@ -93,6 +95,10 @@ function booking() {
   unpaid.estimate.payment.paidCents = 12606;
   unpaid.estimate.payment.remainingCents = 37816;
   await assert.rejects(() => sendCompletionReceipt({ booking: unpaid }), /paid in full/i);
+  const crmSource = fs.readFileSync(path.join(__dirname, "..", "api", "crm", "[action].js"), "utf8");
+  const invoiceDelivery = crmSource.indexOf("completionReceipt = await sendCompletionReceipt");
+  const optionalOffer = crmSource.indexOf("const shouldSendOffer", invoiceDelivery);
+  assert(invoiceDelivery > -1 && optionalOffer > invoiceDelivery, "the final invoice must be delivered before and independently of optional additional work");
   console.log("Completion receipt tests passed: concise email, attached paid-in-full PDF, correct totals and duplicate prevention.");
 })().catch((error) => {
   console.error(error);

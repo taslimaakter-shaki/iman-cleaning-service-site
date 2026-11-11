@@ -8,17 +8,55 @@ function duration(minutes) {
   const h = Math.floor(minutes / 60), m = minutes % 60;
   return [h ? `${h} hour${h === 1 ? '' : 's'}` : '', m ? `${m} minute${m === 1 ? '' : 's'}` : ''].filter(Boolean).join(' ');
 }
-function timeInput(hours, minutes) {
+function timeInput(hours, minutes, teamMembers = 1) {
   const valid = n => (typeof n === 'number' || typeof n === 'string' && /^\d+$/.test(n)) && Number.isSafeInteger(Number(n));
   if (!valid(hours) || !valid(minutes) || Number(hours) < 0 || Number(minutes) < 0 || Number(minutes) > 60) throw db.fail('Enter whole hours starting at 0 and minutes from 0 to 60.', 400);
-  const total = Number(hours) * 60 + Number(minutes);
+  if (!valid(teamMembers) || Number(teamMembers) < 1) throw db.fail("Choose a whole number of team members, at least 1.", 400);
+  const total = (Number(hours) * 60 + Number(minutes)) * Number(teamMembers);
   if (!Number.isSafeInteger(total) || total < 1) throw db.fail('Choose at least 1 minute of additional work.', 400);
   if (total > MAX_MINUTES) throw db.fail('This amount exceeds the payment limit. Please contact our team.', 400);
-  return { totalMinutes: total, amountCents: Math.round(total * RATE / 60) };
+  return { totalMinutes: total, teamMembers: Number(teamMembers), amountCents: Math.round(total * RATE / 60) };
 }
 function brandName(brand) { return ({ amex: 'American Express', visa: 'Visa', mastercard: 'Mastercard', discover: 'Discover', diners: 'Diners Club', jcb: 'JCB', unionpay: 'UnionPay' })[brand] || 'Card'; }
 function cardLabel(order) { return order.card_last4 ? `${brandName(order.card_brand)} ending in ${order.card_last4}` : 'No saved card'; }
-function consentText(order) { return `I approve ${duration(order.total_minutes)} of additional cleaning labor for ${money(order.amount_cents)} and authorize IMAN Cleaning Service LLC to charge this amount now to my ${cardLabel(order)}. Additional work remains subject to team availability.`; }
+function teamDescription(order) {
+  const team = Number(order.team_members || 1);
+  return `${team} team member${team === 1 ? '' : 's'} × ${duration(order.minutes_per_member ?? order.total_minutes / team)} per person (${duration(order.total_minutes)} total labor)`;
+}
+function trackingFor(order, now = Date.now()) {
+  const entries = order.time_tracking?.entries || [];
+  const active = entries.find(e => e.clockInAt && !e.clockOutAt);
+  const seconds = entries.reduce((sum,e) => sum + (e.clockOutAt ? Number(e.seconds || 0) : Math.max(0,(now-Date.parse(e.clockInAt))/1000)),0);
+  return { entries, active: Boolean(active), elapsedMinutes: seconds / 60,
+    laborMinutes: seconds / 60 * Number(order.team_members || 1),
+    approvedMinutes: Number(order.minutes_per_member ?? order.total_minutes / Number(order.team_members || 1)) };
+}
+async function clockOrder(bookingId, orderId, action) {
+  if (!/^[a-f0-9-]{36}$/i.test(orderId || '') || !['clock_in','clock_out'].includes(action)) throw db.fail('Invalid additional-work clock request.',400);
+  const current = await db.get(orderId, bookingId);
+  if (current?.completed_at) throw db.fail('Completed additional work cannot be clocked again.',409);
+  const order = await db.rpc('iman_additional_work_clock',{p_booking_id:bookingId,p_order_id:orderId,p_action:action});
+  return { ...customerOrder(order), timeTracking: trackingFor(order), transitionApplied: order.clockTransitionApplied === true };
+}
+async function completeOrder(bookingId, orderId) {
+  if (!/^[a-f0-9-]{36}$/i.test(orderId || '')) throw db.fail('Invalid additional-work completion request.',400);
+  return db.rpc('iman_additional_work_complete',{p_booking_id:bookingId,p_order_id:orderId});
+}
+async function finishCompletionInvoice(order, result) {
+  const status = result.status === 'sent' ? 'sent' : result.status === 'skipped' ? 'skipped' : 'failed';
+  const rows = await db.request(`${db.ORDERS}?id=eq.${encodeURIComponent(order.id)}&completion_invoice_status=eq.sending`, {
+    method: 'PATCH',
+    body: JSON.stringify({
+      completion_invoice_status: status,
+      completion_invoice_sent_at: status === 'sent' ? new Date().toISOString() : null,
+      completion_invoice_provider_id: result.messageId || null,
+      completion_invoice_error: result.error || null,
+      updated_at: new Date().toISOString()
+    })
+  });
+  return rows[0] || order;
+}
+function consentText(order) { return `I approve ${teamDescription(order)} of additional cleaning for ${money(order.amount_cents)} and authorize IMAN Cleaning Service LLC to charge this amount now to my ${cardLabel(order)}.`; }
 async function stripe(path, params, key) {
   const secret = process.env.STRIPE_SECRET_KEY || process.env.Stripe_Secret_Key;
   if (!secret?.startsWith('sk_')) throw db.fail('Secure payment is unavailable. Please contact our team.', 503);
@@ -40,12 +78,13 @@ async function savedCard(customerId, methodId) {
 }
 function customerOrder(o) {
   if (!o) return null;
-  return { id: o.id, revision: o.revision, status: o.status, hours: Math.floor(o.total_minutes / 60), minutes: o.total_minutes % 60,
-    totalMinutes: o.total_minutes, amountCents: o.amount_cents, duration: duration(o.total_minutes), card: o.card_last4 ? cardLabel(o) : '',
-    consent: o.card_last4 ? consentText(o) : '', approvedAt: o.approved_at, paidAt: o.paid_at, error: o.last_error || '' };
+  return { id: o.id, revision: o.revision, status: o.status, teamMembers: Number(o.team_members || 1), hours: Math.floor((o.minutes_per_member ?? o.total_minutes) / 60), minutes: (o.minutes_per_member ?? o.total_minutes) % 60,
+    totalMinutes: o.total_minutes, amountCents: o.amount_cents, duration: teamDescription(o), card: o.card_last4 ? cardLabel(o) : '',
+    consent: o.card_last4 ? consentText(o) : '', approvedAt: o.approved_at, paidAt: o.paid_at, error: o.last_error || '',
+    completedAt: o.completed_at || '', completionInvoiceStatus: o.completion_invoice_status || 'not_sent', completionInvoiceSentAt: o.completion_invoice_sent_at || '' };
 }
 async function prepare(booking, body) {
-  const { totalMinutes } = timeInput(body.hours, body.minutes);
+  const { totalMinutes, teamMembers } = timeInput(body.hours, body.minutes, body.teamMembers);
   // Do not overlap a still-open payment from the previous checkout workflow.
   for (const legacy of booking.estimate?.additionalWork?.orders || []) {
     if (legacy.status === 'checkout_created' && legacy.checkoutSessionId) {
@@ -59,7 +98,7 @@ async function prepare(booking, body) {
   const customerId = existing?.stripe_customer_id || payment.stripeCustomerId;
   const card = await savedCard(customerId, existing?.payment_method_id || payment.paymentMethodId);
   return db.rpc('iman_additional_work_prepare', { p_booking_id: booking.id, p_input: {
-    id: body.orderId || null, revision: body.revision || null, previous_id: body.previousId || null, total_minutes: totalMinutes,
+    id: body.orderId || null, revision: body.revision || null, previous_id: body.previousId || null, total_minutes: totalMinutes, team_members: teamMembers,
     stripe_customer_id: customerId || null, payment_method_id: null, card_brand: null, card_last4: null, ...card
   } });
 }
@@ -232,7 +271,7 @@ async function handlePaymentEvent(event) {
 }
 async function crmOrders(bookingId) {
   const orders = await db.request(`${db.ORDERS}?booking_id=eq.${encodeURIComponent(bookingId)}&order=created_at.desc`);
-  return Promise.all(orders.map(async o => ({ ...customerOrder(o), paymentIntentId: o.payment_intent_id, confirmations: (await db.notices(o.id)).map(n => ({ revision: n.revision, channel: n.channel, status: n.status, sentAt: n.sent_at, attemptedAt: n.attempted_at, providerId: n.provider_id, error: n.error, approval: { time: duration(n.snapshot.total_minutes), amountCents: n.snapshot.amount_cents, card: cardLabel(n.snapshot), approvedAt: n.snapshot.approved_at } })) })));
+  return Promise.all(orders.map(async o => ({ ...customerOrder(o), timeTracking: trackingFor(o), paymentIntentId: o.payment_intent_id, confirmations: (await db.notices(o.id)).map(n => ({ revision: n.revision, channel: n.channel, status: n.status, sentAt: n.sent_at, attemptedAt: n.attempted_at, providerId: n.provider_id, error: n.error, approval: { time: teamDescription(n.snapshot), amountCents: n.snapshot.amount_cents, card: cardLabel(n.snapshot), approvedAt: n.snapshot.approved_at } })) })));
 }
 async function processPending() {
   const pending = await db.request(`${db.NOTICES}?status=eq.pending&select=order_id&limit=20`);
@@ -242,4 +281,4 @@ async function processPending() {
   }
   return { checked, errors };
 }
-module.exports = { handler, timeInput, duration, money, brandName, cardLabel, consentText, prepare, approve, payApproved, reconcile, recordIntent, changeCard, setupCard, completeSetup, notify, handlePaymentEvent, crmOrders, customerOrder, stripe, processPending };
+module.exports = { teamDescription, trackingFor, clockOrder, completeOrder, finishCompletionInvoice, handler, timeInput, duration, money, brandName, cardLabel, consentText, prepare, approve, payApproved, reconcile, recordIntent, changeCard, setupCard, completeSetup, notify, handlePaymentEvent, crmOrders, customerOrder, stripe, processPending };

@@ -29,6 +29,12 @@ assert.equal(notifications.reminderStageForBooking(booking(-1), now), "");
 assert.match(notifications.buildReminderSms(booking(24), "twenty_four_hours"), /in about 24 hours/i);
 assert.match(notifications.buildReminderSms(booking(6), "six_hours"), /in about 6 hours/i);
 
+const flexible = { arrivalPreference: { flexible: true, confirmationStatus: "pending" } };
+assert.equal(notifications.reminderStageForBooking(booking(48, flexible), now), "flexible_two_days");
+assert.equal(notifications.reminderStageForBooking(booking(24, flexible), now), "flexible_one_day");
+assert.equal(notifications.reminderStageForBooking(booking(6, flexible), now), "");
+assert.doesNotMatch(notifications.buildReminderSms(booking(24, flexible), "flexible_one_day"), /\d{1,2}:\d{2}/, "Flexible reminders give the service date without a provisional arrival time");
+
 (async () => {
   const sent = [];
   const updates = [];

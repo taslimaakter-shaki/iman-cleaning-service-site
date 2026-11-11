@@ -12,7 +12,7 @@ class Element {
 const document = new Element(), requests = [], window = {navigator:{},matchMedia:()=>({matches:false}),confirm:()=>true};
 let source = fs.readFileSync(path.join(__dirname,'../crm.js'),'utf8');
 source = source.replace(/\}\)\(\);\s*$/, 'window.test={state,externalPaymentMarkup,quoteEditorMarkup,updateDiscountPreview,saveQuoteDiscount,quoteFormSnapshots};})();');
-vm.runInNewContext(source,{document,window,navigator:{userAgent:'Test',platform:'Test'},sessionStorage:{getItem:()=>''},localStorage:{getItem:()=>''},setTimeout:()=>1,clearTimeout(){},console,
+vm.runInNewContext(source,{document,window,navigator:{userAgent:'Test',platform:'Test'},sessionStorage:{getItem:()=>''},localStorage:{getItem:()=>''},setTimeout:()=>1, setInterval: () => 1,clearTimeout(){},console,
   fetch: async (url,options) => { assert.equal(url,'/api/crm/quotes'); requests.push({url,...options}); return {ok:true,json:async()=>options.method?{ok:true,paymentReady:true}:{quotes:window.test.state.quotes}}; }});
 window.imanBookingDiscountName = require('../booking-discount-names');
 const api = window.test;
