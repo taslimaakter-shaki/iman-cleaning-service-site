@@ -660,7 +660,9 @@ async function updateStatus(body, request, response) {
   if (status === "Completed") {
     if (Date.parse(booking.estimate?.secondVisitSchedule) > Date.now()) return json(response, 409, {error:"Complete the second visit before closing this booking."});
     try {
-      payment = await captureRemainingBalance({ bookingId: id });
+      payment = booking.estimate?.payment?.provider === "external"
+        ? { status: "not_applicable" }
+        : await captureRemainingBalance({ bookingId: id });
     } catch (error) {
       payment = { status: "error", error: error.message || "Payment update failed." };
     }

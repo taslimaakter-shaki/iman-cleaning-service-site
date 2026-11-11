@@ -39,6 +39,7 @@ async function validateDraft(order) {
 async function prepare(bookingId, params, guard={}) {
  if (!/^pk_(live|test)_/.test(process.env.STRIPE_PUBLISHABLE_KEY || '')) throw fail('Secure payment setup is not ready. Please contact IMAN.',503);
  const booking=await shared().getBooking(bookingId);
+ if (booking?.estimate?.payment?.provider === 'external') throw fail('This booking uses an external payment. Record Zelle or other manual payments in the CRM; no card deposit will be charged.');
  if (!booking || booking.status!=='New') throw fail('This booking is no longer awaiting payment.');
  assertServiceAvailable(booking);
  const amount=Object.entries(params).filter(([k])=>/^line_items\[\d+\]\[price_data\]\[unit_amount\]$/.test(k)).reduce((sum,[,v])=>sum+Number(v),0);
@@ -75,6 +76,7 @@ async function pay(order, confirmationToken) {
  if (order.state==='paid') return order;
  await validateDraft(order);
  const booking=await shared().getBooking(order.booking_id);
+ if (booking?.estimate?.payment?.provider === 'external') throw fail('This booking uses an external payment. Record Zelle or other manual payments in the CRM; no card deposit will be charged.');
  if (!booking || booking.status!=='New') throw fail('Payment has already been received or this booking is no longer available.');
  if (order.state === 'draft') assertServiceAvailable(booking);
  if (!['creating','ready','processing','requires_action'].includes(order.state)) {

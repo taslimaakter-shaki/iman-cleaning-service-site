@@ -2178,7 +2178,9 @@
           ? (booking.estimate?.cancellation?.refundCents
             ? `${escapeHtml(booking.estimate.cancellation.label || "Booking canceled")}. Payment status: ${escapeHtml(String(paymentStatus).replace(/_/g, " "))}. A ${money(booking.estimate.cancellation.refundCents)} refund was submitted and any uncaptured balance authorization was released.`
             : `${escapeHtml(booking.estimate?.cancellation?.label || "Booking canceled")}. Payment status: ${escapeHtml(String(paymentStatus).replace(/_/g, " "))}. The ${money(booking.estimate?.cancellation?.retainedCents || 0)} deposit was retained, no balance is due, and any uncaptured authorization was released.`)
-          : `Balance status: ${escapeHtml(String(paymentStatus).replace(/_/g, " "))}. Marking this booking Completed will attempt to capture the remaining ${money(payment.remainingCents)}.`}</p>
+          : booking.estimate?.payment?.provider === "external"
+            ? `Payment received outside the website (${escapeHtml(({ zelle: "Zelle", cash: "Cash", check: "Check", bank_transfer: "Bank transfer" })[booking.estimate.payment.method] || "manual payment")}). ${money(payment.paidCents)} recorded as paid. No automatic deposit charge, card hold, or balance capture. ${payment.remainingCents > 0 ? `Collect and record the remaining ${money(payment.remainingCents)} separately; marking Completed does not mark it paid.` : "Paid in full."}`
+            : `Balance status: ${escapeHtml(String(paymentStatus).replace(/_/g, " "))}. Marking this booking Completed will attempt to capture the remaining ${money(payment.remainingCents)}.`}</p>
       </section>
       <section class="crm-detail-section">
         <h3>Update booking</h3>
@@ -2297,8 +2299,9 @@
     if (status === "Completed") {
       const payment = paymentFor(booking);
       const offerCopy = sendAdditionalWork ? " After successful payment, the additional-work link will be sent by email and text." : " No additional-work link will be sent.";
+      const paymentCopy = booking.estimate?.payment?.provider === "external" ? " No card deposit or balance will be charged. Record any remaining manual payment separately." : ` This will attempt to charge the remaining ${money(payment.remainingCents)} to the customer's saved payment method.`;
       const reviewCopy = sendReviewRequest ? " A review email and text will be scheduled for 24 hours later." : " No review request will be scheduled.";
-      const approved = window.confirm(`Confirm the cleaning is finished? This will attempt to charge the remaining ${money(payment.remainingCents)} to the customer's saved payment method.${offerCopy}${reviewCopy}`);
+      const approved = window.confirm(`Confirm the cleaning is finished?${paymentCopy}${offerCopy}${reviewCopy}`);
       if (!approved) return;
     }
     if (status === "Cancelled") {

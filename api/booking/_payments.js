@@ -94,7 +94,8 @@ function cancellationPaymentAmounts(booking, now = new Date()) {
 
 function automaticBalanceCollection(booking) {
   const payment = booking?.estimate?.payment || {};
-  return payment.paymentType === "deposit_25"
+  return payment.provider !== "external"
+    && payment.paymentType === "deposit_25"
     && payment.balanceCollection === "automatic_48h_authorization";
 }
 
