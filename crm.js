@@ -2017,6 +2017,16 @@
     }
   }
 
+  function syncCompletionReview(form) {
+    const review = form.elements.sendReviewRequest;
+    const showReview = form.elements.status.value === "Completed"
+      && form.dataset.additionalWorkActive !== "true"
+      && !form.elements.sendAdditionalWork.checked;
+    $("[data-completion-review]", form).hidden = !showReview;
+    review.disabled = !showReview;
+    if (!showReview) review.checked = false;
+  }
+
   function reviewChoiceMessage(reviewResult = {}, requested = false) {
     if (reviewResult.status === "already_sent") return "Google review request was already sent.";
     if (requested && ["scheduled", "already_scheduled"].includes(reviewResult.status)) return "Review email and text scheduled for 24 hours after completion.";
@@ -2184,17 +2194,17 @@
       </section>
       <section class="crm-detail-section">
         <h3>Update booking</h3>
-        <form class="crm-status-form" data-status-form data-additional-work-active="${hasAdditionalWorkFlow ? "true" : "false"}">
-          <label>Status<select name="status">${STATUS_OPTIONS.map((status) => `<option${status === booking.status ? " selected" : ""}>${escapeHtml(status)}</option>`).join("")}</select></label>
-          <label class="crm-offer-option" data-completion-offer${booking.status === "Completed" ? "" : " hidden"}><input type="checkbox" name="sendAdditionalWork"><span><strong>Send customer an additional-work order link</strong><small>Email and text after the remaining balance is collected.</small></span></label>
-          <label class="crm-offer-option" data-completion-review${booking.status === "Completed" && !hasAdditionalWorkFlow ? "" : " hidden"}><input type="checkbox" name="sendReviewRequest"><span><strong>Send review request 24 hours after completion</strong><small>Email and text. Leave unchecked to send nothing.</small></span></label>
-          <fieldset class="crm-cancellation-options" data-cancellation-options hidden disabled>
+        ${booking.allowedStatuses?.length ? `<form class="crm-status-form" data-status-form data-additional-work-active="${hasAdditionalWorkFlow ? "true" : "false"}">
+          <label>Status<select name="status">${booking.allowedStatuses.map((status) => `<option${status === booking.status ? " selected" : ""}>${escapeHtml(status)}</option>`).join("")}</select></label>
+          <label class="crm-offer-option" data-completion-offer${booking.allowedStatuses[0] === "Completed" ? "" : " hidden"}><input type="checkbox" name="sendAdditionalWork"><span><strong>Send customer an additional-work order link</strong><small>Email and text after the remaining balance is collected.</small></span></label>
+          <label class="crm-offer-option" data-completion-review${booking.allowedStatuses[0] === "Completed" && !hasAdditionalWorkFlow ? "" : " hidden"}><input type="checkbox" name="sendReviewRequest"${booking.allowedStatuses[0] === "Completed" && !hasAdditionalWorkFlow ? "" : " disabled"}><span><strong>Send review request 24 hours after completion</strong><small>Email and text. Leave unchecked to send nothing.</small></span></label>
+          <fieldset class="crm-cancellation-options" data-cancellation-options${booking.allowedStatuses[0] === "Cancelled" ? "" : " hidden disabled"}>
             <legend>Who canceled this booking?</legend>
             <label><input type="radio" name="cancellationSource" value="iman" required><span><strong>Canceled by Iman Cleaning</strong><small>Refund the full ${money(payment.paidCents)} paid and release the remaining-balance hold.</small></span></label>
             <label><input type="radio" name="cancellationSource" value="customer" required><span><strong>Canceled by customer</strong><small>48 hours or more: full refund unless a late reschedule already triggered the fee. Less than 48 hours: keep the 25% deposit (${money(Math.min(payment.paidCents, payment.depositCents))}). Credit paid late-rescheduling fees toward the cancellation fee. Release the hold in either case.</small></span></label>
           </fieldset>
           <button class="crm-primary" type="submit">Save status</button>
-        </form>
+        </form>` : "<p>No status changes are available for this booking.</p>"}
         <p class="crm-action-status" data-action-status role="status"></p>
       </section>
       <section class="crm-detail-section crm-additional-work-section">
@@ -2216,7 +2226,7 @@
       : order.completedAt
         ? ''
         : `<button type="button" class="crm-row-button" data-additional-clock="${t.active ? 'clock_out' : 'clock_in'}" data-order-id="${escapeHtml(order.id)}">${t.active ? 'Clock out additional work' : 'Clock in additional work'}</button>`;
-    const completionControl = !t.active && hasClosedEntry
+    const completionControl = order.status === "paid" && !t.active && hasClosedEntry
       ? order.completionInvoiceStatus === 'sent'
         ? `<p class="crm-action-status is-success">Additional work completed · Invoice sent ${escapeHtml(clockTime(order.completionInvoiceSentAt))}</p>`
         : order.completionInvoiceStatus === 'sending'
@@ -2274,6 +2284,11 @@
     try {
       const data = await api('/api/crm/additional-work?bookingId=' + encodeURIComponent(booking.id));
       if (!target.isConnected || target.dataset.bookingId !== booking.id) return;
+      const form = $("[data-status-form]", target.closest(".crm-dialog-body"));
+      if (form && data.orders?.length) {
+        form.dataset.additionalWorkActive = "true";
+        syncCompletionReview(form);
+      }
       target.innerHTML = (data.orders || []).map(o => `<div class="crm-detail-section"><h4>${escapeHtml(o.duration)} · ${money(o.amountCents)}</h4><p>${escapeHtml(o.card || 'Card not selected')} · ${escapeHtml(o.status.replace(/_/g, ' '))}</p><p>Approval: ${o.approvedAt ? escapeHtml(clockTime(o.approvedAt)) : 'Not yet approved'}<br>Reference: ${escapeHtml(o.id)}</p>${o.error ? `<p>${escapeHtml(o.error)}</p>` : ''}${additionalClockMarkup(o)}${(o.confirmations || []).map(n => `<p><strong>${n.channel === 'sms' ? 'Text' : 'Email'} confirmation · approval ${escapeHtml(String(n.revision))}</strong>: ${escapeHtml(n.status)}${n.sentAt ? ' · ' + escapeHtml(clockTime(n.sentAt)) : ''}<br>${escapeHtml(n.approval.time)} · ${money(n.approval.amountCents)} · ${escapeHtml(n.approval.card)}${n.error ? '<br>' + escapeHtml(n.error) : ''}</p>`).join('')}</div>`).join('') || '<p>No additional-work approvals yet.</p>';
     } catch {
       if (target.isConnected) target.textContent = 'Additional-work history could not load. Reopen this booking to try again.';
@@ -2292,7 +2307,8 @@
   async function updateBookingStatus(booking, status, form) {
     const actionStatus = $("[data-action-status]", form.closest(".crm-dialog-body"));
     const sendAdditionalWork = status === "Completed" && Boolean(form.elements.sendAdditionalWork?.checked);
-    const sendReviewRequest = status === "Completed" && !sendAdditionalWork && Boolean(form.elements.sendReviewRequest?.checked);
+    const sendReviewRequest = status === "Completed" && !sendAdditionalWork && form.dataset.additionalWorkActive !== "true"
+      && !form.elements.sendReviewRequest.disabled && form.elements.sendReviewRequest.checked;
     const cancellationSource = status === "Cancelled"
       ? String(form.elements.cancellationSource?.value || "")
       : "";
@@ -2334,7 +2350,7 @@
     try {
       const data = await api("/api/crm/bookings", {
         method: "PATCH",
-        body: JSON.stringify({ id: booking.id, status, sendAdditionalWork, sendReviewRequest, cancellationSource })
+        body: JSON.stringify({ id: booking.id, status, expectedStatus: booking.status, sendAdditionalWork, sendReviewRequest, cancellationSource })
       });
       booking.status = status;
       const paymentResult = data.payment || {};
@@ -3260,9 +3276,7 @@
     const option = $("[data-completion-offer]", statusForm);
     option.hidden = !isCompleted;
     if (option.hidden) statusForm.elements.sendAdditionalWork.checked = false;
-    const reviewOption = $("[data-completion-review]", statusForm);
-    reviewOption.hidden = !isCompleted || statusForm.dataset.additionalWorkActive === "true" || statusForm.elements.sendAdditionalWork.checked;
-    if (reviewOption.hidden) statusForm.elements.sendReviewRequest.checked = false;
+    syncCompletionReview(statusForm);
     const cancellationOptions = $("[data-cancellation-options]", statusForm);
     const isCancellation = select.value === "Cancelled";
     cancellationOptions.hidden = !isCancellation;

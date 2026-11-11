@@ -16,7 +16,7 @@ const {
 } = require("./_notifications");
 const rescheduling = require("./_rescheduling");
 const { cancellationPaymentAmounts } = require("./_payments");
-const { cancelRemainingAuthorization } = require("./_payments");
+const { cancelRemainingAuthorization, refundBookingPayment } = require("./_payments");
 const { trySendFormSubmissionNotification } = require("../_form-notifications");
 const { arrivalWindowLabel, slotMatchesArrivalPreference } = require("./_arrival-preference");
 
@@ -326,44 +326,6 @@ async function notifyManagementChange(booking, subject, message) {
   };
 }
 
-async function createRefund(booking, amountCents) {
-  if (amountCents <= 0) return { id: "", status: "not_refunded" };
-  const secretKey = process.env.STRIPE_SECRET_KEY || process.env.Stripe_Secret_Key || "";
-  const paymentIntentId = cleanText(booking.estimate?.payment?.paymentIntentId, 120);
-  if (!secretKey || !paymentIntentId) {
-    throw Object.assign(new Error("The original payment could not be located automatically. Please call 929-232-1930."), {
-      statusCode: 409
-    });
-  }
-  const encoded = new URLSearchParams({
-    payment_intent: paymentIntentId,
-    amount: String(amountCents),
-    reason: "requested_by_customer",
-    "metadata[booking_id]": booking.id,
-    "metadata[cancellation_policy]": amountCents < Number(booking.estimate?.payment?.paidCents || 0)
-      ? "less_than_48_hours_deposit_retained"
-      : "full_refund"
-  });
-  const response = await fetch("https://api.stripe.com/v1/refunds", {
-    method: "POST",
-    headers: {
-      Authorization: `Bearer ${secretKey}`,
-      "Content-Type": "application/x-www-form-urlencoded",
-      "Idempotency-Key": `booking-cancellation-${booking.id}`
-    },
-    body: encoded.toString()
-  });
-  const text = await response.text();
-  const data = text ? JSON.parse(text) : {};
-  if (!response.ok) {
-    throw Object.assign(new Error(data?.error?.message || "The refund could not be completed."), {
-      statusCode: response.status,
-      details: data
-    });
-  }
-  return data;
-}
-
 async function handler(request, response) {
   try {
     if (!["GET", "POST"].includes(request.method)) {
@@ -442,7 +404,14 @@ async function handler(request, response) {
       const totalCents = Number(booking.estimate?.payment?.totalCents || Math.round(Number(booking.estimate?.total || 0) * 100));
       const beforeAuthorization = JSON.parse(JSON.stringify(booking));
       const authorization = await cancelRemainingAuthorization({ booking });
-      const refund = await createRefund(booking, refundCents);
+      const refund = await refundBookingPayment({
+        booking,
+        amountCents: refundCents,
+        customerPortal: true,
+        policy: refundCents < Number(booking.estimate?.payment?.paidCents || 0)
+          ? "less_than_48_hours_deposit_retained"
+          : "full_refund"
+      });
       const estimate = {
         ...(booking.estimate || {}),
         payment: { ...booking.estimate?.payment, paidCents: retainedCents, remainingCents: 0, status: refundCents ? (retainedCents ? "partially_refunded" : "refunded") : "deposit_retained" },
@@ -454,6 +423,7 @@ async function handler(request, response) {
           retainedCents,
           refundCents,
           refundId: refund.id || "",
+          refunds: refund.refunds || [],
           refundStatus: refund.status || ""
         }
       };

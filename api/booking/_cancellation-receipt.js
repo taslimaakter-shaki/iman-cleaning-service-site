@@ -16,7 +16,7 @@ function snapshot(booking, cancellation, authorization = {}, feeRefunds = []) {
     issuedAt:cancellation.cancelledAt, order:e.orderNumber || booking.id, customer:booking.client_name || '', service:booking.service_label || booking.service || '', appointment:booking.schedule_label || date(booking.schedule),
     source: company ? 'iman' : 'customer', paidCents:Number(cancellation.paidCents ?? (Number(cancellation.retainedCents || 0)+refundCents)),
     feeCents: grossFee, feeCreditCents:credit, feesPaidCents:feesPaid, retainedCents:Number(cancellation.retainedCents || 0),refundCents,
-    refundId:cancellation.refundId || '',refundStatus:cancellation.refundStatus || (refundCents ? 'unknown' : 'not_required'), feeRefunds,
+    refundId:cancellation.refundId || '', refunds:cancellation.refunds || [],refundStatus:cancellation.refundStatus || (refundCents ? 'unknown' : 'not_required'), feeRefunds,
     remainingCents:0, paymentMethod:p.cardLast4 ? `${p.cardBrand || 'Card'} ending in ${p.cardLast4}` : 'Original payment method',
     holdStatus: authorization.status === 'already_captured' ? 'Previously charged; included in payment totals' : p.remaining?.paymentIntentId && ['authorized','capture_failed','requires_action'].includes(p.remaining.status) ? (authorization.status === 'canceled' ? 'Release requested' : 'Release needs review') : 'No outstanding hold recorded',
     reason:company ? 'IMAN canceled this appointment. No cancellation fee applies.' : state.cancellationLocked ? 'An earlier late reschedule kept this booking subject to the 25% cancellation fee. Paid late-rescheduling fees are credited toward it.' : cancellation.lessThan48Hours ? 'Canceled less than 48 hours before the appointment. The 25% cancellation fee applies.' : 'Canceled at least 48 hours before the appointment. No cancellation fee applies.'
@@ -46,7 +46,14 @@ async function refreshRefundStatus(booking) {
       return refund.id === id ? refund.status || fallback : fallback;
     } catch { return fallback; }
   };
-  receipt.refundStatus = await refresh(receipt.refundId, receipt.refundStatus);
+  if (receipt.refunds?.length) {
+    receipt.refunds = await Promise.all(receipt.refunds.map(async refund => ({
+      ...refund, status: await refresh(refund.id, refund.status)
+    })));
+    receipt.refundStatus = require("./_payments").combinedRefundStatus(receipt.refunds);
+  } else {
+    receipt.refundStatus = await refresh(receipt.refundId, receipt.refundStatus);
+  }
   receipt.feeRefunds = await Promise.all(receipt.feeRefunds.map(async refund=>({...refund,status:await refresh(refund.id,refund.status)})));
   return {...booking,estimate:{...booking.estimate,cancellation:{...booking.estimate.cancellation,receipt}}};
 }

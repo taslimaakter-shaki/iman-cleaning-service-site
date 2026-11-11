@@ -88,6 +88,49 @@ async function testCancellationPayments() {
   assert.strictEqual(calls[0].params.amount, 2500);
 }
 
+async function testCapturedBalanceRefund() {
+  const current = booking();
+  const payment = current.estimate.payment;
+  Object.assign(payment, {
+    depositPaymentIntentId: "pi_deposit",
+    paidCents: 10000,
+    remaining: { status: "captured", paymentIntentId: "pi_balance", amountCents: 7500 }
+  });
+  current.estimate.rescheduling = {
+    priceRefunds: [{ paymentIntentId: "pi_deposit", status: "succeeded", amountCents: 500 }]
+  };
+
+  const calls = [];
+  let failBalance = true;
+  const args = {
+    booking: current,
+    amountCents: 9500,
+    stripeCall: async call => {
+      calls.push(call);
+      const balance = call.params.payment_intent === "pi_balance";
+      if (balance && failBalance) throw new Error("Connection lost");
+      return { id: balance ? "re_balance" : "re_deposit", status: balance ? "pending" : "succeeded" };
+    }
+  };
+  await assert.rejects(refundBookingPayment(args), /Connection lost/);
+  failBalance = false;
+  const result = await refundBookingPayment(args);
+  assert.deepEqual(calls.slice(0, 2), calls.slice(2), "Retries reuse both Stripe requests and idempotency keys");
+  assert.notEqual(calls[0].idempotencyKey, calls[1].idempotencyKey);
+  assert.deepEqual(calls.slice(0, 2).map(({ params }) => [params.payment_intent, params.amount]), [
+    ["pi_deposit", 2000],
+    ["pi_balance", 7500]
+  ]);
+  assert.equal(result.amountCents, 9500);
+  assert.equal(result.status, "pending");
+  assert.deepEqual(result.refunds.map(refund => refund.id), ["re_deposit", "re_balance"]);
+
+  payment.remaining.status = "authorized";
+  calls.length = 0;
+  await assert.rejects(refundBookingPayment(args), /full refund/);
+  assert.equal(calls.length, 0, "An insufficient allocation is rejected before any Stripe writes");
+}
+
 async function testAuthorizationAndIdempotentState() {
   const current = booking();
   const stripeCalls = [];
@@ -198,6 +241,7 @@ async function run() {
   await testAmountsAndEligibility();
   await testFortyEightHourWindow();
   await testCancellationPayments();
+  await testCapturedBalanceRefund();
   await testAuthorizationAndIdempotentState();
   await testCaptureAndCancellation();
   await testExistingBookingsAreIgnored();

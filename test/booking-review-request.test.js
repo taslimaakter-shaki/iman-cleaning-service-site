@@ -20,7 +20,42 @@ function saveChanges(saved) {
   };
 }
 
+function testCompletionCheckboxes() {
+  const source = require("node:fs").readFileSync(require.resolve("../crm.js"), "utf8");
+  const controls = source.slice(source.indexOf("  function syncCompletionReview("), source.indexOf("  function reviewChoiceMessage("));
+  const timer = source.slice(source.indexOf("  function additionalClockMarkup("), source.indexOf("  function additionalClockText("));
+  const { syncCompletionReview, additionalClockMarkup } = require("node:vm").runInNewContext(
+    controls + timer + "({ syncCompletionReview, additionalClockMarkup })",
+    { $: (_, form) => form.label, escapeHtml: String, clockTime: String, durationLabel: String, additionalClockText: () => "" }
+  );
+  const review = { checked: true };
+  const offer = { checked: false };
+  const form = { label: {}, dataset: {}, elements: {
+    status: { value: "Completed" }, sendReviewRequest: review, sendAdditionalWork: offer
+  } };
+  syncCompletionReview(form);
+  assert.equal(form.label.hidden, false);
+  assert.equal(review.disabled, false);
+  offer.checked = true;
+  syncCompletionReview(form);
+  assert.equal(form.label.hidden, true);
+  assert.equal(review.disabled, true);
+  assert.equal(review.checked, false);
+  offer.checked = false;
+  syncCompletionReview(form);
+  assert.equal(form.label.hidden, false);
+  form.dataset.additionalWorkActive = "true";
+  syncCompletionReview(form);
+  assert.equal(form.label.hidden, true);
+
+  const paid = { status: "paid", timeTracking: { entries: [{ clockInAt: "start", clockOutAt: "end" }] } };
+  assert.match(additionalClockMarkup(paid), /data-additional-review/);
+  assert.doesNotMatch(additionalClockMarkup({ ...paid, status: "pending" }), /data-additional-review/);
+  assert.doesNotMatch(additionalClockMarkup({ ...paid, completedAt: "end" }), /data-additional-review/);
+}
+
 (async () => {
+  testCompletionCheckboxes();
   assert.equal(review.GOOGLE_REVIEW_URL, "https://g.page/r/CZr1C9xnMwR3EBM/review");
   assert.equal(review.REVIEW_DELAY_MS, 24 * 60 * 60 * 1000);
   assert.equal(review.buildReviewRequestSms(), "Thank you for choosing IMAN Cleaning Service. We hope you’re enjoying your freshly cleaned space!\n\nWe’d appreciate your Google review:\nhttps://g.page/r/CZr1C9xnMwR3EBM/review\n\nNeed help? Call 929-232-1930. Reply STOP to opt out.");

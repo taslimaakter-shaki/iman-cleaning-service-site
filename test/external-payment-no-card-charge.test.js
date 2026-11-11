@@ -46,6 +46,31 @@ const deposit = require('../api/booking/_deposit-payment');
       return realRequire(name);
     }
   });
+  for (const [current, target] of [
+    ['New', 'Completed'],
+    ['In progress', 'Confirmed'],
+    ['Completed', 'New'],
+    ['Completed', 'Confirmed'],
+    ['Cancelled', 'Confirmed'],
+    ['Cancelled', 'Cancelled']
+  ]) {
+    booking.status = current;
+    const rejected = await m.exports.complete({ id: booking.id, status: target }, {}, {});
+    assert.equal(rejected.status, 409, `${current} → ${target}`);
+    assert.equal(booking.status, current);
+  }
+  assert.equal(captureCalls, 0);
+  assert.equal(balanceNotices, 0);
+  assert.deepEqual(reviewChoices, []);
+  booking.status = "Confirmed";
+  booking.estimate.payment.status = "refunded";
+  assert.equal((await m.exports.complete({ id: booking.id, status: "In progress" }, {}, {})).status, 409);
+  delete booking.estimate.payment.status;
+  booking.estimate.rescheduling = { cancellationOperation: { source: "customer" } };
+  assert.equal((await m.exports.complete({ id: booking.id, status: "Completed" }, {}, {})).status, 409);
+  delete booking.estimate.rescheduling;
+  assert.equal((await m.exports.complete({ id: booking.id, status: "Completed", expectedStatus: "New" }, {}, {})).status, 409);
+  booking.status = "Confirmed";
   const result = await m.exports.complete({ id: booking.id, status: 'Completed' }, {}, {});
   assert.equal(result.status, 200);
   assert.equal(booking.status, 'Completed');

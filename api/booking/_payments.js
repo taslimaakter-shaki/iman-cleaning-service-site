@@ -373,39 +373,80 @@ async function cancelRemainingAuthorization({
   return { status: nextRemaining.status, paymentIntentId: remaining.paymentIntentId || "" };
 }
 
+function combinedRefundStatus(refunds) {
+  return refunds.find(refund => ["failed", "canceled"].includes(refund.status))?.status
+    || refunds.find(refund => refund.status !== "succeeded")?.status
+    || "succeeded";
+}
+
 async function refundBookingPayment({
   booking,
   amountCents,
   policy = "full_refund_48_hours_or_more",
   reason = "requested_by_customer",
+  customerPortal = false,
   stripeCall = stripePost
 }) {
   const refundCents = Math.max(0, Math.round(Number(amountCents || 0)));
-  if (!refundCents) return { id: "", status: "not_refunded", amountCents: 0 };
+  if (!refundCents) return { id: "", status: "not_refunded", amountCents: 0, refunds: [] };
   const payment = booking?.estimate?.payment || {};
   if (payment.provider === "external") throw Object.assign(new Error("This payment was received externally. Verify and record its refund through the original payment method; no Stripe refund was issued."), { statusCode: 409 });
-  const paymentIntentId = cleanText(payment.depositPaymentIntentId || payment.paymentIntentId, 120);
-  if (!paymentIntentId) {
-    throw Object.assign(new Error("The original deposit payment could not be located automatically."), {
-      statusCode: 409
-    });
+
+  const depositId = cleanText(payment.depositPaymentIntentId || payment.paymentIntentId, 120);
+  const balances = new Map();
+  const captured = [...(payment.capturedBalanceHistory || [])];
+  if (payment.remaining?.status === "captured") captured.push(payment.remaining);
+  for (const balance of captured) {
+    const id = cleanText(balance.paymentIntentId, 120);
+    const cents = Number(balance.amountCents);
+    if (id && id !== depositId && Number.isSafeInteger(cents) && cents > 0) balances.set(id, cents);
   }
-  const refund = await stripeCall({
-    path: "refunds",
-    idempotencyKey: `booking-cancellation-refund-${booking.id}`.slice(0, 240),
-    params: {
-      payment_intent: paymentIntentId,
-      amount: refundCents,
-      ...(reason ? { reason } : {}),
-      "metadata[booking_id]": booking.id,
-      "metadata[cancellation_policy]": cleanText(policy, 120) || "unspecified"
+
+  const depositCents = captured.length || payment.paymentType === "deposit_25"
+    ? Number(payment.depositCents ?? (captured.length ? undefined : payment.paidCents))
+    : Number(payment.paidCents ?? payment.depositCents);
+  const sources = [[depositId, depositCents], ...balances];
+  const priorRefunds = booking.estimate?.rescheduling?.priceRefunds || [];
+  const allocations = [];
+  let unallocatedCents = refundCents;
+  for (const [paymentIntentId, chargedCents] of sources) {
+    if (!unallocatedCents || !paymentIntentId || !Number.isSafeInteger(chargedCents) || chargedCents <= 0) continue;
+    const refundedCents = priorRefunds
+      .filter(refund => refund.paymentIntentId === paymentIntentId && ["pending", "succeeded"].includes(refund.status))
+      .reduce((sum, refund) => sum + Number(refund.amountCents || 0), 0);
+    const cents = Math.min(unallocatedCents, Math.max(0, chargedCents - refundedCents));
+    if (cents > 0) allocations.push({ paymentIntentId, amountCents: cents });
+    unallocatedCents -= cents;
+  }
+  if (unallocatedCents) {
+    throw Object.assign(new Error("The original payments could not be located for the full refund. Review the booking payments before retrying."), { statusCode: 409 });
+  }
+
+  const refunds = [];
+  for (const allocation of allocations) {
+    const { paymentIntentId, amountCents: cents } = allocation;
+    // Retain the previous deposit keys so retries of existing cancellations reuse their refund.
+    const key = paymentIntentId === depositId
+      ? `booking-cancellation-${customerPortal ? "" : "refund-"}${booking.id}`
+      : `booking-cancellation-balance-refund-${booking.id}-${paymentIntentId}`;
+    const refund = await stripeCall({
+      path: "refunds",
+      idempotencyKey: key.slice(0, 240),
+      params: {
+        payment_intent: paymentIntentId,
+        amount: cents,
+        ...(reason ? { reason } : {}),
+        "metadata[booking_id]": booking.id,
+        "metadata[cancellation_policy]": cleanText(policy, 120) || "unspecified"
+      }
+    });
+    const status = refund.status || "submitted";
+    if (["failed", "canceled"].includes(status)) {
+      throw Object.assign(new Error("A cancellation refund needs review in Stripe before retrying."), { statusCode: 409 });
     }
-  });
-  return {
-    id: refund.id || "",
-    status: refund.status || "submitted",
-    amountCents: refundCents
-  };
+    refunds.push({ ...allocation, id: refund.id || "", status });
+  }
+  return { id: refunds[0].id, status: combinedRefundStatus(refunds), amountCents: refundCents, refunds };
 }
 
 async function processDuePaymentAuthorizations({
@@ -463,3 +504,5 @@ module.exports.paymentAmounts = paymentAmounts;
 module.exports.processDuePaymentAuthorizations = processDuePaymentAuthorizations;
 module.exports.refundBookingPayment = refundBookingPayment;
 module.exports.stripePost = stripePost;
+
+module.exports.combinedRefundStatus = combinedRefundStatus;

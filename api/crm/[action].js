@@ -43,14 +43,25 @@ const {
   refreshPhotoUploadReminders
 } = require("../quote/_photo-later");
 
-const allowedStatuses = new Set([
-  "New",
-  "Confirmed",
-  "Cleaner assigned",
-  "In progress",
-  "Completed",
-  "Cancelled"
+const statusTransitions = new Map([
+  ["New", ["New", "Confirmed", "Cancelled"]],
+  ["Confirmed", ["Confirmed", "Cleaner assigned", "In progress", "Completed", "Cancelled"]],
+  ["Cleaner assigned", ["Cleaner assigned", "In progress", "Completed", "Cancelled"]],
+  ["In progress", ["In progress", "Completed", "Cancelled"]],
+  ["Completed", ["Completed", "Cancelled"]],
+  ["Cancelled", []]
 ]);
+
+function allowedBookingStatuses(booking) {
+  const estimate = booking.estimate || {};
+  if (booking.status === "Cancelled" || estimate.cancellation?.cancelledAt
+    || ["refunded", "partially_refunded", "deposit_retained"].includes(estimate.payment?.status)) {
+    return [];
+  }
+  if (!statusTransitions.has(booking.status)) return [];
+  if (estimate.rescheduling?.cancellationOperation) return ["Cancelled"];
+  return statusTransitions.get(booking.status);
+}
 
 function completionReviewChoice(body, status) {
   const sendAdditionalWork = status === "Completed" && body.sendAdditionalWork === true;
@@ -81,6 +92,7 @@ function toClientBooking(record = {}) {
     orderNumber: record.estimate?.orderNumber || record.id,
     createdAt: record.created_at,
     status: record.status,
+    allowedStatuses: allowedBookingStatuses(record),
     service: record.service,
     serviceLabel: record.service_label,
     schedule: record.schedule,
@@ -650,22 +662,24 @@ async function updateStatus(body, request, response) {
   const status = String(body.status || "").trim();
 
   if (!id) return json(response, 400, { error: "Booking ID is required." });
-  if (!allowedStatuses.has(status)) {
+  if (!statusTransitions.has(status)) {
     return json(response, 400, { error: "Invalid status." });
   }
 
   let booking = await getBooking(id);
   if (!booking) return json(response, 404, { error: "Booking not found." });
+  if (body.expectedStatus != null && body.expectedStatus !== booking.status) {
+    return json(response, 409, { error: "This booking’s status changed. Refresh the CRM and try again." });
+  }
+  if (!allowedBookingStatuses(booking).includes(status)) {
+    return json(response, 409, { error: `Cannot change a booking from ${booking.status} to ${status}.` });
+  }
   const { sendAdditionalWork, sendReviewRequest } = completionReviewChoice(body, status);
 
   const cancellationSource = String(body.cancellationSource || "").trim().toLowerCase();
   if (status === "Cancelled" && !["iman", "customer"].includes(cancellationSource)) {
     return json(response, 400, { error: "Choose whether Iman Cleaning or the customer cancelled the booking." });
   }
-  if (status === "Cancelled" && booking.status === "Cancelled") {
-    return json(response, 409, { error: "This booking is already cancelled. Its recorded refund cannot be run again." });
-  }
-
   let payment = { status: "not_applicable" };
   let completionReceipt = { status: "not_requested" };
   let additionalWork = { status: "not_requested" };
@@ -784,6 +798,7 @@ async function updateStatus(body, request, response) {
           retainedCents: cancellation.retainedCents,
           refundCents: cancellation.refundCents,
           refundId: refund.id || "",
+          refunds: refund.refunds || [],
           refundStatus: refund.status || ""
         }
       };
@@ -837,11 +852,11 @@ async function updateClock(body, response) {
 
   const booking = await getBooking(id);
   if (!booking) return json(response, 404, { error: "Booking not found." });
+  if (!allowedBookingStatuses(booking).some(status => status !== "Cancelled")) {
+    return json(response, 409, { error: "This booking cannot be updated because it is cancelled or has a cancellation in progress." });
+  }
   if (!hasPaidDeposit(booking)) {
     return json(response, 409, { error: "Clocking is available only after the 25% deposit is paid." });
-  }
-  if (booking.status === "Cancelled") {
-    return json(response, 409, { error: "A cancelled booking cannot be clocked." });
   }
   if (clockAction === "clock_in" && booking.status === "Completed") {
     return json(response, 409, { error: "A completed booking cannot be clocked in again." });
@@ -883,11 +898,11 @@ async function updateCleanerAssignment(body, response) {
 
   const booking = await getBooking(id);
   if (!booking) return json(response, 404, { error: "Booking not found." });
+  if (!allowedBookingStatuses(booking).some(status => status !== "Cancelled")) {
+    return json(response, 409, { error: "This booking cannot be updated because it is cancelled or has a cancellation in progress." });
+  }
   if (!hasPaidDeposit(booking)) {
     return json(response, 409, { error: "Cleaners can be assigned only after the 25% deposit is paid." });
-  }
-  if (booking.status === "Cancelled") {
-    return json(response, 409, { error: "Cleaners cannot be assigned to a cancelled booking." });
   }
 
   const cleanerNames = parseCleanerNames(body.cleanerNames);
