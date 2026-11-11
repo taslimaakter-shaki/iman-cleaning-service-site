@@ -18,3 +18,13 @@ for (const email of ["", " ", "not-an-email"]) {
 assert.throws(() => cleanCustomer({ ...customer, phone: "bad-number" }), /valid phone/i);
 assert.equal(cleanCustomer({ ...customer, phone: "  " }).phone, "");
 console.log("Quote contact requirements passed: email validation, optional phone, unchanged labels.");
+
+const phonePattern = new RegExp('^(?:' + phoneInput.match(/pattern="([^"]+)"/)[1] + ')$', 'v');
+for (const phone of ['x', '123', '2125550123x', '++12125550123', '1234567890123456']) {
+  assert.equal(phonePattern.test(phone), false, phone);
+  assert.throws(() => cleanCustomer({ ...customer, phone }), /valid phone/i);
+}
+for (const phone of ['(212) 555-0123', '+1 212-555-0123', '+44 20 7946 0123']) {
+  assert.equal(phonePattern.test(phone), true, phone);
+  assert(cleanCustomer({ ...customer, phone }).phone);
+}

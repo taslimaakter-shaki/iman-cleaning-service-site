@@ -93,10 +93,12 @@ function decodeSavedQuote(token) {
 }
 
 function normalizePhoneNumber(value) {
-  const digits = String(value || "").replace(/\D/g, "");
+  const phone = String(value ?? "").trim();
+  if (phone.length > 40 || !/^\+?[0-9().\s-]+$/.test(phone)) return "";
+  const digits = phone.replace(/\D/g, "");
   if (digits.length === 10) return `+1${digits}`;
   if (digits.length === 11 && digits.startsWith("1")) return `+${digits}`;
-  if (digits.length >= 11 && digits.length <= 15) return `+${digits}`;
+  if (/^[1-9][0-9]{10,14}$/.test(digits)) return `+${digits}`;
   return "";
 }
 

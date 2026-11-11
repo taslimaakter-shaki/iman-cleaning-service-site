@@ -1,3 +1,4 @@
+const { normalizePhoneNumber } = require("./_saved-quote");
 const { assertServiceAvailable } = require("./_service-policy");
 const { staffingOptions } = require("./_staffing-options");
 const bookingDiscountName = require("../../booking-discount-names");
@@ -338,7 +339,11 @@ module.exports = async function handler(request, response) {
     const lastName = cleanText(customer.lastName, 80);
     const customerName = cleanText(`${firstName} ${lastName}`, 160);
     const email = cleanText(customer.email, 180);
-    const phone = cleanText(customer.phone, 40);
+    const rawPhone = String(customer.phone ?? "").trim();
+    const phone = normalizePhoneNumber(rawPhone);
+    if (rawPhone && !phone) {
+      return json(response, 400, { error: "Enter a valid phone number." });
+    }
     const { address, address2, city, state, zip, fullAddress } = normalizeServiceAddress(customer);
 
     if (!firstName || !lastName || !address || !city || !state || !zip) {

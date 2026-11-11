@@ -812,7 +812,7 @@
                   <label><span>First name</span><input name="quoteFirstName" autocomplete="given-name" placeholder="Enter first name" required></label>
                   <label><span>Last name</span><input name="quoteLastName" autocomplete="family-name" placeholder="Enter last name" required></label>
                   <label><span>Email address</span><input type="email" name="quoteEmail" autocomplete="email" placeholder="you@example.com" required></label>
-                  <label><span>Phone number</span><input type="tel" name="quotePhone" autocomplete="tel" inputmode="tel" placeholder="(000) 000-0000"></label>
+                  <label><span>Phone number</span><input type="tel" name="quotePhone" autocomplete="tel" inputmode="tel" maxlength="40" pattern="\+?(?:[\s\(\)\.\-]*[0-9]){10,15}[\s\(\)\.\-]*" title="Enter a valid phone number." placeholder="(000) 000-0000"></label>
                   <label class="booking-honeypot" aria-hidden="true"><span>Website</span><input name="website" tabindex="-1" autocomplete="off"></label>
                 </div>
                 <fieldset class="booking-communication-consents">

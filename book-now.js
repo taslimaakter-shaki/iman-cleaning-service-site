@@ -4007,7 +4007,8 @@
 
   quoteContactForm?.addEventListener("submit", async (event) => {
     event.preventDefault();
-    const invalid = Array.from(quoteContactForm.querySelectorAll("[required]"))
+    quoteContactForm.elements.quotePhone.value = quoteContactForm.elements.quotePhone.value.trim();
+    const invalid = Array.from(quoteContactForm.querySelectorAll("[required], [pattern]"))
       .find((control) => !control.checkValidity());
     if (invalid) {
       invalid.reportValidity();

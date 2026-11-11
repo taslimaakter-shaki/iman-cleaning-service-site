@@ -101,6 +101,22 @@ function load(file, dependencies, extras = {}) {
   }
   body.customer.email = 'jane@example.test';
   body.customer.phone = originalPhone;
+  for (const invalidPhone of ['x', '123', '2125550123x', '++12125550123', '1234567890123456']) {
+    const previousBooking = booking, previousSessions = f.sessions.length;
+    body.customer.phone = invalidPhone;
+    await handler(request, {});
+    assert.equal(result.status, 400, `Reject invalid phone: ${invalidPhone}`);
+    assert.match(result.error, /valid phone/i);
+    assert.equal(booking, previousBooking, 'Invalid phone must not create or update a booking');
+    assert.equal(f.sessions.length, previousSessions, 'Invalid phone must not reach Stripe');
+  }
+  for (const [input, normalized] of [['(212) 555-0123', '+12125550123'], ['+44 20 7946 0123', '+442079460123'], ['   ', '']]) {
+    body.customer.phone = input;
+    await handler(request, {});
+    assert.equal(result.status, 201, result.error);
+    assert.equal(booking.phone, normalized);
+  }
+  body.customer.phone = originalPhone;
 
   const flexiblePkg = require('../api/booking/_arrival-preference').applyArrivalDiscount(pkg, 'any_day');
   body.arrivalPreference = 'any_day';
