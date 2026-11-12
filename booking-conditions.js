@@ -25,8 +25,8 @@
       ]
     },
     buildup: {
-      title: "How much dirt or buildup is in the kitchens and bathrooms?", label: "Dirt & buildup",
-      singularTitle: "How much dirt or buildup is in this room?",
+      title: "How much dirt or buildup is in the bathroom?", label: "Dirt & buildup",
+      singularTitle: "How much dirt or buildup is in the bathroom?",
       levels: [
         { value: "none", label: "Light", rate: 0, description: "Minor water spots and everyday dirt. No noticeable buildup.", photo: "./assets/buildup/light" },
         { value: "some", label: "Moderate", rate: 50, description: "Visible grime, soap scum, or mineral deposits that require extra scrubbing.", photo: "./assets/buildup/moderate" },
