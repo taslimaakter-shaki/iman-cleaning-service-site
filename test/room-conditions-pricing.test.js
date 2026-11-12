@@ -54,6 +54,12 @@ assert.equal(Math.round(multi.units.flatMap(unit => unit.addOns).filter(item => 
 assert.equal(multi.priceCents, multi.subtotalCents + multi.taxCents);
 
 for (const mutate of [
+  value => { delete value.roomConditions; },
+  value => { delete value.roomConditions["bedrooms:1"]; },
+  value => { delete value.roomConditions["bedrooms:1"].clutter; },
+  value => { delete value.roomConditions["bedrooms:1"].buildup; },
+  value => { delete value.roomConditions["kitchens:1"].grease; },
+  value => { value.roomConditions["bedrooms:1"].clutter = ""; },
   value => { value.roomConditions["bedrooms:1"].clutter = "invalid"; },
   value => { value.roomConditions["bedrooms:1"].grease = "heavy"; },
   value => { value.roomConditions["bedrooms:99"] = { clutter: "heavy", buildup: "none" }; },
@@ -63,17 +69,10 @@ for (const mutate of [
   mutate(invalid);
   assert.throws(() => quote([invalid], "standard", eligibility), error => error.statusCode === 400);
 }
-// Skipped conditions use the lowest level without additional charges.
-const skipped = quote([base()], "standard", eligibility);
-assert.equal(skipped.priceCents, 43000);
-assert.equal(skipped.clutterAdjustment.amount, 0);
-assert.equal(skipped.buildupAdjustment.amount, 0);
-assert.deepEqual(skipped.units[0].roomConditions["kitchens:1"], { clutter: "low", buildup: "none", grease: "none" });
-const partiallyAnswered = quote([{ ...base(), roomConditions: { "bedrooms:1": { clutter: "heavy" } } }], "standard", eligibility);
-assert.equal(partiallyAnswered.clutterAdjustment.amount, 30);
-assert.equal(partiallyAnswered.buildupAdjustment.amount, 0);
-const optionalSecondUnit = quote([unit, base()], "standard", {});
-assert.equal(optionalSecondUnit.clutterAdjustment.amount, mixed.clutterAdjustment.amount);
+// New quotes require explicit answers for every applicable room and condition.
+assert.throws(() => quote([base()], "standard", eligibility), /Choose clutter for Bedroom 1 in Unit 1/);
+assert.throws(() => quote([{ ...base(), roomConditions: { "bedrooms:1": { clutter: "heavy" } } }], "standard", eligibility), /Choose dirt & buildup for Bedroom 1 in Unit 1/);
+assert.throws(() => quote([unit, base()], "standard", {}), /Choose clutter for Bedroom 1 in Unit 2/);
 assert.throws(() => quote([unit], "standard", { roomConditionVersion: 2 }), /refresh the quote/);
 assert.throws(() => quote([null], "standard", eligibility), error => error.statusCode === 400);
 const removedKitchen = { ...unit, kitchens: 1 };
@@ -83,6 +82,8 @@ assert.equal(removedKitchen.roomConditions["kitchens:1"].grease, "some");
 const addedBedroom = { ...removedKitchen, bedrooms: 3 };
 addedBedroom.roomConditions = model.reconcile(addedBedroom);
 assert.deepEqual(addedBedroom.roomConditions["bedrooms:3"], {});
+assert.throws(() => quote([addedBedroom], "standard", eligibility), /Choose clutter for Bedroom 3/);
+addedBedroom.roomConditions["bedrooms:3"] = { clutter: "low", buildup: "none" };
 assert.deepEqual(quote([addedBedroom], "standard", eligibility).units[0].roomConditions["bedrooms:3"], { clutter: "low", buildup: "none" });
 for (const service of ["standard", "deep", "move", "post", "recurring"]) {
   const details = { ...base(), constructionAreas: { fullBathrooms: 1 } };
@@ -92,4 +93,4 @@ for (const service of ["standard", "deep", "move", "post", "recurring"]) {
   assert.equal(light.priceCents, legacy.priceCents, `${service}: Light conditions preserve the base price`);
   assert.equal(light.manHours, legacy.manHours);
 }
-console.log("Optional room conditions: skipped/partial answers, independent levels, paired rooms, kitchen extras, fridge exclusion, additive fees, unit allocation and invalid-answer rejection passed.");
+console.log("Required room conditions: missing/partial-answer rejection, independent levels, paired rooms, kitchen extras, fridge exclusion, additive fees, unit allocation and legacy quote compatibility passed.");

@@ -81,7 +81,7 @@
       const kinds = Object.keys(definitions).filter(kind => applicable(room, kind));
       if (Object.keys(answer).some(kind => !kinds.includes(kind))) fail(`Review the condition answers for ${room.label} in Unit ${unitNumber}.`);
       return [room.id, Object.fromEntries(kinds.map(kind => {
-        const value = answer[kind] === undefined || answer[kind] === "" ? definitions[kind].levels[0].value : answer[kind];
+        const value = answer[kind];
         if (!levelFor(kind, value)) fail(`Choose ${definitions[kind].label.toLowerCase()} for ${room.label} in Unit ${unitNumber}.`);
         return [kind, value];
       }))];

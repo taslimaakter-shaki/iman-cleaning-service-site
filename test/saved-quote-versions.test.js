@@ -189,6 +189,12 @@ const get=url=>handler({method:'GET',headers:{host:'example.test'},query:{token:
  roomBody.unitDetails[0].roomConditions['fullBathrooms:1'].buildup='heavy';
  roomBody.unitDetails[0].roomConditions['kitchens:1'].grease='heavy';
  roomBody.unitDetails[1].roomConditions['bedrooms:1'].clutter='several';
+ for (const kind of ['clutter','buildup','grease']) {
+   const incomplete=structuredClone(roomBody);
+   delete incomplete.unitDetails[0].roomConditions['kitchens:1'][kind];
+   const rejected=await post(incomplete);
+   assert.equal(rejected.status,400,`Missing ${kind} must not produce a saved quote`);
+ }
  const roomsSaved=await post(roomBody);
  assert.equal(roomsSaved.status,201,roomsSaved.error);
  const roomsOpened=await get(roomsSaved.quoteUrl);

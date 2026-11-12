@@ -138,7 +138,7 @@
       function renderSummary() {
         const heading = el("h2", "", "Review the room conditions");
         heading.tabIndex = -1;
-        container.append(heading, el("p", "booking-condition-help", "Each room is priced using its own conditions. Unanswered conditions use the lowest level with no extra condition charge."));
+        container.append(heading, el("p", "booking-condition-help", "Each room is priced using its own conditions."));
         const actions = el("div", "booking-condition-summary-actions");
         kinds().forEach(kind => actions.append(button(`Edit ${model.definitions[kind].label.toLowerCase()}`, () => onEdit(kind))));
         container.append(actions);
@@ -154,7 +154,7 @@
             kinds().filter(kind => model.applicable(room, kind)).forEach(kind => {
               const pair = el("div");
               const selected = model.levelFor(kind, unit.roomConditions?.[room.id]?.[kind]);
-              pair.append(el("dt", "", model.definitions[kind].label), el("dd", "", selected?.label || `${model.definitions[kind].levels[0].label} (default)`));
+              pair.append(el("dt", "", model.definitions[kind].label), el("dd", "", selected?.label || "Not answered"));
               values.append(pair);
             });
             row.append(values);

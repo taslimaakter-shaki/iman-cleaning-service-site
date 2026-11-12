@@ -995,6 +995,22 @@
     conditionForm.querySelector("h2")?.focus();
     persistBookingDraft();
   };
+  const requireRoomConditions = (kinds = conditionPicker.kinds()) => {
+    const missingKind = kinds.find(kind => conditionPicker.missing(kind).length);
+    if (!missingKind) return true;
+    const room = conditionPicker.missing(missingKind)[0];
+    closeQuoteContact();
+    goToStep(1);
+    enterRoomConditions(conditionPicker.kinds().indexOf(missingKind));
+    const status = document.querySelector("[data-eligibility-status]");
+    const label = window.ImanBookingConditions.definitions[missingKind].label.toLowerCase();
+    setStatus(status, missingKind === "grease" && conditionPicker.inventory("grease").length === 1
+      ? "Please choose Light, Moderate, or Heavy to continue."
+      : `Choose a ${label} level for ${room.fullLabel} before continuing.`);
+    status.tabIndex = -1;
+    status.focus();
+    return false;
+  };
   const buildAnswerChoices = () => {
     allMobileQuestions.forEach((question, questionIndex) => {
       question.querySelectorAll("select").forEach((select, selectIndex) => {
@@ -2108,6 +2124,7 @@
   };
   const showQuoteContact = () => {
     if (!quoteContactOverlay) return;
+    if (!isOrganizationPath() && !requireRoomConditions()) return;
     quoteContactOverlay.hidden = false;
     syncStageProgress();
     setStatus(quoteContactStatus, "");
@@ -3897,6 +3914,7 @@
     if (conditionMode) {
       const kinds = conditionPicker.kinds();
       const kind = kinds[state.conditionStep];
+      if (!requireRoomConditions(kind ? [kind] : kinds)) return;
       if (kind) {
         state.conditionStep += 1;
         setStatus(status, "");
@@ -4142,6 +4160,7 @@
 
   quoteContactForm?.addEventListener("submit", async (event) => {
     event.preventDefault();
+    if (!isOrganizationPath() && !requireRoomConditions()) return;
     quoteContactForm.elements.quotePhone.value = quoteContactForm.elements.quotePhone.value.trim();
     const invalid = Array.from(quoteContactForm.querySelectorAll("[required], [pattern]"))
       .find((control) => !control.checkValidity());
