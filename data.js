@@ -112,7 +112,7 @@ window.IMAN_DATA = {
     text: "They did a great job cleaning my house. They showed up on time, were friendly, and paid attention to the little things. My place looked and smelled so much better when they were done. Definitely worth it, and I’d use them again.",
     author: "Mahin Muhtasimul",
   },
-  reviewRating: "4.9",
+  reviewRating: "5.0",
   reviewCount: 55,
   reviews: [
     {

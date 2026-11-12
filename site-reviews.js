@@ -2,6 +2,8 @@
   "use strict";
 
   var VERSION = "20260911-review-redesign";
+  var reviewScript = document.currentScript || document.querySelector('script[src*="site-reviews.js"]');
+  var rating = reviewScript && reviewScript.getAttribute("data-review-rating") === "5.0" ? "5.0" : "4.9";
   var GOOGLE_REVIEWS = "https://share.google/EAX7wC22J4PyMKcNx";
   var reviews = [
     {
@@ -56,7 +58,7 @@
         '<header class="site-reviews__head">' +
           '<div><h2 id="site-customer-reviews-title">Trusted by New Yorkers</h2></div>' +
           '<div class="site-reviews__summary">' +
-            '<div class="site-reviews__rating"><span class="site-reviews__stars" aria-hidden="true">★★★★★</span><strong><span class="sr-only">4.9 out of 5 stars, </span>4.9 on Google</strong></div>' +
+            '<div class="site-reviews__rating"><span class="site-reviews__stars" aria-hidden="true">★★★★★</span><strong><span class="sr-only">' + rating + ' out of 5 stars, </span>' + rating + ' on Google</strong></div>' +
             '<a href="' + GOOGLE_REVIEWS + '" target="_blank" rel="noopener noreferrer" data-conv="google_reviews">Read All Reviews <span aria-hidden="true">→</span></a>' +
           '</div>' +
         '</header>' +

@@ -37,7 +37,7 @@ function Hero() {
               <path fill="#FBBC04" d="M5.4 14.2c-.2-.7-.4-1.4-.4-2.2s.1-1.5.4-2.2V6.7H1.5A12 12 0 0 0 0 12c0 1.9.5 3.7 1.5 5.3l3.9-3.1Z" />
               <path fill="#EA4335" d="M12 4.8c1.7 0 3.2.6 4.4 1.7l3.3-3.3C17.9 1.1 15.2 0 12 0A12 12 0 0 0 1.5 6.7l3.9 3.1c.9-2.8 3.5-5 6.6-5Z" />
             </svg>
-            4.9 ★ Read Our Reviews
+            {D.reviewRating} ★ Read Our Reviews
           </a>
         </div>
         <nav className="hero-socials" aria-label="Social media">
