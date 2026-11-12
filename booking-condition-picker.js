@@ -44,7 +44,7 @@
         const heading = el("h2", "", `${model.definitions[kind].label}: ${level.label}`);
         heading.id = "condition-room-picker-title";
         header.append(heading, button("Done", closePicker, "booking-primary"));
-        dialog.append(header, el("p", "booking-condition-help", "Choose rooms from any unit. Selecting a room moves it from its previous level."));
+        dialog.append(header, el("p", "booking-condition-help", "Choose the rooms that match this condition. Selecting a room moves it from its previous level."));
         getUnits().forEach((unit, unitIndex) => {
           const rooms = inventory(kind).filter(room => room.unitIndex === unitIndex);
           if (!rooms.length) return;

@@ -1547,7 +1547,11 @@
   };
   const quoteUnitLabel = (index) => {
     if (value("propertyType") === "house") {
-      try { const floors = JSON.parse(form.elements.houseFloorSelection.value || "[]"); if (floors[index]) return floors[index]; } catch {}
+      try {
+        const floors = JSON.parse(form.elements.houseFloorSelection.value || "[]");
+        if (Array.isArray(floors) && typeof floors[index] === "string" && floors[index].trim()) return floors[index].trim();
+      } catch {}
+      return `Floor ${index + 1}`;
     }
     return `Unit ${index + 1}`;
   };
@@ -3208,7 +3212,7 @@
         const section = document.createElement("section");
         if ((pkg.units || []).length > 1) {
           const heading = document.createElement("h4");
-          heading.textContent = `Unit ${unit.unitNumber}`;
+          heading.textContent = quoteUnitLabel(unit.unitNumber - 1);
           section.append(heading);
         }
         const list = document.createElement("ul");
