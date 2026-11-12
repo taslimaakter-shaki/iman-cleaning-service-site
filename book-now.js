@@ -220,7 +220,7 @@
   });
   document.addEventListener("keydown", (event) => {
     if (event.key !== "Escape" || bookingWizard.hidden || !zipGate.hidden) return;
-    if (document.querySelector("[data-clutter-dialog][open], [data-condition-room-picker][open]")) return;
+    if (document.querySelector("[data-condition-room-picker][open]")) return;
     if (servicePreviewOverlay && !servicePreviewOverlay.hidden) {
       closeServicePreview();
       return;
@@ -933,29 +933,18 @@
     });
   };
   const createConditionPhotoChoice = (button, title, photoPath) => {
-    const clutterDialog = document.querySelector("[data-clutter-dialog]");
-    if (!photoPath || !clutterDialog) return button;
+    if (!photoPath) return button;
     const row = document.createElement("div");
     row.className = "booking-clutter-option";
-    const preview = document.createElement("button");
-    preview.type = "button";
+    const preview = document.createElement("div");
     preview.className = "booking-clutter-preview";
-    preview.setAttribute("aria-label", "Enlarge photo for " + title.toLowerCase());
-    preview.setAttribute("aria-haspopup", "dialog");
     const thumbnail = document.createElement("img");
     thumbnail.src = photoPath + "-thumb.jpg";
     thumbnail.srcset = photoPath + "-thumb.jpg 192w, " + photoPath + ".jpg 1200w";
     thumbnail.sizes = "(max-width: 600px) 85vw, 520px";
-    thumbnail.alt = "";
+    thumbnail.alt = "Room showing an example of " + title.toLowerCase();
     thumbnail.loading = "lazy";
     preview.append(thumbnail);
-    preview.addEventListener("click", () => {
-      clutterDialog.querySelector("h2").textContent = title;
-      const image = clutterDialog.querySelector("img");
-      image.alt = "Room showing an example of " + title.toLowerCase();
-      image.src = photoPath + ".jpg";
-      clutterDialog.showModal();
-    });
     row.append(button, preview);
     return row;
   };

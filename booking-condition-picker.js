@@ -139,7 +139,7 @@
       function renderSummary() {
         const heading = el("h2", "", "Review the room conditions");
         heading.tabIndex = -1;
-        container.append(heading, el("p", "booking-condition-help", "Each room is priced using its own conditions."));
+        container.append(heading);
         const actions = el("div", "booking-condition-summary-actions");
         kinds().forEach(kind => actions.append(button(`Edit ${model.definitions[kind].label.toLowerCase()}`, () => onEdit(kind))));
         container.append(actions);
