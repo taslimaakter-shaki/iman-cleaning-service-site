@@ -130,4 +130,67 @@ for (const quote of [some, heavy]) {
   assert.equal(adjustmentItem.amount, quote.buildupAdjustment.amount);
 }
 
-console.log("Buildup pricing tests passed.");
+const mixedKitchenConditions = {
+  ...unit(),
+  kitchens: 3,
+  buildupAreas: { kitchens: 2, fullBathrooms: 1 },
+  grease: "heavy",
+  clutterAreas: { kitchens: 1 }
+};
+const mixedQuote = calculateResidentialQuoteBundle([mixedKitchenConditions], "standard", {
+  buildup: "some", clutter: "moderate", hazards: "none"
+});
+const kitchenAdjustments = mixedQuote.buildupAdjustment.affectedAreas.filter(area => area.key === "kitchens");
+assert.deepEqual(kitchenAdjustments.map(({ quantity, percentage }) => ({ quantity, percentage })), [
+  { quantity: 2, percentage: 50 },
+  { quantity: 3, percentage: 60 }
+]);
+assert.equal(mixedQuote.buildupAdjustment.affectedAreas.find(area => area.key === "full_bathrooms").percentage, 50);
+assert.equal(mixedQuote.clutterAdjustment.amount, 20);
+assert.throws(() => calculateResidentialQuoteBundle([{
+  ...mixedKitchenConditions, grease: "invalid"
+}], "standard", { buildup: "some" }), /kitchen buildup level/);
+
+const kitchenWithAddOns = calculateResidentialQuoteBundle([{
+  ...unit(), kitchens: 1, refrigerator: "empty", oven: "yes", cabinets: "yes",
+  cabinetCount: 5, drawerCount: 0, cabinetsEmpty: "yes",
+  buildupAreas: { kitchens: 1 }, grease: "heavy"
+}], "standard", { buildup: "some" });
+const addOnPrice = key => kitchenWithAddOns.units[0].addOns.find(item => item.key === key).amount;
+const greaseBase = 50 + addOnPrice("oven") + addOnPrice("cabinets");
+const dirtBase = greaseBase + addOnPrice("refrigerator");
+assert.deepEqual(kitchenWithAddOns.buildupAdjustment.affectedAreas.map(area => area.baseAreaPrice), [dirtBase, greaseBase]);
+assert.equal(kitchenWithAddOns.buildupAdjustment.amountCents, Math.round(dirtBase * 50) + Math.round(greaseBase * 60));
+
+const moveKitchen = calculateResidentialQuoteBundle([{
+  ...unit(), kitchens: 1, grease: "heavy"
+}], "move", {});
+assert.equal(moveKitchen.buildupAdjustment.affectedAreaBasePrice, 110);
+assert.equal(moveKitchen.buildupAdjustment.amount, 66);
+
+const perUnitGrease = calculateResidentialQuoteBundle([
+  { ...unit(), kitchens: 1, grease: "none" },
+  { ...unit(), kitchens: 1, grease: "some" },
+  { ...unit(), kitchens: 2, grease: "heavy" },
+  { ...unit(), kitchens: 0, grease: "heavy" }
+], "standard", {});
+assert.deepEqual(perUnitGrease.buildupAdjustment.affectedAreas.map(({ unitNumber, quantity, percentage }) => (
+  { unitNumber, quantity, percentage }
+)), [
+  { unitNumber: 2, quantity: 1, percentage: 50 },
+  { unitNumber: 3, quantity: 2, percentage: 60 }
+]);
+assert.equal(perUnitGrease.buildupAdjustment.amount, 85);
+
+const moveKitchens = calculateResidentialQuoteBundle([{
+  ...unit(), kitchens: 2, grease: "heavy"
+}], "move", {});
+assert.equal(moveKitchens.buildupAdjustment.affectedAreaBasePrice, 220);
+assert.equal(moveKitchens.buildupAdjustment.amount, 132);
+const moveWithoutFridge = calculateResidentialQuoteBundle([{
+  ...unit(), kitchens: 1, grease: "heavy", excludeKitchenItems: "yes",
+  excludeRefrigerator: "yes", excludeOven: "no", excludeCabinets: "no"
+}], "move", {});
+assert.equal(moveWithoutFridge.buildupAdjustment.amount, 66);
+
+console.log("Buildup pricing tests passed, including per-unit kitchen grease and refrigerator exclusions.");

@@ -1092,6 +1092,7 @@
     previousPetBuildup: "",
     moldAreas: {},
     buildupAreas: {},
+    grease: "",
     clutterAreas: {},
     constructionAreas: {},
     moldBathrooms: "",
@@ -1107,6 +1108,8 @@
     const isMove = serviceKey === "move";
     const isPostConstruction = serviceKey === "post";
     const isWholePropertyUnit = state.currentUnitIndex === selectedUnitCount() - 1;
+    const dirtBuildup = ["some", "heavy"].includes(value("buildup"));
+    const kitchenCount = Number(unit.kitchens) || 0;
     const affectedRoomTypes = () => [
       { value: "bedrooms", label: "Bedrooms", max: Number(unit.bedrooms) || 0 },
       { value: "fullBathrooms", label: "Full bathrooms", max: Number(unit.fullBathrooms) || 0 },
@@ -1144,11 +1147,11 @@
       helper: "Use the + and − buttons to select every affected area in this unit. If this unit is not affected, leave every area at 0 and continue.",
       roomTypes: affectedRoomTypes()
     }] : []),
-    ...(["some", "heavy"].includes(value("buildup")) ? [{
+    ...(dirtBuildup ? [{
       key: "buildupAreas",
       type: "condition-breakdown",
       question: value("buildup") === "heavy"
-        ? "Which areas have heavy grease, soap scum, dust, or residue?"
+        ? "Which areas have heavy dirt or buildup?"
         : "Which areas have noticeable buildup?",
       helper: "Use the + and − buttons to select every affected area in this unit. If this unit is not affected, leave every area at 0 and continue.",
       roomTypes: affectedRoomTypes()
@@ -1334,6 +1337,17 @@
       "excludeCabinets"
     ]);
     const kitchenAddons = questions.filter((question) => kitchenAddonKeys.has(question.key));
+    if (kitchenCount > 0) {
+      kitchenAddons.push({
+        key: "grease",
+        question: "How much buildup is in the kitchen?",
+        options: [
+          { value: "none", label: "Light — Minor grease splatters or light cooking residue. No sticky or thick buildup." },
+          { value: "some", label: "Moderate — Visible grease, sticky surfaces, or cooking residue on the stovetop, backsplash, or cabinets that requires extra scrubbing." },
+          { value: "heavy", label: "Heavy — Thick, sticky, or hardened grease covering multiple surfaces that requires intensive degreasing and scrubbing." }
+        ]
+      });
+    }
     const kitchenOrderedQuestions = questions.flatMap((question) => {
       if (kitchenAddonKeys.has(question.key)) return [];
       return question.key === "kitchens" ? [question, ...kitchenAddons] : [question];
@@ -1360,6 +1374,7 @@
     "livingDining",
     "moldAreas",
     "buildupAreas",
+    "grease",
     "clutterAreas",
     "constructionAreas",
     "additionalRooms",
@@ -1715,6 +1730,7 @@
             current.livingDining = "";
           }
           if (question.key === "kitchens" && Number(standardDetailNumberInput.value) === 0) {
+            current.grease = "";
             current.refrigerator = "";
             current.oven = "";
             current.cabinets = "";
@@ -3858,6 +3874,7 @@
         standardDetailNumberInput?.focus();
         return;
       }
+      if (detailQuestion.key === "kitchens" && numericValue === 0) currentUnit.grease = "";
     } else if (detailQuestion.type === "text") {
       if (!String(detailValue || "").trim()) {
         setStatus(status, "Please specify the type of pet to continue.");

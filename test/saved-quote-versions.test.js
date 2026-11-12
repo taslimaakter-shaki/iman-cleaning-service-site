@@ -156,5 +156,31 @@ const get=url=>handler({method:'GET',headers:{host:'example.test'},query:{token:
    assert.equal(retired.redirectUrl,undefined);
  }
 
+
+ const kitchenBody = {
+   ...body,
+   eligibility: {requestedService:'standard',propertyStatus:'occupied',serviceIntent:'cleaning',cleaningCategory:'residential',
+     serviceZip:'11432',buildup:'some',clutter:'low',hazards:'none',waterDamage:'no',utilitiesAvailable:'yes',unsafeConditions:'no'},
+   pricingMode:'standard_formula',
+   customer:{...body.customer,email:'kitchen-test@example.invalid',phone:''},
+   unitDetails:[
+     {bedrooms:0,fullBathrooms:1,halfBathrooms:0,kitchens:1,livingRooms:0,diningRooms:0,additionalRooms:0,
+       refrigerator:'empty',oven:'yes',cabinets:'no',grease:'heavy',buildupAreas:{kitchens:1}},
+     {bedrooms:1,fullBathrooms:0,halfBathrooms:0,kitchens:0,livingRooms:0,diningRooms:0,additionalRooms:0}
+   ]
+ };
+ const kitchenSaved = await post(kitchenBody);
+ assert.equal(kitchenSaved.status,201,kitchenSaved.error);
+ const kitchenOpened = await get(kitchenSaved.quoteUrl);
+ assert.equal(kitchenOpened.unitDetails[0].grease,'heavy');
+ assert.equal(kitchenOpened.package.units[0].grease,'heavy');
+ assert.equal(kitchenOpened.package.buildupAdjustment.amount,130);
+ const kitchenToken = new URL(kitchenSaved.quoteUrl).searchParams.get('quote');
+ const kitchenEdited = await post({...kitchenBody,previousQuoteToken:kitchenToken,
+   unitDetails:kitchenBody.unitDetails.map((unit,index)=>index ? unit : {...unit,grease:'none'})});
+ assert.equal(kitchenEdited.status,201,kitchenEdited.error);
+ assert.notEqual(kitchenEdited.quoteUrl,kitchenSaved.quoteUrl);
+ assert.equal((await get(kitchenEdited.quoteUrl)).package.buildupAdjustment.amount,70);
+ assert.equal((await get(kitchenSaved.quoteUrl)).package.buildupAdjustment.amount,130);
  console.log('Saved quote versions: immutable details/prices/contacts, changed-content delivery, concurrent deduplication, consent and partial-delivery retry passed. Providers mocked.');
 })().catch(e=>{console.error(e);process.exitCode=1});

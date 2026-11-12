@@ -21,6 +21,7 @@ const SLOT_INTERVAL_MINUTES = 30;
 const MIN_BOOKING_NOTICE_HOURS = 0;
 const MAX_ADVANCE_BOOKING_DAYS = 92; // Maximum span of three calendar months.
 const NY_SALES_TAX_RATE = 0.08875;
+const MOVE_REFRIGERATOR_PRICE = 40;
 const NYC_ZIP_PREFIXES = new Set([
   "100", "101", "102", "103", "104", "111", "112", "113", "114", "116"
 ]);
@@ -411,6 +412,10 @@ function calculateResidentialUnitPrice(unit = {}, unitIndex = 0, serviceKey = "s
     ]));
   };
   const buildupAreas = normalizeConditionAreas(unit.buildupAreas, "buildup");
+  const grease = kitchens ? cleanText(unit.grease, 20) : "";
+  if (grease && !["none", "some", "heavy"].includes(grease)) {
+    throw Object.assign(new Error(`Choose a kitchen buildup level in Unit ${unitNumber}.`), { statusCode: 400 });
+  }
   const clutterAreas = normalizeConditionAreas(unit.clutterAreas, "clutter");
   const constructionAreas = normalizeConditionAreas(unit.constructionAreas, "construction dust or debris");
   if (unit.exteriorWindows === "yes" || (serviceKey !== "move" && unit.windowCleaning && unit.windowCleaning !== "no")) {
@@ -434,7 +439,7 @@ function calculateResidentialUnitPrice(unit = {}, unitIndex = 0, serviceKey = "s
 
   const kitchenDiscount = serviceKey === "move"
     ? (excludeOven === "yes" ? 50 : 0) +
-      (excludeRefrigerator === "yes" ? 40 : 0) +
+      (excludeRefrigerator === "yes" ? MOVE_REFRIGERATOR_PRICE : 0) +
       (excludeCabinets === "yes" ? 50 : 0)
     : 0;
   const includedKitchenItems = [
@@ -543,6 +548,7 @@ function calculateResidentialUnitPrice(unit = {}, unitIndex = 0, serviceKey = "s
       additionalRooms: moldAdditionalRoomCount
     },
     buildupAreas,
+    grease,
     clutterAreas,
     constructionAreas,
     refrigerator,
@@ -587,10 +593,11 @@ function affectedAreaAdjustmentsFor(units, serviceKey, areasKey, percentage) {
     const diningAreaPrice = livingAreaPrice;
     const kitchenAddOnKeys = new Set(["refrigerator", "oven", "cabinets"]);
     const kitchenAddOnTotal = unit.addOns
-      .filter((item) => kitchenAddOnKeys.has(item.key))
+      .filter((item) => kitchenAddOnKeys.has(item.key) && (areasKey !== "greaseAreas" || item.key !== "refrigerator"))
       .reduce((total, item) => total + (Number(item.amount) || 0), 0);
+    const includedRefrigeratorPrice = areasKey === "greaseAreas" && unit.refrigerator === "included" ? MOVE_REFRIGERATOR_PRICE * unit.kitchens : 0;
     const kitchenUnitPrice = unit.kitchens
-      ? Math.max(0, (((service.kitchenRate * unit.kitchens) - unit.kitchenDiscount) + kitchenAddOnTotal) / unit.kitchens)
+      ? Math.max(0, (service.kitchenRate * unit.kitchens - unit.kitchenDiscount + kitchenAddOnTotal - includedRefrigeratorPrice) / unit.kitchens)
       : 0;
     const candidates = [
       areas.fullBathrooms > 0 ? { key: "full_bathrooms", label: `${areas.fullBathrooms} affected full bathroom${areas.fullBathrooms === 1 ? "" : "s"}`, quantity: areas.fullBathrooms, baseAreaPrice: areas.fullBathrooms * (service.fullBathroomRate || service.roomRate) } : null,
@@ -641,8 +648,26 @@ function affectedAreaAdjustmentsFor(units, serviceKey, areasKey, percentage) {
 function buildupAdjustmentFor(units, serviceKey, buildup = "") {
   const condition = cleanText(buildup, 20) || "none";
   const percentage = condition === "some" ? 50 : condition === "heavy" ? 60 : 0;
-  const adjustment = affectedAreaAdjustmentsFor(units, serviceKey, "buildupAreas", percentage);
-  return { ...adjustment, condition, addedLaborHours: adjustment.amount / MAN_HOUR_RATE };
+  const dirt = affectedAreaAdjustmentsFor(units, serviceKey, "buildupAreas", percentage);
+  const greaseAdjustments = [["some", 50], ["heavy", 60]].map(([level, rate]) => (
+    affectedAreaAdjustmentsFor(units.filter(unit => unit.grease === level).map(unit => ({
+      ...unit,
+      greaseAreas: { kitchens: unit.kitchens }
+    })), serviceKey, "greaseAreas", rate)
+  ));
+  const adjustments = [dirt, ...greaseAdjustments];
+  const affectedAreas = adjustments.flatMap(adjustment => adjustment.affectedAreas);
+  const amountCents = adjustments.reduce((total, adjustment) => total + adjustment.amountCents, 0);
+  const highestPercentage = Math.max(percentage, ...affectedAreas.map(area => area.percentage));
+  return {
+    percentage: highestPercentage,
+    condition: highestPercentage === 60 ? "heavy" : highestPercentage === 50 ? "some" : condition,
+    affectedAreas,
+    affectedAreaBasePrice: adjustments.reduce((total, adjustment) => total + adjustment.affectedAreaBasePrice, 0),
+    amountCents,
+    amount: amountCents / 100,
+    addedLaborHours: amountCents / 100 / MAN_HOUR_RATE
+  };
 }
 
 function clutterAdjustmentFor(units, serviceKey, clutter = "") {
