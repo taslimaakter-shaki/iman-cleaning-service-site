@@ -1004,7 +1004,7 @@
     enterRoomConditions(conditionPicker.kinds().indexOf(missingKind));
     const status = document.querySelector("[data-eligibility-status]");
     const label = window.ImanBookingConditions.definitions[missingKind].label.toLowerCase();
-    setStatus(status, missingKind === "grease" && conditionPicker.inventory("grease").length === 1
+    setStatus(status, ["dust", "buildup", "grease"].includes(missingKind) && conditionPicker.inventory(missingKind).length === 1
       ? "Please choose Light, Moderate, or Heavy to continue."
       : missingKind === "mold" && conditionPicker.inventory("mold").length === 1
         ? "Please choose No visible mold, Moderate mold, or Significant mold to continue."
@@ -3132,9 +3132,10 @@
       .filter((item) => item.amount > 0 || item.included);
     const isPetFee = (item) => ["property_pet_fee", "pet_fee"].includes(item.key);
     const isBuildupFee = (item) => item.key === "buildup_adjustment";
+    const isDustFee = (item) => item.key === "dust_adjustment";
     const isClutterFee = (item) => item.key === "clutter_adjustment";
     const isMoldFee = (item) => String(item.key || "").startsWith("mold_adjustment_");
-    const isConditionFee = (item) => isPetFee(item) || isBuildupFee(item) || isClutterFee(item) || isMoldFee(item);
+    const isConditionFee = (item) => isPetFee(item) || isDustFee(item) || isBuildupFee(item) || isClutterFee(item) || isMoldFee(item);
     const combinedFee = (items, label) => {
       if (!items.length) return null;
       return {
@@ -3156,6 +3157,7 @@
       ...rawExtras.filter((item) => !isConditionFee(item)).map((item) => ({ ...item, description: "" })),
       combinedFee(rawExtras.filter(isPetFee), pkg.protectedPetFeeCents ? "Pet fee" : "Pet-related cleaning fee"),
       combinedFee(rawExtras.filter(isClutterFee), clutterLabel),
+      combinedFee(rawExtras.filter(isDustFee), "Heavy dust and dirt cleaning fee"),
       combinedFee(rawExtras.filter(isBuildupFee), buildupLabel),
       combinedFee(rawExtras.filter(isMoldFee), "Surface mold and mildew cleaning fee")
     ].filter(Boolean);

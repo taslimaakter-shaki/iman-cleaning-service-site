@@ -6,25 +6,26 @@ const base = () => ({ bedrooms: 2, fullBathrooms: 1, halfBathrooms: 0, kitchens:
   livingRooms: 2, diningRooms: 1, livingDining: "combined", additionalRooms: 1,
   additionalRoomTypes: { office: 1 }, refrigerator: "no", oven: "no", cabinets: "no" });
 const withLight = unit => ({ ...unit, roomConditions: Object.fromEntries(model.roomsForUnit(unit).map(room => [room.id,
-  { clutter: "low", buildup: "none", ...(room.key === "kitchens" ? { grease: "none" } : {}),
+  { clutter: "low", [model.applicable(room, "dust") ? "dust" : "buildup"]: "none", ...(room.key === "kitchens" ? { grease: "none" } : {}),
     ...(model.applicable(room, "mold") ? { mold: "none" } : {}) }])) });
 const unit = withLight(base());
 unit.roomConditions["bedrooms:2"].clutter = "several"; // 50 * 50% = 25
 unit.roomConditions["kitchens:1"].clutter = "heavy"; // 50 * 60% = 30
 unit.roomConditions["additionalRooms:1"].clutter = "moderate"; // 50 * 40% = 20
-unit.roomConditions["bedrooms:1"].buildup = "some"; // 50 * 50% = 25
+unit.roomConditions["bedrooms:1"].dust = "some"; // Moderate dust is included.
 unit.roomConditions["kitchens:1"].buildup = "heavy"; // 50 * 60% = 30
-unit.roomConditions["combinedLivingDining:1"].buildup = "some"; // 80 * 50% = 40
-unit.roomConditions["livingRooms:2"].buildup = "heavy"; // unpaired room: 50 * 60% = 30
+unit.roomConditions["combinedLivingDining:1"].dust = "some"; // Moderate dust is included.
+unit.roomConditions["livingRooms:2"].dust = "heavy"; // unpaired room: 50 * 40% = 20
 unit.roomConditions["kitchens:1"].grease = "some"; // 50 * 50% = 25
 unit.roomConditions["kitchens:2"].grease = "heavy"; // 50 * 60% = 30
 const mixed = quote([unit], "standard", eligibility);
 assert.equal(mixed.basePrice, 430);
 assert.equal(mixed.clutterAdjustment.amount, 75);
-assert.equal(mixed.buildupAdjustment.amount, 180);
-assert.equal(mixed.priceCents, 70764); // base includes tax; independently rounded condition taxes total 22.64
-assert.equal(mixed.manHours, 9);
-assert.equal(mixed.buildupAdjustment.affectedAreas.find(area => area.roomId === "livingRooms:2").baseAreaPrice, 50);
+assert.equal(mixed.dustAdjustment.amount, 20);
+assert.equal(mixed.buildupAdjustment.amount, 85);
+assert.equal(mixed.priceCents, 62598); // base includes tax; condition taxes total 15.98
+assert.equal(mixed.manHours, 8);
+assert.equal(mixed.dustAdjustment.affectedAreas.find(area => area.roomId === "livingRooms:2").baseAreaPrice, 50);
 assert.deepEqual(mixed.units[0].roomConditions, unit.roomConditions);
 const oldCounts = quote([{ ...unit, buildupAreas: { bedrooms: 20 }, clutterAreas: { kitchens: 20 }, grease: "heavy" }], "standard", eligibility);
 assert.equal(oldCounts.priceCents, mixed.priceCents, "Edited older quotes use the new room answers, not stale legacy counts or unit-level grease");
@@ -58,7 +59,8 @@ for (const mutate of [
   value => { delete value.roomConditions; },
   value => { delete value.roomConditions["bedrooms:1"]; },
   value => { delete value.roomConditions["bedrooms:1"].clutter; },
-  value => { delete value.roomConditions["bedrooms:1"].buildup; },
+  value => { delete value.roomConditions["bedrooms:1"].dust; },
+  value => { delete value.roomConditions["kitchens:1"].buildup; },
   value => { delete value.roomConditions["kitchens:1"].grease; },
   value => { value.roomConditions["bedrooms:1"].clutter = ""; },
   value => { value.roomConditions["bedrooms:1"].clutter = "invalid"; },
@@ -72,7 +74,7 @@ for (const mutate of [
 }
 // New quotes require explicit answers for every applicable room and condition.
 assert.throws(() => quote([base()], "standard", eligibility), /Choose clutter for Bedroom 1 in Unit 1/);
-assert.throws(() => quote([{ ...base(), roomConditions: { "bedrooms:1": { clutter: "heavy" } } }], "standard", eligibility), /Choose dirt & buildup for Bedroom 1 in Unit 1/);
+assert.throws(() => quote([{ ...base(), roomConditions: { "bedrooms:1": { clutter: "heavy" } } }], "standard", eligibility), /Choose dust & dirt for Bedroom 1 in Unit 1/);
 assert.throws(() => quote([unit, base()], "standard", {}), /Choose clutter for Bedroom 1 in Unit 2/);
 assert.throws(() => quote([unit], "standard", { roomConditionVersion: 2 }), /refresh the quote/);
 assert.throws(() => quote([null], "standard", eligibility), error => error.statusCode === 400);
@@ -84,8 +86,8 @@ const addedBedroom = { ...removedKitchen, bedrooms: 3 };
 addedBedroom.roomConditions = model.reconcile(addedBedroom);
 assert.deepEqual(addedBedroom.roomConditions["bedrooms:3"], {});
 assert.throws(() => quote([addedBedroom], "standard", eligibility), /Choose clutter for Bedroom 3/);
-addedBedroom.roomConditions["bedrooms:3"] = { clutter: "low", buildup: "none" };
-assert.deepEqual(quote([addedBedroom], "standard", eligibility).units[0].roomConditions["bedrooms:3"], { clutter: "low", buildup: "none" });
+addedBedroom.roomConditions["bedrooms:3"] = { clutter: "low", dust: "none" };
+assert.deepEqual(quote([addedBedroom], "standard", eligibility).units[0].roomConditions["bedrooms:3"], { clutter: "low", dust: "none" });
 for (const service of ["standard", "deep", "move", "post", "recurring"]) {
   const details = { ...base(), constructionAreas: { fullBathrooms: 1 } };
   const answers = { hazards: "none", clutter: "low", buildup: "none", movingDirection: "move-in", constructionFinished: "yes", contractorItemsRemoved: "yes" };

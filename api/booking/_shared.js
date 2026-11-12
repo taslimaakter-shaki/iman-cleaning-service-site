@@ -850,6 +850,9 @@ function calculateResidentialQuoteBundle(unitDetails = [], serviceKey = "standar
   const basePrice = units.reduce((total, unit) => total + unit.basePrice, 0);
   const originalAddOnTotal = units.reduce((total, unit) => total + unit.addOnTotal, 0);
   const baseLaborHours = roundUpToHalfHour((basePrice + originalAddOnTotal) / MAN_HOUR_RATE);
+  const dustAdjustment = usesRoomConditions
+    ? roomConditionAdjustmentFor(units, serviceKey, ["dust"])
+    : { percentage: 0, affectedAreas: [], amount: 0, amountCents: 0, addedLaborHours: 0 };
   const buildupAdjustment = buildupAdjustmentFor(units, serviceKey, eligibility?.buildup);
   const clutterAdjustment = clutterAdjustmentFor(units, serviceKey, eligibility?.clutter);
   const moldAdjustment = moldAdjustmentsFor(units, serviceKey, hazards, moldCleaningRequested);
@@ -860,6 +863,11 @@ function calculateResidentialQuoteBundle(unitDetails = [], serviceKey = "standar
   const originalTaxBreakdown = inclusiveTaxBreakdown(originalTotalCents);
   const originalPricedItems = units.flatMap((unit) => [...unit.baseItems, ...unit.addOns]);
   allocateInclusiveTaxAcrossItems(originalPricedItems, originalTaxBreakdown.subtotalCents);
+  const dustTaxCents = Math.round(dustAdjustment.amountCents * NY_SALES_TAX_RATE);
+  dustAdjustment.taxCents = dustTaxCents;
+  dustAdjustment.tax = dustTaxCents / 100;
+  dustAdjustment.totalCents = dustAdjustment.amountCents + dustTaxCents;
+  dustAdjustment.total = dustAdjustment.totalCents / 100;
   const adjustmentTaxCents = Math.round(buildupAdjustment.amountCents * NY_SALES_TAX_RATE);
   buildupAdjustment.taxCents = adjustmentTaxCents;
   buildupAdjustment.tax = adjustmentTaxCents / 100;
@@ -871,7 +879,7 @@ function calculateResidentialQuoteBundle(unitDetails = [], serviceKey = "standar
   clutterAdjustment.totalCents = clutterAdjustment.amountCents + clutterTaxCents;
   clutterAdjustment.total = clutterAdjustment.totalCents / 100;
   if (usesRoomConditions) {
-    for (const [adjustment, key, label] of [[buildupAdjustment, "buildup_adjustment", "Dirt, buildup and grease cleaning"], [clutterAdjustment, "clutter_adjustment", "Clutter cleaning"]]) {
+    for (const [adjustment, key, label] of [[dustAdjustment, "dust_adjustment", "Heavy dust and dirt cleaning"], [buildupAdjustment, "buildup_adjustment", "Dirt, buildup and grease cleaning"], [clutterAdjustment, "clutter_adjustment", "Clutter cleaning"]]) {
       const chargedUnits = units.filter(unit => adjustment.affectedAreas.some(area => area.unitNumber === unit.unitNumber));
       let remainingTax = adjustment.taxCents;
       chargedUnits.forEach((unit, index) => {
@@ -940,8 +948,8 @@ function calculateResidentialQuoteBundle(unitDetails = [], serviceKey = "standar
     if (usesRoomConditions) unit.manHours += area.amount / MAN_HOUR_RATE;
   });
   const addOnTotal = units.reduce((total, unit) => total + unit.addOnTotal, 0);
-  const subtotalCents = originalTaxBreakdown.subtotalCents + buildupAdjustment.amountCents + clutterAdjustment.amountCents + moldAdjustment.amountCents;
-  const taxCents = originalTaxBreakdown.taxCents + adjustmentTaxCents + clutterTaxCents + moldAdjustment.taxCents;
+  const subtotalCents = originalTaxBreakdown.subtotalCents + dustAdjustment.amountCents + buildupAdjustment.amountCents + clutterAdjustment.amountCents + moldAdjustment.amountCents;
+  const taxCents = originalTaxBreakdown.taxCents + dustTaxCents + adjustmentTaxCents + clutterTaxCents + moldAdjustment.taxCents;
   const totalCents = subtotalCents + taxCents;
   const subtotal = subtotalCents / 100;
   const tax = taxCents / 100;
@@ -985,6 +993,7 @@ function calculateResidentialQuoteBundle(unitDetails = [], serviceKey = "standar
     cleanerCount: TEAM_SIZE,
     manHourRate: MAN_HOUR_RATE,
     baseLaborHours,
+    dustAdjustment,
     buildupAdjustment,
     clutterAdjustment,
     moldAdjustment,

@@ -8,7 +8,7 @@ const makeUnit = (overrides = {}) => {
     diningRooms: 0, additionalRooms: 0, refrigerator: "no", oven: "no", cabinets: "no",
     constructionAreas: { fullBathrooms: 1 }, ...overrides };
   unit.roomConditions = Object.fromEntries(model.roomsForUnit(unit).map(room => [room.id, {
-    clutter: "low", buildup: "none", ...(room.key === "kitchens" ? { grease: "none" } : {}),
+    clutter: "low", [model.applicable(room, "dust") ? "dust" : "buildup"]: "none", ...(room.key === "kitchens" ? { grease: "none" } : {}),
     ...(model.applicable(room, "mold") ? { mold: "none" } : {})
   }]));
   return unit;

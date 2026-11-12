@@ -15,11 +15,21 @@
         { value: "heavy", label: "Heavy clutter", rate: 60, description: "Many belongings cover floors or surfaces, making cleaning difficult.", photo: "./assets/clutter/heavy" }
       ]
     },
-    buildup: {
-      title: "How much dirt or buildup is in each room?", label: "Dirt & buildup",
+    dust: {
+      title: "How much dust and dirt is in these rooms?", label: "Dust & dirt",
+      singularTitle: "How much dust and dirt is in this room?",
       levels: [
-        { value: "none", label: "Light", rate: 0, description: "Light dust, minor water spots, and everyday dirt. No noticeable buildup.", photo: "./assets/buildup/light" },
-        { value: "some", label: "Moderate", rate: 50, description: "Visible dust, grime, soap scum, or mineral deposits that require extra scrubbing.", photo: "./assets/buildup/moderate" },
+        { value: "none", label: "Light", rate: 0, description: "Light dust and everyday dirt. Regular cleaning needed.", photo: "./assets/dust/light" },
+        { value: "some", label: "Moderate", rate: 0, description: "Noticeable dust and dirt on several surfaces, baseboards, or floors. Extra cleaning needed.", photo: "./assets/dust/moderate" },
+        { value: "heavy", label: "Heavy", rate: 40, description: "Thick dust, substantial dirt, or stubborn residue across multiple surfaces. Intensive cleaning needed.", photo: "./assets/dust/heavy" }
+      ]
+    },
+    buildup: {
+      title: "How much dirt or buildup is in the kitchens and bathrooms?", label: "Dirt & buildup",
+      singularTitle: "How much dirt or buildup is in this room?",
+      levels: [
+        { value: "none", label: "Light", rate: 0, description: "Minor water spots and everyday dirt. No noticeable buildup.", photo: "./assets/buildup/light" },
+        { value: "some", label: "Moderate", rate: 50, description: "Visible grime, soap scum, or mineral deposits that require extra scrubbing.", photo: "./assets/buildup/moderate" },
         { value: "heavy", label: "Heavy", rate: 60, description: "Thick grime, heavy soap scum, stubborn mineral deposits, or extensive dirt buildup requiring intensive scrubbing.", photo: "./assets/buildup/heavy" }
       ]
     },
@@ -68,7 +78,9 @@
     }
     return rooms;
   }
-  const applicable = (room, kind) => kind === "grease" ? room.key === "kitchens"
+  const applicable = (room, kind) => kind === "dust" ? ["bedrooms", "livingRooms", "diningRooms", "combinedLivingDining", "additionalRooms"].includes(room.key)
+    : kind === "buildup" ? ["kitchens", "fullBathrooms", "halfBathrooms"].includes(room.key)
+    : kind === "grease" ? room.key === "kitchens"
     : kind === "mold" ? ["fullBathrooms", "halfBathrooms"].includes(room.key) : true;
   const levelFor = (kind, value) => definitions[kind]?.levels.find(level => level.value === value);
   // Used when room counts change: retain existing room answers, drop removed

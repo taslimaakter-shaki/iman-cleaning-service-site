@@ -74,6 +74,7 @@ function pricingRows(booking, record) {
   const itemizedAdjustments = new Set();
   const adjustmentKind = item => {
     const text = `${item?.key || ""} ${item?.label || ""}`.toLowerCase();
+    if (/dust/.test(text) && /adjustment/.test(text)) return "dust";
     if (/buildup/.test(text) && /adjustment/.test(text)) return "buildup";
     if (/clutter/.test(text) && /adjustment/.test(text)) return "clutter";
     if (/mold|mildew/.test(text) && /adjustment/.test(text)) return "mold";
@@ -96,6 +97,7 @@ function pricingRows(booking, record) {
       })
   ));
   const adjustments = [
+    ["dust", "Heavy dust and dirt cleaning", estimate.dustAdjustment],
     ["buildup", "Buildup adjustment", estimate.buildupAdjustment],
     ["clutter", "Clutter access adjustment", estimate.clutterAdjustment],
     ["mold", "Possible mold/mildew adjustment", estimate.moldAdjustment]
