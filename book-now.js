@@ -1336,7 +1336,7 @@
     if (kitchenCount > 0) {
       kitchenAddons.push({
         key: "grease",
-        question: "How much buildup is in the kitchen?",
+        question: "How much grease buildup is in the kitchen?",
         options: [
           { value: "none", label: "Light — Minor grease splatters or light cooking residue. No sticky or thick buildup." },
           { value: "some", label: "Moderate — Visible grease, sticky surfaces, or cooking residue on the stovetop, backsplash, or cabinets that requires extra scrubbing." },
