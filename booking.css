@@ -3879,6 +3879,11 @@ body.booking-agreement-open {
 }
 
 .booking-clutter-preview {
+  pointer-events: none;
+  cursor: default;
+  -webkit-user-select: none;
+  user-select: none;
+  -webkit-touch-callout: none;
   display: block;
   width: 100%;
   min-height: 44px;
@@ -3890,6 +3895,8 @@ body.booking-agreement-open {
 }
 
 .booking-clutter-preview img {
+  pointer-events: none;
+  -webkit-user-drag: none;
   display: block;
   width: 100%;
   aspect-ratio: 2 / 1;

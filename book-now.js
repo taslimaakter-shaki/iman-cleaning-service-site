@@ -944,6 +944,7 @@
     thumbnail.sizes = "(max-width: 600px) 85vw, 520px";
     thumbnail.alt = "Room showing an example of " + title.toLowerCase();
     thumbnail.loading = "lazy";
+    thumbnail.draggable = false;
     preview.append(thumbnail);
     row.append(button, preview);
     return row;
