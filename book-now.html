@@ -25,7 +25,7 @@
   <script>window.dataLayer=window.dataLayer||[];function gtag(){dataLayer.push(arguments)}gtag('js',new Date());gtag('config','G-6MEJH73E0H');</script>
   <link rel="stylesheet" href="./design-system.css">
   <link rel="stylesheet" href="./site.css?v=20260929-restored-menu-size">
-  <link rel="stylesheet" href="./booking.css?v=20261112-grease-photos">
+  <link rel="stylesheet" href="./booking.css?v=20261112-room-conditions">
   <script type="application/ld+json">
   {
     "@context": "https://schema.org",
@@ -122,7 +122,7 @@
               <button type="button" data-stage-target="1" title="First prescreening question"><span>Eligibility</span></button>
               <button type="button" data-stage-target="2" title="Cleaning service selection" disabled><span>Service</span></button>
               <button type="button" data-stage-target="3" title="Property and room details" disabled><span>Home details</span></button>
-              <button type="button" data-stage-target="4" title="Additional cleaning selections" disabled><span>Extras</span></button>
+              <button type="button" data-stage-target="4" title="Pets and room conditions" disabled><span>Conditions</span></button>
               <button type="button" data-stage-target="5" title="Contact details and updated price" disabled><span>Your quote</span></button>
               <button type="button" data-stage-target="6" title="Calendar and time selection" hidden disabled><span>Appointment</span></button>
               <button type="button" data-stage-target="7" title="Final booking review" hidden disabled><span>Review &amp; book</span></button>
@@ -187,31 +187,8 @@
                   <option value="no">No</option>
                 </select>
               </div>
-              <div data-mobile-question data-clutter-question>
-                <h2>How cluttered is the space?</h2>
-                <div class="booking-condition-question">
-                  <select name="clutter" required>
-                    <option value="">Select option</option>
-                    <option value="low">Little or no clutter — Floors and surfaces are mostly clear.</option>
-                    <option value="moderate">Moderate clutter — Some belongings are scattered on floors or surfaces.</option>
-                    <option value="several">Significant clutter — Several areas have scattered items that limit cleaning access.</option>
-                    <option value="heavy">Heavy clutter — Many belongings cover floors or surfaces, making cleaning difficult.</option>
-                  </select>
-                  <small class="booking-clutter-note">Photos are examples only. Your home's condition may vary.</small>
-                </div>
-              </div>
-              <div data-mobile-question data-buildup-question>
-                <h2>How much dirt or buildup is there?</h2>
-                <div class="booking-condition-question">
-                  <select name="buildup" required>
-                    <option value="">Select option</option>
-                    <option value="none" data-example-photo="./assets/buildup/light">Light — Light dust, minor water spots, and everyday dirt. No noticeable buildup.</option>
-                    <option value="some" data-example-photo="./assets/buildup/moderate">Moderate — Visible dust, grime, soap scum, or mineral deposits that require extra scrubbing.</option>
-                    <option value="heavy" data-example-photo="./assets/buildup/heavy">Heavy — Thick grime, heavy soap scum, stubborn mineral deposits, or extensive dirt buildup requiring intensive scrubbing.</option>
-                  </select>
-                  <small class="booking-clutter-note">Photos are examples only. Your home's condition may vary.</small>
-                </div>
-              </div>
+              <input type="hidden" name="clutter" value="low">
+              <input type="hidden" name="buildup" value="none">
               <div data-mobile-question data-safety-question>
                 <h2>Are there any safety concerns?</h2>
                 <div class="booking-condition-question">
@@ -372,6 +349,7 @@
                 <small class="booking-unit-limit">You can include up to 10 units or floors in one online booking.</small>
                 <p class="booking-multifloor-note"><strong>Count every floor or separate unit that needs cleaning.</strong> Include a basement or attic only if you want it cleaned.</p>
               </div>
+              <div class="booking-room-conditions" data-room-conditions hidden></div>
               <div class="booking-quote-details-form" data-quote-details-form hidden>
                 <span class="booking-unit-question-label" data-unit-details-kicker hidden>Unit 1</span>
                 <h2 data-unit-details-title>Tell us about your home</h2>
@@ -802,7 +780,7 @@
                   <button type="button" data-stage-target="1" title="First prescreening question"><span>Eligibility</span></button>
                   <button type="button" data-stage-target="2" title="Cleaning service selection" disabled><span>Service</span></button>
                   <button type="button" data-stage-target="3" title="Property and room details" disabled><span>Home details</span></button>
-                  <button type="button" data-stage-target="4" title="Additional cleaning selections" disabled><span>Extras</span></button>
+                  <button type="button" data-stage-target="4" title="Pets and room conditions" disabled><span>Conditions</span></button>
                   <button type="button" data-stage-target="5" title="Contact details and updated price" disabled><span>Your quote</span></button>
                   <button type="button" data-stage-target="6" title="Calendar and time selection" hidden disabled><span>Appointment</span></button>
                   <button type="button" data-stage-target="7" title="Final booking review" hidden disabled><span>Review &amp; book</span></button>
@@ -930,7 +908,10 @@
   <script src="./booking-service-area.js?v=20261006-pause-bronx-staten-island"></script>
   <script src="./booking-discount-names.js?v=20261105"></script>
   <script src="./booking-day.js?v=20261105"></script>
-  <script src="./book-now.js?v=20261112-grease-photos"></script>
+  <dialog class="booking-room-picker" data-condition-room-picker aria-labelledby="condition-room-picker-title"></dialog>
+  <script src="./booking-conditions.js?v=20261112-room-conditions"></script>
+  <script src="./booking-condition-picker.js?v=20261112-room-conditions"></script>
+  <script src="./book-now.js?v=20261112-room-conditions"></script>
 <script defer src="./site-reviews.js?v=20260911-trusted-title"></script>
 </body>
 </html>

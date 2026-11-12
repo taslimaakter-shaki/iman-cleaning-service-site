@@ -1,4 +1,5 @@
 const crypto = require("crypto");
+const roomConditions = require("../../booking-conditions");
 
 const TEAM_SIZE = 2;
 const MAN_HOUR_RATE = 80;
@@ -411,13 +412,17 @@ function calculateResidentialUnitPrice(unit = {}, unitIndex = 0, serviceKey = "s
       wholeNumber(source[key] || 0, `the number of ${conditionLabel}-affected ${key} in Unit ${unitNumber}`, maximum)
     ]));
   };
-  const buildupAreas = normalizeConditionAreas(unit.buildupAreas, "buildup");
-  const grease = kitchens ? cleanText(unit.grease, 20) : "";
+  const usesRoomConditions = eligibility.roomConditionVersion === 1;
+  const buildupAreas = normalizeConditionAreas(usesRoomConditions ? {} : unit.buildupAreas, "buildup");
+  const grease = !usesRoomConditions && kitchens ? cleanText(unit.grease, 20) : "";
   if (grease && !["none", "some", "heavy"].includes(grease)) {
     throw Object.assign(new Error(`Choose a kitchen buildup level in Unit ${unitNumber}.`), { statusCode: 400 });
   }
-  const clutterAreas = normalizeConditionAreas(unit.clutterAreas, "clutter");
+  const clutterAreas = normalizeConditionAreas(usesRoomConditions ? {} : unit.clutterAreas, "clutter");
   const constructionAreas = normalizeConditionAreas(unit.constructionAreas, "construction dust or debris");
+  const normalizedRoomConditions = eligibility.roomConditionVersion === 1
+    ? roomConditions.validate({ ...unit, bedrooms, fullBathrooms, halfBathrooms, kitchens, livingRooms, diningRooms, livingDining, additionalRooms, additionalRoomTypes }, unitNumber)
+    : null;
   if (unit.exteriorWindows === "yes" || (serviceKey !== "move" && unit.windowCleaning && unit.windowCleaning !== "no")) {
     throw Object.assign(new Error("This window add-on is no longer available. Please start a new cleaning quote."), { statusCode: 410 });
   }
@@ -550,6 +555,7 @@ function calculateResidentialUnitPrice(unit = {}, unitIndex = 0, serviceKey = "s
     buildupAreas,
     grease,
     clutterAreas,
+    ...(normalizedRoomConditions ? { roomConditions: normalizedRoomConditions } : {}),
     constructionAreas,
     refrigerator,
     oven,
@@ -645,7 +651,42 @@ function affectedAreaAdjustmentsFor(units, serviceKey, areasKey, percentage) {
   };
 }
 
+function roomConditionAdjustmentFor(units, serviceKey, kinds) {
+  const service = FORMULA_SERVICES[serviceKey];
+  const affectedAreas = [];
+  units.forEach(unit => {
+    roomConditions.roomsForUnit(unit).forEach(room => {
+      kinds.filter(kind => roomConditions.applicable(room, kind)).forEach(kind => {
+        const level = roomConditions.levelFor(kind, unit.roomConditions[room.id][kind]);
+        if (!level.rate) return;
+        let baseAreaPrice = room.key === "halfBathrooms" ? service.halfBathroomRate
+          : room.key === "fullBathrooms" ? (service.fullBathroomRate || service.roomRate)
+          : room.key === "combinedLivingDining" ? service.combinedLivingDining : service.roomRate;
+        if (room.key === "kitchens") {
+          const kitchenBase = unit.baseItems.find(item => item.key === "kitchen")?.amount || 0;
+          const extras = unit.addOns.filter(item => ["refrigerator", "oven", "cabinets"].includes(item.key)
+            && (kind !== "grease" || item.key !== "refrigerator")).reduce((sum, item) => sum + item.amount, 0);
+          const includedFridge = kind === "grease" && unit.refrigerator === "included" ? MOVE_REFRIGERATOR_PRICE * unit.kitchens : 0;
+          // Unit-level kitchen extras are shared equally between its kitchens,
+          // matching the existing affected-kitchen pricing rule.
+          baseAreaPrice = Math.max(0, (kitchenBase + extras - includedFridge) / unit.kitchens);
+        }
+        const amountCents = Math.round(baseAreaPrice * level.rate);
+        affectedAreas.push({ key: `${kind}_${room.id}`, roomId: room.id, label: room.label,
+          conditionType: kind, level: level.value, unitNumber: unit.unitNumber, quantity: 1,
+          baseAreaPrice, percentage: level.rate, amountCents, amount: amountCents / 100 });
+      });
+    });
+  });
+  const amountCents = affectedAreas.reduce((sum, area) => sum + area.amountCents, 0);
+  const rates = [...new Set(affectedAreas.map(area => area.percentage))];
+  return { percentage: Math.max(0, ...rates), condition: "mixed", roomConditionVersion: 1, affectedAreas,
+    affectedAreaBasePrice: affectedAreas.reduce((sum, area) => sum + area.baseAreaPrice, 0),
+    amountCents, amount: amountCents / 100, addedLaborHours: amountCents / 100 / MAN_HOUR_RATE };
+}
+
 function buildupAdjustmentFor(units, serviceKey, buildup = "") {
+  if (units.every(unit => unit.roomConditions)) return roomConditionAdjustmentFor(units, serviceKey, ["buildup", "grease"]);
   const condition = cleanText(buildup, 20) || "none";
   const percentage = condition === "some" ? 50 : condition === "heavy" ? 60 : 0;
   const dirt = affectedAreaAdjustmentsFor(units, serviceKey, "buildupAreas", percentage);
@@ -671,6 +712,7 @@ function buildupAdjustmentFor(units, serviceKey, buildup = "") {
 }
 
 function clutterAdjustmentFor(units, serviceKey, clutter = "") {
+  if (units.every(unit => unit.roomConditions)) return roomConditionAdjustmentFor(units, serviceKey, ["clutter"]);
   const condition = cleanText(clutter, 20) || "low";
   const percentage = condition === "moderate" ? 40 : condition === "several" ? 50 : condition === "heavy" ? 60 : 0;
   const adjustment = affectedAreaAdjustmentsFor(units, serviceKey, "clutterAreas", percentage);
@@ -703,9 +745,14 @@ function calculateResidentialQuoteBundle(unitDetails = [], serviceKey = "standar
   if (!service) {
     throw Object.assign(new Error("Choose Standard, Deep, Move-Out, or Post-Construction Cleaning."), { statusCode: 400 });
   }
-  if (!Array.isArray(unitDetails) || !unitDetails.length || unitDetails.length > 10) {
+  if (!Array.isArray(unitDetails) || !unitDetails.length || unitDetails.length > 10 || unitDetails.some(unit => !unit || typeof unit !== "object" || Array.isArray(unit))) {
     throw Object.assign(new Error("Complete the pricing questions for every residential unit."), { statusCode: 400 });
   }
+  if (eligibility.roomConditionVersion !== undefined && eligibility.roomConditionVersion !== 1) {
+    throw Object.assign(new Error("Please refresh the quote and review the room conditions."), { statusCode: 400 });
+  }
+  const usesRoomConditions = eligibility.roomConditionVersion === 1 || unitDetails.some(unit => Object.hasOwn(unit, "roomConditions"));
+  if (usesRoomConditions) eligibility = { ...eligibility, roomConditionVersion: 1 };
   const movingDirection = cleanText(eligibility?.movingDirection, 20);
   const serviceLabel = serviceKey === "move"
     ? movingDirection === "move-in"
@@ -729,13 +776,16 @@ function calculateResidentialQuoteBundle(unitDetails = [], serviceKey = "standar
   const buildup = cleanText(eligibility?.buildup, 20);
   const clutter = cleanText(eligibility?.clutter, 20);
   const selectedAreaCount = (areas = {}) => Object.values(areas).reduce((sum, amount) => sum + (Number(amount) || 0), 0);
-  if (["some", "heavy"].includes(buildup)) {
+  if (usesRoomConditions && !units.some(unit => roomConditions.roomsForUnit(unit).length)) {
+    throw Object.assign(new Error("Select at least one room to clean."), { statusCode: 400 });
+  }
+  if (!usesRoomConditions && ["some", "heavy"].includes(buildup)) {
     const affectedAreaCount = units.reduce((sum, unit) => sum + selectedAreaCount(unit.buildupAreas), 0);
     if (affectedAreaCount < 1) {
       throw Object.assign(new Error("Select at least one buildup-affected area in any unit."), { statusCode: 400 });
     }
   }
-  if (["moderate", "several", "heavy"].includes(clutter)) {
+  if (!usesRoomConditions && ["moderate", "several", "heavy"].includes(clutter)) {
     const affectedAreaCount = units.reduce((sum, unit) => sum + selectedAreaCount(unit.clutterAreas), 0);
     if (affectedAreaCount < 1) {
       throw Object.assign(new Error("Select at least one clutter-affected area in any unit."), { statusCode: 400 });
@@ -817,7 +867,25 @@ function calculateResidentialQuoteBundle(unitDetails = [], serviceKey = "standar
   clutterAdjustment.tax = clutterTaxCents / 100;
   clutterAdjustment.totalCents = clutterAdjustment.amountCents + clutterTaxCents;
   clutterAdjustment.total = clutterAdjustment.totalCents / 100;
-  if (buildupAdjustment.addedLaborHours && units[0]) {
+  if (usesRoomConditions) {
+    for (const [adjustment, key, label] of [[buildupAdjustment, "buildup_adjustment", "Dirt, buildup and grease cleaning"], [clutterAdjustment, "clutter_adjustment", "Clutter cleaning"]]) {
+      const chargedUnits = units.filter(unit => adjustment.affectedAreas.some(area => area.unitNumber === unit.unitNumber));
+      let remainingTax = adjustment.taxCents;
+      chargedUnits.forEach((unit, index) => {
+        const areas = adjustment.affectedAreas.filter(area => area.unitNumber === unit.unitNumber);
+        const cents = areas.reduce((sum, area) => sum + area.amountCents, 0);
+        const taxCents = index === chargedUnits.length - 1 ? remainingTax : Math.round(adjustment.taxCents * cents / adjustment.amountCents);
+        remainingTax -= taxCents;
+        unit.addOns.push({ key, label, description: [...new Set(areas.map(area => area.label))].join(", "),
+          amount: cents / 100, preTaxAmount: cents / 100, taxAmount: taxCents / 100 });
+        unit.addOnTotal += cents / 100;
+        unit.subtotal += (cents + taxCents) / 100;
+        unit.subtotalCents += cents + taxCents;
+        unit.manHours += cents / 100 / MAN_HOUR_RATE;
+      });
+    }
+  }
+  if (!usesRoomConditions && buildupAdjustment.addedLaborHours && units[0]) {
     units[0].addOns.push({
       key: "buildup_adjustment",
       label: "Buildup adjustment",
@@ -831,7 +899,7 @@ function calculateResidentialQuoteBundle(unitDetails = [], serviceKey = "standar
     units[0].subtotalCents += buildupAdjustment.totalCents;
     units[0].manHours += buildupAdjustment.addedLaborHours;
   }
-  if (clutterAdjustment.addedLaborHours && units[0]) {
+  if (!usesRoomConditions && clutterAdjustment.addedLaborHours && units[0]) {
     units[0].addOns.push({
       key: "clutter_adjustment",
       label: "Clutter access adjustment",

@@ -58,8 +58,8 @@ assert.match(browserCode, /label: "Combined living & dining areas"/);
 assert.match(browserCode, /linkedValues: \["livingRooms", "diningRooms"\]/);
 assert.equal(
   (browserCode.match(/roomTypes: affectedRoomTypes\(\)/g) || []).length,
-  4,
-  "Mold, buildup, clutter, and post-construction room questions should share the living/dining layout logic."
+  2,
+  "Legacy mold and post-construction questions retain the shared living/dining layout; clutter and buildup use the all-unit room picker."
 );
 assert.match(browserCode, /additionalRooms: 0/);
 assert.match(browserCode, /detailValue = standardDetailNumberInput\.value/);

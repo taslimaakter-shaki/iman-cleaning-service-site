@@ -220,7 +220,7 @@
   });
   document.addEventListener("keydown", (event) => {
     if (event.key !== "Escape" || bookingWizard.hidden || !zipGate.hidden) return;
-    if (document.querySelector("[data-clutter-dialog][open]")) return;
+    if (document.querySelector("[data-clutter-dialog][open], [data-condition-room-picker][open]")) return;
     if (servicePreviewOverlay && !servicePreviewOverlay.hidden) {
       closeServicePreview();
       return;
@@ -267,6 +267,7 @@
     unitDetails: [],
     currentUnitIndex: 0,
     currentDetailQuestionIndex: 0,
+    conditionStep: 0,
     pricingMode: "",
     availableSlots: [],
     offeredVisitSlots: [],
@@ -458,6 +459,8 @@
   let propertyTypeMode = false;
   let unitCountMode = false;
   let quoteDetailsMode = false;
+  let conditionMode = false;
+  const conditionForm = form.querySelector("[data-room-conditions]");
   let suspendDraftSaving = false;
   let draftSaveTimer = 0;
   const serviceNames = {
@@ -710,6 +713,7 @@
           unitDetails: state.unitDetails,
           currentUnitIndex: state.currentUnitIndex,
           currentDetailQuestionIndex: state.currentDetailQuestionIndex,
+          conditionStep: state.conditionStep,
           pricingMode: state.pricingMode,
           savedQuoteUrl: state.savedQuoteUrl,
           quoteRevision: state.quoteRevision,
@@ -735,7 +739,8 @@
           repeatBookingMode,
           propertyTypeMode,
           unitCountMode,
-          quoteDetailsMode
+          quoteDetailsMode,
+          conditionMode
         }
       }));
       const saveCopy = document.querySelector("[data-booking-save-copy]");
@@ -954,6 +959,42 @@
     row.append(button, preview);
     return row;
   };
+  const conditionPicker = window.ImanConditionPicker.create({
+    container: conditionForm,
+    getUnits: () => state.unitDetails.slice(0, selectedUnitCount()),
+    unitLabel: index => quoteUnitLabel(index),
+    photoChoice: createConditionPhotoChoice,
+    onChange: () => {
+      invalidateDownstreamAfterEdit();
+      persistBookingDraft();
+      setStatus(document.querySelector("[data-eligibility-status]"), "");
+    },
+    onEdit: kind => {
+      state.conditionStep = conditionPicker.kinds().indexOf(kind);
+      syncMobileQuestion();
+      wizardDialog?.scrollTo({ top: 0, behavior: "smooth" });
+      conditionForm.querySelector("h2")?.focus();
+      persistBookingDraft();
+    }
+  });
+  const enterRoomConditions = (step = 0) => {
+    conditionPicker.reconcile();
+    if (!conditionPicker.inventory().length) {
+      setStatus(document.querySelector("[data-eligibility-status]"), "Select at least one room to clean before choosing room conditions.");
+      enterQuoteDetailsAtStage(true);
+      return;
+    }
+    conditionMode = true;
+    organizationMode = serviceChoiceMode = recurringDetailsMode = propertyTypeMode = unitCountMode = quoteDetailsMode = false;
+    state.conditionStep = step;
+    form.elements.clutter.value = "low";
+    form.elements.buildup.value = "none";
+    setStatus(document.querySelector("[data-eligibility-status]"), "");
+    syncMobileQuestion();
+    wizardDialog?.scrollTo({ top: 0, behavior: "smooth" });
+    conditionForm.querySelector("h2")?.focus();
+    persistBookingDraft();
+  };
   const buildAnswerChoices = () => {
     allMobileQuestions.forEach((question, questionIndex) => {
       question.querySelectorAll("select").forEach((select, selectIndex) => {
@@ -1105,8 +1146,6 @@
     const isMove = serviceKey === "move";
     const isPostConstruction = serviceKey === "post";
     const isWholePropertyUnit = state.currentUnitIndex === selectedUnitCount() - 1;
-    const dirtBuildup = ["some", "heavy"].includes(value("buildup"));
-    const kitchenCount = Number(unit.kitchens) || 0;
     const affectedRoomTypes = () => [
       { value: "bedrooms", label: "Bedrooms", max: Number(unit.bedrooms) || 0 },
       { value: "fullBathrooms", label: "Full bathrooms", max: Number(unit.fullBathrooms) || 0 },
@@ -1141,26 +1180,6 @@
       key: "moldAreas",
       type: "mold-breakdown",
       question: "Which areas have possible mold or mildew present?",
-      helper: "Use the + and − buttons to select every affected area in this unit. If this unit is not affected, leave every area at 0 and continue.",
-      roomTypes: affectedRoomTypes()
-    }] : []),
-    ...(dirtBuildup ? [{
-      key: "buildupAreas",
-      type: "condition-breakdown",
-      question: value("buildup") === "heavy"
-        ? "Which areas have heavy dirt or buildup?"
-        : "Which areas have noticeable buildup?",
-      helper: "Use the + and − buttons to select every affected area in this unit. If this unit is not affected, leave every area at 0 and continue.",
-      roomTypes: affectedRoomTypes()
-    }] : []),
-    ...(["moderate", "several", "heavy"].includes(value("clutter")) ? [{
-      key: "clutterAreas",
-      type: "condition-breakdown",
-      question: value("clutter") === "heavy"
-        ? "Which areas have hoarding conditions or excessive clutter?"
-        : value("clutter") === "several"
-          ? "Which areas have limited access because of clutter?"
-          : "Which areas have items that need to be worked around?",
       helper: "Use the + and − buttons to select every affected area in this unit. If this unit is not affected, leave every area at 0 and continue.",
       roomTypes: affectedRoomTypes()
     }] : []),
@@ -1334,17 +1353,6 @@
       "excludeCabinets"
     ]);
     const kitchenAddons = questions.filter((question) => kitchenAddonKeys.has(question.key));
-    if (kitchenCount > 0) {
-      kitchenAddons.push({
-        key: "grease",
-        question: "How much grease buildup is in the kitchen?",
-        options: [
-          { value: "none", label: "Light — Minor grease splatters or light cooking residue. No sticky or thick buildup.", examplePhoto: "./assets/grease/light" },
-          { value: "some", label: "Moderate — Visible grease, sticky surfaces, or cooking residue on the stovetop, backsplash, cabinets, or range hood that requires extra scrubbing.", examplePhoto: "./assets/grease/moderate" },
-          { value: "heavy", label: "Heavy — Thick, sticky, or hardened grease covering multiple surfaces that requires intensive degreasing and scrubbing.", examplePhoto: "./assets/grease/heavy" }
-        ]
-      });
-    }
     const kitchenOrderedQuestions = questions.flatMap((question) => {
       if (kitchenAddonKeys.has(question.key)) return [];
       return question.key === "kitchens" ? [question, ...kitchenAddons] : [question];
@@ -1399,7 +1407,7 @@
     { label: "Eligibility", start: 5, end: 25 },
     { label: "Service", start: 25, end: 35 },
     { label: "Home details", start: 35, end: 55 },
-    { label: "Extras", start: 55, end: 70 },
+    { label: "Extras & conditions", start: 55, end: 70 },
     { label: "Your quote", start: 70, end: 80 },
     { label: "Appointment", start: 80, end: 93 },
     { label: "Review & book", start: 93, end: 99 }
@@ -1412,6 +1420,7 @@
     if (state.step === 3) return 6;
     if (state.step === 4) return 7;
     if (organizationPath) return organizationMode ? 2 : 1;
+    if (conditionMode) return 4;
     if (quoteDetailsMode) {
       const current = state.unitDetails[state.currentUnitIndex] || emptyUnitDetails();
       const questions = pricingDetailQuestions(current, value("requestedService"));
@@ -1482,7 +1491,7 @@
       return 28;
     }
     if (stageNumber === 3) return 35 + detailStageFraction(true) * 20;
-    if (stageNumber === 4) return 55 + detailStageFraction(false) * 15;
+    if (stageNumber === 4) return conditionMode ? 59 + (state.conditionStep / conditionPicker.kinds().length) * 11 : 55 + detailStageFraction(false) * 4;
     if (stageNumber === 5) return 71;
     if (stageNumber === 6) return value("schedule") ? 92 : 86;
     return 100;
@@ -1786,6 +1795,18 @@
     allMobileQuestions.forEach((question) => {
       questionControls(question).forEach((control) => { control.disabled = false; });
     });
+    if (conditionForm) conditionForm.hidden = !conditionMode;
+    if (conditionMode) {
+      allMobileQuestions.forEach(question => question.classList.remove("is-mobile-current"));
+      [organizationForm, recurringDetailsForm, serviceChoiceForm, propertyTypeForm, unitCountForm, quoteDetailsForm].forEach(element => { if (element) element.hidden = true; });
+      const kinds = conditionPicker.kinds();
+      state.conditionStep = Math.max(0, Math.min(state.conditionStep, kinds.length));
+      conditionPicker.render(kinds[state.conditionStep] || "summary");
+      if (mobileQuestionNav) mobileQuestionNav.hidden = false;
+      if (eligibilityButtonLabel) eligibilityButtonLabel.textContent = state.conditionStep === kinds.length ? "Continue to my quote" : "Continue";
+      setQuestionMeta(`Room conditions · ${Math.min(state.conditionStep + 1, kinds.length + 1)} of ${kinds.length + 1}`, "About 2 min left");
+      return;
+    }
     if (organizationMode) {
       allMobileQuestions.forEach((question) => question.classList.remove("is-mobile-current"));
       if (serviceChoiceForm) serviceChoiceForm.hidden = true;
@@ -1845,7 +1866,7 @@
         const isLastQuestion = state.currentDetailQuestionIndex >= detailQuestions.length - 1;
         eligibilityButtonLabel.textContent = !isLastQuestion
           ? "Continue"
-          : state.currentUnitIndex < count - 1 ? "Next unit" : "See my instant price";
+          : state.currentUnitIndex < count - 1 ? "Next unit" : "Continue to room conditions";
       }
       return;
     }
@@ -2095,6 +2116,7 @@
     }, 40);
   };
   const enterOrganizationDetails = () => {
+    conditionMode = false;
     organizationMode = true;
     serviceChoiceMode = false;
     recurringDetailsMode = false;
@@ -2112,6 +2134,7 @@
     window.setTimeout(() => organizationHoursInput?.focus(), 40);
   };
   const enterServiceChoice = () => {
+    conditionMode = false;
     organizationMode = false;
     serviceChoiceMode = true;
     recurringDetailsMode = false;
@@ -2127,6 +2150,7 @@
     }, 40);
   };
   const enterRecurringDetails = () => {
+    conditionMode = false;
     organizationMode = false;
     serviceChoiceMode = false;
     recurringDetailsMode = true;
@@ -2138,6 +2162,7 @@
     window.setTimeout(() => (recurringInitialAnswer === "yes" ? recurringOrderNumberInput : recurringInitialButtons[0])?.focus(), 40);
   };
   const enterPropertyTypeChoice = () => {
+    conditionMode = false;
     organizationMode = false;
     serviceChoiceMode = false;
     recurringDetailsMode = false;
@@ -2153,6 +2178,7 @@
     }, 40);
   };
   const enterUnitCountChoice = () => {
+    conditionMode = false;
     organizationMode = false;
     serviceChoiceMode = false;
     propertyTypeMode = false;
@@ -2192,6 +2218,7 @@
     window.setTimeout(() => unitCountIncrease?.focus(), 40);
   };
   const enterQuoteDetailsAtStage = (homeDetails = true) => {
+    conditionMode = false;
     organizationMode = false;
     serviceChoiceMode = false;
     propertyTypeMode = false;
@@ -2199,12 +2226,15 @@
     quoteDetailsMode = true;
     state.currentUnitIndex = 0;
     syncUnitCount();
-    const questions = pricingDetailQuestions(
-      state.unitDetails[0] || emptyUnitDetails(),
-      value("requestedService")
-    );
-    const firstQuestionIndex = questions.findIndex((question) => HOME_DETAIL_KEYS.has(question.key) === homeDetails);
-    state.currentDetailQuestionIndex = Math.max(0, firstQuestionIndex);
+    for (let unitIndex = 0; unitIndex < selectedUnitCount(); unitIndex += 1) {
+      state.currentUnitIndex = unitIndex;
+      const questions = pricingDetailQuestions(state.unitDetails[unitIndex] || emptyUnitDetails(), value("requestedService"));
+      const firstQuestionIndex = questions.findIndex(question => HOME_DETAIL_KEYS.has(question.key) === homeDetails);
+      if (firstQuestionIndex >= 0) {
+        state.currentDetailQuestionIndex = firstQuestionIndex;
+        break;
+      }
+    }
     closeQualificationComplete();
     syncMobileQuestion();
     wizardDialog?.scrollTo({ top: 0, behavior: "smooth" });
@@ -2224,6 +2254,7 @@
     closeAccountDialog();
 
     if (stageNumber === 1) {
+      conditionMode = false;
       goToStep(1);
       organizationMode = false;
       serviceChoiceMode = false;
@@ -2243,7 +2274,8 @@
     }
     if (stageNumber === 3 || stageNumber === 4) {
       goToStep(1);
-      enterQuoteDetailsAtStage(stageNumber === 3);
+      if (stageNumber === 4 && state.unitDetails.some(unit => unit.roomConditions)) enterRoomConditions();
+      else enterQuoteDetailsAtStage(stageNumber === 3);
       return;
     }
     if (stageNumber === 5) {
@@ -3089,12 +3121,12 @@
         preTaxAmount: items.reduce((sum, item) => sum + (Number(item.preTaxAmount ?? item.amount) || 0), 0)
       };
     };
-    const clutterLabel = pkg.clutterAdjustment?.condition === "heavy"
+    const clutterLabel = pkg.clutterAdjustment?.roomConditionVersion === 1 ? "Clutter cleaning fee" : pkg.clutterAdjustment?.condition === "heavy"
       ? "Hoarding/excessive clutter cleaning fee"
       : pkg.clutterAdjustment?.condition === "several"
         ? "Moderate clutter/access cleaning fee"
         : "Light clutter/access cleaning fee";
-    const buildupLabel = pkg.buildupAdjustment?.condition === "heavy"
+    const buildupLabel = pkg.buildupAdjustment?.roomConditionVersion === 1 ? "Dirt, buildup and grease cleaning fee" : pkg.buildupAdjustment?.condition === "heavy"
       ? "Heavy buildup and grease cleaning fee"
       : "Noticeable buildup and grease cleaning fee";
     return [
@@ -3497,6 +3529,20 @@
   syncPropertyTypeChoice();
   syncUnitCount();
   form.querySelector("[data-question-back]")?.addEventListener("click", () => {
+    if (conditionMode) {
+      setStatus(document.querySelector("[data-eligibility-status]"), "");
+      if (state.conditionStep > 0) state.conditionStep -= 1;
+      else {
+        conditionMode = false;
+        quoteDetailsMode = true;
+        state.currentUnitIndex = selectedUnitCount() - 1;
+        state.currentDetailQuestionIndex = pricingDetailQuestions(state.unitDetails[state.currentUnitIndex]).length - 1;
+      }
+      syncMobileQuestion();
+      wizardDialog?.scrollTo({ top: 0, behavior: "smooth" });
+      persistBookingDraft();
+      return;
+    }
     if (organizationMode) {
       organizationMode = false;
       mobileQuestionIndex = 0;
@@ -3528,18 +3574,19 @@
       }
       if (state.currentUnitIndex > 0) {
         saveCurrentUnitDetails();
-        state.currentUnitIndex -= 1;
-        const previousQuestions = pricingDetailQuestions(
-          state.unitDetails[state.currentUnitIndex] || emptyUnitDetails(),
-          value("requestedService")
-        );
-        const previousStageIndexes = previousQuestions
-          .map((question, index) => ({ question, index }))
-          .filter(({ question }) => HOME_DETAIL_KEYS.has(question.key) === inHomeDetails)
-          .map(({ index }) => index);
-        state.currentDetailQuestionIndex = previousStageIndexes[previousStageIndexes.length - 1];
-        syncMobileQuestion();
-        return;
+        for (let unitIndex = state.currentUnitIndex - 1; unitIndex >= 0; unitIndex -= 1) {
+          state.currentUnitIndex = unitIndex;
+          const previousQuestions = pricingDetailQuestions(state.unitDetails[unitIndex] || emptyUnitDetails(), value("requestedService"));
+          const previousStageIndexes = previousQuestions
+            .map((question, index) => ({ question, index }))
+            .filter(({ question }) => HOME_DETAIL_KEYS.has(question.key) === inHomeDetails)
+            .map(({ index }) => index);
+          if (!previousStageIndexes.length) continue;
+          state.currentUnitIndex = unitIndex;
+          state.currentDetailQuestionIndex = previousStageIndexes[previousStageIndexes.length - 1];
+          syncMobileQuestion();
+          return;
+        }
       }
       if (!inHomeDetails) {
         state.currentUnitIndex = selectedUnitCount() - 1;
@@ -3618,6 +3665,10 @@
   additionalCleaningNoticeContinue?.addEventListener("click", closeAdditionalCleaningNotice);
   quoteContactBack?.addEventListener("click", () => {
     closeQuoteContact();
+    if (conditionMode) {
+      conditionForm.querySelector("h2")?.focus();
+      return;
+    }
     if (organizationMode) {
       organizationHoursInput?.focus();
       return;
@@ -3843,7 +3894,20 @@
       enterQuoteDetails();
       return;
     }
-    if (!quoteDetailsMode) {
+    if (conditionMode) {
+      const kinds = conditionPicker.kinds();
+      const kind = kinds[state.conditionStep];
+      if (kind) {
+        state.conditionStep += 1;
+        setStatus(status, "");
+        syncMobileQuestion();
+        wizardDialog?.scrollTo({ top: 0, behavior: "smooth" });
+        conditionForm.querySelector("h2")?.focus();
+        persistBookingDraft();
+        return;
+      }
+    }
+    if (!quoteDetailsMode && !conditionMode) {
       const currentQuestion = activeQuestions[mobileQuestionIndex];
       const invalidControl = questionControls(currentQuestion).find((control) => !control.checkValidity());
       if (invalidControl) {
@@ -3869,146 +3933,151 @@
       }
       return;
     }
-    const currentUnit = state.unitDetails[state.currentUnitIndex] || emptyUnitDetails();
-    const detailQuestions = pricingDetailQuestions(currentUnit, value("requestedService"));
-    const detailQuestion = detailQuestions[state.currentDetailQuestionIndex];
-    let detailValue = currentUnit[detailQuestion.key];
-    if (["number", "text"].includes(detailQuestion.type) && standardDetailNumberInput) {
-      detailValue = standardDetailNumberInput.value;
-      currentUnit[detailQuestion.key] = detailValue;
-    }
-    const numericValue = Number(detailValue);
-    if (detailQuestion.type === "number") {
-      if (detailValue === "" || !Number.isInteger(numericValue) || numericValue < detailQuestion.min || numericValue > detailQuestion.max) {
-        setStatus(status, `Enter a whole number from ${detailQuestion.min} to ${detailQuestion.max}.`);
-        standardDetailNumberInput?.focus();
+    if (!conditionMode) {
+      const currentUnit = state.unitDetails[state.currentUnitIndex] || emptyUnitDetails();
+      const detailQuestions = pricingDetailQuestions(currentUnit, value("requestedService"));
+      const detailQuestion = detailQuestions[state.currentDetailQuestionIndex];
+      let detailValue = currentUnit[detailQuestion.key];
+      if (["number", "text"].includes(detailQuestion.type) && standardDetailNumberInput) {
+        detailValue = standardDetailNumberInput.value;
+        currentUnit[detailQuestion.key] = detailValue;
+      }
+      const numericValue = Number(detailValue);
+      if (detailQuestion.type === "number") {
+        if (detailValue === "" || !Number.isInteger(numericValue) || numericValue < detailQuestion.min || numericValue > detailQuestion.max) {
+          setStatus(status, `Enter a whole number from ${detailQuestion.min} to ${detailQuestion.max}.`);
+          standardDetailNumberInput?.focus();
+          return;
+        }
+        if (detailQuestion.key === "kitchens" && numericValue === 0) currentUnit.grease = "";
+      } else if (detailQuestion.type === "text") {
+        if (!String(detailValue || "").trim()) {
+          setStatus(status, "Please specify the type of pet to continue.");
+          standardDetailNumberInput?.focus();
+          return;
+        }
+        currentUnit[detailQuestion.key] = String(detailValue).trim();
+      } else if (detailQuestion.type === "room-breakdown") {
+        const assignedRooms = Object.values(detailValue || {}).reduce((total, amount) => total + (Number(amount) || 0), 0);
+        if (assignedRooms !== Number(currentUnit.additionalRooms)) {
+          setStatus(status, `Please assign all ${Number(currentUnit.additionalRooms)} additional room${Number(currentUnit.additionalRooms) === 1 ? "" : "s"} using the + buttons.`);
+          standardDetailOptions?.querySelector("button:not(:disabled)")?.focus();
+          return;
+        }
+      } else if (["mold-breakdown", "condition-breakdown"].includes(detailQuestion.type)) {
+        const affectedAreas = Object.values(detailValue || {}).reduce((total, amount) => total + (Number(amount) || 0), 0);
+        const affectedAreasAcrossProperty = state.unitDetails.reduce((total, unit) => (
+          total + Object.values(unit?.[detailQuestion.key] || {}).reduce((unitTotal, amount) => unitTotal + (Number(amount) || 0), 0)
+        ), 0);
+        const isLastUnit = state.currentUnitIndex === selectedUnitCount() - 1;
+        if (affectedAreas < 1 && selectedUnitCount() === 1) {
+          const areaMessage = detailQuestion.key === "moldAreas"
+            ? "possible mold or mildew"
+            : detailQuestion.key === "buildupAreas"
+              ? "buildup"
+              : detailQuestion.key === "constructionAreas"
+                ? "construction dust or debris"
+                : "clutter or limited access";
+          setStatus(status, `Select at least one area affected by ${areaMessage} using the + buttons.`);
+          standardDetailOptions?.querySelector("button:not(:disabled)")?.focus();
+          return;
+        }
+        if (isLastUnit && affectedAreasAcrossProperty < 1) {
+          const areaMessage = detailQuestion.key === "moldAreas"
+            ? "possible mold or mildew"
+            : detailQuestion.key === "buildupAreas"
+              ? "buildup"
+              : detailQuestion.key === "constructionAreas"
+                ? "construction dust or debris"
+                : "clutter or limited access";
+          setStatus(status, `Select at least one area affected by ${areaMessage} in any unit. Units without this condition can remain at 0.`);
+          standardDetailOptions?.querySelector("button:not(:disabled)")?.focus();
+          return;
+        }
+      } else if (!detailValue) {
+        setStatus(status, "Please choose an option to continue.");
+        standardDetailOptions?.querySelector("button")?.focus();
         return;
       }
-      if (detailQuestion.key === "kitchens" && numericValue === 0) currentUnit.grease = "";
-    } else if (detailQuestion.type === "text") {
-      if (!String(detailValue || "").trim()) {
-        setStatus(status, "Please specify the type of pet to continue.");
-        standardDetailNumberInput?.focus();
+      const inHomeDetails = HOME_DETAIL_KEYS.has(detailQuestion.key);
+      const stageIndexes = detailQuestions
+        .map((question, index) => ({ question, index }))
+        .filter(({ question }) => HOME_DETAIL_KEYS.has(question.key) === inHomeDetails)
+        .map(({ index }) => index);
+      const localDetailIndex = stageIndexes.indexOf(state.currentDetailQuestionIndex);
+      if (localDetailIndex < stageIndexes.length - 1) {
+        state.currentDetailQuestionIndex = stageIndexes[localDetailIndex + 1];
+        setStatus(status, "");
+        syncMobileQuestion();
         return;
       }
-      currentUnit[detailQuestion.key] = String(detailValue).trim();
-    } else if (detailQuestion.type === "room-breakdown") {
-      const assignedRooms = Object.values(detailValue || {}).reduce((total, amount) => total + (Number(amount) || 0), 0);
-      if (assignedRooms !== Number(currentUnit.additionalRooms)) {
-        setStatus(status, `Please assign all ${Number(currentUnit.additionalRooms)} additional room${Number(currentUnit.additionalRooms) === 1 ? "" : "s"} using the + buttons.`);
-        standardDetailOptions?.querySelector("button:not(:disabled)")?.focus();
-        return;
-      }
-    } else if (["mold-breakdown", "condition-breakdown"].includes(detailQuestion.type)) {
-      const affectedAreas = Object.values(detailValue || {}).reduce((total, amount) => total + (Number(amount) || 0), 0);
-      const affectedAreasAcrossProperty = state.unitDetails.reduce((total, unit) => (
-        total + Object.values(unit?.[detailQuestion.key] || {}).reduce((unitTotal, amount) => unitTotal + (Number(amount) || 0), 0)
-      ), 0);
-      const isLastUnit = state.currentUnitIndex === selectedUnitCount() - 1;
-      if (affectedAreas < 1 && selectedUnitCount() === 1) {
-        const areaMessage = detailQuestion.key === "moldAreas"
-          ? "possible mold or mildew"
-          : detailQuestion.key === "buildupAreas"
-            ? "buildup"
-            : detailQuestion.key === "constructionAreas"
-              ? "construction dust or debris"
-              : "clutter or limited access";
-        setStatus(status, `Select at least one area affected by ${areaMessage} using the + buttons.`);
-        standardDetailOptions?.querySelector("button:not(:disabled)")?.focus();
-        return;
-      }
-      if (isLastUnit && affectedAreasAcrossProperty < 1) {
-        const areaMessage = detailQuestion.key === "moldAreas"
-          ? "possible mold or mildew"
-          : detailQuestion.key === "buildupAreas"
-            ? "buildup"
-            : detailQuestion.key === "constructionAreas"
-              ? "construction dust or debris"
-              : "clutter or limited access";
-        setStatus(status, `Select at least one area affected by ${areaMessage} in any unit. Units without this condition can remain at 0.`);
-        standardDetailOptions?.querySelector("button:not(:disabled)")?.focus();
-        return;
-      }
-    } else if (!detailValue) {
-      setStatus(status, "Please choose an option to continue.");
-      standardDetailOptions?.querySelector("button")?.focus();
-      return;
-    }
-    const inHomeDetails = HOME_DETAIL_KEYS.has(detailQuestion.key);
-    const stageIndexes = detailQuestions
-      .map((question, index) => ({ question, index }))
-      .filter(({ question }) => HOME_DETAIL_KEYS.has(question.key) === inHomeDetails)
-      .map(({ index }) => index);
-    const localDetailIndex = stageIndexes.indexOf(state.currentDetailQuestionIndex);
-    if (localDetailIndex < stageIndexes.length - 1) {
-      state.currentDetailQuestionIndex = stageIndexes[localDetailIndex + 1];
-      setStatus(status, "");
-      syncMobileQuestion();
-      return;
-    }
-    if (inHomeDetails && state.currentUnitIndex < selectedUnitCount() - 1) {
-      const completedUnit = state.currentUnitIndex + 1;
-      state.currentUnitIndex += 1;
-      const nextUnitQuestions = pricingDetailQuestions(
-        state.unitDetails[state.currentUnitIndex] || emptyUnitDetails(),
-        value("requestedService")
-      );
-      state.currentDetailQuestionIndex = nextUnitQuestions.findIndex((question) => HOME_DETAIL_KEYS.has(question.key));
-      setStatus(status, `✓ ${quoteUnitLabel(completedUnit - 1)} home details completed. Now tell us about ${quoteUnitLabel(completedUnit)}.`, "success");
-      syncMobileQuestion();
-      wizardDialog?.scrollTo({ top: 0, behavior: "smooth" });
-      return;
-    }
-    if (inHomeDetails) {
-      let nextExtras = null;
-      for (let unitIndex = 0; unitIndex < selectedUnitCount(); unitIndex += 1) {
-        state.currentUnitIndex = unitIndex;
-        const unitQuestions = pricingDetailQuestions(
-          state.unitDetails[unitIndex] || emptyUnitDetails(),
+      if (inHomeDetails && state.currentUnitIndex < selectedUnitCount() - 1) {
+        const completedUnit = state.currentUnitIndex + 1;
+        state.currentUnitIndex += 1;
+        const nextUnitQuestions = pricingDetailQuestions(
+          state.unitDetails[state.currentUnitIndex] || emptyUnitDetails(),
           value("requestedService")
         );
-        const questionIndex = unitQuestions.findIndex((question) => !HOME_DETAIL_KEYS.has(question.key));
-        if (questionIndex >= 0) {
-          nextExtras = { unitIndex, questionIndex };
-          break;
-        }
-      }
-      if (nextExtras) {
-        state.currentUnitIndex = nextExtras.unitIndex;
-        state.currentDetailQuestionIndex = nextExtras.questionIndex;
-        setStatus(status, "✓ Home details completed. Now choose any extras.", "success");
+        state.currentDetailQuestionIndex = nextUnitQuestions.findIndex((question) => HOME_DETAIL_KEYS.has(question.key));
+        setStatus(status, `✓ ${quoteUnitLabel(completedUnit - 1)} home details completed. Now tell us about ${quoteUnitLabel(completedUnit)}.`, "success");
         syncMobileQuestion();
         wizardDialog?.scrollTo({ top: 0, behavior: "smooth" });
         return;
       }
-      // Some quotes have no applicable extra questions. Continue directly to
-      // the quote instead of leaving the wizard on the previous home question.
-      state.currentUnitIndex = selectedUnitCount() - 1;
-    }
-    if (!inHomeDetails && state.currentUnitIndex < selectedUnitCount() - 1) {
-      const completedUnit = state.currentUnitIndex + 1;
-      let nextExtras = null;
-      for (let unitIndex = state.currentUnitIndex + 1; unitIndex < selectedUnitCount(); unitIndex += 1) {
-        state.currentUnitIndex = unitIndex;
-        const unitQuestions = pricingDetailQuestions(
-          state.unitDetails[unitIndex] || emptyUnitDetails(),
-          value("requestedService")
-        );
-        const questionIndex = unitQuestions.findIndex((question) => !HOME_DETAIL_KEYS.has(question.key));
-        if (questionIndex >= 0) {
-          nextExtras = { unitIndex, questionIndex };
-          break;
+      if (inHomeDetails) {
+        let nextExtras = null;
+        for (let unitIndex = 0; unitIndex < selectedUnitCount(); unitIndex += 1) {
+          state.currentUnitIndex = unitIndex;
+          const unitQuestions = pricingDetailQuestions(
+            state.unitDetails[unitIndex] || emptyUnitDetails(),
+            value("requestedService")
+          );
+          const questionIndex = unitQuestions.findIndex((question) => !HOME_DETAIL_KEYS.has(question.key));
+          if (questionIndex >= 0) {
+            nextExtras = { unitIndex, questionIndex };
+            break;
+          }
         }
+        if (nextExtras) {
+          state.currentUnitIndex = nextExtras.unitIndex;
+          state.currentDetailQuestionIndex = nextExtras.questionIndex;
+          setStatus(status, "✓ Home details completed. Now choose any extras.", "success");
+          syncMobileQuestion();
+          wizardDialog?.scrollTo({ top: 0, behavior: "smooth" });
+          return;
+        }
+        // Some quotes have no applicable extra questions. Continue directly to
+        // the quote instead of leaving the wizard on the previous home question.
+        state.currentUnitIndex = selectedUnitCount() - 1;
       }
-      if (nextExtras) {
-        state.currentUnitIndex = nextExtras.unitIndex;
-        state.currentDetailQuestionIndex = nextExtras.questionIndex;
-        setStatus(status, `✓ ${quoteUnitLabel(completedUnit - 1)} completed. Now choose extras for ${quoteUnitLabel(nextExtras.unitIndex)}.`, "success");
-        syncMobileQuestion();
-        wizardDialog?.scrollTo({ top: 0, behavior: "smooth" });
-        return;
+      if (!inHomeDetails && state.currentUnitIndex < selectedUnitCount() - 1) {
+        const completedUnit = state.currentUnitIndex + 1;
+        let nextExtras = null;
+        for (let unitIndex = state.currentUnitIndex + 1; unitIndex < selectedUnitCount(); unitIndex += 1) {
+          state.currentUnitIndex = unitIndex;
+          const unitQuestions = pricingDetailQuestions(
+            state.unitDetails[unitIndex] || emptyUnitDetails(),
+            value("requestedService")
+          );
+          const questionIndex = unitQuestions.findIndex((question) => !HOME_DETAIL_KEYS.has(question.key));
+          if (questionIndex >= 0) {
+            nextExtras = { unitIndex, questionIndex };
+            break;
+          }
+        }
+        if (nextExtras) {
+          state.currentUnitIndex = nextExtras.unitIndex;
+          state.currentDetailQuestionIndex = nextExtras.questionIndex;
+          setStatus(status, `✓ ${quoteUnitLabel(completedUnit - 1)} completed. Now choose extras for ${quoteUnitLabel(nextExtras.unitIndex)}.`, "success");
+          syncMobileQuestion();
+          wizardDialog?.scrollTo({ top: 0, behavior: "smooth" });
+          return;
+        }
+        state.currentUnitIndex = selectedUnitCount() - 1;
       }
-      state.currentUnitIndex = selectedUnitCount() - 1;
+
+      enterRoomConditions();
+      return;
     }
 
     if (value("hazards") === "mold" && value("moldCleaningRequested") === "yes") {
@@ -4038,6 +4107,7 @@
     if (value("propertyType") === "house") form.elements.housePetAnswers.value = JSON.stringify(Object.fromEntries(Array.from(PROPERTY_PET_KEYS, key => [key, wholePropertyDetails[key] || ""])));
     state.eligibility = {
       ...eligibilityFromForm(),
+      roomConditionVersion: 1,
       propertyHasPets: wholePropertyDetails.propertyHasPets || "no",
       propertyPetCount: wholePropertyDetails.propertyPetCount || "",
       propertyPetType: wholePropertyDetails.propertyPetType || "",
@@ -4391,6 +4461,7 @@
       const targetStep = Number(button.dataset.back);
       if (repeatBookingMode && targetStep < 3) return;
       if (targetStep === 1) {
+        conditionMode = false;
         if (state.serviceKey === "hourly") {
           enterOrganizationDetails();
           goToStep(targetStep);
@@ -4700,6 +4771,7 @@
         "unitDetails",
         "currentUnitIndex",
         "currentDetailQuestionIndex",
+        "conditionStep",
         "pricingMode",
         "savedQuoteUrl",
         "quoteRevision",
@@ -4728,6 +4800,8 @@
       propertyTypeMode = Boolean(savedView.propertyTypeMode);
       unitCountMode = Boolean(savedView.unitCountMode);
       quoteDetailsMode = Boolean(savedView.quoteDetailsMode);
+      conditionMode = Boolean(savedView.conditionMode);
+      if (conditionMode) conditionPicker.reconcile();
 
       // Drafts saved by the former empty-Extras transition can contain -1.
       // Recover them at the first real extra question instead of restarting.

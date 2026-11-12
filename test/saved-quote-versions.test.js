@@ -182,5 +182,27 @@ const get=url=>handler({method:'GET',headers:{host:'example.test'},query:{token:
  assert.notEqual(kitchenEdited.quoteUrl,kitchenSaved.quoteUrl);
  assert.equal((await get(kitchenEdited.quoteUrl)).package.buildupAdjustment.amount,70);
  assert.equal((await get(kitchenSaved.quoteUrl)).package.buildupAdjustment.amount,130);
+ const roomModel = require('../booking-conditions');
+ const roomBody = {...kitchenBody, eligibility:{...kitchenBody.eligibility,roomConditionVersion:1},
+   unitDetails:kitchenBody.unitDetails.map(unit=>({...unit,roomConditions:Object.fromEntries(roomModel.roomsForUnit(unit).map(room=>[room.id,
+     {clutter:'low',buildup:'none',...(room.key==='kitchens'?{grease:'none'}:{})}]))}))};
+ roomBody.unitDetails[0].roomConditions['fullBathrooms:1'].buildup='heavy';
+ roomBody.unitDetails[0].roomConditions['kitchens:1'].grease='heavy';
+ roomBody.unitDetails[1].roomConditions['bedrooms:1'].clutter='several';
+ const roomsSaved=await post(roomBody);
+ assert.equal(roomsSaved.status,201,roomsSaved.error);
+ const roomsOpened=await get(roomsSaved.quoteUrl);
+ assert.deepEqual(roomsOpened.unitDetails[0].roomConditions,roomBody.unitDetails[0].roomConditions);
+ assert.deepEqual(roomsOpened.package.units[1].roomConditions,roomBody.unitDetails[1].roomConditions);
+ assert.equal(roomsOpened.package.buildupAdjustment.amount,90); // bathroom 30 + kitchen/oven grease 60
+ assert.equal(roomsOpened.package.clutterAdjustment.amount,25);
+ const changedRooms=JSON.parse(JSON.stringify(roomBody));
+ changedRooms.previousQuoteToken=new URL(roomsSaved.quoteUrl).searchParams.get('quote');
+ changedRooms.unitDetails[1].roomConditions['bedrooms:1'].clutter='heavy';
+ const roomsEdited=await post(changedRooms);
+ assert.equal(roomsEdited.status,201,roomsEdited.error);
+ assert.notEqual(roomsEdited.quoteUrl,roomsSaved.quoteUrl);
+ assert.equal((await get(roomsEdited.quoteUrl)).package.clutterAdjustment.amount,30);
+ assert.equal((await get(roomsSaved.quoteUrl)).package.clutterAdjustment.amount,25,'Original saved room conditions and price remain immutable');
  console.log('Saved quote versions: immutable details/prices/contacts, changed-content delivery, concurrent deduplication, consent and partial-delivery retry passed. Providers mocked.');
 })().catch(e=>{console.error(e);process.exitCode=1});
