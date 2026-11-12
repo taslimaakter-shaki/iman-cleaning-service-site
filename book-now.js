@@ -956,13 +956,9 @@
             const [title, ...description] = option.textContent.split(" — ");
             const strong = document.createElement("strong");
             strong.textContent = title;
-            if (select.name === "clutter") {
-              const detail = document.createElement("span");
-              detail.textContent = description.join(" — ");
-              label.append(strong, detail);
-            } else {
-              label.append(strong, document.createTextNode(" — " + description.join(" — ")));
-            }
+            const detail = document.createElement("span");
+            detail.textContent = description.join(" — ");
+            label.append(strong, detail);
             label.classList.add("booking-condition-option-copy");
           } else label.textContent = option.textContent;
           const check = document.createElement("i");
@@ -976,9 +972,9 @@
             setStatus(document.querySelector("[data-eligibility-status]"), "");
             syncStageProgress();
           });
-          if (select.name === "clutter" && clutterDialog) {
-            const title = option.textContent.split(" — ")[0];
-            const photoPath = "./assets/clutter/" + option.value;
+          const photoPath = option.dataset.examplePhoto || (select.name === "clutter" ? "./assets/clutter/" + option.value : "");
+          if (photoPath && clutterDialog) {
+            const title = option.textContent.split(" — ")[0] + (select.name === "buildup" ? " dirt or buildup" : "");
             const row = document.createElement("div");
             row.className = "booking-clutter-option";
             const preview = document.createElement("button");
@@ -1007,7 +1003,7 @@
           }
         });
         const container = select.closest(".booking-condition-question") || question;
-        const photoNote = select.name === "clutter" && container.querySelector(".booking-clutter-note");
+        const photoNote = container.querySelector(".booking-clutter-note");
         container.insertBefore(options, photoNote || null);
         syncAnswerChoices(question);
       });
