@@ -93,9 +93,9 @@ const kitchenOnly = calculateResidentialQuoteBundle([{
   cabinetsEmpty: "yes",
   buildupAreas: { kitchens: 1 }
 }], "deep", { buildup: "some", clutter: "low", hazards: "none" });
-assert.equal(kitchenOnly.buildupAdjustment.affectedAreaBasePrice, 154.5);
-assert.equal(kitchenOnly.buildupAdjustment.amount, 77.25);
-assert.equal(kitchenOnly.buildupAdjustment.addedLaborHours, 77.25 / 80);
+assert.equal(kitchenOnly.buildupAdjustment.affectedAreaBasePrice, 174.5);
+assert.equal(kitchenOnly.buildupAdjustment.amount, 87.25);
+assert.equal(kitchenOnly.buildupAdjustment.addedLaborHours, 87.25 / 80);
 assert.equal(kitchenOnly.units[0].cabinetsEmpty, "yes", "Other residential services retain cabinet readiness when selected");
 
 const movingKitchen = calculateResidentialQuoteBundle([{

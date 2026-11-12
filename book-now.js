@@ -1168,7 +1168,7 @@
       key: "oven",
       question: "Would you like the inside of the oven cleaned?",
       options: [
-        { value: "yes", label: "Yes (+$30)" },
+        { value: "yes", label: "Yes (+$50)" },
         { value: "no", label: "No" }
       ]
     }, {
@@ -1182,9 +1182,9 @@
       {
         key: "cabinetCount",
         type: "number",
-        question: "Approximately how many kitchen cabinets need cleaning inside?",
-        label: "Approximate cabinet count",
-        helper: "Count each cabinet compartment once.",
+        question: "How many cabinet doors?",
+        label: "Number of cabinet doors",
+        helper: "Count each cabinet door separately.",
         min: 1,
         max: 100
       },
@@ -1219,7 +1219,7 @@
       question: "Exclude inside oven cleaning?",
       options: [
         { value: "no", label: "Keep included" },
-        { value: "yes", label: "Exclude (-$30)" }
+        { value: "yes", label: "Exclude (-$50)" }
       ]
     }, {
       key: "excludeRefrigerator",
@@ -2939,7 +2939,7 @@
       addField("refrigerator", "Inside refrigerator", [["no", "Not this visit"], ["empty", "Empty"], ["not-empty", "Not empty"]]);
       addField("oven", "Inside oven", [["no", "Not this visit"], ["yes", "Add inside oven cleaning"]]);
       const cabinets = addField("cabinets", "Inside cabinets and drawers", [["no", "Not this visit"], ["yes", "Add inside cabinet cleaning"]]);
-      const count = addField("cabinetCount", "Number of cabinet compartments", null, 1);
+      const count = addField("cabinetCount", "How many cabinet doors?", null, 1);
       const drawers = addField("drawerCount", "Number of drawers", null, 0);
       const empty = addField("cabinetsEmpty", "Will the cabinets and drawers be empty?", [["yes", "Empty"], ["no", "Not empty"]]);
       const syncCabinets = () => [count, drawers, empty].forEach(control => {

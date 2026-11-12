@@ -424,16 +424,16 @@ function calculateResidentialUnitPrice(unit = {}, unitIndex = 0, serviceKey = "s
   // empty property, so it must not manufacture a "not empty" answer.
   let cabinetsEmpty = "";
   if (cabinets === "yes") {
-    cabinetCount = wholeNumber(unit.cabinetCount, `the approximate number of kitchen cabinets in Unit ${unitNumber}`, 100);
+    cabinetCount = wholeNumber(unit.cabinetCount, `the number of kitchen cabinet doors in Unit ${unitNumber}`, 100);
     if (cabinetCount < 1) {
-      throw Object.assign(new Error(`Enter the approximate number of kitchen cabinets in Unit ${unitNumber}.`), { statusCode: 400 });
+      throw Object.assign(new Error(`Enter the number of kitchen cabinet doors in Unit ${unitNumber}.`), { statusCode: 400 });
     }
     drawerCount = wholeNumber(unit.drawerCount, `the approximate number of kitchen drawers in Unit ${unitNumber}`, 100);
     cabinetsEmpty = yesNo(unit.cabinetsEmpty, `whether the kitchen cabinets and drawers will be empty in Unit ${unitNumber}`);
   }
 
   const kitchenDiscount = serviceKey === "move"
-    ? (excludeOven === "yes" ? 30 : 0) +
+    ? (excludeOven === "yes" ? 50 : 0) +
       (excludeRefrigerator === "yes" ? 40 : 0) +
       (excludeCabinets === "yes" ? 50 : 0)
     : 0;
@@ -493,10 +493,10 @@ function calculateResidentialUnitPrice(unit = {}, unitIndex = 0, serviceKey = "s
     } : null,
     refrigerator === "empty" ? { key: "refrigerator", label: "Inside refrigerator (emptied)", amount: 40 } : null,
     refrigerator === "not-empty" ? { key: "refrigerator", label: "Inside refrigerator (not empty)", amount: 60 } : null,
-    oven === "yes" ? { key: "oven", label: "Inside oven", amount: 30 } : null,
+    oven === "yes" ? { key: "oven", label: "Inside oven", amount: 50 } : null,
     cabinets === "yes" ? {
       key: "cabinets",
-      label: `Inside ${cabinetCount} kitchen cabinet${cabinetCount === 1 ? "" : "s"} & ${drawerCount} drawer${drawerCount === 1 ? "" : "s"} (${cabinetsEmpty === "yes" ? "empty" : "not empty"})`,
+      label: `Inside ${cabinetCount} kitchen cabinet door${cabinetCount === 1 ? "" : "s"} & ${drawerCount} drawer${drawerCount === 1 ? "" : "s"} (${cabinetsEmpty === "yes" ? "empty" : "not empty"})`,
       amount: cabinetsEmpty === "yes"
         ? (cabinetCount * 3) + (drawerCount * 1.5)
         : (cabinetCount * 6) + (drawerCount * 3)

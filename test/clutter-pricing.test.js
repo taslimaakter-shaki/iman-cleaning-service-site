@@ -85,9 +85,9 @@ const kitchenWithAddOns = calculateResidentialQuoteBundle([{
   cabinetsEmpty: "yes",
   clutterAreas: { kitchens: 1 }
 }], "deep", { clutter: "moderate", buildup: "none", hazards: "none" });
-assert.equal(kitchenWithAddOns.clutterAdjustment.affectedAreaBasePrice, 154.5);
-assert.equal(kitchenWithAddOns.clutterAdjustment.amount, 61.8);
-assert.equal(kitchenWithAddOns.clutterAdjustment.addedLaborHours, 61.8 / 80);
+assert.equal(kitchenWithAddOns.clutterAdjustment.affectedAreaBasePrice, 174.5);
+assert.equal(kitchenWithAddOns.clutterAdjustment.amount, 69.8);
+assert.equal(kitchenWithAddOns.clutterAdjustment.addedLaborHours, 69.8 / 80);
 assert.throws(
   () => calculateResidentialQuoteBundle([unit()], "standard", { clutter: "several", buildup: "none" }),
   /Select at least one clutter-affected area/

@@ -92,8 +92,8 @@ const kitchenMoldWithAddOns = calculateResidentialQuoteBundle([{
   hazards: "mold",
   moldCleaningRequested: "yes"
 });
-assert.equal(kitchenMoldWithAddOns.moldAdjustment.affectedAreaBasePrice, 154.5);
-assert.equal(kitchenMoldWithAddOns.moldAdjustment.amount, 77.25);
+assert.equal(kitchenMoldWithAddOns.moldAdjustment.affectedAreaBasePrice, 174.5);
+assert.equal(kitchenMoldWithAddOns.moldAdjustment.amount, 87.25);
 assert.equal(kitchenMoldWithAddOns.manHours, Math.ceil((kitchenMoldWithAddOns.total / 80) * 2) / 2);
 
 assert.throws(() => calculateResidentialQuoteBundle([{
