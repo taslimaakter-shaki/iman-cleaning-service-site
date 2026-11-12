@@ -38,7 +38,7 @@
     const rooms = [];
     const add = (key, label, quantity, start = 0, areaKeys = [key]) => {
       for (let index = start; index < quantity; index++) {
-        rooms.push({ id: `${key}:${index + 1}`, key, label: `${label} ${index + 1}`, areaKeys });
+        rooms.push({ id: `${key}:${index + 1}`, key, label: quantity - start === 1 ? label : `${label} ${index + 1}`, areaKeys });
       }
     };
     add("bedrooms", "Bedroom", count(unit.bedrooms));
@@ -49,11 +49,12 @@
     add("combinedLivingDining", "Living & dining area", paired, 0, ["livingRooms", "diningRooms"]);
     add("livingRooms", "Living room", count(unit.livingRooms), paired);
     add("diningRooms", "Dining room", count(unit.diningRooms), paired);
-    const extraNames = Object.entries(extraLabels).flatMap(([key, label]) => (
-      Array.from({ length: count(unit.additionalRoomTypes?.[key]) }, (_, index) => `${label} ${index + 1}`)
-    ));
+    const extraNames = Object.entries(extraLabels).flatMap(([key, label]) => {
+      const quantity = count(unit.additionalRoomTypes?.[key]);
+      return Array.from({ length: quantity }, (_, index) => quantity === 1 ? label : `${label} ${index + 1}`);
+    });
     for (let index = 0; index < count(unit.additionalRooms); index++) {
-      rooms.push({ id: `additionalRooms:${index + 1}`, key: "additionalRooms", label: extraNames[index] || `Additional room ${index + 1}`, areaKeys: ["additionalRooms"] });
+      rooms.push({ id: `additionalRooms:${index + 1}`, key: "additionalRooms", label: extraNames[index] || (count(unit.additionalRooms) === 1 ? "Additional room" : `Additional room ${index + 1}`), areaKeys: ["additionalRooms"] });
     }
     return rooms;
   }
