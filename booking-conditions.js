@@ -16,12 +16,12 @@
       ]
     },
     dust: {
-      title: "How much dust and dirt is in these rooms?", label: "Dust & dirt",
-      singularTitle: "How much dust and dirt is in these rooms?",
+      title: "How dusty or dirty are these rooms?", label: "Dust & dirt",
+      singularTitle: "How dusty or dirty are these rooms?",
       levels: [
-        { value: "none", label: "Light", rate: 0, description: "Light dust and everyday dirt. Regular cleaning needed.", photo: "./assets/dust/light" },
-        { value: "some", label: "Moderate", rate: 0, description: "Noticeable dust and dirt on several surfaces, baseboards, or floors. Extra cleaning needed.", photo: "./assets/dust/moderate" },
-        { value: "heavy", label: "Heavy", rate: 40, description: "Thick dust, substantial dirt, or stubborn residue across multiple surfaces. Intensive cleaning needed.", photo: "./assets/dust/heavy" }
+        { value: "none", label: "Light", rate: 0, description: "A light layer of dust and minor everyday dirt. Most surfaces are fairly clean.", photo: "./assets/dust/light" },
+        { value: "some", label: "Moderate", rate: 0, description: "Visible dust and dirt on several surfaces, along baseboards, or around floor edges.", photo: "./assets/dust/moderate" },
+        { value: "heavy", label: "Heavy", rate: 40, description: "Thick dust, ground-in dirt, or stubborn residue across many surfaces, requiring intensive cleaning.", photo: "./assets/dust/heavy" }
       ]
     },
     buildup: {
