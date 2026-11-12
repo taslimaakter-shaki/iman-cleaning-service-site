@@ -183,18 +183,18 @@ const get=url=>handler({method:'GET',headers:{host:'example.test'},query:{token:
  assert.equal((await get(kitchenEdited.quoteUrl)).package.buildupAdjustment.amount,70);
  assert.equal((await get(kitchenSaved.quoteUrl)).package.buildupAdjustment.amount,130);
  const roomModel = require('../booking-conditions');
- const roomBody = {...kitchenBody, eligibility:{...kitchenBody.eligibility,roomConditionVersion:1},
+ const roomBody = {...kitchenBody, eligibility:{...kitchenBody.eligibility,roomConditionVersion:2},
    unitDetails:kitchenBody.unitDetails.map(unit=>({...unit,roomConditions:Object.fromEntries(roomModel.roomsForUnit(unit).map(room=>[room.id,
-     {clutter:'low',[roomModel.applicable(room,'dust')?'dust':'buildup']:'none',...(room.key==='kitchens'?{grease:'none'}:{}),
+     {clutter:'low',...(roomModel.applicable(room,'dust')?{dust:'none'}:{}),...(roomModel.applicable(room,'buildup')?{buildup:'none'}:{}),...(room.key==='kitchens'?{grease:'none'}:{}),
        ...(roomModel.applicable(room,'mold')?{mold:'none'}:{})}]))}))};
  roomBody.unitDetails[0].roomConditions['fullBathrooms:1'].buildup='heavy';
  roomBody.unitDetails[0].roomConditions['fullBathrooms:1'].mold='some';
  roomBody.unitDetails[0].roomConditions['kitchens:1'].grease='heavy';
  roomBody.unitDetails[1].roomConditions['bedrooms:1'].clutter='several';
  roomBody.unitDetails[1].roomConditions['bedrooms:1'].dust='some';
- for (const kind of ['clutter','buildup','grease']) {
+ for (const [id,kind] of [['kitchens:1','clutter'],['fullBathrooms:1','buildup'],['kitchens:1','grease']]) {
    const incomplete=structuredClone(roomBody);
-   delete incomplete.unitDetails[0].roomConditions['kitchens:1'][kind];
+   delete incomplete.unitDetails[0].roomConditions[id][kind];
    const rejected=await post(incomplete);
    assert.equal(rejected.status,400,`Missing ${kind} must not produce a saved quote`);
  }
@@ -227,5 +227,23 @@ const get=url=>handler({method:'GET',headers:{host:'example.test'},query:{token:
  assert.equal((await get(roomsSaved.quoteUrl)).package.moldAdjustment.amount,30,'Original bathroom mold level and price remain immutable');
  assert.equal((await get(roomsEdited.quoteUrl)).package.dustAdjustment.amount,20);
  assert.equal((await get(roomsSaved.quoteUrl)).package.dustAdjustment.amount,0,'Original dust level and price remain immutable');
+
+ const legacyRoomBody=structuredClone(roomBody);
+ legacyRoomBody.eligibility.roomConditionVersion=1;
+ legacyRoomBody.unitDetails[0].roomConditions['kitchens:1'].buildup='some';
+ const legacyRoomSaved=await post(legacyRoomBody);
+ assert.equal(legacyRoomSaved.status,201,legacyRoomSaved.error);
+ const legacyRoomOpened=await get(legacyRoomSaved.quoteUrl);
+ assert.equal(legacyRoomOpened.package.buildupAdjustment.amount,160,'Older version keeps bathroom 30 + kitchen dirt 70 + grease 60');
+ const migratedRoomBody=structuredClone(legacyRoomBody);
+ migratedRoomBody.previousQuoteToken=new URL(legacyRoomSaved.quoteUrl).searchParams.get('quote');
+ migratedRoomBody.eligibility.roomConditionVersion=2;
+ for(const unit of migratedRoomBody.unitDetails) unit.roomConditions=roomModel.reconcile(unit);
+ const migratedRoomSaved=await post(migratedRoomBody);
+ assert.equal(migratedRoomSaved.status,201,migratedRoomSaved.error);
+ assert.notEqual(migratedRoomSaved.quoteUrl,legacyRoomSaved.quoteUrl);
+ assert.equal((await get(migratedRoomSaved.quoteUrl)).package.buildupAdjustment.amount,90);
+ assert.equal((await get(legacyRoomSaved.quoteUrl)).package.buildupAdjustment.amount,160,'Original saved price is immutable after migration');
+
  console.log('Saved quote versions: immutable details/prices/contacts, changed-content delivery, concurrent deduplication, consent and partial-delivery retry passed. Providers mocked.');
 })().catch(e=>{console.error(e);process.exitCode=1});

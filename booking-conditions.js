@@ -5,6 +5,10 @@
 })(typeof globalThis !== "undefined" ? globalThis : this, function () {
   "use strict";
 
+  // Version 1 preserves kitchen dirt charges on existing saved quotes.
+  // New quotes use bathroom-only buildup; editing reconciles to this version.
+  const VERSION = 2;
+  const supportedVersion = version => version === 1 || version === VERSION;
   const definitions = {
     clutter: {
       title: "How cluttered are the rooms?", label: "Clutter",
@@ -26,7 +30,7 @@
     },
     buildup: {
       title: "How much dirt or buildup is in the bathroom?", label: "Dirt & buildup",
-      singularTitle: "How much dirt or buildup is in the bathroom?",
+      singularTitle: "How much dirt or buildup is in the bathroom?", selectionLabel: "bathrooms",
       levels: [
         { value: "none", label: "Light", rate: 0, description: "Minor water spots and everyday dirt. No noticeable buildup.", photo: "./assets/buildup/light" },
         { value: "some", label: "Moderate", rate: 50, description: "Visible grime, soap scum, or mineral deposits that require extra scrubbing.", photo: "./assets/buildup/moderate" },
@@ -78,8 +82,8 @@
     }
     return rooms;
   }
-  const applicable = (room, kind) => kind === "dust" ? ["bedrooms", "livingRooms", "diningRooms", "combinedLivingDining", "additionalRooms"].includes(room.key)
-    : kind === "buildup" ? ["kitchens", "fullBathrooms", "halfBathrooms"].includes(room.key)
+  const applicable = (room, kind, version = VERSION) => kind === "dust" ? ["bedrooms", "livingRooms", "diningRooms", "combinedLivingDining", "additionalRooms"].includes(room.key)
+    : kind === "buildup" ? ["fullBathrooms", "halfBathrooms"].includes(room.key) || (version === 1 && room.key === "kitchens")
     : kind === "grease" ? room.key === "kitchens"
     : kind === "mold" ? ["fullBathrooms", "halfBathrooms"].includes(room.key) : true;
   const levelFor = (kind, value) => definitions[kind]?.levels.find(level => level.value === value);
@@ -92,7 +96,7 @@
         .map(kind => [kind, previous[room.id][kind]]))
     ]));
   }
-  function validate(unit, unitNumber = 1) {
+  function validate(unit, unitNumber = 1, version = VERSION) {
     const rooms = roomsForUnit(unit);
     const source = unit.roomConditions === undefined ? {} : unit.roomConditions;
     const fail = message => { throw Object.assign(new Error(message), { statusCode: 400 }); };
@@ -102,7 +106,7 @@
     return Object.fromEntries(rooms.map(room => {
       const answer = source[room.id] === undefined ? {} : source[room.id];
       if (!answer || typeof answer !== "object" || Array.isArray(answer)) fail(`Choose the conditions for ${room.label} in Unit ${unitNumber}.`);
-      const kinds = Object.keys(definitions).filter(kind => applicable(room, kind));
+      const kinds = Object.keys(definitions).filter(kind => applicable(room, kind, version));
       if (Object.keys(answer).some(kind => !kinds.includes(kind))) fail(`Review the condition answers for ${room.label} in Unit ${unitNumber}.`);
       return [room.id, Object.fromEntries(kinds.map(kind => {
         const value = answer[kind];
@@ -111,5 +115,5 @@
       }))];
     }));
   }
-  return { definitions, roomsForUnit, applicable, levelFor, reconcile, validate };
+  return { VERSION, supportedVersion, definitions, roomsForUnit, applicable, levelFor, reconcile, validate };
 });

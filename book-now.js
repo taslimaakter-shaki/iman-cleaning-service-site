@@ -3134,12 +3134,12 @@
         preTaxAmount: items.reduce((sum, item) => sum + (Number(item.preTaxAmount ?? item.amount) || 0), 0)
       };
     };
-    const clutterLabel = pkg.clutterAdjustment?.roomConditionVersion === 1 ? "Clutter cleaning fee" : pkg.clutterAdjustment?.condition === "heavy"
+    const clutterLabel = [1, 2].includes(pkg.clutterAdjustment?.roomConditionVersion) ? "Clutter cleaning fee" : pkg.clutterAdjustment?.condition === "heavy"
       ? "Hoarding/excessive clutter cleaning fee"
       : pkg.clutterAdjustment?.condition === "several"
         ? "Moderate clutter/access cleaning fee"
         : "Light clutter/access cleaning fee";
-    const buildupLabel = pkg.buildupAdjustment?.roomConditionVersion === 1 ? "Dirt, buildup and grease cleaning fee" : pkg.buildupAdjustment?.condition === "heavy"
+    const buildupLabel = [1, 2].includes(pkg.buildupAdjustment?.roomConditionVersion) ? "Dirt, buildup and grease cleaning fee" : pkg.buildupAdjustment?.condition === "heavy"
       ? "Heavy buildup and grease cleaning fee"
       : "Noticeable buildup and grease cleaning fee";
     return [
@@ -4122,7 +4122,7 @@
     if (value("propertyType") === "house") form.elements.housePetAnswers.value = JSON.stringify(Object.fromEntries(Array.from(PROPERTY_PET_KEYS, key => [key, wholePropertyDetails[key] || ""])));
     state.eligibility = {
       ...eligibilityFromForm(),
-      roomConditionVersion: 1,
+      roomConditionVersion: window.ImanBookingConditions.VERSION,
       propertyHasPets: wholePropertyDetails.propertyHasPets || "no",
       propertyPetCount: wholePropertyDetails.propertyPetCount || "",
       propertyPetType: wholePropertyDetails.propertyPetType || "",

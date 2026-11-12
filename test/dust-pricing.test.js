@@ -2,7 +2,7 @@ const assert = require("node:assert/strict");
 const model = require("../booking-conditions");
 const { calculateResidentialQuoteBundle: quote } = require("../api/booking/_shared");
 const { pricingRows } = require("../api/booking/_payment-receipt-pdf");
-const eligibility = { roomConditionVersion: 1, hazards: "none", clutter: "low", buildup: "none",
+const eligibility = { roomConditionVersion: 2, hazards: "none", clutter: "low", buildup: "none",
   constructionFinished: "yes", contractorItemsRemoved: "yes" };
 function unit(overrides = {}) {
   const value = { bedrooms: 2, fullBathrooms: 1, halfBathrooms: 1, kitchens: 1, livingRooms: 1, diningRooms: 1,
@@ -56,11 +56,10 @@ for (const [service, roomRate, combinedRate] of [["standard", 50, 80], ["deep", 
 const wet = unit({ bedrooms: 0, additionalRooms: 0, additionalRoomTypes: {}, livingRooms: 0, diningRooms: 0, constructionAreas: {} });
 wet.roomConditions["fullBathrooms:1"].buildup = "some";
 wet.roomConditions["halfBathrooms:1"].buildup = "heavy";
-wet.roomConditions["kitchens:1"].buildup = "heavy";
 wet.roomConditions["kitchens:1"].grease = "some";
 const wetQuote = quote([wet], "standard", eligibility);
 assert.equal(wetQuote.dustAdjustment.amount, 0);
-assert.equal(wetQuote.buildupAdjustment.amount, 98); // Bathroom 25 + half 18 + kitchen 30 + grease 25.
+assert.equal(wetQuote.buildupAdjustment.amount, 68); // Bathroom 25 + half 18 + grease 25.
 assert.equal(model.roomsForUnit(wet).filter(room => model.applicable(room, "dust")).length, 0);
 const cluttered = structuredClone(heavy);
 cluttered.roomConditions["bedrooms:1"].clutter = "heavy";

@@ -377,7 +377,7 @@ function calculateResidentialUnitPrice(unit = {}, unitIndex = 0, serviceKey = "s
     unit.additionalCleaning || "no",
     `additional cleaning in Unit ${unitNumber}`
   );
-  const possibleMold = eligibility.roomConditionVersion !== 1 && cleanText(eligibility?.hazards, 20) === "mold" && cleanText(eligibility?.moldCleaningRequested, 10) === "yes";
+  const possibleMold = !roomConditions.supportedVersion(eligibility.roomConditionVersion) && cleanText(eligibility?.hazards, 20) === "mold" && cleanText(eligibility?.moldCleaningRequested, 10) === "yes";
   const submittedMoldAreas = unit.moldAreas && typeof unit.moldAreas === "object" ? unit.moldAreas : null;
   const moldFullBathrooms = possibleMold
     ? wholeNumber(submittedMoldAreas?.fullBathrooms ?? unit.moldFullBathrooms ?? 0, `the number of affected full bathrooms in Unit ${unitNumber}`, fullBathrooms)
@@ -412,7 +412,7 @@ function calculateResidentialUnitPrice(unit = {}, unitIndex = 0, serviceKey = "s
       wholeNumber(source[key] || 0, `the number of ${conditionLabel}-affected ${key} in Unit ${unitNumber}`, maximum)
     ]));
   };
-  const usesRoomConditions = eligibility.roomConditionVersion === 1;
+  const usesRoomConditions = roomConditions.supportedVersion(eligibility.roomConditionVersion);
   const buildupAreas = normalizeConditionAreas(usesRoomConditions ? {} : unit.buildupAreas, "buildup");
   const grease = !usesRoomConditions && kitchens ? cleanText(unit.grease, 20) : "";
   if (grease && !["none", "some", "heavy"].includes(grease)) {
@@ -420,8 +420,8 @@ function calculateResidentialUnitPrice(unit = {}, unitIndex = 0, serviceKey = "s
   }
   const clutterAreas = normalizeConditionAreas(usesRoomConditions ? {} : unit.clutterAreas, "clutter");
   const constructionAreas = normalizeConditionAreas(unit.constructionAreas, "construction dust or debris");
-  const normalizedRoomConditions = eligibility.roomConditionVersion === 1
-    ? roomConditions.validate({ ...unit, bedrooms, fullBathrooms, halfBathrooms, kitchens, livingRooms, diningRooms, livingDining, additionalRooms, additionalRoomTypes }, unitNumber)
+  const normalizedRoomConditions = roomConditions.supportedVersion(eligibility.roomConditionVersion)
+    ? roomConditions.validate({ ...unit, bedrooms, fullBathrooms, halfBathrooms, kitchens, livingRooms, diningRooms, livingDining, additionalRooms, additionalRoomTypes }, unitNumber, eligibility.roomConditionVersion)
     : null;
   if (unit.exteriorWindows === "yes" || (serviceKey !== "move" && unit.windowCleaning && unit.windowCleaning !== "no")) {
     throw Object.assign(new Error("This window add-on is no longer available. Please start a new cleaning quote."), { statusCode: 410 });
@@ -651,12 +651,12 @@ function affectedAreaAdjustmentsFor(units, serviceKey, areasKey, percentage) {
   };
 }
 
-function roomConditionAdjustmentFor(units, serviceKey, kinds) {
+function roomConditionAdjustmentFor(units, serviceKey, kinds, version = roomConditions.VERSION) {
   const service = FORMULA_SERVICES[serviceKey];
   const affectedAreas = [];
   units.forEach(unit => {
     roomConditions.roomsForUnit(unit).forEach(room => {
-      kinds.filter(kind => roomConditions.applicable(room, kind)).forEach(kind => {
+      kinds.filter(kind => roomConditions.applicable(room, kind, version)).forEach(kind => {
         const level = roomConditions.levelFor(kind, unit.roomConditions[room.id][kind]);
         if (!level.rate) return;
         let baseAreaPrice = room.key === "halfBathrooms" ? service.halfBathroomRate
@@ -680,13 +680,13 @@ function roomConditionAdjustmentFor(units, serviceKey, kinds) {
   });
   const amountCents = affectedAreas.reduce((sum, area) => sum + area.amountCents, 0);
   const rates = [...new Set(affectedAreas.map(area => area.percentage))];
-  return { percentage: Math.max(0, ...rates), condition: "mixed", roomConditionVersion: 1, affectedAreas,
+  return { percentage: Math.max(0, ...rates), condition: "mixed", roomConditionVersion: version, affectedAreas,
     affectedAreaBasePrice: affectedAreas.reduce((sum, area) => sum + area.baseAreaPrice, 0),
     amountCents, amount: amountCents / 100, addedLaborHours: amountCents / 100 / MAN_HOUR_RATE };
 }
 
-function buildupAdjustmentFor(units, serviceKey, buildup = "") {
-  if (units.every(unit => unit.roomConditions)) return roomConditionAdjustmentFor(units, serviceKey, ["buildup", "grease"]);
+function buildupAdjustmentFor(units, serviceKey, buildup = "", version = roomConditions.VERSION) {
+  if (units.every(unit => unit.roomConditions)) return roomConditionAdjustmentFor(units, serviceKey, ["buildup", "grease"], version);
   const condition = cleanText(buildup, 20) || "none";
   const percentage = condition === "some" ? 50 : condition === "heavy" ? 60 : 0;
   const dirt = affectedAreaAdjustmentsFor(units, serviceKey, "buildupAreas", percentage);
@@ -711,21 +711,21 @@ function buildupAdjustmentFor(units, serviceKey, buildup = "") {
   };
 }
 
-function clutterAdjustmentFor(units, serviceKey, clutter = "") {
-  if (units.every(unit => unit.roomConditions)) return roomConditionAdjustmentFor(units, serviceKey, ["clutter"]);
+function clutterAdjustmentFor(units, serviceKey, clutter = "", version = roomConditions.VERSION) {
+  if (units.every(unit => unit.roomConditions)) return roomConditionAdjustmentFor(units, serviceKey, ["clutter"], version);
   const condition = cleanText(clutter, 20) || "low";
   const percentage = condition === "moderate" ? 40 : condition === "several" ? 50 : condition === "heavy" ? 60 : 0;
   const adjustment = affectedAreaAdjustmentsFor(units, serviceKey, "clutterAreas", percentage);
   return { ...adjustment, condition, addedLaborHours: adjustment.amount / MAN_HOUR_RATE };
 }
 
-function moldAdjustmentsFor(units, serviceKey, hazards = "", moldCleaningRequested = "") {
+function moldAdjustmentsFor(units, serviceKey, hazards = "", moldCleaningRequested = "", version = roomConditions.VERSION) {
   const usesRoomConditions = units.every(unit => unit.roomConditions);
   if (!usesRoomConditions && (cleanText(hazards, 20) !== "mold" || cleanText(moldCleaningRequested, 10) !== "yes")) {
     return { percentage: 0, affectedAreas: [], affectedAreaBasePrice: 0, amount: 0, amountCents: 0, tax: 0, taxCents: 0, total: 0, totalCents: 0 };
   }
   const adjustment = usesRoomConditions
-    ? roomConditionAdjustmentFor(units, serviceKey, ["mold"])
+    ? roomConditionAdjustmentFor(units, serviceKey, ["mold"], version)
     : affectedAreaAdjustmentsFor(units, serviceKey, "moldAreas", 50);
   const taxCents = Math.round(adjustment.amountCents * NY_SALES_TAX_RATE);
   return {
@@ -751,11 +751,11 @@ function calculateResidentialQuoteBundle(unitDetails = [], serviceKey = "standar
   if (!Array.isArray(unitDetails) || !unitDetails.length || unitDetails.length > 10 || unitDetails.some(unit => !unit || typeof unit !== "object" || Array.isArray(unit))) {
     throw Object.assign(new Error("Complete the pricing questions for every residential unit."), { statusCode: 400 });
   }
-  if (eligibility.roomConditionVersion !== undefined && eligibility.roomConditionVersion !== 1) {
+  if (eligibility.roomConditionVersion !== undefined && !roomConditions.supportedVersion(eligibility.roomConditionVersion)) {
     throw Object.assign(new Error("Please refresh the quote and review the room conditions."), { statusCode: 400 });
   }
-  const usesRoomConditions = eligibility.roomConditionVersion === 1 || unitDetails.some(unit => Object.hasOwn(unit, "roomConditions"));
-  if (usesRoomConditions) eligibility = { ...eligibility, roomConditionVersion: 1 };
+  const usesRoomConditions = roomConditions.supportedVersion(eligibility.roomConditionVersion) || unitDetails.some(unit => Object.hasOwn(unit, "roomConditions"));
+  if (usesRoomConditions) eligibility = { ...eligibility, roomConditionVersion: eligibility.roomConditionVersion ?? roomConditions.VERSION };
   const movingDirection = cleanText(eligibility?.movingDirection, 20);
   const serviceLabel = serviceKey === "move"
     ? movingDirection === "move-in"
@@ -851,11 +851,11 @@ function calculateResidentialQuoteBundle(unitDetails = [], serviceKey = "standar
   const originalAddOnTotal = units.reduce((total, unit) => total + unit.addOnTotal, 0);
   const baseLaborHours = roundUpToHalfHour((basePrice + originalAddOnTotal) / MAN_HOUR_RATE);
   const dustAdjustment = usesRoomConditions
-    ? roomConditionAdjustmentFor(units, serviceKey, ["dust"])
+    ? roomConditionAdjustmentFor(units, serviceKey, ["dust"], eligibility.roomConditionVersion)
     : { percentage: 0, affectedAreas: [], amount: 0, amountCents: 0, addedLaborHours: 0 };
-  const buildupAdjustment = buildupAdjustmentFor(units, serviceKey, eligibility?.buildup);
-  const clutterAdjustment = clutterAdjustmentFor(units, serviceKey, eligibility?.clutter);
-  const moldAdjustment = moldAdjustmentsFor(units, serviceKey, hazards, moldCleaningRequested);
+  const buildupAdjustment = buildupAdjustmentFor(units, serviceKey, eligibility?.buildup, eligibility.roomConditionVersion);
+  const clutterAdjustment = clutterAdjustmentFor(units, serviceKey, eligibility?.clutter, eligibility.roomConditionVersion);
+  const moldAdjustment = moldAdjustmentsFor(units, serviceKey, hazards, moldCleaningRequested, eligibility.roomConditionVersion);
   if (!usesRoomConditions && hazards === "mold" && moldCleaningRequested === "yes" && !moldAdjustment.affectedAreas.length) {
     throw Object.assign(new Error("Select at least one room with possible mold or mildew."), { statusCode: 400 });
   }

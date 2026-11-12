@@ -1,14 +1,14 @@
 const assert = require("node:assert/strict");
 const model = require("../booking-conditions");
 const { calculateResidentialQuoteBundle: quote } = require("../api/booking/_shared");
-const eligibility = { roomConditionVersion: 1, hazards: "none", clutter: "low", buildup: "none",
+const eligibility = { roomConditionVersion: 2, hazards: "none", clutter: "low", buildup: "none",
   movingDirection: "move-in", constructionFinished: "yes", contractorItemsRemoved: "yes" };
 const makeUnit = (overrides = {}) => {
   const unit = { bedrooms: 1, fullBathrooms: 1, halfBathrooms: 1, kitchens: 1, livingRooms: 0,
     diningRooms: 0, additionalRooms: 0, refrigerator: "no", oven: "no", cabinets: "no",
     constructionAreas: { fullBathrooms: 1 }, ...overrides };
   unit.roomConditions = Object.fromEntries(model.roomsForUnit(unit).map(room => [room.id, {
-    clutter: "low", [model.applicable(room, "dust") ? "dust" : "buildup"]: "none", ...(room.key === "kitchens" ? { grease: "none" } : {}),
+    clutter: "low", ...(model.applicable(room, "dust") ? { dust: "none" } : {}), ...(model.applicable(room, "buildup") ? { buildup: "none" } : {}), ...(room.key === "kitchens" ? { grease: "none" } : {}),
     ...(model.applicable(room, "mold") ? { mold: "none" } : {})
   }]));
   return unit;
