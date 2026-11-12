@@ -4284,6 +4284,15 @@ body.booking-agreement-open {
   margin-top: 8px;
 }
 
+.booking-standard-detail-question.booking-condition-question {
+  gap: 8px;
+}
+
+.booking-grease-photos .booking-clutter-preview img {
+  aspect-ratio: 3 / 2;
+  object-fit: contain;
+}
+
 .booking-standard-detail-question[hidden],
 .booking-detail-number[hidden],
 .booking-answer-options[hidden] {

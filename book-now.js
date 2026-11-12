@@ -428,6 +428,7 @@
   const standardDetailQuestion = form.querySelector("[data-standard-detail-question]");
   const standardDetailHelper = form.querySelector("[data-standard-detail-helper]");
   const standardDetailOptions = form.querySelector("[data-standard-detail-options]");
+  const greasePhotoNote = form.querySelector("[data-grease-photo-note]");
   const standardDetailNumber = form.querySelector("[data-standard-detail-number]");
   const standardDetailNumberLabel = form.querySelector("[data-standard-detail-number-label]");
   const standardDetailNumberInput = standardDetailNumber?.querySelector("input");
@@ -926,8 +927,34 @@
       });
     });
   };
-  const buildAnswerChoices = () => {
+  const createConditionPhotoChoice = (button, title, photoPath) => {
     const clutterDialog = document.querySelector("[data-clutter-dialog]");
+    if (!photoPath || !clutterDialog) return button;
+    const row = document.createElement("div");
+    row.className = "booking-clutter-option";
+    const preview = document.createElement("button");
+    preview.type = "button";
+    preview.className = "booking-clutter-preview";
+    preview.setAttribute("aria-label", "Enlarge photo for " + title.toLowerCase());
+    preview.setAttribute("aria-haspopup", "dialog");
+    const thumbnail = document.createElement("img");
+    thumbnail.src = photoPath + "-thumb.jpg";
+    thumbnail.srcset = photoPath + "-thumb.jpg 192w, " + photoPath + ".jpg 1200w";
+    thumbnail.sizes = "(max-width: 600px) 85vw, 520px";
+    thumbnail.alt = "";
+    thumbnail.loading = "lazy";
+    preview.append(thumbnail);
+    preview.addEventListener("click", () => {
+      clutterDialog.querySelector("h2").textContent = title;
+      const image = clutterDialog.querySelector("img");
+      image.alt = "Room showing an example of " + title.toLowerCase();
+      image.src = photoPath + ".jpg";
+      clutterDialog.showModal();
+    });
+    row.append(button, preview);
+    return row;
+  };
+  const buildAnswerChoices = () => {
     allMobileQuestions.forEach((question, questionIndex) => {
       question.querySelectorAll("select").forEach((select, selectIndex) => {
         if (question.querySelector(`[data-answer-options-for="${select.name}"]`)) return;
@@ -973,34 +1000,8 @@
             syncStageProgress();
           });
           const photoPath = option.dataset.examplePhoto || (select.name === "clutter" ? "./assets/clutter/" + option.value : "");
-          if (photoPath && clutterDialog) {
-            const title = option.textContent.split(" — ")[0] + (select.name === "buildup" ? " dirt or buildup" : "");
-            const row = document.createElement("div");
-            row.className = "booking-clutter-option";
-            const preview = document.createElement("button");
-            preview.type = "button";
-            preview.className = "booking-clutter-preview";
-            preview.setAttribute("aria-label", "Enlarge photo for " + title.toLowerCase());
-            preview.setAttribute("aria-haspopup", "dialog");
-            const thumbnail = document.createElement("img");
-            thumbnail.src = photoPath + "-thumb.jpg";
-            thumbnail.srcset = photoPath + "-thumb.jpg 192w, " + photoPath + ".jpg 1200w";
-            thumbnail.sizes = "(max-width: 600px) 85vw, 520px";
-            thumbnail.alt = "";
-            thumbnail.loading = "lazy";
-            preview.append(thumbnail);
-            preview.addEventListener("click", () => {
-              clutterDialog.querySelector("h2").textContent = title;
-              const image = clutterDialog.querySelector("img");
-              image.alt = "Room showing an example of " + title.toLowerCase();
-              image.src = photoPath + ".jpg";
-              clutterDialog.showModal();
-            });
-            row.append(button, preview);
-            options.append(row);
-          } else {
-            options.append(button);
-          }
+          const title = option.textContent.split(" — ")[0] + (select.name === "buildup" ? " dirt or buildup" : "");
+          options.append(createConditionPhotoChoice(button, title, photoPath));
         });
         const container = select.closest(".booking-condition-question") || question;
         const photoNote = container.querySelector(".booking-clutter-note");
@@ -1338,9 +1339,9 @@
         key: "grease",
         question: "How much grease buildup is in the kitchen?",
         options: [
-          { value: "none", label: "Light — Minor grease splatters or light cooking residue. No sticky or thick buildup." },
-          { value: "some", label: "Moderate — Visible grease, sticky surfaces, or cooking residue on the stovetop, backsplash, or cabinets that requires extra scrubbing." },
-          { value: "heavy", label: "Heavy — Thick, sticky, or hardened grease covering multiple surfaces that requires intensive degreasing and scrubbing." }
+          { value: "none", label: "Light — Minor grease splatters or light cooking residue. No sticky or thick buildup.", examplePhoto: "./assets/grease/light" },
+          { value: "some", label: "Moderate — Visible grease, sticky surfaces, or cooking residue on the stovetop, backsplash, cabinets, or range hood that requires extra scrubbing.", examplePhoto: "./assets/grease/moderate" },
+          { value: "heavy", label: "Heavy — Thick, sticky, or hardened grease covering multiple surfaces that requires intensive degreasing and scrubbing.", examplePhoto: "./assets/grease/heavy" }
         ]
       });
     }
@@ -1592,8 +1593,13 @@
       const isConditionBreakdown = question.type === "condition-breakdown";
       const isAffectedAreaBreakdown = isMoldBreakdown || isConditionBreakdown;
       const isCounterBreakdown = isRoomBreakdown || isAffectedAreaBreakdown;
+      const hasGreasePhotos = question.key === "grease";
+      standardDetailQuestion?.classList.toggle("booking-condition-question", hasGreasePhotos);
+      standardDetailQuestion?.classList.toggle("booking-grease-photos", hasGreasePhotos);
+      if (greasePhotoNote) greasePhotoNote.hidden = !hasGreasePhotos;
       if (standardDetailOptions) {
         standardDetailOptions.hidden = isTypedAnswer;
+        standardDetailOptions.setAttribute("aria-label", question.question);
         standardDetailOptions.replaceChildren();
         if (isCounterBreakdown) {
           const breakdown = current[question.key] && typeof current[question.key] === "object"
@@ -1652,7 +1658,15 @@
           button.dataset.standardDetailAnswer = option.value;
           button.setAttribute("aria-pressed", String(current[question.key] === option.value));
           const label = document.createElement("span");
-          label.textContent = option.label;
+          if (option.examplePhoto) {
+            const [title, ...description] = option.label.split(" — ");
+            const strong = document.createElement("strong");
+            strong.textContent = title;
+            const detail = document.createElement("span");
+            detail.textContent = description.join(" — ");
+            label.append(strong, detail);
+            label.className = "booking-condition-option-copy";
+          } else label.textContent = option.label;
           const check = document.createElement("i");
           check.setAttribute("aria-hidden", "true");
           check.textContent = "✓";
@@ -1699,7 +1713,7 @@
             }
             setStatus(document.querySelector("[data-eligibility-status]"), "");
           });
-          standardDetailOptions.append(button);
+          standardDetailOptions.append(createConditionPhotoChoice(button, option.label.split(" — ")[0] + " grease buildup", option.examplePhoto));
         });
       }
       if (standardDetailNumber) standardDetailNumber.hidden = !isTypedAnswer;
