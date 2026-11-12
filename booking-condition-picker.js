@@ -30,7 +30,7 @@
         else delete unit.roomConditions[room.id][kind];
       };
       const changed = () => { onChange(); render(currentKind); };
-      const kinds = () => inventory("grease").length ? ["clutter", "buildup", "grease"] : ["clutter", "buildup"];
+      const kinds = () => Object.keys(model.definitions).filter(kind => inventory(kind).length);
       const missing = kind => inventory(kind).filter(room => !model.levelFor(kind, answer(room, kind)));
       const reconcile = () => getUnits().forEach(unit => { unit.roomConditions = model.reconcile(unit); });
       const closePicker = () => dialog.close();
@@ -79,54 +79,55 @@
         if (kind === "summary") return renderSummary();
         const definition = model.definitions[kind];
         const rooms = inventory(kind);
-        const singleKitchen = kind === "grease" && rooms.length === 1;
-        const heading = el("h2", "", singleKitchen ? "How much grease buildup is in the kitchen?" : definition.title);
+        const singleChoice = Boolean(definition.singularTitle) && rooms.length === 1;
+        const selectionLabel = definition.selectionLabel || "rooms";
+        const heading = el("h2", "", singleChoice ? definition.singularTitle : definition.title);
         heading.tabIndex = -1;
         container.append(heading);
         const cards = el("div", "booking-condition-question booking-condition-cards" + (kind === "grease" ? " booking-grease-photos" : ""));
         definition.levels.forEach(level => {
           const assigned = rooms.filter(room => answer(room, kind) === level.value);
           const choice = button("", () => {
-            if (!singleKitchen) return openPicker(kind, level);
+            if (!singleChoice) return openPicker(kind, level);
             assign(rooms[0], kind, level.value);
             changed();
             container.querySelector(`[data-condition-select="${level.value}"]`)?.focus();
           }, "booking-answer-choice");
           choice.dataset.conditionSelect = level.value;
-          if (singleKitchen) {
+          if (singleChoice) {
             const selected = answer(rooms[0], kind) === level.value;
             choice.classList.toggle("is-selected", selected);
             choice.setAttribute("aria-pressed", String(selected));
           } else {
             choice.setAttribute("aria-haspopup", "dialog");
-            choice.setAttribute("aria-label", `Select rooms for ${level.label.toLowerCase()}`);
+            choice.setAttribute("aria-label", `Select ${selectionLabel} for ${level.label.toLowerCase()}`);
           }
           const copy = el("span", "booking-condition-option-copy");
           copy.append(el("strong", "", level.label), el("span", "", level.description));
           choice.append(copy);
-          if (singleKitchen) {
+          if (singleChoice) {
             const indicator = el("i", "", "✓");
             indicator.setAttribute("aria-hidden", "true");
             choice.append(indicator);
           }
-          const photoTitle = kind === "clutter" ? level.label : `${level.label} ${definition.label.toLowerCase()}`;
+          const photoTitle = ["clutter", "mold"].includes(kind) ? level.label : `${level.label} ${definition.label.toLowerCase()}`;
           const card = photoChoice(choice, photoTitle, level.photo);
           card.dataset.conditionLevel = level.value;
-          if (singleKitchen) {
+          if (singleChoice) {
             cards.append(card);
             return;
           }
           const actions = el("div", "booking-condition-card-actions");
-          const select = button(`Select ${kind === "grease" ? "kitchens" : "rooms"}`, () => openPicker(kind, level));
+          const select = button(`Select ${selectionLabel}`, () => openPicker(kind, level));
           select.dataset.conditionSelect = level.value;
-          select.setAttribute("aria-label", `Select ${kind === "grease" ? "kitchens" : "rooms"} for ${photoTitle.toLowerCase()}`);
-          const all = button(`Apply to all ${kind === "grease" ? "kitchens" : "rooms"}`, () => {
+          select.setAttribute("aria-label", `Select ${selectionLabel} for ${photoTitle.toLowerCase()}`);
+          const all = button(`Apply to all ${selectionLabel}`, () => {
             rooms.forEach(room => assign(room, kind, level.value));
             changed();
             container.querySelector(`[data-condition-all="${level.value}"]`)?.focus();
           }, "booking-condition-link");
           all.dataset.conditionAll = level.value;
-          all.setAttribute("aria-label", `Apply ${photoTitle.toLowerCase()} to all ${kind === "grease" ? "kitchens" : "rooms"}`);
+          all.setAttribute("aria-label", `Apply ${photoTitle.toLowerCase()} to all ${selectionLabel}`);
           actions.append(select, all);
           const chips = el("div", "booking-condition-assigned");
           assigned.forEach(room => chips.append(el("span", "", room.fullLabel)));

@@ -6,7 +6,8 @@ const base = () => ({ bedrooms: 2, fullBathrooms: 1, halfBathrooms: 0, kitchens:
   livingRooms: 2, diningRooms: 1, livingDining: "combined", additionalRooms: 1,
   additionalRoomTypes: { office: 1 }, refrigerator: "no", oven: "no", cabinets: "no" });
 const withLight = unit => ({ ...unit, roomConditions: Object.fromEntries(model.roomsForUnit(unit).map(room => [room.id,
-  { clutter: "low", buildup: "none", ...(room.key === "kitchens" ? { grease: "none" } : {}) }])) });
+  { clutter: "low", buildup: "none", ...(room.key === "kitchens" ? { grease: "none" } : {}),
+    ...(model.applicable(room, "mold") ? { mold: "none" } : {}) }])) });
 const unit = withLight(base());
 unit.roomConditions["bedrooms:2"].clutter = "several"; // 50 * 50% = 25
 unit.roomConditions["kitchens:1"].clutter = "heavy"; // 50 * 60% = 30

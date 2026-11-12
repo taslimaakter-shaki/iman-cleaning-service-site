@@ -377,7 +377,7 @@ function calculateResidentialUnitPrice(unit = {}, unitIndex = 0, serviceKey = "s
     unit.additionalCleaning || "no",
     `additional cleaning in Unit ${unitNumber}`
   );
-  const possibleMold = cleanText(eligibility?.hazards, 20) === "mold" && cleanText(eligibility?.moldCleaningRequested, 10) === "yes";
+  const possibleMold = eligibility.roomConditionVersion !== 1 && cleanText(eligibility?.hazards, 20) === "mold" && cleanText(eligibility?.moldCleaningRequested, 10) === "yes";
   const submittedMoldAreas = unit.moldAreas && typeof unit.moldAreas === "object" ? unit.moldAreas : null;
   const moldFullBathrooms = possibleMold
     ? wholeNumber(submittedMoldAreas?.fullBathrooms ?? unit.moldFullBathrooms ?? 0, `the number of affected full bathrooms in Unit ${unitNumber}`, fullBathrooms)
@@ -720,10 +720,13 @@ function clutterAdjustmentFor(units, serviceKey, clutter = "") {
 }
 
 function moldAdjustmentsFor(units, serviceKey, hazards = "", moldCleaningRequested = "") {
-  if (cleanText(hazards, 20) !== "mold" || cleanText(moldCleaningRequested, 10) !== "yes") {
+  const usesRoomConditions = units.every(unit => unit.roomConditions);
+  if (!usesRoomConditions && (cleanText(hazards, 20) !== "mold" || cleanText(moldCleaningRequested, 10) !== "yes")) {
     return { percentage: 0, affectedAreas: [], affectedAreaBasePrice: 0, amount: 0, amountCents: 0, tax: 0, taxCents: 0, total: 0, totalCents: 0 };
   }
-  const adjustment = affectedAreaAdjustmentsFor(units, serviceKey, "moldAreas", 50);
+  const adjustment = usesRoomConditions
+    ? roomConditionAdjustmentFor(units, serviceKey, ["mold"])
+    : affectedAreaAdjustmentsFor(units, serviceKey, "moldAreas", 50);
   const taxCents = Math.round(adjustment.amountCents * NY_SALES_TAX_RATE);
   return {
     ...adjustment,
@@ -763,7 +766,7 @@ function calculateResidentialQuoteBundle(unitDetails = [], serviceKey = "standar
     : service.label;
   const hazards = cleanText(eligibility?.hazards, 20);
   const moldCleaningRequested = cleanText(eligibility?.moldCleaningRequested, 10);
-  if (hazards === "mold" && !["yes", "no"].includes(moldCleaningRequested)) {
+  if (!usesRoomConditions && hazards === "mold" && !["yes", "no"].includes(moldCleaningRequested)) {
     throw Object.assign(new Error("Choose whether you want the accessible surface-level mold or mildew cleaned."), { statusCode: 400 });
   }
   const units = unitDetails.map((unit, index) => calculateResidentialUnitPrice({
@@ -850,7 +853,7 @@ function calculateResidentialQuoteBundle(unitDetails = [], serviceKey = "standar
   const buildupAdjustment = buildupAdjustmentFor(units, serviceKey, eligibility?.buildup);
   const clutterAdjustment = clutterAdjustmentFor(units, serviceKey, eligibility?.clutter);
   const moldAdjustment = moldAdjustmentsFor(units, serviceKey, hazards, moldCleaningRequested);
-  if (hazards === "mold" && moldCleaningRequested === "yes" && !moldAdjustment.affectedAreas.length) {
+  if (!usesRoomConditions && hazards === "mold" && moldCleaningRequested === "yes" && !moldAdjustment.affectedAreas.length) {
     throw Object.assign(new Error("Select at least one room with possible mold or mildew."), { statusCode: 400 });
   }
   const originalTotalCents = Math.round((basePrice + originalAddOnTotal) * 100);
@@ -913,13 +916,19 @@ function calculateResidentialQuoteBundle(unitDetails = [], serviceKey = "standar
     units[0].subtotalCents += clutterAdjustment.totalCents;
     units[0].manHours += clutterAdjustment.addedLaborHours;
   }
-  moldAdjustment.affectedAreas.forEach((area) => {
+  let remainingMoldTax = moldAdjustment.taxCents;
+  moldAdjustment.affectedAreas.forEach((area, index) => {
     const unit = units.find((candidate) => candidate.unitNumber === area.unitNumber);
     if (!unit) return;
-    const areaTaxCents = Math.round(area.amountCents * NY_SALES_TAX_RATE);
+    const areaTaxCents = usesRoomConditions
+      ? index === moldAdjustment.affectedAreas.length - 1 ? remainingMoldTax : Math.round(moldAdjustment.taxCents * area.amountCents / moldAdjustment.amountCents)
+      : Math.round(area.amountCents * NY_SALES_TAX_RATE);
+    remainingMoldTax -= areaTaxCents;
     unit.addOns.push({
       key: `mold_adjustment_${area.key}`,
-      label: `${area.label} — possible mold/mildew adjustment`,
+      label: usesRoomConditions
+        ? `${area.label} — ${roomConditions.levelFor("mold", area.level).label.toLowerCase()} cleaning`
+        : `${area.label} — possible mold/mildew adjustment`,
       description: "Additional cleaning required for the affected area.",
       amount: area.amount,
       preTaxAmount: area.amount,
@@ -928,6 +937,7 @@ function calculateResidentialQuoteBundle(unitDetails = [], serviceKey = "standar
     unit.addOnTotal += area.amount;
     unit.subtotal += (area.amountCents + areaTaxCents) / 100;
     unit.subtotalCents += area.amountCents + areaTaxCents;
+    if (usesRoomConditions) unit.manHours += area.amount / MAN_HOUR_RATE;
   });
   const addOnTotal = units.reduce((total, unit) => total + unit.addOnTotal, 0);
   const subtotalCents = originalTaxBreakdown.subtotalCents + buildupAdjustment.amountCents + clutterAdjustment.amountCents + moldAdjustment.amountCents;

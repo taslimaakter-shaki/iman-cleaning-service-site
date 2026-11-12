@@ -1006,6 +1006,8 @@
     const label = window.ImanBookingConditions.definitions[missingKind].label.toLowerCase();
     setStatus(status, missingKind === "grease" && conditionPicker.inventory("grease").length === 1
       ? "Please choose Light, Moderate, or Heavy to continue."
+      : missingKind === "mold" && conditionPicker.inventory("mold").length === 1
+        ? "Please choose No visible mold, Moderate mold, or Significant mold to continue."
       : `Choose a ${label} level for ${room.fullLabel} before continuing.`);
     status.tabIndex = -1;
     status.focus();

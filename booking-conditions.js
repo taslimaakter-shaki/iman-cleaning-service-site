@@ -25,10 +25,20 @@
     },
     grease: {
       title: "How much grease buildup is in each kitchen?", label: "Kitchen grease",
+      singularTitle: "How much grease buildup is in the kitchen?", selectionLabel: "kitchens",
       levels: [
         { value: "none", label: "Light", rate: 0, description: "Minor grease splatters or light cooking residue. No sticky or thick buildup.", photo: "./assets/grease/light" },
         { value: "some", label: "Moderate", rate: 50, description: "Visible grease, sticky surfaces, or cooking residue on the stovetop, backsplash, cabinets, or range hood that requires extra scrubbing.", photo: "./assets/grease/moderate" },
         { value: "heavy", label: "Heavy", rate: 60, description: "Thick, sticky, or hardened grease covering multiple surfaces that requires intensive degreasing and scrubbing.", photo: "./assets/grease/heavy" }
+      ]
+    },
+    mold: {
+      title: "Is there any visible mold or mildew in the bathrooms?", label: "Bathroom mold",
+      singularTitle: "Is there any visible mold or mildew in the bathroom?", selectionLabel: "bathrooms",
+      levels: [
+        { value: "none", label: "No visible mold", rate: 0, description: "No visible mold or mildew on grout, around the bathtub or shower, or on other bathroom surfaces.", photo: "./assets/mold/none" },
+        { value: "some", label: "Moderate mold", rate: 60, description: "Visible patches of possible mold or mildew on some grout lines, in corners, or around the bathtub or shower.", photo: "./assets/mold/moderate" },
+        { value: "heavy", label: "Significant mold", rate: 100, description: "Widespread possible mold or mildew across many grout lines and multiple areas around the bathtub or shower.", photo: "./assets/mold/heavy" }
       ]
     }
   };
@@ -58,7 +68,8 @@
     }
     return rooms;
   }
-  const applicable = (room, kind) => kind !== "grease" || room.key === "kitchens";
+  const applicable = (room, kind) => kind === "grease" ? room.key === "kitchens"
+    : kind === "mold" ? ["fullBathrooms", "halfBathrooms"].includes(room.key) : true;
   const levelFor = (kind, value) => definitions[kind]?.levels.find(level => level.value === value);
   // Used when room counts change: retain existing room answers, drop removed
   // rooms, and leave newly added rooms unanswered instead of assuming Light.
