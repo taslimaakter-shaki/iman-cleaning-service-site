@@ -220,6 +220,7 @@
   });
   document.addEventListener("keydown", (event) => {
     if (event.key !== "Escape" || bookingWizard.hidden || !zipGate.hidden) return;
+    if (document.querySelector("[data-clutter-dialog][open]")) return;
     if (servicePreviewOverlay && !servicePreviewOverlay.hidden) {
       closeServicePreview();
       return;
@@ -926,6 +927,7 @@
     });
   };
   const buildAnswerChoices = () => {
+    const clutterDialog = document.querySelector("[data-clutter-dialog]");
     allMobileQuestions.forEach((question, questionIndex) => {
       question.querySelectorAll("select").forEach((select, selectIndex) => {
         if (question.querySelector(`[data-answer-options-for="${select.name}"]`)) return;
@@ -954,7 +956,13 @@
             const [title, ...description] = option.textContent.split(" — ");
             const strong = document.createElement("strong");
             strong.textContent = title;
-            label.append(strong, document.createTextNode(" — " + description.join(" — ")));
+            if (select.name === "clutter") {
+              const detail = document.createElement("span");
+              detail.textContent = description.join(" — ");
+              label.append(strong, detail);
+            } else {
+              label.append(strong, document.createTextNode(" — " + description.join(" — ")));
+            }
             label.classList.add("booking-condition-option-copy");
           } else label.textContent = option.textContent;
           const check = document.createElement("i");
@@ -968,9 +976,39 @@
             setStatus(document.querySelector("[data-eligibility-status]"), "");
             syncStageProgress();
           });
-          options.append(button);
+          if (select.name === "clutter" && clutterDialog) {
+            const title = option.textContent.split(" — ")[0];
+            const photoPath = "./assets/clutter/" + option.value;
+            const row = document.createElement("div");
+            row.className = "booking-clutter-option";
+            const preview = document.createElement("button");
+            preview.type = "button";
+            preview.className = "booking-clutter-preview";
+            preview.setAttribute("aria-label", "Enlarge photo for " + title.toLowerCase());
+            preview.setAttribute("aria-haspopup", "dialog");
+            const thumbnail = document.createElement("img");
+            thumbnail.src = photoPath + "-thumb.jpg";
+            thumbnail.srcset = photoPath + "-thumb.jpg 192w, " + photoPath + ".jpg 1200w";
+            thumbnail.sizes = "(max-width: 600px) 85vw, 520px";
+            thumbnail.alt = "";
+            thumbnail.loading = "lazy";
+            preview.append(thumbnail);
+            preview.addEventListener("click", () => {
+              clutterDialog.querySelector("h2").textContent = title;
+              const image = clutterDialog.querySelector("img");
+              image.alt = "Room showing an example of " + title.toLowerCase();
+              image.src = photoPath + ".jpg";
+              clutterDialog.showModal();
+            });
+            row.append(button, preview);
+            options.append(row);
+          } else {
+            options.append(button);
+          }
         });
-        (select.closest(".booking-condition-question") || question).append(options);
+        const container = select.closest(".booking-condition-question") || question;
+        const photoNote = select.name === "clutter" && container.querySelector(".booking-clutter-note");
+        container.insertBefore(options, photoNote || null);
         syncAnswerChoices(question);
       });
     });

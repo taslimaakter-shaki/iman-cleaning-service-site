@@ -3838,6 +3838,107 @@ body.booking-agreement-open {
   font-size: .78rem;
 }
 
+.booking-clutter-option {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: 0;
+  padding: 4px;
+  border: 1px solid var(--teal-100);
+  border-radius: 14px;
+  background: #fff;
+}
+
+.booking-clutter-option:has(.is-selected) {
+  border-color: var(--teal-900);
+}
+
+.booking-condition-question .booking-clutter-option .booking-answer-choice {
+  grid-template-columns: minmax(0, 1fr) 18px;
+  gap: 8px;
+  padding: 9px 10px;
+  font-size: .8125rem;
+  line-height: 1.35;
+  border-color: transparent;
+  box-shadow: none;
+}
+
+.booking-clutter-option .booking-condition-option-copy {
+  display: grid;
+  gap: 2px;
+}
+
+.booking-clutter-option .booking-condition-option-copy > span {
+  color: var(--text-muted);
+  font-size: .75rem;
+}
+
+.booking-clutter-option .booking-answer-choice i {
+  width: 18px;
+  height: 18px;
+  font-size: .7rem;
+}
+
+.booking-clutter-preview {
+  display: block;
+  width: 100%;
+  min-height: 44px;
+  padding: 0;
+  overflow: hidden;
+  border: 1px solid var(--teal-100);
+  border-radius: 10px;
+  background: #fff;
+  cursor: zoom-in;
+}
+
+.booking-clutter-preview img {
+  display: block;
+  width: 100%;
+  aspect-ratio: 2 / 1;
+  min-height: 44px;
+  object-fit: cover;
+}
+
+.booking-clutter-preview:focus-visible {
+  outline: 2px solid var(--teal-900);
+  outline-offset: 2px;
+}
+
+.booking-clutter-note {
+  color: var(--text-muted);
+  font-size: .78rem;
+}
+
+.booking-clutter-dialog {
+  width: min(760px, calc(100% - 24px));
+  padding: 12px;
+  border: 0;
+  border-radius: 16px;
+  background: #fff;
+  color: var(--teal-950);
+}
+
+.booking-clutter-dialog::backdrop { background: rgba(7, 30, 33, .72); }
+
+.booking-clutter-dialog-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 10px;
+}
+
+.booking-clutter-dialog-header h2 {
+  margin: 0;
+  font-size: clamp(1rem, 4vw, 1.3rem);
+}
+
+.booking-clutter-dialog img {
+  display: block;
+  width: 100%;
+  max-height: 75vh;
+  object-fit: contain;
+}
+
 .booking-wizard-dialog[data-current-step="1"] .booking-service-guide {
   max-width: 540px;
   margin: -2px auto 2px;
