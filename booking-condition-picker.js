@@ -57,10 +57,10 @@
             input.checked = answer(room, kind) === level.value;
             input.dataset.conditionRoom = `${unitIndex}/${room.id}`;
             const copy = el("span", "", room.label);
-            const current = el("small", "", model.levelFor(kind, answer(room, kind))?.label || "Not assigned");
+            const current = el("small", "", model.levelFor(kind, answer(room, kind))?.label || "");
             input.addEventListener("change", () => {
               assign(room, kind, input.checked ? level.value : "");
-              current.textContent = model.levelFor(kind, answer(room, kind))?.label || "Not assigned";
+              current.textContent = model.levelFor(kind, answer(room, kind))?.label || "";
               changed();
             });
             copy.append(current);
