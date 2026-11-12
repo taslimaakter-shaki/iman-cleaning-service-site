@@ -17,7 +17,7 @@
     },
     dust: {
       title: "How much dust and dirt is in these rooms?", label: "Dust & dirt",
-      singularTitle: "How much dust and dirt is in this room?",
+      singularTitle: "How much dust and dirt is in these rooms?",
       levels: [
         { value: "none", label: "Light", rate: 0, description: "Light dust and everyday dirt. Regular cleaning needed.", photo: "./assets/dust/light" },
         { value: "some", label: "Moderate", rate: 0, description: "Noticeable dust and dirt on several surfaces, baseboards, or floors. Extra cleaning needed.", photo: "./assets/dust/moderate" },
