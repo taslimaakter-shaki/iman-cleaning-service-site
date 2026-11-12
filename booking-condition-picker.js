@@ -79,22 +79,43 @@
         if (kind === "summary") return renderSummary();
         const definition = model.definitions[kind];
         const rooms = inventory(kind);
-        const heading = el("h2", "", definition.title);
+        const singleKitchen = kind === "grease" && rooms.length === 1;
+        const heading = el("h2", "", singleKitchen ? "How much grease buildup is in the kitchen?" : definition.title);
         heading.tabIndex = -1;
         container.append(heading);
         const cards = el("div", "booking-condition-question booking-condition-cards" + (kind === "grease" ? " booking-grease-photos" : ""));
         definition.levels.forEach(level => {
           const assigned = rooms.filter(room => answer(room, kind) === level.value);
-          const choice = button("", () => openPicker(kind, level), "booking-answer-choice");
+          const choice = button("", () => {
+            if (!singleKitchen) return openPicker(kind, level);
+            assign(rooms[0], kind, level.value);
+            changed();
+            container.querySelector(`[data-condition-select="${level.value}"]`)?.focus();
+          }, "booking-answer-choice");
           choice.dataset.conditionSelect = level.value;
-          choice.setAttribute("aria-haspopup", "dialog");
-          choice.setAttribute("aria-label", `Select rooms for ${level.label.toLowerCase()}`);
+          if (singleKitchen) {
+            const selected = answer(rooms[0], kind) === level.value;
+            choice.classList.toggle("is-selected", selected);
+            choice.setAttribute("aria-pressed", String(selected));
+          } else {
+            choice.setAttribute("aria-haspopup", "dialog");
+            choice.setAttribute("aria-label", `Select rooms for ${level.label.toLowerCase()}`);
+          }
           const copy = el("span", "booking-condition-option-copy");
           copy.append(el("strong", "", level.label), el("span", "", level.description));
           choice.append(copy);
+          if (singleKitchen) {
+            const indicator = el("i", "", "✓");
+            indicator.setAttribute("aria-hidden", "true");
+            choice.append(indicator);
+          }
           const photoTitle = kind === "clutter" ? level.label : `${level.label} ${definition.label.toLowerCase()}`;
           const card = photoChoice(choice, photoTitle, level.photo);
           card.dataset.conditionLevel = level.value;
+          if (singleKitchen) {
+            cards.append(card);
+            return;
+          }
           const actions = el("div", "booking-condition-card-actions");
           const select = button(`Select ${kind === "grease" ? "kitchens" : "rooms"}`, () => openPicker(kind, level));
           select.dataset.conditionSelect = level.value;
