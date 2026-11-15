@@ -427,7 +427,7 @@ function calculateResidentialUnitPrice(unit = {}, unitIndex = 0, serviceKey = "s
   const clutterAreas = normalizeConditionAreas(usesRoomConditions ? {} : unit.clutterAreas, "clutter");
   const constructionAreas = normalizeConditionAreas(unit.constructionAreas, "construction dust or debris");
   const normalizedRoomConditions = roomConditions.supportedVersion(eligibility.roomConditionVersion)
-    ? roomConditions.validate({ ...unit, bedrooms, fullBathrooms, halfBathrooms, kitchens, livingRooms, diningRooms, livingDining, additionalRooms, additionalRoomTypes }, unitNumber, eligibility.roomConditionVersion)
+    ? roomConditions.validate({ ...unit, bedrooms, fullBathrooms, halfBathrooms, kitchens, livingRooms, diningRooms, livingDining, additionalRooms, additionalRoomTypes }, unitNumber, eligibility.roomConditionVersion, serviceKey)
     : null;
   if (unit.exteriorWindows === "yes" || (serviceKey !== "move" && unit.windowCleaning && unit.windowCleaning !== "no")) {
     throw Object.assign(new Error("This window add-on is no longer available. Please start a new cleaning quote."), { statusCode: 410 });
@@ -674,7 +674,7 @@ function roomConditionAdjustmentFor(units, serviceKey, kinds, version = roomCond
   const affectedAreas = [];
   units.forEach(unit => {
     roomConditions.roomsForUnit(unit).forEach(room => {
-      kinds.filter(kind => roomConditions.applicable(room, kind, version)).forEach(kind => {
+      kinds.filter(kind => roomConditions.applicable(room, kind, version, serviceKey)).forEach(kind => {
         const level = roomConditions.levelFor(kind, unit.roomConditions[room.id][kind]);
         if (!level.rate) return;
         let baseAreaPrice = room.key === "halfBathrooms" ? service.halfBathroomRate
@@ -780,7 +780,7 @@ function calculateResidentialQuoteBundle(unitDetails = [], serviceKey = "standar
   // calculation for existing saved quotes and bookings. New forms set it only
   // after collecting the per-kitchen selections and current room conditions.
   if (serviceKey === "move" && eligibility.movingKitchenPricingVersion !== undefined &&
-      (eligibility.movingKitchenPricingVersion !== movingKitchens.VERSION || eligibility.roomConditionVersion !== roomConditions.VERSION)) {
+      (eligibility.movingKitchenPricingVersion !== movingKitchens.VERSION || !roomConditions.supportedVersion(eligibility.roomConditionVersion) || eligibility.roomConditionVersion < 2)) {
     throw Object.assign(new Error("Please refresh the quote and review the kitchen selections and room conditions."), { statusCode: 400 });
   }
   const usesRoomConditions = roomConditions.supportedVersion(eligibility.roomConditionVersion) || unitDetails.some(unit => Object.hasOwn(unit, "roomConditions"));

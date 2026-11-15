@@ -14,12 +14,13 @@
     return node;
   };
   window.ImanConditionPicker = {
-    create({ container, getUnits, unitLabel, photoChoice, onChange, onEdit }) {
+    create({ container, getUnits, getService = () => "", unitLabel, photoChoice, onChange, onEdit }) {
       const dialog = document.querySelector("[data-condition-room-picker]");
       let currentKind = "clutter";
       let returnLevel = "";
+      const applicable = (room, kind) => model.applicable(room, kind, model.VERSION, getService());
       const inventory = kind => getUnits().flatMap((unit, unitIndex) => model.roomsForUnit(unit)
-        .filter(room => !kind || model.applicable(room, kind))
+        .filter(room => !kind || applicable(room, kind))
         .map(room => ({ ...room, unitIndex, fullLabel: `${unitLabel(unitIndex)} · ${room.label}` })));
       const answer = (room, kind) => getUnits()[room.unitIndex].roomConditions?.[room.id]?.[kind];
       const assign = (room, kind, value) => {
@@ -32,7 +33,7 @@
       const changed = () => { onChange(); render(currentKind); };
       const kinds = () => Object.keys(model.definitions).filter(kind => inventory(kind).length);
       const missing = kind => inventory(kind).filter(room => !model.levelFor(kind, answer(room, kind)));
-      const reconcile = () => getUnits().forEach(unit => { unit.roomConditions = model.reconcile(unit); });
+      const reconcile = () => getUnits().forEach(unit => { unit.roomConditions = model.reconcile(unit, getService()); });
       const closePicker = () => dialog.close();
       dialog.addEventListener("close", () => {
         container.querySelector(`[data-condition-select="${returnLevel}"]`)?.focus();
@@ -152,7 +153,7 @@
             const row = el("div", "booking-condition-summary-room");
             row.append(el("strong", "", room.label));
             const values = el("dl");
-            kinds().filter(kind => model.applicable(room, kind)).forEach(kind => {
+            kinds().filter(kind => applicable(room, kind)).forEach(kind => {
               const pair = el("div");
               const selected = model.levelFor(kind, unit.roomConditions?.[room.id]?.[kind]);
               pair.append(el("dt", "", model.definitions[kind].label), el("dd", "", selected?.label || "Not answered"));

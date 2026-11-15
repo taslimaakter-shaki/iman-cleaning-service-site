@@ -6,9 +6,10 @@
   "use strict";
 
   // Version 1 preserves kitchen dirt charges on existing saved quotes.
-  // New quotes use bathroom-only buildup; editing reconciles to this version.
-  const VERSION = 2;
-  const supportedVersion = version => version === 1 || version === VERSION;
+  // Version 2 keeps bathroom-only buildup and existing Moving clutter charges.
+  // Version 3 omits clutter for new Moving quotes; editing reconciles to it.
+  const VERSION = 3;
+  const supportedVersion = version => [1, 2, VERSION].includes(version);
   const definitions = {
     clutter: {
       title: "How cluttered are the rooms?", label: "Clutter",
@@ -82,21 +83,22 @@
     }
     return rooms;
   }
-  const applicable = (room, kind, version = VERSION) => kind === "dust" ? ["bedrooms", "livingRooms", "diningRooms", "combinedLivingDining", "additionalRooms"].includes(room.key)
+  const applicable = (room, kind, version = VERSION, serviceKey = "") => kind === "clutter" ? !(version >= 3 && serviceKey === "move")
+    : kind === "dust" ? ["bedrooms", "livingRooms", "diningRooms", "combinedLivingDining", "additionalRooms"].includes(room.key)
     : kind === "buildup" ? ["fullBathrooms", "halfBathrooms"].includes(room.key) || (version === 1 && room.key === "kitchens")
     : kind === "grease" ? room.key === "kitchens"
     : kind === "mold" ? ["fullBathrooms", "halfBathrooms"].includes(room.key) : true;
   const levelFor = (kind, value) => definitions[kind]?.levels.find(level => level.value === value);
   // Used when room counts change: retain existing room answers, drop removed
   // rooms, and leave newly added rooms unanswered instead of assuming Light.
-  function reconcile(unit) {
+  function reconcile(unit, serviceKey = "") {
     const previous = unit.roomConditions || {};
     return Object.fromEntries(roomsForUnit(unit).map(room => [room.id,
-      Object.fromEntries(Object.keys(definitions).filter(kind => applicable(room, kind) && levelFor(kind, previous[room.id]?.[kind]))
+      Object.fromEntries(Object.keys(definitions).filter(kind => applicable(room, kind, VERSION, serviceKey) && levelFor(kind, previous[room.id]?.[kind]))
         .map(kind => [kind, previous[room.id][kind]]))
     ]));
   }
-  function validate(unit, unitNumber = 1, version = VERSION) {
+  function validate(unit, unitNumber = 1, version = VERSION, serviceKey = "") {
     const rooms = roomsForUnit(unit);
     const source = unit.roomConditions === undefined ? {} : unit.roomConditions;
     const fail = message => { throw Object.assign(new Error(message), { statusCode: 400 }); };
@@ -106,7 +108,7 @@
     return Object.fromEntries(rooms.map(room => {
       const answer = source[room.id] === undefined ? {} : source[room.id];
       if (!answer || typeof answer !== "object" || Array.isArray(answer)) fail(`Choose the conditions for ${room.label} in Unit ${unitNumber}.`);
-      const kinds = Object.keys(definitions).filter(kind => applicable(room, kind, version));
+      const kinds = Object.keys(definitions).filter(kind => applicable(room, kind, version, serviceKey));
       if (Object.keys(answer).some(kind => !kinds.includes(kind))) fail(`Review the condition answers for ${room.label} in Unit ${unitNumber}.`);
       return [room.id, Object.fromEntries(kinds.map(kind => {
         const value = answer[kind];

@@ -270,5 +270,25 @@ const get=url=>handler({method:'GET',headers:{host:'example.test'},query:{token:
  const missingMovingCount=structuredClone(upgradedMoving);missingMovingCount.unitDetails[0].movingKitchens[0].drawerCount='';
  assert.equal((await post(missingMovingCount)).status,400,'Incomplete cabinet quantities cannot produce a saved quote');
 
+ // New Moving quotes omit clutter while older saved versions remain immutable.
+ const clutteredMoving=structuredClone(upgradedMoving);
+ clutteredMoving.unitDetails[0].roomConditions['kitchens:1'].clutter='heavy';
+ const clutteredMovingSaved=await post(clutteredMoving);
+ assert.equal(clutteredMovingSaved.status,201,clutteredMovingSaved.error);
+ const clutteredMovingOpened=await get(clutteredMovingSaved.quoteUrl);
+ assert.equal(clutteredMovingOpened.package.clutterAdjustment.amount,129);
+ const noClutterMoving=structuredClone(clutteredMoving);
+ noClutterMoving.previousQuoteToken=new URL(clutteredMovingSaved.quoteUrl).searchParams.get('quote');
+ noClutterMoving.eligibility.roomConditionVersion=3;
+ delete noClutterMoving.unitDetails[0].roomConditions['kitchens:1'].clutter;
+ const noClutterSaved=await post(noClutterMoving);
+ assert.equal(noClutterSaved.status,201,noClutterSaved.error);
+ assert.notEqual(noClutterSaved.quoteUrl,clutteredMovingSaved.quoteUrl);
+ const noClutterOpened=await get(noClutterSaved.quoteUrl);
+ assert.equal(noClutterOpened.package.priceCents,21500);
+ assert.equal(noClutterOpened.package.clutterAdjustment.amount,0);
+ assert.equal(actual.calculateResidentialQuoteBundle(noClutterOpened.unitDetails,'move',noClutterOpened.eligibility).priceCents,21500);
+ assert.equal((await get(clutteredMovingSaved.quoteUrl)).package.priceCents,clutteredMovingOpened.package.priceCents);
+
  console.log('Saved quote versions: immutable details/prices/contacts, changed-content delivery, concurrent deduplication, consent and partial-delivery retry passed. Providers mocked.');
 })().catch(e=>{console.error(e);process.exitCode=1});

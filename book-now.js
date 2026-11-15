@@ -952,6 +952,7 @@
   const conditionPicker = window.ImanConditionPicker.create({
     container: conditionForm,
     getUnits: () => state.unitDetails.slice(0, selectedUnitCount()),
+    getService: () => value("requestedService"),
     unitLabel: index => quoteUnitLabel(index),
     photoChoice: createConditionPhotoChoice,
     onChange: () => {
@@ -3108,12 +3109,12 @@
         preTaxAmount: items.reduce((sum, item) => sum + (Number(item.preTaxAmount ?? item.amount) || 0), 0)
       };
     };
-    const clutterLabel = [1, 2].includes(pkg.clutterAdjustment?.roomConditionVersion) ? "Clutter cleaning fee" : pkg.clutterAdjustment?.condition === "heavy"
+    const clutterLabel = window.ImanBookingConditions.supportedVersion(pkg.clutterAdjustment?.roomConditionVersion) ? "Clutter cleaning fee" : pkg.clutterAdjustment?.condition === "heavy"
       ? "Hoarding/excessive clutter cleaning fee"
       : pkg.clutterAdjustment?.condition === "several"
         ? "Moderate clutter/access cleaning fee"
         : "Light clutter/access cleaning fee";
-    const buildupLabel = [1, 2].includes(pkg.buildupAdjustment?.roomConditionVersion) ? "Dirt, buildup and grease cleaning fee" : pkg.buildupAdjustment?.condition === "heavy"
+    const buildupLabel = window.ImanBookingConditions.supportedVersion(pkg.buildupAdjustment?.roomConditionVersion) ? "Dirt, buildup and grease cleaning fee" : pkg.buildupAdjustment?.condition === "heavy"
       ? "Heavy buildup and grease cleaning fee"
       : "Noticeable buildup and grease cleaning fee";
     return [
