@@ -1,5 +1,6 @@
 const crypto = require("crypto");
 const roomConditions = require("../../booking-conditions");
+const movingKitchens = require("../../booking-moving-kitchens");
 
 const TEAM_SIZE = 2;
 const MAN_HOUR_RATE = 80;
@@ -269,6 +270,8 @@ function calculateResidentialUnitPrice(unit = {}, unitIndex = 0, serviceKey = "s
   const kitchens = unit.kitchens !== undefined && unit.kitchens !== ""
     ? wholeNumber(unit.kitchens, `the number of kitchens in Unit ${unitNumber}`, 20)
     : 1;
+  const itemizedMove = serviceKey === "move" && eligibility.movingKitchenPricingVersion === movingKitchens.VERSION;
+  const movingKitchenPrices = itemizedMove ? movingKitchens.price(unit.movingKitchens, kitchens, unitNumber) : null;
   const additionalRooms = wholeNumber(unit.additionalRooms || 0, `the number of additional rooms in Unit ${unitNumber}`, 30);
   const additionalRoomTypeLabels = {
     office: "office",
@@ -340,7 +343,7 @@ function calculateResidentialUnitPrice(unit = {}, unitIndex = 0, serviceKey = "s
     }
   }
 
-  const excludeKitchenItems = kitchens > 0 && serviceKey === "move"
+  const excludeKitchenItems = kitchens > 0 && serviceKey === "move" && !itemizedMove
     ? yesNo(unit.excludeKitchenItems || "no", `whether to exclude kitchen items in Unit ${unitNumber}`)
     : "no";
   const excludeOven = serviceKey === "move" && excludeKitchenItems === "yes"
@@ -355,6 +358,7 @@ function calculateResidentialUnitPrice(unit = {}, unitIndex = 0, serviceKey = "s
   const submittedRefrigerator = cleanText(unit.refrigerator, 30);
   const refrigerator = kitchens < 1
     ? "no"
+    : itemizedMove ? "per-kitchen"
     : serviceKey === "move"
       ? (excludeRefrigerator === "yes" ? "excluded" : "included")
       : submittedRefrigerator === "yes"
@@ -365,11 +369,13 @@ function calculateResidentialUnitPrice(unit = {}, unitIndex = 0, serviceKey = "s
   }
   const oven = kitchens < 1
     ? "no"
+    : itemizedMove ? "per-kitchen"
     : serviceKey === "move"
       ? (excludeOven === "yes" ? "excluded" : "included")
       : yesNo(unit.oven, `inside oven cleaning in Unit ${unitNumber}`);
   const cabinets = kitchens < 1
     ? "no"
+    : itemizedMove ? "per-kitchen"
     : serviceKey === "move"
       ? (excludeCabinets === "yes" ? "excluded" : "included")
       : yesNo(unit.cabinets, `inside kitchen cabinet cleaning in Unit ${unitNumber}`);
@@ -442,7 +448,7 @@ function calculateResidentialUnitPrice(unit = {}, unitIndex = 0, serviceKey = "s
     cabinetsEmpty = yesNo(unit.cabinetsEmpty, `whether the kitchen cabinets and drawers will be empty in Unit ${unitNumber}`);
   }
 
-  const kitchenDiscount = serviceKey === "move"
+  const kitchenDiscount = serviceKey === "move" && !itemizedMove
     ? (excludeOven === "yes" ? 50 : 0) +
       (excludeRefrigerator === "yes" ? MOVE_REFRIGERATOR_PRICE : 0) +
       (excludeCabinets === "yes" ? 50 : 0)
@@ -458,7 +464,9 @@ function calculateResidentialUnitPrice(unit = {}, unitIndex = 0, serviceKey = "s
     cabinets === "excluded" ? "cabinets" : ""
   ].filter(Boolean);
   const kitchenCountLabel = kitchens === 1 ? "Kitchen" : `${kitchens} kitchens`;
-  const kitchenLabel = serviceKey !== "move"
+  const kitchenLabel = itemizedMove
+    ? `${kitchenCountLabel} (interior cleaning listed separately)`
+    : serviceKey !== "move"
     ? kitchenCountLabel
     : excludedKitchenItems.length
       ? includedKitchenItems.length
@@ -473,7 +481,7 @@ function calculateResidentialUnitPrice(unit = {}, unitIndex = 0, serviceKey = "s
     kitchens ? {
       key: "kitchen",
       label: kitchenLabel,
-      amount: Math.max(0, (service.kitchenRate * kitchens) - kitchenDiscount)
+      amount: itemizedMove ? movingKitchens.BASE_PRICE * kitchens : Math.max(0, (service.kitchenRate * kitchens) - kitchenDiscount)
     } : null,
     livingDining !== "none" ? {
       key: "living_dining",
@@ -495,6 +503,15 @@ function calculateResidentialUnitPrice(unit = {}, unitIndex = 0, serviceKey = "s
     ? FIRST_PET_CLEANING_FEE
     : 0;
   const addOns = [
+    ...(movingKitchenPrices || []).flatMap((kitchen, index) => {
+      const prefix = kitchens > 1 ? `Kitchen ${index + 1} — ` : "";
+      return [
+        kitchen.refrigeratorPrice ? { key: "refrigerator", kitchenNumber: index + 1, label: `${prefix}Inside refrigerator (emptied)`, amount: kitchen.refrigeratorPrice } : null,
+        kitchen.ovenPrice ? { key: "oven", kitchenNumber: index + 1, label: `${prefix}Inside oven`, amount: kitchen.ovenPrice } : null,
+        kitchen.cabinetPrice ? { key: "cabinets", kitchenNumber: index + 1,
+          label: `${prefix}Inside ${kitchen.cabinetCount} cabinet door${kitchen.cabinetCount === 1 ? "" : "s"} & ${kitchen.drawerCount} drawer${kitchen.drawerCount === 1 ? "" : "s"} (empty)`, amount: kitchen.cabinetPrice } : null
+      ];
+    }),
     hasPets === "yes" ? {
       key: "pet_fee",
       label: "Pet fee — $50 (tax included)",
@@ -523,6 +540,7 @@ function calculateResidentialUnitPrice(unit = {}, unitIndex = 0, serviceKey = "s
     fullBathrooms,
     halfBathrooms,
     kitchens,
+    ...(itemizedMove ? { movingKitchenPricingVersion: movingKitchens.VERSION, movingKitchens: movingKitchenPrices } : {}),
     livingRooms,
     diningRooms,
     hasLivingRoom,
@@ -670,6 +688,10 @@ function roomConditionAdjustmentFor(units, serviceKey, kinds, version = roomCond
           // Unit-level kitchen extras are shared equally between its kitchens,
           // matching the existing affected-kitchen pricing rule.
           baseAreaPrice = Math.max(0, (kitchenBase + extras - includedFridge) / unit.kitchens);
+          if (unit.movingKitchenPricingVersion === movingKitchens.VERSION) {
+            const kitchen = unit.movingKitchens[Number(room.id.split(":")[1]) - 1];
+            baseAreaPrice = kind === "grease" ? kitchen.greaseBasePrice : kitchen.total;
+          }
         }
         const amountCents = Math.round(baseAreaPrice * level.rate);
         affectedAreas.push({ key: `${kind}_${room.id}`, roomId: room.id, label: room.label,
@@ -753,6 +775,13 @@ function calculateResidentialQuoteBundle(unitDetails = [], serviceKey = "standar
   }
   if (eligibility.roomConditionVersion !== undefined && !roomConditions.supportedVersion(eligibility.roomConditionVersion)) {
     throw Object.assign(new Error("Please refresh the quote and review the room conditions."), { statusCode: 400 });
+  }
+  // Missing movingKitchenPricingVersion deliberately retains the bundled
+  // calculation for existing saved quotes and bookings. New forms set it only
+  // after collecting the per-kitchen selections and current room conditions.
+  if (serviceKey === "move" && eligibility.movingKitchenPricingVersion !== undefined &&
+      (eligibility.movingKitchenPricingVersion !== movingKitchens.VERSION || eligibility.roomConditionVersion !== roomConditions.VERSION)) {
+    throw Object.assign(new Error("Please refresh the quote and review the kitchen selections and room conditions."), { statusCode: 400 });
   }
   const usesRoomConditions = roomConditions.supportedVersion(eligibility.roomConditionVersion) || unitDetails.some(unit => Object.hasOwn(unit, "roomConditions"));
   if (usesRoomConditions) eligibility = { ...eligibility, roomConditionVersion: eligibility.roomConditionVersion ?? roomConditions.VERSION };

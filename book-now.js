@@ -1271,36 +1271,7 @@
         ]
       }
     ] : [])] : []),
-    ...(Number(unit.kitchens) > 0 && isMove ? [{
-      key: "excludeKitchenItems",
-      question: "Would you like to exclude any of the included kitchen items?",
-      helper: "Moving Cleaning includes inside the oven, refrigerator, and cabinets. Excluding an item reduces the kitchen price.",
-      options: [
-        { value: "no", label: "No — keep all three included" },
-        { value: "yes", label: "Yes — choose items to exclude" }
-      ]
-    }, ...(unit.excludeKitchenItems === "yes" ? [{
-      key: "excludeOven",
-      question: "Exclude inside oven cleaning?",
-      options: [
-        { value: "no", label: "Keep included" },
-        { value: "yes", label: "Exclude (-$50)" }
-      ]
-    }, {
-      key: "excludeRefrigerator",
-      question: "Exclude inside refrigerator cleaning?",
-      options: [
-        { value: "no", label: "Keep included" },
-        { value: "yes", label: "Exclude (-$40)" }
-      ]
-    }, {
-      key: "excludeCabinets",
-      question: "Exclude inside cabinet cleaning?",
-      options: [
-        { value: "no", label: "Keep included" },
-        { value: "yes", label: "Exclude (-$50)" }
-      ]
-    }] : [])] : []),
+    ...(isMove ? window.ImanMovingKitchens.questions(unit) : []),
     ...(isWholePropertyUnit ? [{
       key: "propertyHasPets",
       question: isMove ? "Are there currently any pets at the property?" : "Are there any pets at the property?",
@@ -1597,6 +1568,7 @@
     const questions = pricingDetailQuestions(current);
       state.currentDetailQuestionIndex = Math.max(0, Math.min(state.currentDetailQuestionIndex, questions.length - 1));
       const question = questions[state.currentDetailQuestionIndex];
+      const detailTarget = window.ImanMovingKitchens.answerTarget(current, question);
       if (unitDetailsKicker) {
         const isPropertyPetQuestion = PROPERTY_PET_KEYS.has(question.key);
         unitDetailsKicker.textContent = isPropertyPetQuestion ? "Whole Property" : quoteUnitLabel(state.currentUnitIndex);
@@ -1675,9 +1647,9 @@
         (isCounterBreakdown ? [] : (question.options || [])).forEach((option) => {
           const button = document.createElement("button");
           button.type = "button";
-          button.className = `booking-answer-choice${current[question.key] === option.value ? " is-selected" : ""}`;
+          button.className = `booking-answer-choice${detailTarget[question.key] === option.value ? " is-selected" : ""}`;
           button.dataset.standardDetailAnswer = option.value;
-          button.setAttribute("aria-pressed", String(current[question.key] === option.value));
+          button.setAttribute("aria-pressed", String(detailTarget[question.key] === option.value));
           const label = document.createElement("span");
           if (option.examplePhoto) {
             const [title, ...description] = option.label.split(" — ");
@@ -1694,7 +1666,7 @@
           button.append(label, check);
           button.addEventListener("click", () => {
             const answeredUnitIndex = state.currentUnitIndex;
-            current[question.key] = option.value;
+            window.ImanMovingKitchens.setAnswer(current, question, option.value);
             if (question.key === "cabinets" && option.value === "no") {
               current.cabinetCount = "";
               current.drawerCount = "";
@@ -1751,9 +1723,10 @@
           standardDetailNumberInput.removeAttribute("maxlength");
         }
         standardDetailNumberInput.placeholder = question.placeholder || "";
-        standardDetailNumberInput.value = current[question.key];
+        standardDetailNumberInput.value = detailTarget[question.key] ?? "";
         standardDetailNumberInput.oninput = () => {
-          current[question.key] = standardDetailNumberInput.value;
+          window.ImanMovingKitchens.setAnswer(current, question, standardDetailNumberInput.value);
+          if (question.key === "kitchens" && value("requestedService") === "move") window.ImanMovingKitchens.reconcile(current);
           if (question.key === "livingRooms") {
             current.diningRooms = standardDetailNumberInput.value;
           }
@@ -3953,10 +3926,11 @@
       const currentUnit = state.unitDetails[state.currentUnitIndex] || emptyUnitDetails();
       const detailQuestions = pricingDetailQuestions(currentUnit, value("requestedService"));
       const detailQuestion = detailQuestions[state.currentDetailQuestionIndex];
-      let detailValue = currentUnit[detailQuestion.key];
+      const detailTarget = window.ImanMovingKitchens.answerTarget(currentUnit, detailQuestion);
+      let detailValue = detailTarget[detailQuestion.key];
       if (["number", "text"].includes(detailQuestion.type) && standardDetailNumberInput) {
         detailValue = standardDetailNumberInput.value;
-        currentUnit[detailQuestion.key] = detailValue;
+        window.ImanMovingKitchens.setAnswer(currentUnit, detailQuestion, detailValue);
       }
       const numericValue = Number(detailValue);
       if (detailQuestion.type === "number") {
@@ -3972,7 +3946,7 @@
           standardDetailNumberInput?.focus();
           return;
         }
-        currentUnit[detailQuestion.key] = String(detailValue).trim();
+        detailTarget[detailQuestion.key] = String(detailValue).trim();
       } else if (detailQuestion.type === "room-breakdown") {
         const assignedRooms = Object.values(detailValue || {}).reduce((total, amount) => total + (Number(amount) || 0), 0);
         if (assignedRooms !== Number(currentUnit.additionalRooms)) {
@@ -4124,6 +4098,7 @@
     state.eligibility = {
       ...eligibilityFromForm(),
       roomConditionVersion: window.ImanBookingConditions.VERSION,
+      ...(value("requestedService") === "move" ? { movingKitchenPricingVersion: window.ImanMovingKitchens.VERSION } : {}),
       propertyHasPets: wholePropertyDetails.propertyHasPets || "no",
       propertyPetCount: wholePropertyDetails.propertyPetCount || "",
       propertyPetType: wholePropertyDetails.propertyPetType || "",

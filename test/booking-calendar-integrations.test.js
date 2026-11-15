@@ -30,6 +30,7 @@ async function googleTests() {
   const shared=load('api/booking/_shared.js',{
     '../../booking-day': require('../booking-day'),
     '../../booking-conditions': require('../booking-conditions'),
+    '../../booking-moving-kitchens': require('../booking-moving-kitchens'),
     'googleapis/build/src/apis/calendar':{calendar:()=>google},
     '../quote/_shared':{getGoogleClients:()=>({auth:{getAccessToken:async()=>({token:'test-token-never-returned'}),getTokenInfo:async()=>({scopes:['https://www.googleapis.com/auth/calendar.events']})}})},
     '../google-calendar/_connection':{calendarAuth:async()=>({getAccessToken:async()=>({token:'test-token-never-returned'}),getTokenInfo:async()=>({scopes:['https://www.googleapis.com/auth/calendar.events']})})},

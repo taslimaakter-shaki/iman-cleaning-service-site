@@ -245,5 +245,30 @@ const get=url=>handler({method:'GET',headers:{host:'example.test'},query:{token:
  assert.equal((await get(migratedRoomSaved.quoteUrl)).package.buildupAdjustment.amount,90);
  assert.equal((await get(legacyRoomSaved.quoteUrl)).package.buildupAdjustment.amount,160,'Original saved price is immutable after migration');
 
+ // Moving kitchen upgrades create a new quote; reopening the original never changes its price.
+ const movingBody = {...kitchenBody, promoCode:'', customer:{...body.customer,email:'moving@example.invalid',phone:''},
+   eligibility:{...kitchenBody.eligibility,requestedService:'move',propertyStatus:'moving',movingDirection:'move-out',emptyByService:'yes',roomConditionVersion:2},
+   pricingMode:'move_formula',unitDetails:[{bedrooms:0,fullBathrooms:0,halfBathrooms:0,kitchens:1,livingRooms:0,diningRooms:0,additionalRooms:0,
+     excludeKitchenItems:'no',roomConditions:{'kitchens:1':{clutter:'low',grease:'none'}}}]};
+ const legacyMovingSaved=await post(movingBody);
+ assert.equal(legacyMovingSaved.status,201,legacyMovingSaved.error);
+ const legacyMovingOpened=await get(legacyMovingSaved.quoteUrl);
+ assert.equal(legacyMovingOpened.package.priceCents,15000);
+ const upgradedMoving={...movingBody,previousQuoteToken:new URL(legacyMovingSaved.quoteUrl).searchParams.get('quote'),
+   eligibility:{...movingBody.eligibility,movingKitchenPricingVersion:1},
+   unitDetails:movingBody.unitDetails.map(unit=>({...unit,movingKitchens:[{excludeKitchenItems:'no',cabinetCount:12,drawerCount:6}]}))};
+ const upgradedMovingSaved=await post(upgradedMoving);
+ assert.equal(upgradedMovingSaved.status,201,upgradedMovingSaved.error);
+ assert.notEqual(upgradedMovingSaved.quoteUrl,legacyMovingSaved.quoteUrl);
+ const upgradedMovingOpened=await get(upgradedMovingSaved.quoteUrl);
+ assert.equal(upgradedMovingOpened.package.priceCents,21500);
+ assert.equal(upgradedMovingOpened.unitDetails[0].movingKitchens[0].cabinetCount,12);
+ assert.equal(upgradedMovingOpened.package.units[0].movingKitchens[0].cabinetsEmpty,'yes');
+ assert.equal(actual.calculateResidentialQuoteBundle(upgradedMovingOpened.unitDetails,'move',upgradedMovingOpened.eligibility).priceCents,21500,'Checkout recalculates the saved itemized selections consistently');
+ assert.equal(actual.calculateResidentialQuoteBundle(legacyMovingOpened.unitDetails,'move',legacyMovingOpened.eligibility).priceCents,15000,'Legacy checkout retains its original calculation');
+ assert.equal((await get(legacyMovingSaved.quoteUrl)).package.priceCents,15000);
+ const missingMovingCount=structuredClone(upgradedMoving);missingMovingCount.unitDetails[0].movingKitchens[0].drawerCount='';
+ assert.equal((await post(missingMovingCount)).status,400,'Incomplete cabinet quantities cannot produce a saved quote');
+
  console.log('Saved quote versions: immutable details/prices/contacts, changed-content delivery, concurrent deduplication, consent and partial-delivery retry passed. Providers mocked.');
 })().catch(e=>{console.error(e);process.exitCode=1});

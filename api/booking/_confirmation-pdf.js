@@ -248,7 +248,7 @@ function buildSections({ booking, record }) {
     ["Customer acceptance evidence recorded by staff", estimate.externalPaymentTerms.acceptedEvidence],
     ["Recorded at", estimate.externalPaymentTerms.recordedAt]
   ] });
-  const eligibilityRows = answerRows(estimate.eligibility);
+  const eligibilityRows = answerRows(estimate.eligibility, new Set(["movingKitchenPricingVersion"]));
   if (eligibilityRows.length) sections.push({ title: "Eligibility and prescreening answers", rows: eligibilityRows });
 
   const homeKeys = new Set([
@@ -261,6 +261,10 @@ function buildSections({ booking, record }) {
 
   (Array.isArray(estimate.units) ? estimate.units : []).forEach((unit, index) => {
     const omittedUnitKeys = new Set(OMIT_UNIT_KEYS);
+    const hasMovingKitchenDetails = isMovingCleaning && unit.movingKitchenPricingVersion === 1 && Array.isArray(unit.movingKitchens);
+    if (hasMovingKitchenDetails) {
+      ["movingKitchens", "movingKitchenPricingVersion", "refrigerator", "oven", "cabinets", "excludeKitchenItems", "excludeOven", "excludeRefrigerator", "excludeCabinets", "kitchenDiscount"].forEach(key => omittedUnitKeys.add(key));
+    }
     // Counts duplicate the room selections already shown in home details.
     if (unit.livingDining === "combined" || unit.hasLivingRoom === "yes" || unit.hasLivingRoom === true) {
       omittedUnitKeys.add("livingRooms");
@@ -287,6 +291,13 @@ function buildSections({ booking, record }) {
     const otherRows = entries.filter(([key]) => !usedKeys.has(key)).map(([, label, value]) => [label, value]);
     if (homeRows.length) sections.push({ title: `Home details and selected rooms${suffix}`, rows: homeRows });
     if (selectionRows.length) sections.push({ title: `Included service selections and extras${suffix}`, rows: selectionRows });
+    if (hasMovingKitchenDetails) unit.movingKitchens.forEach((kitchen, kitchenIndex) => {
+      sections.push({ title: `Kitchen ${kitchenIndex + 1} interior cleaning${suffix}`, rows: [
+        ["Inside oven", kitchen.excludeOven === "yes" ? "Excluded" : "Included"],
+        ["Inside refrigerator", kitchen.excludeRefrigerator === "yes" ? "Excluded" : "Included - empty before arrival"],
+        ["Inside cabinets and drawers", kitchen.excludeCabinets === "yes" ? "Excluded" : `${kitchen.cabinetCount} cabinet doors and ${kitchen.drawerCount} drawers - empty before arrival`]
+      ] });
+    });
     if (conditionRows.length) sections.push({ title: `Reported condition by area${suffix}`, rows: conditionRows });
     if (otherRows.length) sections.push({ title: `Additional service details${suffix}`, rows: otherRows });
   });

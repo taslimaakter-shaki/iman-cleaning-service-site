@@ -232,6 +232,19 @@ const record = {
   assert.equal(movingDetailRows.some(([label]) => ["Cabinet Count", "Drawer Count", "Cabinets Empty"].includes(label)), false,
     "Moving Cleaning records do not show cabinet-readiness questions that were not asked");
 
+  const movingKitchenSections = buildSections({booking: {...booking,service:'move',service_label:'Moving Cleaning',estimate: {
+    ...booking.estimate,eligibility:{requestedService:'move',movingKitchenPricingVersion:1},
+    units:[{movingKitchenPricingVersion:1,refrigerator:'per-kitchen',oven:'per-kitchen',cabinets:'per-kitchen',movingKitchens:[
+      {excludeOven:'no',excludeRefrigerator:'no',excludeCabinets:'no',cabinetCount:12,drawerCount:6},
+      {excludeOven:'yes',excludeRefrigerator:'yes',excludeCabinets:'yes',cabinetCount:0,drawerCount:0}
+    ]}]
+  }},record:{...record,service:'Moving Cleaning'}});
+  const kitchenRows=movingKitchenSections.filter(s=>s.title.startsWith('Kitchen '));
+  assert.equal(kitchenRows.length,2);
+  assert.ok(kitchenRows[0].rows.some(([label,value])=>label==='Inside cabinets and drawers' && value==='12 cabinet doors and 6 drawers - empty before arrival'));
+  assert.ok(kitchenRows[1].rows.every(([,value])=>value==='Excluded'));
+  assert.doesNotMatch(JSON.stringify(movingKitchenSections),/per-kitchen|Moving Kitchen Pricing Version|Grease Base Price/);
+
   const residentialCabinetSections = buildSections({
     booking: {
       ...booking,
