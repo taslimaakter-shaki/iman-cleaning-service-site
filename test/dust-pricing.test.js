@@ -94,6 +94,8 @@ assert.equal(multi.units.reduce((sum, item) => sum + item.subtotalCents, 0), mul
 assert.equal(Math.round(multi.units.flatMap(item => item.addOns).filter(item => item.key === "dust_adjustment")
   .reduce((sum, item) => sum + item.taxAmount, 0) * 100), multi.dustAdjustment.taxCents);
 const receipt = pricingRows({ estimate: { units: multi.units, dustAdjustment: multi.dustAdjustment } }, {});
-assert.equal(receipt.filter(([label]) => label.includes("Heavy dust and dirt")).length, 3, "Receipt keeps one dust fee per affected unit, without duplicating the aggregate");
+const dustRows = receipt.filter(([label]) => label.includes("Heavy dust and dirt"));
+assert.equal(dustRows.length, 9, "Receipt lists each affected room without duplicating unit or aggregate charges");
+assert.equal(dustRows.reduce((sum, [, amount]) => sum + Math.round(Number(amount.slice(1)) * 100), 0), 21600);
 assert.deepEqual(pricingRows({ estimate: { dustAdjustment: charged.dustAdjustment } }, {}), [["Heavy dust and dirt cleaning", "$72.00"]]);
 console.log("Dust pricing: Light/Moderate included, Heavy 40%, combined/separate rooms, service rates, mandatory answers, wet-room isolation, legacy draft reset, exact totals and receipt allocation passed.");

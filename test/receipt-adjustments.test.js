@@ -5,7 +5,7 @@ const booking = { estimate: { units: [{ baseItems: [{ label: 'Kitchen', amount: 
   { key: 'clutter_adjustment', label: 'Clutter access adjustment (40% of selected affected rooms)', amount: 32 },
   { key: 'mold_adjustment_kitchen', label: 'Kitchen - possible mold/mildew adjustment (50%)', amount: 40 }
 ] }], buildupAdjustment: { amount: 40 }, clutterAdjustment: { amount: 32 }, moldAdjustment: { amount: 40 } } };
-assert.deepEqual(pricingRows(booking, {}), [['Kitchen', '$80.00'], ['Buildup adjustment', '$40.00'], ['Clutter access adjustment', '$32.00'], ['Kitchen - possible mold/mildew adjustment', '$40.00']]);
+assert.deepEqual(pricingRows(booking, {}), [['Cleaning Service', '$80.00'], ['Buildup adjustment', '$40.00'], ['Clutter access adjustment', '$32.00'], ['Kitchen - possible mold/mildew adjustment', '$40.00']]);
 const original = JSON.stringify(booking);
 pricingRows(booking, {});
 assert.equal(JSON.stringify(booking), original, 'Receipt formatting must not change booking charges');

@@ -1,5 +1,6 @@
 const PDFDocument = require("pdfkit");
 const bookingDiscountName = require("../../booking-discount-names");
+const { unitsFor, unitLabel, conditionChargeLabel } = require("./_document-details");
 
 const COLORS = {
   ink: "#16363d",
@@ -70,47 +71,72 @@ function paymentTypeLabel(value) {
 
 function pricingRows(booking, record) {
   const estimate = booking?.estimate || {};
-  const units = Array.isArray(estimate.units) ? estimate.units : [];
-  const itemizedAdjustments = new Set();
+  const units = unitsFor(estimate);
+  const cents = value => Math.round(Number(value || 0) * 100);
+  const itemCents = item => cents(item.preTaxAmount ?? item.amount);
   const adjustmentKind = item => {
     const text = `${item?.key || ""} ${item?.label || ""}`.toLowerCase();
-    if (/dust/.test(text) && /adjustment/.test(text)) return "dust";
-    if (/buildup/.test(text) && /adjustment/.test(text)) return "buildup";
-    if (/clutter/.test(text) && /adjustment/.test(text)) return "clutter";
-    if (/mold|mildew/.test(text) && /adjustment/.test(text)) return "mold";
-    return "";
+    return ["dust", "buildup", "clutter", "mold"].find(kind => text.includes(kind) && text.includes("adjustment")) || "";
   };
-  const rows = units.flatMap((unit, unitIndex) => (
-    [...(unit.baseItems || []), ...(unit.addOns || [])]
-      .filter((item) => item?.label)
-      .map((item) => {
-        const kind = adjustmentKind(item);
-        if (kind) itemizedAdjustments.add(kind);
-        // Normalize saved labels too, so older bookings do not expose formulas.
-        const publicLabel = kind === "buildup" ? "Buildup adjustment"
-          : kind === "clutter" ? "Clutter access adjustment"
-          : kind === "mold" ? String(item.label).replace(/\s*\([^)]*%[^)]*\)/g, "")
-          : item.label;
-        const label = `${units.length > 1 ? `Unit ${unitIndex + 1} - ` : ""}${safeText(publicLabel)}`;
-        const numericAmount = Number(item.amount);
-        return [label, Number.isFinite(numericAmount) && numericAmount > 0 ? moneyFromAmount(numericAmount) : "Included"];
-      })
-  ));
-  const adjustments = [
+  const groups = [
     ["dust", "Heavy dust and dirt cleaning", estimate.dustAdjustment],
     ["buildup", "Buildup adjustment", estimate.buildupAdjustment],
     ["clutter", "Clutter access adjustment", estimate.clutterAdjustment],
     ["mold", "Possible mold/mildew adjustment", estimate.moldAdjustment]
   ];
-  adjustments.forEach(([kind, label, adjustment]) => {
-    const amount = Number(adjustment?.amount || (Number(adjustment?.amountCents || 0) / 100));
-    if (amount > 0 && !itemizedAdjustments.has(kind)) {
-      rows.push([label, moneyFromAmount(amount)]);
-    }
+  const prefix = index => estimate.eligibility?.propertyType || estimate.propertyType || units.length > 1
+    ? `${unitLabel(estimate, index)} - ` : "";
+  const extras = [];
+  const itemized = new Map(groups.map(([kind]) => [kind, []]));
+  let baseCents = 0;
+  units.forEach((unit, index) => {
+    baseCents += (unit.baseItems || []).reduce((sum, item) => sum + Math.max(0, itemCents(item)), 0);
+    (unit.addOns || []).forEach(item => {
+      const amount = itemCents(item);
+      if (!item?.label || (!amount && !item.included)) return;
+      const kind = adjustmentKind(item);
+      const label = kind === "buildup" ? "Buildup adjustment"
+        : kind === "clutter" ? "Clutter access adjustment"
+        : ["pet_fee", "property_pet_fee"].includes(item.key) ? "Pet cleaning"
+        : String(item.label).replace(/\s*\([^)]*%[^)]*\)/g, "");
+      const row = { label: prefix(index) + label, cents: amount };
+      if (kind) itemized.get(kind).push(row);
+      else extras.push(row);
+    });
   });
-  if (!rows.length) {
-    rows.push([safeText(record?.service || booking?.service_label || "Cleaning service"), record?.subtotalBeforeTax || record?.totalAmount || ""]);
+  groups.forEach(([kind, fallbackLabel, adjustment]) => {
+    const savedRows = itemized.get(kind);
+    const storedTotal = savedRows.length ? savedRows.reduce((sum, row) => sum + row.cents, 0)
+      : adjustment?.amountCents ?? cents(adjustment?.amount);
+    if (!(storedTotal > 0)) return;
+    const areas = (adjustment?.affectedAreas || []).filter(area => area.roomId && area.conditionType && (area.amountCents ?? cents(area.amount)) > 0);
+    const areaTotal = areas.reduce((sum, area) => sum + (area.amountCents ?? cents(area.amount)), 0);
+    // Split only when the saved per-room charges reconcile. No repricing with
+    // today's rates, and no duplicate aggregate charge on older bookings.
+    if (units.length && areas.length && areaTotal === storedTotal) {
+      areas.forEach(area => {
+        const index = units.findIndex((unit, i) => (unit.unitNumber || i + 1) === area.unitNumber);
+        extras.push({ label: `${unitLabel(estimate, index < 0 ? Math.max(0, Number(area.unitNumber || 1) - 1) : index)} - ${conditionChargeLabel(area)}`,
+          cents: area.amountCents ?? cents(area.amount) });
+      });
+    } else if (savedRows.length) extras.push(...savedRows);
+    else extras.push({ label: fallbackLabel, cents: storedTotal });
+  });
+  const service = safeText(booking?.service_label || record?.service || "Cleaning Service");
+  const serviceLabel = /service$/i.test(service) ? service : `${service} Service`;
+  const subtotalValue = record?.subtotalBeforeTax ?? estimate.subtotal;
+  const subtotal = subtotalValue === undefined || subtotalValue === null || subtotalValue === "" ? null
+    : cents(String(subtotalValue).replace(/[^0-9.-]/g, ""));
+  const extrasCents = extras.reduce((sum, item) => sum + item.cents, 0);
+  if (Number.isFinite(subtotal)) {
+    // The saved subtotal is authoritative, including rounding and custom quotes.
+    // Inconsistent legacy breakdowns are summarized rather than invented.
+    if (subtotal < extrasCents) return [[serviceLabel, moneyFromAmount(subtotal / 100)]];
+    baseCents = subtotal - extrasCents;
   }
+  const rows = baseCents > 0 ? [[serviceLabel, moneyFromAmount(baseCents / 100)]] : [];
+  extras.forEach(item => rows.push([safeText(item.label), item.cents ? moneyFromAmount(item.cents / 100) : "Included"]));
+  if (!rows.length) rows.push([serviceLabel, record?.subtotalBeforeTax || record?.totalAmount || ""]);
   return rows.filter(([, value]) => value);
 }
 
@@ -191,23 +217,25 @@ function buildPaymentReceiptPdf({ booking = null, record }) {
     };
     const moneyRows = (rows, { highlight = new Set(), caution = new Set() } = {}) => {
       rows.filter(([, value]) => value).forEach(([label, value]) => {
-        ensureSpace(19);
+        doc.font("Helvetica").fontSize(8.6);
+        const rowHeight = Math.max(19, doc.heightOfString(safeText(label), { width: width - 140 }) + 10);
+        ensureSpace(rowHeight);
         const y = doc.y;
         const isHighlight = highlight.has(label);
         const isCaution = caution.has(label);
         if (isCaution) {
-          doc.rect(left, y, width, 19).fillAndStroke(COLORS.cautionPale, COLORS.caution);
+          doc.rect(left, y, width, rowHeight).fillAndStroke(COLORS.cautionPale, COLORS.caution);
         } else if (isHighlight) {
-          doc.rect(left, y, width, 19).fillAndStroke(COLORS.pale, COLORS.teal);
+          doc.rect(left, y, width, rowHeight).fillAndStroke(COLORS.pale, COLORS.teal);
         } else {
-          doc.moveTo(left, y + 19).lineTo(right, y + 19).strokeColor(COLORS.line).lineWidth(0.5).stroke();
+          doc.moveTo(left, y + rowHeight).lineTo(right, y + rowHeight).strokeColor(COLORS.line).lineWidth(0.5).stroke();
         }
         const color = isCaution ? COLORS.caution : COLORS.ink;
         doc.fillColor(color).font(isCaution ? "Helvetica-Bold" : "Helvetica").fontSize(8.6)
-          .text(safeText(label), left + 8, y + 5, { width: width - 140, lineBreak: false });
+          .text(safeText(label), left + 8, y + 5, { width: width - 140 });
         doc.fillColor(color).font("Helvetica-Bold").fontSize(8.6)
           .text(safeText(value), right - 130, y + 5, { width: 122, align: "right", lineBreak: false });
-        doc.y = y + 19;
+        doc.y = y + rowHeight;
       });
     };
 
@@ -240,7 +268,7 @@ function buildPaymentReceiptPdf({ booking = null, record }) {
     ].filter(([, value]) => value));
     fullInfoRow("Booking reference", record?.quoteId || booking?.id || "");
 
-    sectionTitle("Itemized Pricing");
+    sectionTitle("Itemized Pricing - Before Tax");
     moneyRows(pricingRows(booking, record));
 
     sectionTitle("Service Price Calculation");

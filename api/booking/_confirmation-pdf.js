@@ -1,5 +1,7 @@
 const { staffingOptions } = require("./_staffing-options");
 const PDFDocument = require("pdfkit");
+const { unitsFor, unitLabel, hasRoomAnswers, conditionSections } = require("./_document-details");
+const { roomsForUnit } = require("../../booking-conditions");
 
 const COLORS = {
   ink: "#16363d",
@@ -49,6 +51,10 @@ const LABELS = {
   additionalCleaning: "Additional cleaning requested",
   hours: "Organization labor-hours"
 };
+Object.assign(LABELS, {
+  houseFloorSelection: "Selected floors", propertyHasPets: "Pets currently at the property",
+  cabinetCount: "Cabinet doors", drawerCount: "Kitchen drawers", kitchens: "Kitchens"
+});
 
 const OMIT_UNIT_KEYS = new Set([
   "unitNumber", "tierKey", "tierLabel", "squareFootage", "baseItems", "addOns",
@@ -89,6 +95,12 @@ const BUILDUP_LABELS = {
 };
 
 function friendlyValue(value, key = "") {
+  if (key === "houseFloorSelection") {
+    if (typeof value === "string") {
+      try { value = JSON.parse(value); } catch { return safeText(value); }
+    }
+    if (Array.isArray(value)) return value.map(name => safeText(name)).join("; ");
+  }
   if (["refrigerator", "refrigeratorCleaning"].includes(key) && typeof value === "string") {
     const labels = { no: "No", empty: "Yes (empty)", "not-empty": "Yes (not empty)" };
     const label = labels[value.trim().toLowerCase()];
@@ -222,6 +234,8 @@ function formatAppointmentParts(booking, record) {
 
 function buildSections({ booking, record }) {
   const estimate = booking?.estimate || {};
+  const units = unitsFor(estimate);
+  const roomAnswers = hasRoomAnswers(estimate);
   const selectedService = safeText(
     estimate.eligibility?.requestedService || booking?.service || booking?.service_label || record?.service
   ).toLowerCase();
@@ -248,7 +262,13 @@ function buildSections({ booking, record }) {
     ["Customer acceptance evidence recorded by staff", estimate.externalPaymentTerms.acceptedEvidence],
     ["Recorded at", estimate.externalPaymentTerms.recordedAt]
   ] });
-  const eligibilityRows = answerRows(estimate.eligibility, new Set(["movingKitchenPricingVersion"]));
+  const omittedEligibility = new Set(["units", "movingKitchenPricingVersion", "roomConditionVersion"]);
+  if (roomAnswers) ["clutter", "buildup", "grease", "dust", "roomConditions", "unitCount"].forEach(key => omittedEligibility.add(key));
+  const eligibilityRows = answerRows(estimate.eligibility, omittedEligibility);
+  if (roomAnswers) {
+    const safety = eligibilityRows.find(([label]) => label === "Safety concerns");
+    if (safety?.[1] === "None") safety[1] = "No pests or human/animal waste";
+  }
   if (eligibilityRows.length) sections.push({ title: "Eligibility and prescreening answers", rows: eligibilityRows });
 
   const homeKeys = new Set([
@@ -259,8 +279,10 @@ function buildSections({ booking, record }) {
     "refrigeratorCleaning", "ovenCleaning", "cabinetsDrawers", "refrigerator", "oven", "cabinets"
   ]);
 
-  (Array.isArray(estimate.units) ? estimate.units : []).forEach((unit, index) => {
+  units.forEach((unit, index) => {
     const omittedUnitKeys = new Set(OMIT_UNIT_KEYS);
+    if (roomAnswers) ["roomConditions", "roomConditionVersion", "clutter", "buildup", "dust", "grease", "moldAreas", "buildupAreas", "clutterAreas", "moldBathrooms", "moldFullBathrooms", "moldHalfBathrooms", "moldKitchen", "moldBedrooms", "moldBedroomCount", "moldLivingRoom"].forEach(key => omittedUnitKeys.add(key));
+    if (roomAnswers && unit.cabinets !== "yes") ["cabinetCount", "drawerCount", "cabinetsEmpty"].forEach(key => omittedUnitKeys.add(key));
     const hasMovingKitchenDetails = isMovingCleaning && unit.movingKitchenPricingVersion === 1 && Array.isArray(unit.movingKitchens);
     if (hasMovingKitchenDetails) {
       ["movingKitchens", "movingKitchenPricingVersion", "refrigerator", "oven", "cabinets", "excludeKitchenItems", "excludeOven", "excludeRefrigerator", "excludeCabinets", "kitchenDiscount"].forEach(key => omittedUnitKeys.add(key));
@@ -280,9 +302,15 @@ function buildSections({ booking, record }) {
       omittedUnitKeys.add("cabinetsEmpty");
     }
     const entries = meaningfulUnitRows(unit, omittedUnitKeys);
-    const suffix = estimate.units.length > 1 ? ` - unit ${index + 1}` : "";
-    const homeRows = entries.filter(([key]) => homeKeys.has(key)).map(([, label, value]) => [label, value]);
-    const selectionRows = entries.filter(([key]) => selectionKeys.has(key)).map(([, label, value]) => [label, value]);
+    const suffix = roomAnswers || estimate.eligibility?.propertyType === "house" ? ` - ${unitLabel(estimate, index)}`
+      : units.length > 1 ? ` - unit ${index + 1}` : "";
+    const homeRows = roomAnswers ? roomsForUnit(unit).map(room => [room.label, "Selected"])
+      : entries.filter(([key]) => homeKeys.has(key)).map(([, label, value]) => [label, value]);
+    const selectionRows = entries.filter(([key]) => selectionKeys.has(key)).map(([key, label, value]) => {
+      if (!roomAnswers) return [label, value];
+      const labels = { refrigerator: "Inside refrigerator", refrigeratorCleaning: "Inside refrigerator", oven: "Inside oven", ovenCleaning: "Inside oven", cabinets: "Inside cabinets and drawers" };
+      return [labels[key] || label, value === "No" ? "Not selected" : value === "Yes (empty)" ? "Included - refrigerator will be empty" : value === "Yes" ? "Included" : value];
+    });
     const conditionRows = entries.filter(([key]) => /(buildup|clutter|mold|construction|condition)/i.test(key))
       .map(([, label, value]) => [label, value]);
     const usedKeys = new Set(entries
@@ -301,6 +329,7 @@ function buildSections({ booking, record }) {
     if (conditionRows.length) sections.push({ title: `Reported condition by area${suffix}`, rows: conditionRows });
     if (otherRows.length) sections.push({ title: `Additional service details${suffix}`, rows: otherRows });
   });
+  if (roomAnswers) sections.push(...conditionSections(estimate));
 
   if ((booking?.addons || []).length) {
     sections.push({ title: "Selected priorities", rows: [["Priorities and extras", booking.addons.join(", ")]] });
@@ -391,10 +420,9 @@ function buildBookingConfirmationPdf({ booking = null, record }) {
     };
     const section = (title, rows, tone = "default") => {
       if (!rows.length) return;
+      if (title === "Rescheduling and cancellation policy" || title === "Agreement confirmation") doc.addPage();
       if (tone === "caution") {
-        ensureSpace(94);
         const boxX = doc.page.margins.left;
-        const boxY = doc.y;
         const boxPadding = 12;
         const label = safeText(rows[0]?.[0] || "Customer instructions");
         const value = safeText(rows[0]?.[1] || "");
@@ -403,6 +431,8 @@ function buildBookingConfirmationPdf({ booking = null, record }) {
         doc.font("Helvetica").fontSize(8.5);
         const valueHeight = doc.heightOfString(value, { width: pageWidth - (boxPadding * 2) });
         const boxHeight = 38 + labelHeight + valueHeight + (boxPadding * 2);
+        ensureSpace(boxHeight + 13);
+        const boxY = doc.y;
         doc.lineWidth(1.2).roundedRect(boxX, boxY, pageWidth, boxHeight, 7)
           .fillAndStroke(COLORS.cautionPale, COLORS.caution);
         doc.fillColor(COLORS.caution).font("Helvetica-Bold").fontSize(9.5)
@@ -428,8 +458,6 @@ function buildBookingConfirmationPdf({ booking = null, record }) {
         });
       doc.y = headerY + 34;
       rows.forEach(([label, value]) => {
-        ensureSpace(38);
-        const y = doc.y;
         const labelWidth = 145;
         const cleanLabel = safeText(label);
         const cleanValue = safeText(value);
@@ -437,6 +465,8 @@ function buildBookingConfirmationPdf({ booking = null, record }) {
         const labelHeight = doc.heightOfString(cleanLabel, { width: labelWidth });
         doc.font("Helvetica").fontSize(8.5);
         const valueHeight = doc.heightOfString(cleanValue, { width: pageWidth - labelWidth - 14 });
+        ensureSpace(Math.max(labelHeight, valueHeight) + 8);
+        const y = doc.y;
         doc.fillColor(COLORS.ink).font("Helvetica-Bold").fontSize(8.5)
           .text(cleanLabel, doc.page.margins.left, y, { width: labelWidth });
         doc.fillColor(COLORS.muted).font("Helvetica").fontSize(8.5)

@@ -305,11 +305,7 @@ const record = {
     }
   };
   assert.deepEqual(pricingRows(emailBooking, emailRecord), [
-    ["Bedroom - move-in cleaning", "$73.48"],
-    ["Full bathroom - move-in cleaning", "$73.48"],
-    ["Kitchen package - move-in cleaning", "$137.77"],
-    ["Combined living and dining area", "$91.85"],
-    ["Interior window cleaning", "Included"],
+    ["Move-In Cleaning Service", "$376.58"],
     ["Buildup adjustment", "$138.00"]
   ]);
   const receiptPdf = await buildPaymentReceiptPdf({ booking: emailBooking, record: emailRecord });
