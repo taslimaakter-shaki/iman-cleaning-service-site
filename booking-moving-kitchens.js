@@ -47,9 +47,9 @@
       );
       if (kitchen.excludeKitchenItems === "no" || (kitchen.excludeKitchenItems === "yes" && kitchen.excludeCabinets === "no")) entries.push(
         { key: "cabinetCount", type: "number", question: "How many cabinet doors?", label: "Number of cabinet doors",
-          helper: "Count each cabinet door separately. Empty cabinet interiors are $3 per door.", min: 1, max: 100 },
+          helper: "Count each cabinet door separately.", min: 1, max: 100 },
         { key: "drawerCount", type: "number", question: "How many kitchen drawers need cleaning inside?", label: "Number of kitchen drawers",
-          helper: "Empty drawers are $1.50 each. Enter 0 if there are no kitchen drawers.", min: 0, max: 100 }
+          min: 0, max: 100 }
       );
       return entries.map(question => ({ ...question, kitchenIndex, question: question.question + suffix }));
     });
